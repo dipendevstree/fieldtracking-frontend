@@ -11,6 +11,9 @@ const API = {
   },
   liveTracking: {
     list: 'liveTracking/list',
+    user:'users',
+    getWorkDaySession:'workDaySession/getSession',
+    visitAnalytics:'visit/analytics'
   },
   merchants: {
     list: 'merchant/list',
