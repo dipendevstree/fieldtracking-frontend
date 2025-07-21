@@ -1,0 +1,97 @@
+const API = {
+  auth: {
+    login: 'auth/admin/login',
+    sendOtp: 'auth/sendOtp',
+    adminLogin: 'auth/adminLogin',
+    superAdminLogin: 'auth/superAdminlogin',
+    getUserByToken: 'auth/getUserByToken',
+    signup: 'auth/signup',
+    getDepartment: 'department/list',
+    organizationTypes: 'organizationType/list',
+  },
+  liveTracking: {
+    list: 'liveTracking/list',
+  },
+  merchants: {
+    list: 'merchant/list',
+    create: 'merchant/add-merchant',
+    update: 'merchant/update',
+    delete: 'merchant/delete',
+    details: 'merchant/detail',
+    getWorkingHours: 'merchant/working-hours/list',
+    updateWorkingHours: 'merchant/working-hours',
+  },
+  organizations: {
+    list: 'organization/list',
+    create: 'organization/create',
+    update: 'organization/patch',
+    delete: 'merchant/delete',
+    details: 'merchant/detail',
+    getWorkingHours: 'merchant/working-hours/list',
+    updateWorkingHours: 'merchant/working-hours',
+    statusCounts: 'organization/analytics',
+    pendingAdmins: 'users/all',
+    updateStatus: 'auth/activeDeactivateUserBySuperAdmin',
+  },
+
+  employeeRange: {
+    list: 'employeeRang/list',
+    create: 'employeeRang/create',
+    update: 'employeeRang/delete',
+  },
+  industry: {
+    list: 'industry/list',
+    create: 'industry/create',
+    update: 'industry/delete',
+  },
+  menu: {
+    list: 'menu/list',
+    create: 'menu/create',
+    update: 'menu/delete',
+  },
+  users: {
+    list: 'users/list',
+    create: 'users/create',
+    update: 'users/patch',
+    delete: 'users/delete',
+  },
+  roles: {
+    list: 'role/list',
+    create: 'role/create',
+    update: 'role/patch',
+    delete: 'roles/delete',
+    details: 'roles/details',
+    permissions: 'permission/list',
+    getAllPermissions: 'role',
+    organizationMenulist: 'organizationMenu/list',
+  },
+
+  territories: {
+    list: 'userTerritory/list',
+    create: 'userTerritory/create',
+    update: 'userTerritory/patch',
+    delete: 'userTerritory/delete',
+  },
+  calendar: {
+    visitList: 'visit/list',
+    create: 'visit/create',
+    update: 'visit/patch',
+    analytics: 'visit/analytics',
+    getVisitByID: 'visit',
+    delete: 'visit/delete',
+  },
+  customer: {
+    customerList: 'customer/list',
+  },
+  drivers: {
+    list: 'driver/list',
+    create: 'driver/add-driver',
+    update: 'driver/update',
+    delete: 'driver/delete',
+    details: 'driver/driver-documents',
+  },
+}
+
+Object.freeze(API)
+
+export default API
