@@ -1,315 +1,315 @@
-import { Building2, Home, MapPin, Shield } from 'lucide-react'
-import { type SidebarData } from '../types'
+import { Building2, Home, MapPin, Shield } from "lucide-react";
+import { type SidebarData } from "../types";
 
 export const sidebarData: SidebarData = {
   user: {
-    name: 'John Doe',
-    email: 'jane@example.com',
-    role: 'Admin',
-    avatar: '/avatars/jane.png',
+    name: "John Doe",
+    email: "jane@example.com",
+    role: "Admin",
+    avatar: "/avatars/jane.png",
   },
   teams: [
     {
-      name: 'FieldTrack Pro',
+      name: "FieldTrack Pro",
       logo: Building2,
-      plan: 'Enterprise',
+      plan: "Enterprise",
     },
   ],
   navGroups: [
     {
-      title: 'Overview',
+      title: "Overview",
       items: [
         {
-          title: 'Dashboard',
-          url: '/',
+          title: "Dashboard",
+          url: "/",
           icon: Home,
-          menuKey: 'dashboard',
+          menuKey: "dashboard",
         },
         {
-          title: 'Live tracking',
-          url: '/livetracking',
+          title: "Live tracking",
+          url: "/livetracking",
           icon: MapPin,
-          menuKey: 'live_tracking',
+          menuKey: "live_tracking",
         },
         {
-          title: 'User Management',
+          title: "User Management",
           icon: Shield,
-          menuKey: 'Use_Management',
+          menuKey: "Use_Management",
           items: [
             {
-              title: 'Add User',
-              url: '/user-management',
-              menuKey: 'all_user',
+              title: "Add User",
+              url: "/user-management",
+              menuKey: "all_users",
             },
             {
-              title: 'Roles & Permissions',
-              url: '/user-management/roles',
-              menuKey: 'roles_permission',
+              title: "Roles & Permissions",
+              url: "/user-management/roles",
+              menuKey: "roles_permission",
             },
             {
-              title: 'User Territory',
-              url: '/user-territory',
-              menuKey: 'user_territory',
+              title: "User Territory",
+              url: "/user-territory",
+              menuKey: "user_territory",
             },
           ],
         },
         {
-          title: 'Calendar',
+          title: "Calendar",
           icon: Shield,
-          menuKey: 'calendar',
+          menuKey: "calendar",
           items: [
             {
-              title: 'Calendar View',
-              url: '/calendar',
-              menuKey: 'calender_view',
+              title: "Calendar View",
+              url: "/calendar",
+              menuKey: "calender_view",
             },
             {
-              title: 'Upcoming Visits',
-              url: '/calendar/upcoming-visit',
-              menuKey: 'upcoming_visits',
+              title: "Upcoming Visits",
+              url: "/calendar/upcoming-visit",
+              menuKey: "upcoming_visits",
             },
             {
-              title: 'Visit Reports',
-              url: '/calendar/visit-report',
-              menuKey: 'visits_reports',
+              title: "Visit Reports",
+              url: "/calendar/visit-report",
+              menuKey: "visits_reports",
             },
             {
-              title: 'Task Assignment',
-              url: '/calendar/task-assignment',
-              menuKey: 'task_assignment',
+              title: "Task Assignment",
+              url: "/calendar/task-assignment",
+              menuKey: "task_assignment",
             },
             {
-              title: 'Analytics',
-              url: '/calendar/analytics',
-              menuKey: 'analytic',
+              title: "Analytics",
+              url: "/calendar/analytics",
+              menuKey: "analytic",
             },
           ],
         },
         {
-          title: 'Approvals',
+          title: "Approvals",
           icon: Shield,
-          menuKey: 'approvals',
+          menuKey: "approvals",
           items: [
             {
-              title: 'Daily Expense',
-              url: '/approvals',
-              menuKey: 'daily_expense',
+              title: "Daily Expense",
+              url: "/approvals",
+              menuKey: "daily_expense",
             },
             {
-              title: 'Monthly Consolidated',
-              url: '/approvals/monthly-consolidated',
-              menuKey: 'monthly_consolidated',
+              title: "Monthly Consolidated",
+              url: "/approvals/monthly-consolidated",
+              menuKey: "monthly_consolidated",
             },
             {
-              title: 'Reports & Analytics',
-              url: '/approvals/reports-analytics',
-              menuKey: 'reports_analytics',
+              title: "Reports & Analytics",
+              url: "/approvals/reports-analytics",
+              menuKey: "reports_analytics",
             },
           ],
         },
       ],
     },
   ],
-}
+};
 
 export const SUPER_ADMIN_SIDEBAR_DATA: SidebarData = {
   user: {
-    name: 'John Doe',
-    email: 'jane@example.com',
-    role: 'Admin',
-    avatar: '/avatars/jane.png',
+    name: "John Doe",
+    email: "jane@example.com",
+    role: "Admin",
+    avatar: "/avatars/jane.png",
   },
   teams: [
     {
-      name: 'FieldTrack Pro',
+      name: "FieldTrack Pro",
       logo: Building2,
-      plan: 'Enterprise',
+      plan: "Enterprise",
     },
   ],
   navGroups: [
     {
-      title: 'Overview',
+      title: "Overview",
       items: [
         {
-          title: 'Dashboard',
-          url: '/',
+          title: "Dashboard",
+          url: "/",
           icon: Home,
-          menuKey: 'dashboard',
+          menuKey: "dashboard",
         },
         {
-          title: 'Super Admin',
+          title: "Super Admin",
           icon: Shield,
-          menuKey: 'super_admin',
+          menuKey: "super_admin",
           items: [
             {
-              title: 'Organizations',
-              url: '/organizations',
-              menuKey: 'organizations',
+              title: "Organizations",
+              url: "/organizations",
+              menuKey: "organizations",
             },
           ],
         },
       ],
     },
   ],
-}
+};
 
 export const ROUTE_PERMISSIONS: Record<
   string,
   {
-    requiredPermissions?: string[]
-    requiredPermissionGroups?: string[]
-    requiredRoles?: string[]
-    requireAll?: boolean
+    requiredPermissions?: string[];
+    requiredPermissionGroups?: string[];
+    requiredRoles?: string[];
+    requireAll?: boolean;
   }
 > = {
-  '/': {
-    requiredPermissions: ['dashboard.read'],
-    requiredRoles: ['admin'],
+  "/": {
+    requiredPermissions: ["dashboard.read"],
+    requiredRoles: ["admin"],
     requireAll: false,
   },
-  '/products': {
-    requiredPermissions: ['products.read'],
-    requiredRoles: ['admin', 'merchant'],
+  "/products": {
+    requiredPermissions: ["products.read"],
+    requiredRoles: ["admin", "merchant"],
     requireAll: false,
   },
-  '/categories': {
-    requiredPermissions: ['inventory.read'],
-    requiredRoles: ['admin', 'merchant'],
+  "/categories": {
+    requiredPermissions: ["inventory.read"],
+    requiredRoles: ["admin", "merchant"],
     requireAll: false,
   },
-  '/inventory': {
-    requiredPermissions: ['inventory.read'],
-    requiredRoles: ['admin', 'merchant'],
+  "/inventory": {
+    requiredPermissions: ["inventory.read"],
+    requiredRoles: ["admin", "merchant"],
     requireAll: false,
   },
-  '/merchants': {
-    requiredPermissions: ['users.read'],
-    requiredRoles: ['admin'],
+  "/merchants": {
+    requiredPermissions: ["users.read"],
+    requiredRoles: ["admin"],
     requireAll: false,
   },
-  '/merchants/orders': {
-    requiredPermissions: ['orders.read'],
-    requiredRoles: ['admin', 'merchant'],
+  "/merchants/orders": {
+    requiredPermissions: ["orders.read"],
+    requiredRoles: ["admin", "merchant"],
     requireAll: false,
   },
-  '/merchants/products': {
-    requiredPermissions: ['products.read'],
-    requiredRoles: ['admin', 'merchant'],
+  "/merchants/products": {
+    requiredPermissions: ["products.read"],
+    requiredRoles: ["admin", "merchant"],
     requireAll: false,
   },
-  '/merchants/payments': {
-    requiredPermissions: ['payments.read'],
-    requiredRoles: ['admin', 'merchant'],
+  "/merchants/payments": {
+    requiredPermissions: ["payments.read"],
+    requiredRoles: ["admin", "merchant"],
     requireAll: false,
   },
-  '/drivers': {
-    requiredPermissions: ['users.read'],
-    requiredRoles: ['admin'],
+  "/drivers": {
+    requiredPermissions: ["users.read"],
+    requiredRoles: ["admin"],
     requireAll: false,
   },
-  '/drivers/orders': {
-    requiredPermissions: ['deliveries.read'],
-    requiredRoles: ['admin', 'driver'],
+  "/drivers/orders": {
+    requiredPermissions: ["deliveries.read"],
+    requiredRoles: ["admin", "driver"],
     requireAll: false,
   },
-  '/drivers/tracking': {
-    requiredPermissions: ['deliveries.read'],
-    requiredRoles: ['admin', 'driver'],
+  "/drivers/tracking": {
+    requiredPermissions: ["deliveries.read"],
+    requiredRoles: ["admin", "driver"],
     requireAll: false,
   },
-  '/drivers/payments': {
-    requiredPermissions: ['payments.read'],
-    requiredRoles: ['admin', 'driver'],
+  "/drivers/payments": {
+    requiredPermissions: ["payments.read"],
+    requiredRoles: ["admin", "driver"],
     requireAll: false,
   },
-  '/buyers': {
-    requiredPermissions: ['users.read'],
-    requiredRoles: ['admin'],
+  "/buyers": {
+    requiredPermissions: ["users.read"],
+    requiredRoles: ["admin"],
     requireAll: false,
   },
-  '/buyers/orders': {
-    requiredPermissions: ['business_orders.read'],
-    requiredRoles: ['admin', 'business'],
+  "/buyers/orders": {
+    requiredPermissions: ["business_orders.read"],
+    requiredRoles: ["admin", "business"],
     requireAll: false,
   },
-  '/buyers/partnerships': {
-    requiredPermissions: ['partnerships.read'],
-    requiredRoles: ['admin', 'business'],
+  "/buyers/partnerships": {
+    requiredPermissions: ["partnerships.read"],
+    requiredRoles: ["admin", "business"],
     requireAll: false,
   },
-  '/buyers/insurance': {
-    requiredPermissions: ['insurance.read'],
-    requiredRoles: ['admin', 'business'],
+  "/buyers/insurance": {
+    requiredPermissions: ["insurance.read"],
+    requiredRoles: ["admin", "business"],
     requireAll: false,
   },
-  '/settings': {
-    requiredPermissions: ['profile.read'],
-    requiredRoles: ['admin'],
+  "/settings": {
+    requiredPermissions: ["profile.read"],
+    requiredRoles: ["admin"],
     requireAll: false,
   },
-  '/settings/account': {
-    requiredPermissions: ['profile.update'],
-    requiredRoles: ['admin'],
+  "/settings/account": {
+    requiredPermissions: ["profile.update"],
+    requiredRoles: ["admin"],
     requireAll: false,
   },
-  '/settings/appearance': {
-    requiredPermissions: ['profile.update'],
-    requiredRoles: ['admin'],
+  "/settings/appearance": {
+    requiredPermissions: ["profile.update"],
+    requiredRoles: ["admin"],
     requireAll: false,
   },
-  '/settings/notifications': {
-    requiredPermissions: ['profile.update'],
-    requiredRoles: ['admin'],
+  "/settings/notifications": {
+    requiredPermissions: ["profile.update"],
+    requiredRoles: ["admin"],
     requireAll: false,
   },
-  '/settings/display': {
-    requiredPermissions: ['profile.update'],
-    requiredRoles: ['admin'],
+  "/settings/display": {
+    requiredPermissions: ["profile.update"],
+    requiredRoles: ["admin"],
     requireAll: false,
   },
-  '/settings/reset-password': {
-    requiredPermissions: ['profile.update'],
-    requiredRoles: ['admin'],
+  "/settings/reset-password": {
+    requiredPermissions: ["profile.update"],
+    requiredRoles: ["admin"],
     requireAll: false,
   },
-  '/drivers.$orderId': {
-    requiredPermissions: ['orders'],
-    requiredRoles: ['admin'],
+  "/drivers.$orderId": {
+    requiredPermissions: ["orders"],
+    requiredRoles: ["admin"],
     requireAll: false,
   },
-  '/organizations': {
-    requiredPermissions: ['organizations.read'],
-    requiredRoles: ['admin'],
+  "/organizations": {
+    requiredPermissions: ["organizations.read"],
+    requiredRoles: ["admin"],
     requireAll: false,
   },
-  '/tracking': {
-    requiredPermissions: ['orders'],
-    requiredRoles: ['admin'],
+  "/tracking": {
+    requiredPermissions: ["orders"],
+    requiredRoles: ["admin"],
     requireAll: false,
   },
-  '/user-management': {
-    requiredPermissions: ['users.read'],
-    requiredRoles: ['admin'],
+  "/user-management": {
+    requiredPermissions: ["users.read"],
+    requiredRoles: ["admin"],
     requireAll: false,
   },
-  '/user-management/roles': {
-    requiredPermissions: ['users.read'],
-    requiredRoles: ['admin'],
+  "/user-management/roles": {
+    requiredPermissions: ["users.read"],
+    requiredRoles: ["admin"],
     requireAll: false,
   },
-  '/user-territory': {
-    requiredPermissions: ['users.read'],
-    requiredRoles: ['admin'],
+  "/user-territory": {
+    requiredPermissions: ["users.read"],
+    requiredRoles: ["admin"],
     requireAll: false,
   },
-  '/calendar': {
-    requiredPermissions: ['calendar.read'],
-    requiredRoles: ['admin'],
+  "/calendar": {
+    requiredPermissions: ["calendar.read"],
+    requiredRoles: ["admin"],
     requireAll: false,
   },
-  '/calendar/upcoming-visit/': {
-    requiredPermissions: ['calendar.read'],
-    requiredRoles: ['admin'],
+  "/calendar/upcoming-visit/": {
+    requiredPermissions: ["calendar.read"],
+    requiredRoles: ["admin"],
     requireAll: false,
   },
-}
+};

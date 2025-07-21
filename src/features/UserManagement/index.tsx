@@ -1,21 +1,21 @@
-import { useState } from 'react'
-import { useRouter } from '@tanstack/react-router'
-import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from '@/data/app.data'
-import { cn } from '@/lib/utils'
-import { Main } from '@/components/layout/main'
-import TablePageLayout from '@/components/layout/table-page-layout'
-import { ErrorPage } from '@/components/shared/custom-error'
-import { ErrorResponse } from '../merchants/types'
-import { UsersActionModal } from './components/action-form-modal'
-import AllUsersTable from './components/table'
-import { useGetAllUsers } from './services/AllUsers.hook'
-import { useUsersStore } from './store/users.store'
+import { useState } from "react";
+import { useRouter } from "@tanstack/react-router";
+import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
+import { cn } from "@/lib/utils";
+import { Main } from "@/components/layout/main";
+import TablePageLayout from "@/components/layout/table-page-layout";
+import { ErrorPage } from "@/components/shared/custom-error";
+import { ErrorResponse } from "../merchants/types";
+import { UsersActionModal } from "./components/action-form-modal";
+import AllUsersTable from "./components/table";
+import { useGetAllUsers } from "./services/AllUsers.hook";
+import { useUsersStore } from "./store/users.store";
 
 const AllUsers = () => {
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
-  })
+  });
 
   // Organizations data
   const {
@@ -23,34 +23,34 @@ const AllUsers = () => {
     allUsers = [],
     isLoading,
     error,
-  } = useGetAllUsers(pagination)
+  } = useGetAllUsers(pagination);
 
   // User status counts
   // const { userStatusCounts, totalOrganizations } = useUserStatusCounts() || {
   //   userStatusCounts: {},
   // }
 
-  const { setOpen, open } = useUsersStore()
-  const {} = useRouter()
+  const { setOpen, open } = useUsersStore();
+  const {} = useRouter();
 
   if (error) {
-    const errorResponse = (error as ErrorResponse)?.response?.data
+    const errorResponse = (error as ErrorResponse)?.response?.data;
     return (
       <ErrorPage
         errorCode={errorResponse?.statusCode}
         message={errorResponse?.message}
       />
-    )
+    );
   }
 
   const handleAddUser = () => {
-    console.log('Add User button clicked')
-    setOpen('add')
-  }
+    console.log("Add User button clicked");
+    setOpen("add");
+  };
 
   const onPaginationChange = (page: number, pageSize: number) => {
-    setPagination((prev) => ({ ...prev, page, limit: pageSize }))
-  }
+    setPagination((prev) => ({ ...prev, page, limit: pageSize }));
+  };
 
   // Calculate total users across all statuses
   // const totalUsers =
@@ -60,11 +60,11 @@ const AllUsers = () => {
   //   userStatusCounts.rejected
 
   return (
-    <Main className={cn('flex flex-col gap-2 p-4')}>
-      <div className='mt-2 flex items-center justify-between space-y-2'>
+    <Main className={cn("flex flex-col gap-2 p-4")}>
+      <div className="mt-2 flex items-center justify-between space-y-2">
         <div>
-          <h2 className='text-3xl font-bold tracking-tight'>User Management</h2>
-          <p className='text-muted-foreground'>
+          <h2 className="text-3xl font-bold tracking-tight">User Management</h2>
+          <p className="text-muted-foreground">
             Manage user accounts, sales reps, and access permissions
           </p>
         </div>
@@ -124,7 +124,7 @@ const AllUsers = () => {
       </div> */}
 
       {/* User Directory Section */}
-      <div className='mt-6'>
+      <div className="mt-6">
         {/* <div className='mb-4'>
           <h3 className='text-xl font-semibold'>User Directory</h3>
           <p className='text-muted-foreground text-sm'>
@@ -133,12 +133,12 @@ const AllUsers = () => {
         </div> */}
 
         <TablePageLayout
-          title='All Users'
-          description='Manage user accounts and permissions'
+          title="All Users"
+          description="Manage user accounts and permissions"
           onAddButtonClick={handleAddUser}
-          addButtonText='Add User'
-          modulePermission='all_user'
-          moduleAction='add'
+          addButtonText="Add User"
+          modulePermission="all_users"
+          moduleAction="add"
         >
           <AllUsersTable
             data={allUsers}
@@ -150,9 +150,9 @@ const AllUsers = () => {
         </TablePageLayout>
       </div>
 
-      {open && <UsersActionModal key={'users-action-modal'} />}
+      {open && <UsersActionModal key={"users-action-modal"} />}
     </Main>
-  )
-}
+  );
+};
 
-export default AllUsers
+export default AllUsers;
