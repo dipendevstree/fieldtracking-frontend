@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
 import { IconEdit, IconTrash } from '@tabler/icons-react'
 import { PermissionGate } from '@/permissions/components/PermissionGate'
+import { EyeIcon } from 'lucide-react'
 import { DeleteModal } from '@/components/shared/common-delete-modal'
 import Button from '@/components/shared/custom-button'
 import CustomTooltip from '@/components/shared/custom-tooltip'
@@ -27,7 +28,7 @@ export function DataTableRowActions({ row }: RowProps) {
     setTimeout(() => setCurrentRow(null), 300)
   }
 
-  const { mutate: deleteUpcomingVisits } = useDeleteVisits(
+  const { mutate: deleteDailyExpense } = useDeleteVisits(
     row.original.visitId,
     closeModal
   )
@@ -37,14 +38,23 @@ export function DataTableRowActions({ row }: RowProps) {
     navigate({ to: `/calendar/schedule-visit/${row.original.visitId}` })
   }
 
+  const handleView = () => {
+    setCurrentRow(row.original)
+    console.log('row.original', row.original)
+    navigate({
+      to: `daily-expense-details/${row.original.id}`,
+      params: { id: row.original.id },
+    })
+  }
+
   const handleDelete = () => {
     setCurrentRow(row.original)
     setOpen('delete')
   }
 
-  const handleDeleteUpcomingVisits = () => {
+  const handleDeleteDailyExpense = () => {
     if (currentRow?.visitId) {
-      deleteUpcomingVisits()
+      deleteDailyExpense()
     } else {
       closeModal()
     }
@@ -63,8 +73,14 @@ export function DataTableRowActions({ row }: RowProps) {
           </Button>
         </CustomTooltip>
       </PermissionGate>
-
-      <PermissionGate requiredPermission='upcoming_visits' action='delete'>
+      <PermissionGate requiredPermission='daily_expense' action='viewGlobal'>
+        <CustomTooltip title='view'>
+          <Button variant='ghost' className='h-8 w-8 p-0' onClick={handleView}>
+            <EyeIcon size={16} />
+          </Button>
+        </CustomTooltip>
+      </PermissionGate>
+      <PermissionGate requiredPermission='daily_expense' action='delete'>
         <CustomTooltip title='Delete'>
           <Button
             variant='ghost'
@@ -78,12 +94,12 @@ export function DataTableRowActions({ row }: RowProps) {
 
       {currentRow && (
         <DeleteModal
-          key='delete-upcoming'
+          key='delete-daily-expense'
           open={open === 'delete'}
           currentRow={currentRow ?? {}}
-          itemName='Upcoming Visit'
+          itemName='Daily Expense'
           itemIdentifier={'purpose' as keyof typeof currentRow}
-          onDelete={handleDeleteUpcomingVisits}
+          onDelete={handleDeleteDailyExpense}
           onOpenChange={(value) => {
             if (!value) closeModal()
             else setOpen('delete')

@@ -13,6 +13,7 @@ export interface FilterConfig {
   value?: string
   options?: Option[]
   onChange?: (value: string | undefined) => void
+  onCancelPress?: any
 }
 
 interface DataTableToolbarProps {
@@ -29,11 +30,13 @@ export interface Option {
 interface DataTableToolbarProps {
   filters?: FilterConfig[]
   className?: string
+  onCancelPress?: any
 }
 
 export function DataTableToolbarCompact({
   filters = [],
   className = '',
+  onCancelPress,
 }: Readonly<DataTableToolbarProps>) {
   const searchFilter = filters.find((f) => f.type === 'search')
   const [search, setSearch] = useState(searchFilter?.value ?? '')
@@ -70,6 +73,7 @@ export function DataTableToolbarCompact({
                 value={filter.value}
                 placeholder={filter.placeholder}
                 onValueChange={filter.onChange ?? (() => {})}
+                onCancelPress={onCancelPress}
               />
             )
           }

@@ -4,17 +4,33 @@ import usePatchData from '@/hooks/use-patch-data'
 import usePostData from '@/hooks/use-post-data'
 import { IListParams } from '@/features/merchants/services/merchants.hook'
 import { useUsersStore } from '../store/user.store'
-import { UserResponse } from '../types'
 
 const GET_QUERY = API.users.list
 
-export const useGetUsers = (params: IListParams) => {
-  const query = useFetchData<UserResponse>({ url: GET_QUERY, params })
+export interface IUser extends IListParams {
+  searchFor?: string
+  roleId?: string | undefined
+  territoryId?: string | undefined
+  includeLatLong?: boolean
+}
+
+export const useGetUsers = (params: IUser) => {
+  const query = useFetchData<any>({
+    url: GET_QUERY,
+    params,
+    enabled:
+      params.searchFor !== '' ||
+      params.roleId !== '' ||
+      params.territoryId !== '',
+  })
+
+  console.log('query', query)
+
   return {
     ...query,
     data: query.data,
-    listData: query.data?.docs ?? [],
-    totalCount: query.data?.count ?? 0,
+    listData: query.data?.list ?? [], // Changed from 'docs' to 'list'
+    totalCount: query.data?.totalCount ?? 0, // Changed from 'count' to 'totalCount'
     isLoading: query.isLoading,
     error: query.error,
   }
@@ -36,20 +52,31 @@ export const useGetUsers = (params: IListParams) => {
 // }
 export const useGetUsersForDropdown = ({
   roleId,
+  userTerritoryID,
+  userId,
   enabled = true,
 }: {
-  roleId?: string // Make roleId optional
+  roleId?: string
+  userTerritoryID?: string
+  userId?: string
   enabled?: boolean
 }) => {
+  // Build params dynamically
+  const params: Record<string, string> = {}
+
+  if (roleId) params.roleId = roleId
+  if (userTerritoryID) params.userTerritoryID = userTerritoryID
+  if (userId) params.userId = userId
+
   const query = useFetchData<any>({
     url: GET_QUERY,
-    params: roleId ? { roleId } : undefined, // Pass roleId only if it exists
-    enabled, // Fetch is enabled based on the enabled flag, not dependent on roleId
+    params: Object.keys(params).length > 0 ? params : undefined,
+    enabled,
   })
 
   return {
     ...query,
-    data: query.data?.list,
+    data: query.data?.list ?? [],
     allUsers: query.data?.data?.list ?? [],
     totalCount: query.data?.totalCount ?? 0,
     isLoading: query.isLoading,

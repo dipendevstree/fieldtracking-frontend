@@ -148,7 +148,12 @@ export function OrganizationActionForm({
     }
   }
 
-  const treeData = buildTreeData(menuList ?? [])
+  const filteredMenuList = (menuList ?? []).filter(
+    (menu: any) => menu.menuKey !== 'organizations'
+  )
+
+  const treeData = buildTreeData(filteredMenuList)
+
   console.log('menuList', menuList)
 
   // Initialize form values when editing - FIXED VERSION

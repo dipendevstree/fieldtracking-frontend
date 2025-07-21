@@ -67,6 +67,7 @@ export interface FormData {
   roleId: string
   salesRep: string
   search: string
+  territoryId: string
 }
 
 type MappedVisit = {
@@ -346,10 +347,8 @@ export default function CalendarView() {
       <Card className='md:col-span-2'>
         <CardHeader className='flex flex-row items-center justify-between'>
           <div>
-            <CardTitle>Daily Schedule - {selectedDate}</CardTitle>
-            <CardDescription>
-              Visits scheduled for the selected date
-            </CardDescription>
+            <CardTitle>Today's Schedule</CardTitle>
+            <CardDescription>Visits scheduled for today</CardDescription>
           </div>
           <PermissionGate requiredPermission='calender_view' action='add'>
             <Button

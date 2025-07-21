@@ -95,7 +95,7 @@ export default function UpcomingVisits() {
       key: 'search',
       type: 'search',
       onChange: handleGlobalSearchChange,
-      placeholder: 'Search visits...',
+      placeholder: 'Search visits by purpose...',
       value: watch('search'),
     },
     {
@@ -119,20 +119,14 @@ export default function UpcomingVisits() {
   return (
     <>
       <GlobalFilterSection key={'calender-view-filters'} filters={filters} />
-      <Card>
-        <CardContent>
-          {/* <Main className={cn('flex flex-col gap-2 p-4')}> */}
 
-          <UpcomingVisitsTable
-            data={visits}
-            totalCount={totalCount}
-            loading={isLoading}
-            currentPage={pagination.page}
-            paginationCallbacks={{ onPaginationChange }}
-          />
-          {/* </Main> */}
-        </CardContent>
-      </Card>
+      <UpcomingVisitsTable
+        data={visits}
+        totalCount={totalCount}
+        loading={isLoading}
+        currentPage={pagination.page}
+        paginationCallbacks={{ onPaginationChange }}
+      />
     </>
   )
 }

@@ -39,7 +39,7 @@ export const sidebarData: SidebarData = {
             {
               title: 'Add User',
               url: '/user-management',
-              menuKey: 'all_users',
+              menuKey: 'all_user',
             },
             {
               title: 'Roles & Permissions',
@@ -82,6 +82,28 @@ export const sidebarData: SidebarData = {
               title: 'Analytics',
               url: '/calendar/analytics',
               menuKey: 'analytic',
+            },
+          ],
+        },
+        {
+          title: 'Approvals',
+          icon: Shield,
+          menuKey: 'approvals',
+          items: [
+            {
+              title: 'Daily Expense',
+              url: '/approvals',
+              menuKey: 'daily_expense',
+            },
+            {
+              title: 'Monthly Consolidated',
+              url: '/approvals/monthly-consolidated',
+              menuKey: 'monthly_consolidated',
+            },
+            {
+              title: 'Reports & Analytics',
+              url: '/approvals/reports-analytics',
+              menuKey: 'reports_analytics',
             },
           ],
         },

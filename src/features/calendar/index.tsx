@@ -26,7 +26,7 @@ export default function CalendarPage() {
 
   const handleTabChange = (value: string) => {
     console.log('value', value)
-    setActiveTab(value as TabValue) // Type assertion after validation in TabValue
+    setActiveTab(value as TabValue)
   }
 
   return (

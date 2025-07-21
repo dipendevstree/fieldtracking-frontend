@@ -39,6 +39,7 @@ import { Route as AuthenticatedDriversIndexRouteImport } from './routes/_authent
 import { Route as AuthenticatedCategoriesIndexRouteImport } from './routes/_authenticated/categories/index'
 import { Route as AuthenticatedCalendarIndexRouteImport } from './routes/_authenticated/calendar/index'
 import { Route as AuthenticatedBuyersIndexRouteImport } from './routes/_authenticated/buyers/index'
+import { Route as AuthenticatedApprovalsIndexRouteImport } from './routes/_authenticated/approvals/index'
 import { Route as AuthenticatedUserManagementRolesRouteImport } from './routes/_authenticated/user-management/roles'
 import { Route as AuthenticatedUserManagementAddRolesPermissionRouteImport } from './routes/_authenticated/user-management/add-roles-permission'
 import { Route as AuthenticatedSettingsResetPasswordRouteImport } from './routes/_authenticated/settings/reset-password'
@@ -63,11 +64,14 @@ import { Route as AuthenticatedCalendarAnalyticsRouteImport } from './routes/_au
 import { Route as AuthenticatedBuyersPartnershipsRouteImport } from './routes/_authenticated/buyers/partnerships'
 import { Route as AuthenticatedBuyersOrdersRouteImport } from './routes/_authenticated/buyers/orders'
 import { Route as AuthenticatedBuyersInsuranceRouteImport } from './routes/_authenticated/buyers/insurance'
+import { Route as AuthenticatedApprovalsMonthlyConsolidatedRouteImport } from './routes/_authenticated/approvals/monthly-consolidated'
+import { Route as AuthenticatedFeedbackformFeedbackformRouteImport } from './routes/_authenticated/Feedbackform/Feedbackform'
 import { Route as AuthenticatedUserTerritoryViewTerritorywiseUserTerritoyIdRouteImport } from './routes/_authenticated/user-territory/view-territorywise-user.$territoyId'
 import { Route as AuthenticatedUserManagementEditRolesPermissionRoleIdRouteImport } from './routes/_authenticated/user-management/edit-roles-permission.$roleId'
 import { Route as AuthenticatedMerchantsDetailsIdRouteImport } from './routes/_authenticated/merchants/details.$id'
 import { Route as AuthenticatedDriversDetailsOrderIdRouteImport } from './routes/_authenticated/drivers/details.$orderId'
 import { Route as AuthenticatedCalendarScheduleVisitIdRouteImport } from './routes/_authenticated/calendar/schedule-visit.$id'
+import { Route as AuthenticatedApprovalsDailyExpenseDetailsIdRouteImport } from './routes/_authenticated/approvals/daily-expense-details.$id'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -234,6 +238,12 @@ const AuthenticatedBuyersIndexRoute =
     path: '/buyers/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedApprovalsIndexRoute =
+  AuthenticatedApprovalsIndexRouteImport.update({
+    id: '/approvals/',
+    path: '/approvals/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedUserManagementRolesRoute =
   AuthenticatedUserManagementRolesRouteImport.update({
     id: '/user-management/roles',
@@ -378,6 +388,18 @@ const AuthenticatedBuyersInsuranceRoute =
     path: '/buyers/insurance',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedApprovalsMonthlyConsolidatedRoute =
+  AuthenticatedApprovalsMonthlyConsolidatedRouteImport.update({
+    id: '/approvals/monthly-consolidated',
+    path: '/approvals/monthly-consolidated',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedFeedbackformFeedbackformRoute =
+  AuthenticatedFeedbackformFeedbackformRouteImport.update({
+    id: '/Feedbackform/Feedbackform',
+    path: '/Feedbackform/Feedbackform',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedUserTerritoryViewTerritorywiseUserTerritoyIdRoute =
   AuthenticatedUserTerritoryViewTerritorywiseUserTerritoyIdRouteImport.update({
     id: '/user-territory/view-territorywise-user/$territoyId',
@@ -408,6 +430,12 @@ const AuthenticatedCalendarScheduleVisitIdRoute =
     path: '/$id',
     getParentRoute: () => AuthenticatedCalendarScheduleVisitRoute,
   } as any)
+const AuthenticatedApprovalsDailyExpenseDetailsIdRoute =
+  AuthenticatedApprovalsDailyExpenseDetailsIdRouteImport.update({
+    id: '/approvals/daily-expense-details/$id',
+    path: '/approvals/daily-expense-details/$id',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/managements': typeof AuthenticatedManagementsRouteRouteWithChildren
@@ -424,6 +452,8 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/Feedbackform/Feedbackform': typeof AuthenticatedFeedbackformFeedbackformRoute
+  '/approvals/monthly-consolidated': typeof AuthenticatedApprovalsMonthlyConsolidatedRoute
   '/buyers/insurance': typeof AuthenticatedBuyersInsuranceRoute
   '/buyers/orders': typeof AuthenticatedBuyersOrdersRoute
   '/buyers/partnerships': typeof AuthenticatedBuyersPartnershipsRoute
@@ -448,6 +478,7 @@ export interface FileRoutesByFullPath {
   '/settings/reset-password': typeof AuthenticatedSettingsResetPasswordRoute
   '/user-management/add-roles-permission': typeof AuthenticatedUserManagementAddRolesPermissionRoute
   '/user-management/roles': typeof AuthenticatedUserManagementRolesRoute
+  '/approvals': typeof AuthenticatedApprovalsIndexRoute
   '/buyers': typeof AuthenticatedBuyersIndexRoute
   '/calendar': typeof AuthenticatedCalendarIndexRoute
   '/categories': typeof AuthenticatedCategoriesIndexRoute
@@ -463,6 +494,7 @@ export interface FileRoutesByFullPath {
   '/user-management': typeof AuthenticatedUserManagementIndexRoute
   '/user-territory': typeof AuthenticatedUserTerritoryIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/approvals/daily-expense-details/$id': typeof AuthenticatedApprovalsDailyExpenseDetailsIdRoute
   '/calendar/schedule-visit/$id': typeof AuthenticatedCalendarScheduleVisitIdRoute
   '/drivers/details/$orderId': typeof AuthenticatedDriversDetailsOrderIdRoute
   '/merchants/details/$id': typeof AuthenticatedMerchantsDetailsIdRoute
@@ -482,6 +514,8 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
+  '/Feedbackform/Feedbackform': typeof AuthenticatedFeedbackformFeedbackformRoute
+  '/approvals/monthly-consolidated': typeof AuthenticatedApprovalsMonthlyConsolidatedRoute
   '/buyers/insurance': typeof AuthenticatedBuyersInsuranceRoute
   '/buyers/orders': typeof AuthenticatedBuyersOrdersRoute
   '/buyers/partnerships': typeof AuthenticatedBuyersPartnershipsRoute
@@ -506,6 +540,7 @@ export interface FileRoutesByTo {
   '/settings/reset-password': typeof AuthenticatedSettingsResetPasswordRoute
   '/user-management/add-roles-permission': typeof AuthenticatedUserManagementAddRolesPermissionRoute
   '/user-management/roles': typeof AuthenticatedUserManagementRolesRoute
+  '/approvals': typeof AuthenticatedApprovalsIndexRoute
   '/buyers': typeof AuthenticatedBuyersIndexRoute
   '/calendar': typeof AuthenticatedCalendarIndexRoute
   '/categories': typeof AuthenticatedCategoriesIndexRoute
@@ -521,6 +556,7 @@ export interface FileRoutesByTo {
   '/user-management': typeof AuthenticatedUserManagementIndexRoute
   '/user-territory': typeof AuthenticatedUserTerritoryIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
+  '/approvals/daily-expense-details/$id': typeof AuthenticatedApprovalsDailyExpenseDetailsIdRoute
   '/calendar/schedule-visit/$id': typeof AuthenticatedCalendarScheduleVisitIdRoute
   '/drivers/details/$orderId': typeof AuthenticatedDriversDetailsOrderIdRoute
   '/merchants/details/$id': typeof AuthenticatedMerchantsDetailsIdRoute
@@ -544,6 +580,8 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/Feedbackform/Feedbackform': typeof AuthenticatedFeedbackformFeedbackformRoute
+  '/_authenticated/approvals/monthly-consolidated': typeof AuthenticatedApprovalsMonthlyConsolidatedRoute
   '/_authenticated/buyers/insurance': typeof AuthenticatedBuyersInsuranceRoute
   '/_authenticated/buyers/orders': typeof AuthenticatedBuyersOrdersRoute
   '/_authenticated/buyers/partnerships': typeof AuthenticatedBuyersPartnershipsRoute
@@ -568,6 +606,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/reset-password': typeof AuthenticatedSettingsResetPasswordRoute
   '/_authenticated/user-management/add-roles-permission': typeof AuthenticatedUserManagementAddRolesPermissionRoute
   '/_authenticated/user-management/roles': typeof AuthenticatedUserManagementRolesRoute
+  '/_authenticated/approvals/': typeof AuthenticatedApprovalsIndexRoute
   '/_authenticated/buyers/': typeof AuthenticatedBuyersIndexRoute
   '/_authenticated/calendar/': typeof AuthenticatedCalendarIndexRoute
   '/_authenticated/categories/': typeof AuthenticatedCategoriesIndexRoute
@@ -583,6 +622,7 @@ export interface FileRoutesById {
   '/_authenticated/user-management/': typeof AuthenticatedUserManagementIndexRoute
   '/_authenticated/user-territory/': typeof AuthenticatedUserTerritoryIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
+  '/_authenticated/approvals/daily-expense-details/$id': typeof AuthenticatedApprovalsDailyExpenseDetailsIdRoute
   '/_authenticated/calendar/schedule-visit/$id': typeof AuthenticatedCalendarScheduleVisitIdRoute
   '/_authenticated/drivers/details/$orderId': typeof AuthenticatedDriversDetailsOrderIdRoute
   '/_authenticated/merchants/details/$id': typeof AuthenticatedMerchantsDetailsIdRoute
@@ -606,6 +646,8 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/Feedbackform/Feedbackform'
+    | '/approvals/monthly-consolidated'
     | '/buyers/insurance'
     | '/buyers/orders'
     | '/buyers/partnerships'
@@ -630,6 +672,7 @@ export interface FileRouteTypes {
     | '/settings/reset-password'
     | '/user-management/add-roles-permission'
     | '/user-management/roles'
+    | '/approvals'
     | '/buyers'
     | '/calendar'
     | '/categories'
@@ -645,6 +688,7 @@ export interface FileRouteTypes {
     | '/user-management'
     | '/user-territory'
     | '/users'
+    | '/approvals/daily-expense-details/$id'
     | '/calendar/schedule-visit/$id'
     | '/drivers/details/$orderId'
     | '/merchants/details/$id'
@@ -664,6 +708,8 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
+    | '/Feedbackform/Feedbackform'
+    | '/approvals/monthly-consolidated'
     | '/buyers/insurance'
     | '/buyers/orders'
     | '/buyers/partnerships'
@@ -688,6 +734,7 @@ export interface FileRouteTypes {
     | '/settings/reset-password'
     | '/user-management/add-roles-permission'
     | '/user-management/roles'
+    | '/approvals'
     | '/buyers'
     | '/calendar'
     | '/categories'
@@ -703,6 +750,7 @@ export interface FileRouteTypes {
     | '/user-management'
     | '/user-territory'
     | '/users'
+    | '/approvals/daily-expense-details/$id'
     | '/calendar/schedule-visit/$id'
     | '/drivers/details/$orderId'
     | '/merchants/details/$id'
@@ -725,6 +773,8 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/'
+    | '/_authenticated/Feedbackform/Feedbackform'
+    | '/_authenticated/approvals/monthly-consolidated'
     | '/_authenticated/buyers/insurance'
     | '/_authenticated/buyers/orders'
     | '/_authenticated/buyers/partnerships'
@@ -749,6 +799,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/reset-password'
     | '/_authenticated/user-management/add-roles-permission'
     | '/_authenticated/user-management/roles'
+    | '/_authenticated/approvals/'
     | '/_authenticated/buyers/'
     | '/_authenticated/calendar/'
     | '/_authenticated/categories/'
@@ -764,6 +815,7 @@ export interface FileRouteTypes {
     | '/_authenticated/user-management/'
     | '/_authenticated/user-territory/'
     | '/_authenticated/users/'
+    | '/_authenticated/approvals/daily-expense-details/$id'
     | '/_authenticated/calendar/schedule-visit/$id'
     | '/_authenticated/drivers/details/$orderId'
     | '/_authenticated/merchants/details/$id'
@@ -998,6 +1050,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBuyersIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/approvals/': {
+      id: '/_authenticated/approvals/'
+      path: '/approvals'
+      fullPath: '/approvals'
+      preLoaderRoute: typeof AuthenticatedApprovalsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/user-management/roles': {
       id: '/_authenticated/user-management/roles'
       path: '/user-management/roles'
@@ -1166,6 +1225,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBuyersInsuranceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/approvals/monthly-consolidated': {
+      id: '/_authenticated/approvals/monthly-consolidated'
+      path: '/approvals/monthly-consolidated'
+      fullPath: '/approvals/monthly-consolidated'
+      preLoaderRoute: typeof AuthenticatedApprovalsMonthlyConsolidatedRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/Feedbackform/Feedbackform': {
+      id: '/_authenticated/Feedbackform/Feedbackform'
+      path: '/Feedbackform/Feedbackform'
+      fullPath: '/Feedbackform/Feedbackform'
+      preLoaderRoute: typeof AuthenticatedFeedbackformFeedbackformRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/user-territory/view-territorywise-user/$territoyId': {
       id: '/_authenticated/user-territory/view-territorywise-user/$territoyId'
       path: '/user-territory/view-territorywise-user/$territoyId'
@@ -1200,6 +1273,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/calendar/schedule-visit/$id'
       preLoaderRoute: typeof AuthenticatedCalendarScheduleVisitIdRouteImport
       parentRoute: typeof AuthenticatedCalendarScheduleVisitRoute
+    }
+    '/_authenticated/approvals/daily-expense-details/$id': {
+      id: '/_authenticated/approvals/daily-expense-details/$id'
+      path: '/approvals/daily-expense-details/$id'
+      fullPath: '/approvals/daily-expense-details/$id'
+      preLoaderRoute: typeof AuthenticatedApprovalsDailyExpenseDetailsIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
@@ -1269,6 +1349,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedManagementsRouteRoute: typeof AuthenticatedManagementsRouteRouteWithChildren
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedFeedbackformFeedbackformRoute: typeof AuthenticatedFeedbackformFeedbackformRoute
+  AuthenticatedApprovalsMonthlyConsolidatedRoute: typeof AuthenticatedApprovalsMonthlyConsolidatedRoute
   AuthenticatedBuyersInsuranceRoute: typeof AuthenticatedBuyersInsuranceRoute
   AuthenticatedBuyersOrdersRoute: typeof AuthenticatedBuyersOrdersRoute
   AuthenticatedBuyersPartnershipsRoute: typeof AuthenticatedBuyersPartnershipsRoute
@@ -1286,6 +1368,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMerchantsProductsRoute: typeof AuthenticatedMerchantsProductsRoute
   AuthenticatedUserManagementAddRolesPermissionRoute: typeof AuthenticatedUserManagementAddRolesPermissionRoute
   AuthenticatedUserManagementRolesRoute: typeof AuthenticatedUserManagementRolesRoute
+  AuthenticatedApprovalsIndexRoute: typeof AuthenticatedApprovalsIndexRoute
   AuthenticatedBuyersIndexRoute: typeof AuthenticatedBuyersIndexRoute
   AuthenticatedCalendarIndexRoute: typeof AuthenticatedCalendarIndexRoute
   AuthenticatedCategoriesIndexRoute: typeof AuthenticatedCategoriesIndexRoute
@@ -1299,6 +1382,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedUserManagementIndexRoute: typeof AuthenticatedUserManagementIndexRoute
   AuthenticatedUserTerritoryIndexRoute: typeof AuthenticatedUserTerritoryIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
+  AuthenticatedApprovalsDailyExpenseDetailsIdRoute: typeof AuthenticatedApprovalsDailyExpenseDetailsIdRoute
   AuthenticatedDriversDetailsOrderIdRoute: typeof AuthenticatedDriversDetailsOrderIdRoute
   AuthenticatedMerchantsDetailsIdRoute: typeof AuthenticatedMerchantsDetailsIdRoute
   AuthenticatedUserManagementEditRolesPermissionRoleIdRoute: typeof AuthenticatedUserManagementEditRolesPermissionRoleIdRoute
@@ -1310,6 +1394,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedManagementsRouteRouteWithChildren,
   AuthenticatedSettingsRouteRoute: AuthenticatedSettingsRouteRouteWithChildren,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedFeedbackformFeedbackformRoute:
+    AuthenticatedFeedbackformFeedbackformRoute,
+  AuthenticatedApprovalsMonthlyConsolidatedRoute:
+    AuthenticatedApprovalsMonthlyConsolidatedRoute,
   AuthenticatedBuyersInsuranceRoute: AuthenticatedBuyersInsuranceRoute,
   AuthenticatedBuyersOrdersRoute: AuthenticatedBuyersOrdersRoute,
   AuthenticatedBuyersPartnershipsRoute: AuthenticatedBuyersPartnershipsRoute,
@@ -1331,6 +1419,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedUserManagementAddRolesPermissionRoute:
     AuthenticatedUserManagementAddRolesPermissionRoute,
   AuthenticatedUserManagementRolesRoute: AuthenticatedUserManagementRolesRoute,
+  AuthenticatedApprovalsIndexRoute: AuthenticatedApprovalsIndexRoute,
   AuthenticatedBuyersIndexRoute: AuthenticatedBuyersIndexRoute,
   AuthenticatedCalendarIndexRoute: AuthenticatedCalendarIndexRoute,
   AuthenticatedCategoriesIndexRoute: AuthenticatedCategoriesIndexRoute,
@@ -1344,6 +1433,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedUserManagementIndexRoute: AuthenticatedUserManagementIndexRoute,
   AuthenticatedUserTerritoryIndexRoute: AuthenticatedUserTerritoryIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
+  AuthenticatedApprovalsDailyExpenseDetailsIdRoute:
+    AuthenticatedApprovalsDailyExpenseDetailsIdRoute,
   AuthenticatedDriversDetailsOrderIdRoute:
     AuthenticatedDriversDetailsOrderIdRoute,
   AuthenticatedMerchantsDetailsIdRoute: AuthenticatedMerchantsDetailsIdRoute,

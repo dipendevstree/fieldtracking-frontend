@@ -142,8 +142,9 @@ export function UserActionForm({
       departmentId: currentRow?.departmentId,
       reportingToRoleId: currentRow?.reportingToRoleId,
       tierkey: currentRow?.tierkey,
-      reportingToIds:
-        currentRow?.reportingToIds?.map((user: any) => String(user.id)) ?? [],
+      reportingToIds: currentRow?.reportingToIds,
+      // reportingToIds:
+      // currentRow?.reportingToIds?.map((user: any) => String(user.id)) ?? [],
     },
   })
 
@@ -569,7 +570,7 @@ export function UserActionForm({
                 </div>
                 <div className='space-y-2'>
                   <Label htmlFor='reportingToIds'>
-                    Reporting To User(s) <span className='text-red-500'>*</span>
+                    Reporting To User<span className='text-red-500'>*</span>
                   </Label>
                   <Controller
                     name='reportingToIds'
@@ -582,7 +583,7 @@ export function UserActionForm({
                         }}
                       >
                         <SelectTrigger className='w-full'>
-                          <SelectValue placeholder='Select user(s)...' />
+                          <SelectValue placeholder='Select user...' />
                         </SelectTrigger>
                         <SelectContent className='!w-full'>
                           {users.map((option) => (
