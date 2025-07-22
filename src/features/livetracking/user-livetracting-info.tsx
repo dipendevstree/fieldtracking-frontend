@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
-import { MapPin, Loader2 } from "lucide-react";
+import { MapPin, Loader2, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
+import { socket } from "../../socket/socket";
 
 import {
   getWorkDaySession,
@@ -11,11 +12,14 @@ import {
 
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import { FilterConfig } from "@/components/global-filter-section";
+import { getHaversineDistance } from "./data/commonFunction";
 
 interface UserTrackingTimelineProps {
   userId: any;
-  setPath: (path: { lat: number; lng: number }[]) => void;
-  setCurrentPosition: (pos: { lat: number; lng: number } | null) => void;
+  setPath: React.Dispatch<React.SetStateAction<{ lat: number; lng: number }[]>>;
+  setCurrentPosition: React.Dispatch<
+    React.SetStateAction<{ lat: number; lng: number } | null>
+  >;
   setMapCenter: (center: { lat: number; lng: number }) => void;
   onBack: () => void;
 }
@@ -30,6 +34,7 @@ const UserTrackingTimeline = ({
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
+  const [totalDistance, setTotalDistance] = useState(0);
 
   // Destructure isLoading state from custom hooks
   const { user, isLoading: isUserLoading } = userDetailsById(userId ?? "");
@@ -69,25 +74,95 @@ const UserTrackingTimeline = ({
 
   useEffect(() => {
     if (isFetched) {
-      if (trackingData?.length > 0) {
+      if (trackingData && trackingData.length > 0) {
         const path = trackingData.map((item: any) => ({
           lat: parseFloat(item.lat),
           lng: parseFloat(item.long),
         }));
-
         setPath(path);
         setCurrentPosition(path[path.length - 1]);
         setMapCenter(path[0]);
+
+        // --- Distance Calculation for Historical Data ---
+        let calculatedDistance = 0;
+        if (path.length > 1) {
+          for (let i = 1; i < path.length; i++) {
+            const prevPoint = path[i - 1];
+            const currentPoint = path[i];
+            calculatedDistance += getHaversineDistance(
+              prevPoint.lat,
+              prevPoint.lng,
+              currentPoint.lat,
+              currentPoint.lng
+            );
+          }
+        }
+        setTotalDistance(calculatedDistance);
+        // --- End Distance Calculation ---
       } else {
+        // Reset everything if no data for the selected date
         setPath([]);
         setCurrentPosition(null);
+        setTotalDistance(0); // IMPORTANT: Reset distance
         setMapCenter({
-          lat: 23.0225, // fallback (Ahmedabad or default)
+          lat: 23.0225,
           lng: 72.5714,
         });
       }
     }
-  }, [trackingData, isFetched]);
+  }, [trackingData, isFetched, setPath, setCurrentPosition, setMapCenter]); // Dependencies are complete
+
+  // MODIFIED: Socket effect now efficiently updates the distance.
+  useEffect(() => {
+    if (!socket || !userId) return;
+
+    const handleConnect = () => {
+      socket.emit("track_user", { userId });
+    };
+
+    const handleLiveLocation = (event: any) => {
+      if (event?.lat && event?.long) {
+        const newPoint = {
+          lat: parseFloat(event.lat),
+          lng: parseFloat(event.long),
+        };
+
+        // This updater function ensures we always have the latest path and distance
+        setPath((prevPath) => {
+          if (prevPath.length > 0) {
+            const lastPoint = prevPath[prevPath.length - 1];
+            // Calculate the small distance between the last point and the new one
+            const distanceIncrement = getHaversineDistance(
+              lastPoint.lat,
+              lastPoint.lng,
+              newPoint.lat,
+              newPoint.lng
+            );
+            // Use a functional update for distance to avoid race conditions
+            setTotalDistance(
+              (prevDistance) => prevDistance + distanceIncrement
+            );
+          }
+          return [...prevPath, newPoint];
+        });
+
+        setCurrentPosition(newPoint);
+        setMapCenter(newPoint);
+      }
+    };
+
+    if (socket.connected) {
+      handleConnect();
+    } else {
+      socket.on("connect", handleConnect);
+    }
+    socket.on("live_location", handleLiveLocation);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("live_location", handleLiveLocation);
+    };
+  }, [socket, userId, setPath, setCurrentPosition, setMapCenter]); // Added props to dependency array
 
   // Dynamic timeline formatter (no changes needed here)
   const formatTimelineData = (sessions: any[]) => {
@@ -178,12 +253,13 @@ const UserTrackingTimeline = ({
   }
 
   return (
-    <div className="bg-gray-50 p-4">
+    <div className="bg-gray-50 p-4 rounded-[4px]">
       <div className="mb-4">
         <button
           onClick={onBack}
           className="text-sm text-teal-600 hover:underline flex items-center gap-1"
         >
+          <ArrowLeft className="h-4 w-4" />
           Back to list
         </button>
       </div>
@@ -209,7 +285,7 @@ const UserTrackingTimeline = ({
           <div className="rounded-lg border border-gray-200 bg-white p-4 text-center shadow-sm">
             <div className="mb-2 text-xs text-gray-500">Distance</div>
             <div className="font-bold text-gray-900">
-              {userSession?.stats?.distance ?? "0 km"}
+              {totalDistance > 0 ? `${totalDistance.toFixed(2)} km` : "0 km"}
             </div>
           </div>
         </div>

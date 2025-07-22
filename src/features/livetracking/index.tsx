@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
-import { GoogleMap, Marker, Polyline } from "@react-google-maps/api";
 import debounce from "lodash.debounce";
 import { cn } from "@/lib/utils";
 import { useSelectOptions } from "@/hooks/use-select-option";
@@ -12,26 +11,11 @@ import { useGetAllRolesForDropdown } from "../UserManagement/services/Roles.hook
 import { IUser, useGetUsers } from "../buyers/services/users.hook";
 import { useGetAllTerritoriesForDropdown } from "../userterritory/services/user-territory.hook";
 import UserTrackingTimeline from "./user-livetracting-info";
-import {
-  getBikeIcon,
-  getPingMarkerIcon,
-  getStartPointMarkerIcon,
-  isValidLatLng,
-} from "./data/commonFunction";
+import UserPolylineMap from "./components/UserPolylineMap";
+import UserListMap from "./components/UserListMap";
 
 // Assuming you have a Button component
 const AHMEDABAD_CENTER = { lat: 23.0225, lng: 72.5714 };
-const polylineOptions = {
-  strokeColor: "#00AD34",
-  strokeOpacity: 1,
-  strokeWeight: 3,
-};
-const containerStyle = {
-  width: "100%",
-  height: "60vh",
-  borderRadius: "7px",
-  overflow: "hidden",
-};
 
 export default function Livetracking() {
   const [pagination, setPagination] = useState({
@@ -314,65 +298,24 @@ export default function Livetracking() {
             {/* Map View */}
             <div className="flex-1">
               {mapCenter && (
-                <div>
-                  {selectedUserId != "" ? (
-                    <div>
-                      <GoogleMap
-                        mapContainerStyle={containerStyle}
-                        center={mapCenter}
-                        zoom={17}
-                        onLoad={(map) => {
-                          mapRef.current = map;
-                        }}
-                      >
-                        <>
-                          <Marker
-                            position={path[0]}
-                            icon={getStartPointMarkerIcon(
-                              selectedUser?.fullName || ""
-                            )}
-                            title={selectedUser?.fullName || ""}
-                          />
-
-                          {currentPosition &&
-                            isValidLatLng(currentPosition) && (
-                              <Marker
-                                position={currentPosition}
-                                icon={getBikeIcon()}
-                                title="Live Position"
-                              />
-                            )}
-                          <Polyline path={path} options={polylineOptions} />
-                        </>
-                      </GoogleMap>
-                    </div>
+                <>
+                  {selectedUserId !== "" ? (
+                    <UserPolylineMap
+                      mapCenter={mapCenter}
+                      path={path}
+                      currentPosition={currentPosition}
+                      selectedUser={selectedUser}
+                      mapRef={mapRef}
+                    />
                   ) : (
-                    <div>
-                      <GoogleMap
-                        mapContainerStyle={containerStyle}
-                        center={mapCenter}
-                        zoom={17}
-                        onLoad={(map) => {
-                          mapRef.current = map;
-                        }}
-                      >
-                        {enhancedUserList.map(
-                          (user: any) =>
-                            user.latLong &&
-                            isValidLatLng(user.latLong) && (
-                              <Marker
-                                key={user.id}
-                                position={user.latLong}
-                                title={user.fullName}
-                                onClick={() => handleUserClick(user.id)}
-                                icon={getPingMarkerIcon(user.fullName)}
-                              />
-                            )
-                        )}
-                      </GoogleMap>
-                    </div>
+                    <UserListMap
+                      mapCenter={mapCenter}
+                      enhancedUserList={enhancedUserList}
+                      mapRef={mapRef}
+                      onMarkerClick={handleUserClick}
+                    />
                   )}
-                </div>
+                </>
               )}
             </div>
           </CardContent>
