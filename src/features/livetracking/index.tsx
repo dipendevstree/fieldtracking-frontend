@@ -4,8 +4,6 @@ import { GoogleMap, Marker, Polyline } from "@react-google-maps/api";
 import debounce from "lodash.debounce";
 import { cn } from "@/lib/utils";
 import { useSelectOptions } from "@/hooks/use-select-option";
-// Import the UserTrackingTimeline component
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { FilterConfig, Option } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
@@ -13,14 +11,21 @@ import { Main } from "@/components/layout/main";
 import { useGetAllRolesForDropdown } from "../UserManagement/services/Roles.hook";
 import { IUser, useGetUsers } from "../buyers/services/users.hook";
 import { useGetAllTerritoriesForDropdown } from "../userterritory/services/user-territory.hook";
-import {
-  useGetUserTrackingByUserId,
-  userDetailsById,
-} from "./services/live-tracking-services";
 import UserTrackingTimeline from "./user-livetracting-info";
+import {
+  getBikeIcon,
+  getPingMarkerIcon,
+  getStartPointMarkerIcon,
+  isValidLatLng,
+} from "./data/commonFunction";
 
 // Assuming you have a Button component
 const AHMEDABAD_CENTER = { lat: 23.0225, lng: 72.5714 };
+const polylineOptions = {
+  strokeColor: "#00AD34",
+  strokeOpacity: 1,
+  strokeWeight: 3,
+};
 const containerStyle = {
   width: "100%",
   height: "60vh",
@@ -49,17 +54,12 @@ export default function Livetracking() {
     lat: number;
     lng: number;
   } | null>(null);
-  const [idsSet, setIdsSet] = useState<Set<string>>(new Set());
   const mapRef = useRef<google.maps.Map | null>(null);
-
   // Get userId from query
   const params = new URLSearchParams(window.location.search);
   const userId = params.get("userId");
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(userId);
-  const { data, isFetched } = useGetUserTrackingByUserId(selectedUserId ?? "");
-
+  const [selectedUserId, setSelectedUserId] = useState(userId);
   const { data: allRoles } = useGetAllRolesForDropdown();
-
   const roles = useSelectOptions({
     listData: allRoles ?? [],
     labelKey: "roleName",
@@ -95,9 +95,10 @@ export default function Livetracking() {
       setPagination((prev) => ({
         ...prev,
         searchFor: value ?? "",
+        page: DEFAULT_PAGE_NUMBER,
       }));
-      setSelectedUserId("");
-    }, 800),
+      setSelectedUserId(""); // reset selected user
+    }, 500),
     []
   );
 
@@ -105,6 +106,9 @@ export default function Livetracking() {
     setPagination((prev) => ({
       ...prev,
       territoryId: value ?? "",
+      // roleId: "", // reset role
+      // searchFor: "", // reset search
+      // page: DEFAULT_PAGE_NUMBER,
     }));
   };
 
@@ -112,6 +116,8 @@ export default function Livetracking() {
     setPagination((prev) => ({
       ...prev,
       roleId: value ?? "",
+      // searchFor: "", // reset search only
+      // page: DEFAULT_PAGE_NUMBER,
     }));
   };
 
@@ -123,13 +129,32 @@ export default function Livetracking() {
     window.history.pushState({}, "", `?${newParams}`);
   };
 
-  // const handleBackToList = () => {
-  //   setSelectedUserId(null)
-  //   // Clear userId from URL
-  //   const newParams = new URLSearchParams(window.location.search)
-  //   newParams.delete('userId')
-  //   window.history.pushState({}, '', `?${newParams}`)
-  // }
+  const updateMapCenterFromUserList = (userList: any[]) => {
+    const initialPath = userList.map((item: any) => ({
+      lat: parseFloat(item?.latLongDetails?.lat),
+      lng: parseFloat(item?.latLongDetails?.long),
+    }));
+
+    if (initialPath.length > 0) {
+      setMapCenter(initialPath[0]);
+    } else {
+      setMapCenter(AHMEDABAD_CENTER);
+    }
+  };
+
+  useEffect(() => {
+    updateMapCenterFromUserList(userList);
+  }, [userList]);
+
+  const handleBackToList = () => {
+    setSelectedUserId("");
+    setPath([]);
+    setCurrentPosition(null);
+    updateMapCenterFromUserList(userList);
+    const newParams = new URLSearchParams(window.location.search);
+    newParams.delete("userId");
+    window.history.pushState({}, "", `?${newParams}`);
+  };
 
   const filters: FilterConfig[] = [
     {
@@ -144,7 +169,7 @@ export default function Livetracking() {
       key: "role",
       type: "select",
       onChange: handleRoleChange,
-      placeholder: "Select role",
+      placeholder: "Select Role",
       value: pagination.roleId,
       options: roles as Option[],
     },
@@ -152,31 +177,10 @@ export default function Livetracking() {
       key: "search",
       type: "search",
       onChange: handleGlobalSearchChange,
-      placeholder: "Search visits...",
+      placeholder: "Search Users...",
       value: pagination.searchFor,
     },
   ];
-
-  useEffect(() => {
-    if (idsSet.size === 0 && data?.length > 0) {
-      const newIds = new Set<string>();
-      const initialPath = data.map((item: any) => {
-        newIds.add(item.liveTrackingId);
-        return {
-          lat: parseFloat(item.lat),
-          lng: parseFloat(item.long),
-        };
-      });
-
-      setPath(initialPath);
-      setIdsSet(newIds);
-
-      if (initialPath.length > 0) {
-        setMapCenter(initialPath[0]);
-        setCurrentPosition(initialPath[initialPath.length - 1]);
-      }
-    }
-  }, [data, isFetched]);
 
   useEffect(() => {
     if (
@@ -189,26 +193,13 @@ export default function Livetracking() {
     }
   }, [currentPosition]);
 
-  const polylineOptions = {
-    strokeColor: "#FF0000",
-    strokeOpacity: 1,
-    strokeWeight: 3,
-  };
-
   useEffect(() => {
-    const initialPath = userList.map((item: any) => {
-      return {
-        lat: parseFloat(item?.latLongDetails?.lat),
-        lng: parseFloat(item?.latLongDetails?.long),
-      };
-    });
-
-    if (initialPath.length > 0) {
-      setMapCenter(initialPath[0]);
-    } else {
-      setMapCenter(AHMEDABAD_CENTER);
-    }
+    updateMapCenterFromUserList(userList);
   }, [userList]);
+
+  const selectedUser = enhancedUserList.find(
+    (u: any) => u.id === selectedUserId
+  );
 
   return (
     <Main className={cn("flex flex-col gap-4 p-4")}>
@@ -224,6 +215,16 @@ export default function Livetracking() {
         filters={filters}
         onCancelPress={() => {
           setSelectedUserId("");
+          setPagination({
+            page: DEFAULT_PAGE_NUMBER,
+            limit: DEFAULT_PAGE_SIZE,
+            startDate: new Date().toISOString().split("T")[0],
+            endDate: new Date().toISOString().split("T")[0],
+            searchFor: "",
+            roleId: "",
+            territoryId: "",
+            includeLatLong: true,
+          });
         }}
       />
       {/* Show message when no filters are selected */}
@@ -262,9 +263,15 @@ export default function Livetracking() {
               className="w-100 space-y-2 overflow-y-auto p-2"
               style={{ height: "60vh" }}
             >
-              {selectedUserId ? (
+              {selectedUserId != "" ? (
                 <>
-                  <UserTrackingTimeline userId={selectedUserId} />
+                  <UserTrackingTimeline
+                    userId={selectedUserId}
+                    setPath={setPath}
+                    setCurrentPosition={setCurrentPosition}
+                    setMapCenter={setMapCenter}
+                    onBack={handleBackToList}
+                  />
                 </>
               ) : (
                 enhancedUserList.map((user: any) => (
@@ -304,52 +311,68 @@ export default function Livetracking() {
                 ))
               )}
             </div>
-
             {/* Map View */}
             <div className="flex-1">
               {mapCenter && (
-                <GoogleMap
-                  mapContainerStyle={containerStyle}
-                  center={mapCenter}
-                  zoom={17}
-                  onLoad={(map) => {
-                    mapRef.current = map;
-                  }}
-                >
-                  {/* All User Markers */}
-                  {enhancedUserList.map(
-                    (user: any) =>
-                      user.latLong &&
-                      isValidLatLng(user.latLong) && (
-                        <Marker
-                          key={user.id}
-                          position={user.latLong}
-                          title={user.fullName}
-                          onClick={() => handleUserClick(user.id)}
-                          icon={{
-                            url: `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                              user.fullName
-                            )}&background=random`,
-                            scaledSize: new window.google.maps.Size(30, 30),
-                          }}
-                        />
-                      )
+                <div>
+                  {selectedUserId != "" ? (
+                    <div>
+                      <GoogleMap
+                        mapContainerStyle={containerStyle}
+                        center={mapCenter}
+                        zoom={17}
+                        onLoad={(map) => {
+                          mapRef.current = map;
+                        }}
+                      >
+                        <>
+                          <Marker
+                            position={path[0]}
+                            icon={getStartPointMarkerIcon(
+                              selectedUser?.fullName || ""
+                            )}
+                            title={selectedUser?.fullName || ""}
+                          />
+
+                          {currentPosition &&
+                            isValidLatLng(currentPosition) && (
+                              <Marker
+                                position={currentPosition}
+                                icon={getBikeIcon()}
+                                title="Live Position"
+                              />
+                            )}
+                          <Polyline path={path} options={polylineOptions} />
+                        </>
+                      </GoogleMap>
+                    </div>
+                  ) : (
+                    <div>
+                      <GoogleMap
+                        mapContainerStyle={containerStyle}
+                        center={mapCenter}
+                        zoom={17}
+                        onLoad={(map) => {
+                          mapRef.current = map;
+                        }}
+                      >
+                        {enhancedUserList.map(
+                          (user: any) =>
+                            user.latLong &&
+                            isValidLatLng(user.latLong) && (
+                              <Marker
+                                key={user.id}
+                                position={user.latLong}
+                                title={user.fullName}
+                                onClick={() => handleUserClick(user.id)}
+                                icon={getPingMarkerIcon(user.fullName)}
+                              />
+                            )
+                        )}
+                      </GoogleMap>
+                    </div>
                   )}
-
-                  {/* Polyline path if tracking selected user */}
-                  {/* {path.length > 1 && (
-                    <Polyline path={path} options={polylineOptions} />
-                  )} */}
-
-                  {/* Current live position of selected user */}
-                  {/* {currentPosition && isValidLatLng(currentPosition) && (
-                    <Marker
-                      position={currentPosition}
-                      icon={getBikeIcon()}
-                      title='Live Position'
-                    />
-                  )} */}
-                </GoogleMap>
+                </div>
               )}
             </div>
           </CardContent>
@@ -373,31 +396,3 @@ export default function Livetracking() {
     </Main>
   );
 }
-
-// Validate coordinates
-function isValidLatLng(point: any): point is { lat: number; lng: number } {
-  return (
-    point &&
-    typeof point === "object" &&
-    typeof point.lat === "number" &&
-    typeof point.lng === "number" &&
-    isFinite(point.lat) &&
-    isFinite(point.lng)
-  );
-}
-
-// Bike icon
-const getBikeIcon = () => ({
-  url: "https://maps.google.com/mapfiles/kml/shapes/motorcycling.png",
-  scaledSize: new window.google.maps.Size(30, 30),
-});
-
-// Trail dot icon
-const getSmallDotIcon = () => ({
-  path: window.google?.maps?.SymbolPath?.CIRCLE || 0,
-  scale: 5,
-  fillColor: "#0000FF",
-  fillOpacity: 1,
-  strokeWeight: 1,
-  strokeColor: "#fff",
-});

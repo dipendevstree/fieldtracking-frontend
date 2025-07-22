@@ -1,9 +1,10 @@
-import { useState, useMemo } from "react";
-import { MapPin } from "lucide-react";
+import { useState, useMemo, useEffect } from "react";
+import { MapPin, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 
 import {
   getWorkDaySession,
+  useFetchLiveTrackingData,
   userDetailsById,
   useVisitAnalytics,
 } from "./services/live-tracking-services";
@@ -12,17 +13,44 @@ import GlobalFilterSection from "@/components/global-table-filter-section";
 import { FilterConfig } from "@/components/global-filter-section";
 
 interface UserTrackingTimelineProps {
-  userId: string;
+  userId: any;
+  setPath: (path: { lat: number; lng: number }[]) => void;
+  setCurrentPosition: (pos: { lat: number; lng: number } | null) => void;
+  setMapCenter: (center: { lat: number; lng: number }) => void;
+  onBack: () => void;
 }
 
-const UserTrackingTimeline = ({ userId }: UserTrackingTimelineProps) => {
+const UserTrackingTimeline = ({
+  userId,
+  setPath,
+  setCurrentPosition,
+  setMapCenter,
+  onBack,
+}: UserTrackingTimelineProps) => {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
 
-  const { user } = userDetailsById(userId ?? "");
-  const { userSession } = getWorkDaySession(userId ?? "", selectedDate);
-  const { analytics } = useVisitAnalytics(userId, selectedDate, selectedDate);
+  // Destructure isLoading state from custom hooks
+  const { user, isLoading: isUserLoading } = userDetailsById(userId ?? "");
+  const { userSession, isLoading: isSessionLoading } = getWorkDaySession(
+    userId ?? "",
+    selectedDate
+  );
+  const { analytics, isLoading: isAnalyticsLoading } = useVisitAnalytics(
+    userId,
+    selectedDate,
+    selectedDate
+  );
+
+  const { data: trackingData, isFetched } = useFetchLiveTrackingData(
+    userId,
+    selectedDate,
+    selectedDate
+  );
+
+  // Combine loading states
+  const isLoading = isUserLoading || isSessionLoading || isAnalyticsLoading;
 
   const handleDateChange = (newDate?: string) => {
     const value = newDate ?? new Date().toISOString().split("T")[0];
@@ -39,11 +67,32 @@ const UserTrackingTimeline = ({ userId }: UserTrackingTimelineProps) => {
     },
   ];
 
-  // Dynamic timeline formatter
+  useEffect(() => {
+    if (isFetched) {
+      if (trackingData?.length > 0) {
+        const path = trackingData.map((item: any) => ({
+          lat: parseFloat(item.lat),
+          lng: parseFloat(item.long),
+        }));
+
+        setPath(path);
+        setCurrentPosition(path[path.length - 1]);
+        setMapCenter(path[0]);
+      } else {
+        setPath([]);
+        setCurrentPosition(null);
+        setMapCenter({
+          lat: 23.0225, // fallback (Ahmedabad or default)
+          lng: 72.5714,
+        });
+      }
+    }
+  }, [trackingData, isFetched]);
+
+  // Dynamic timeline formatter (no changes needed here)
   const formatTimelineData = (sessions: any[]) => {
     if (!sessions || sessions.length === 0) return [];
 
-    // Use flatMap to process each session and add a separator between them
     return sessions.flatMap((session, index) => {
       const timeline: any[] = [];
 
@@ -103,7 +152,6 @@ const UserTrackingTimeline = ({ userId }: UserTrackingTimelineProps) => {
         });
       }
 
-      // Add a separator after the session's events, but not for the last session
       if (index < sessions.length - 1) {
         timeline.push({
           id: `separator_${session.workDaySessionId}`,
@@ -116,12 +164,29 @@ const UserTrackingTimeline = ({ userId }: UserTrackingTimelineProps) => {
   };
 
   const timelineData = useMemo(
-    () => formatTimelineData(userSession?.sessions || []),
+    () => formatTimelineData((userSession?.sessions ?? []).slice().reverse()),
     [userSession?.sessions]
   );
 
+  // Loading state UI
+  if (isLoading) {
+    return (
+      <div className="flex h-96 items-center justify-center bg-gray-50 p-4">
+        <Loader2 className="h-10 w-10 animate-spin text-teal-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="bg-gray-50 p-4">
+      <div className="mb-4">
+        <button
+          onClick={onBack}
+          className="text-sm text-teal-600 hover:underline flex items-center gap-1"
+        >
+          Back to list
+        </button>
+      </div>
       <div className="[&_*]:overflow-visible [&_*]:max-w-full [&_*]:w-full">
         <GlobalFilterSection key={"calendar-view-filters"} filters={filters} />
       </div>
@@ -132,14 +197,12 @@ const UserTrackingTimeline = ({ userId }: UserTrackingTimelineProps) => {
           <div className="rounded-lg border border-gray-200 bg-white p-4 text-center shadow-sm">
             <div className="mb-2 text-xs text-gray-500">Total Visit</div>
             <div className="font-bold text-gray-900">
-              {/* Corrected: Show totalVisits here */}
               {analytics?.statusCounts?.totalVisits ?? 0}
             </div>
           </div>
           <div className="rounded-lg border border-gray-200 bg-white p-4 text-center shadow-sm">
             <div className="mb-2 text-xs text-gray-500">Completed</div>
             <div className="font-bold text-gray-900">
-              {/* Corrected: Show completed here */}
               {analytics?.statusCounts?.completed ?? 0}
             </div>
           </div>
@@ -158,12 +221,16 @@ const UserTrackingTimeline = ({ userId }: UserTrackingTimelineProps) => {
         <div className="border-b border-gray-100 p-4">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-600 font-bold text-white">
+              {/* Gracefully handle user initials */}
               {user?.firstName?.[0]}
               {user?.lastName?.[0]}
             </div>
             <div className="flex-1">
               <div className="font-semibold text-gray-900">
-                {`${user?.firstName} ${user?.lastName}`}
+                {/* Handle case where user is not yet loaded */}
+                {user
+                  ? `${user.firstName} ${user.lastName}`
+                  : "Loading user..."}
               </div>
               <div className="text-sm text-gray-500">
                 {user?.role?.roleName}
@@ -192,68 +259,68 @@ const UserTrackingTimeline = ({ userId }: UserTrackingTimelineProps) => {
 
         <div className="border-b border-gray-100 p-4">
           <div className="relative pl-2">
-            {timelineData.map((item, index) => {
-              // Conditionally render the separator
-              if (item.type === "separator") {
+            {/* Handle Empty State for Timeline */}
+            {timelineData.length > 0 ? (
+              timelineData.map((item, index) => {
+                if (item.type === "separator") {
+                  return (
+                    <div key={item.id} className="py-4">
+                      <div className="border-t border-dashed border-gray-300" />
+                    </div>
+                  );
+                }
+
                 return (
-                  <div key={item.id} className="py-4">
-                    <div className="border-t border-dashed border-gray-300" />
-                  </div>
-                );
-              }
-
-              // Render the original timeline item
-              return (
-                <div
-                  key={item.id}
-                  className="flex items-start gap-4 pb-8 last:pb-0 relative"
-                >
-                  {/* Vertical line from current dot to next (except last) */}
-                  {index < timelineData.length - 1 && (
-                    <div className="absolute left-[5px] top-[12px] h-full w-0.5 bg-gray-200" />
-                  )}
-
-                  {/* Dot */}
                   <div
-                    className={`relative z-10 mt-1 h-3 w-3 flex-shrink-0 rounded-full ${item.color}`}
-                  />
-
-                  {/* Content */}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="text-sm font-medium text-gray-900">
-                          {item.title}
+                    key={item.id}
+                    className="relative flex items-start gap-4 pb-8 last:pb-0"
+                  >
+                    {index < timelineData.length - 1 && (
+                      <div className="absolute left-[5px] top-[12px] h-full w-0.5 bg-gray-200" />
+                    )}
+                    <div
+                      className={`relative z-10 mt-1 h-3 w-3 flex-shrink-0 rounded-full ${item.color}`}
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-gray-900">
+                            {item.title}
+                          </div>
+                          {item.description && (
+                            <div className="mt-1 text-sm text-gray-600">
+                              {item.description}
+                            </div>
+                          )}
+                          {item.subtitle && (
+                            <div className="mt-1 text-sm text-gray-500">
+                              {item.subtitle}
+                            </div>
+                          )}
+                          {item.location && (
+                            <div className="mt-2 flex items-center gap-1">
+                              <MapPin className="h-3 w-3 text-gray-400" />
+                              <span className="text-sm text-gray-500">
+                                {item.location}
+                              </span>
+                            </div>
+                          )}
+                          {item.time && (
+                            <div className="mt-1 text-sm text-gray-500">
+                              {item.time}
+                            </div>
+                          )}
                         </div>
-                        {item.description && (
-                          <div className="mt-1 text-sm text-gray-600">
-                            {item.description}
-                          </div>
-                        )}
-                        {item.subtitle && (
-                          <div className="mt-1 text-sm text-gray-500">
-                            {item.subtitle}
-                          </div>
-                        )}
-                        {item.location && (
-                          <div className="mt-2 flex items-center gap-1">
-                            <MapPin className="h-3 w-3 text-gray-400" />
-                            <span className="text-sm text-gray-500">
-                              {item.location}
-                            </span>
-                          </div>
-                        )}
-                        {item.time && (
-                          <div className="mt-1 text-sm text-gray-500">
-                            {item.time}
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <div className="py-10 text-center text-sm text-gray-500">
+                No activity recorded for this day.
+              </div>
+            )}
           </div>
         </div>
 

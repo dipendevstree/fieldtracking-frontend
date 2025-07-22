@@ -1,5 +1,6 @@
 import API from "@/config/api/api";
 import useFetchData from "@/hooks/use-fetch-data";
+import useFetchLiveData from "@/hooks/use-fetch-live-data";
 
 export const useGetUserTrackingByUserId = (userId: string) => {
   console.log("useGetUserByToken called with token:", userId);
@@ -73,6 +74,28 @@ export const useVisitAnalytics = (
 
   return {
     analytics: query.data ?? {},
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
+    isFetched: query.isFetched,
+  };
+};
+
+export const useFetchLiveTrackingData = (
+  userId: string,
+  startDate: string,
+  endDate: string
+) => {
+  const enabled = !!userId && !!startDate && !!endDate;
+
+  const query = useFetchLiveData<any>({
+    url: `${API.liveTracking.userTracking}/${userId}`,
+    params: { startDate, endDate },
+    enabled,
+  });
+
+  return {
+    data: query.data ?? [],
     isLoading: query.isLoading,
     error: query.error,
     refetch: query.refetch,
