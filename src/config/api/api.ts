@@ -13,7 +13,8 @@ const API = {
     list: 'liveTracking/list',
     user:'users',
     getWorkDaySession:'workDaySession/getSession',
-    visitAnalytics:'visit/analytics'
+    visitAnalytics:'visit/analytics',
+    userTracking:'user-tracking/user'
   },
   merchants: {
     list: 'merchant/list',
