@@ -106,9 +106,9 @@ export default function Livetracking() {
     setPagination((prev) => ({
       ...prev,
       territoryId: value ?? "",
-      // roleId: "", // reset role
-      // searchFor: "", // reset search
-      // page: DEFAULT_PAGE_NUMBER,
+      roleId: "", // reset role
+      searchFor: "", // reset search
+      page: DEFAULT_PAGE_NUMBER,
     }));
   };
 
@@ -116,8 +116,8 @@ export default function Livetracking() {
     setPagination((prev) => ({
       ...prev,
       roleId: value ?? "",
-      // searchFor: "", // reset search only
-      // page: DEFAULT_PAGE_NUMBER,
+      searchFor: "", // reset search only
+      page: DEFAULT_PAGE_NUMBER,
     }));
   };
 

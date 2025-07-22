@@ -134,14 +134,6 @@ export default function MonthlyExpenses() {
     setPagination((prev) => ({ ...prev, page, limit: pageSize }))
   }
 
-  const [selectedDate, setSelectedDate] = useState<string>('')
-
-  const handleDateChange = (newDate?: string) => {
-    const value = newDate ?? new Date().toISOString().split('T')[0]
-    setSelectedDate(value)
-    setPagination((prev) => ({ ...prev, startDate: value, endDate: value }))
-  }
-
   const roleId = watch('roleId')
   const selectedRep = watch('salesRep')
 
