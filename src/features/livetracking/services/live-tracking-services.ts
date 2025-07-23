@@ -102,3 +102,19 @@ export const useFetchLiveTrackingData = (
     isFetched: query.isFetched,
   };
 };
+
+export const useGetUsers = (params: any) => {
+  const query = useFetchData<any>({
+    url: API.liveTracking.userList,
+    params,
+  });
+
+  return {
+    ...query,
+    data: query.data,
+    listData: query.data?.list ?? [],
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};

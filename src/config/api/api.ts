@@ -14,7 +14,8 @@ const API = {
     user:'users',
     getWorkDaySession:'workDaySession/getSession',
     visitAnalytics:'visit/analytics',
-    userTracking:'user-tracking/user'
+    userTracking:'user-tracking/user',
+    userList:'users/list'
   },
   merchants: {
     list: 'merchant/list',

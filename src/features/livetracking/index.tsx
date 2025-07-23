@@ -8,14 +8,22 @@ import { FilterConfig, Option } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import { Main } from "@/components/layout/main";
 import { useGetAllRolesForDropdown } from "../UserManagement/services/Roles.hook";
-import { IUser, useGetUsers } from "../buyers/services/users.hook";
 import { useGetAllTerritoriesForDropdown } from "../userterritory/services/user-territory.hook";
 import UserTrackingTimeline from "./user-livetracting-info";
 import UserPolylineMap from "./components/UserPolylineMap";
 import UserListMap from "./components/UserListMap";
+import { useGetUsers } from "./services/live-tracking-services";
+import { GoogleMap } from "@react-google-maps/api";
 
 // Assuming you have a Button component
 const AHMEDABAD_CENTER = { lat: 23.0225, lng: 72.5714 };
+
+const containerStyle = {
+  width: "100%",
+  height: "60vh",
+  borderRadius: "7px",
+  overflow: "hidden",
+};
 
 export default function Livetracking() {
   const [pagination, setPagination] = useState({
@@ -55,9 +63,7 @@ export default function Livetracking() {
     pagination.roleId || pagination.territoryId || pagination.searchFor;
 
   // Only call useGetUsers when filters are selected
-  const { listData: userList = [], isLoading } = useGetUsers(
-    pagination as IUser
-  );
+  const { listData: userList = [], isLoading } = useGetUsers(pagination);
 
   const enhancedUserList = userList.map((user: any) => ({
     ...user,
@@ -114,16 +120,29 @@ export default function Livetracking() {
   };
 
   const updateMapCenterFromUserList = (userList: any[]) => {
-    const initialPath = userList.map((item: any) => ({
-      lat: parseFloat(item?.latLongDetails?.lat),
-      lng: parseFloat(item?.latLongDetails?.long),
-    }));
+    const validCoords = userList
+      .map((item: any) => item.latLong)
+      .filter(
+        (coord: any) =>
+          coord &&
+          typeof coord.lat === "number" &&
+          typeof coord.lng === "number" &&
+          !isNaN(coord.lat) &&
+          !isNaN(coord.lng)
+      );
 
-    if (initialPath.length > 0) {
-      setMapCenter(initialPath[0]);
-    } else {
-      setMapCenter(AHMEDABAD_CENTER);
-    }
+    const firstValidCoord = validCoords[0] || AHMEDABAD_CENTER;
+
+    setMapCenter((prev) => {
+      if (
+        prev &&
+        prev.lat === firstValidCoord.lat &&
+        prev.lng === firstValidCoord.lng
+      ) {
+        return prev; // No need to update
+      }
+      return firstValidCoord;
+    });
   };
 
   useEffect(() => {
@@ -177,10 +196,6 @@ export default function Livetracking() {
     }
   }, [currentPosition]);
 
-  useEffect(() => {
-    updateMapCenterFromUserList(userList);
-  }, [userList]);
-
   const selectedUser = enhancedUserList.find(
     (u: any) => u.id === selectedUserId
   );
@@ -211,23 +226,9 @@ export default function Livetracking() {
           });
         }}
       />
-      {/* Show message when no filters are selected */}
-      {!hasFiltersSelected && (
-        <Card>
-          <CardContent className="flex items-center justify-center p-8">
-            <div className="text-center">
-              <div className="text-muted-foreground mb-2 text-lg font-medium">
-                Please select value from filter
-              </div>
-              <p className="text-muted-foreground text-sm">
-                Choose a role, territory, or search to view user tracking data
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+
       {/* Show loading state */}
-      {hasFiltersSelected && isLoading && (
+      {isLoading && (
         <Card>
           <CardContent className="flex items-center justify-center p-8">
             <div className="text-center">
@@ -239,7 +240,7 @@ export default function Livetracking() {
         </Card>
       )}
       {/* Show user list or timeline and map when filters are selected and data exists */}
-      {hasFiltersSelected && !isLoading && enhancedUserList.length > 0 && (
+      {!isLoading && enhancedUserList.length > 0 && (
         <Card>
           <CardContent className="flex gap-4 p-0">
             {/* Sidebar with Users or Timeline */}
@@ -247,7 +248,7 @@ export default function Livetracking() {
               className="w-100 space-y-2 overflow-y-auto p-2"
               style={{ height: "60vh" }}
             >
-              {selectedUserId != "" ? (
+              {selectedUserId && selectedUser ? (
                 <>
                   <UserTrackingTimeline
                     userId={selectedUserId}
@@ -299,22 +300,29 @@ export default function Livetracking() {
             <div className="flex-1 pr-4">
               {mapCenter && (
                 <>
-                  {selectedUserId !== "" ? (
-                    <UserPolylineMap
-                      mapCenter={mapCenter}
-                      path={path}
-                      currentPosition={currentPosition}
-                      selectedUser={selectedUser}
-                      mapRef={mapRef}
-                    />
-                  ) : (
-                    <UserListMap
-                      mapCenter={mapCenter}
-                      enhancedUserList={enhancedUserList}
-                      mapRef={mapRef}
-                      onMarkerClick={handleUserClick}
-                    />
-                  )}
+                  <GoogleMap
+                    mapContainerStyle={containerStyle}
+                    center={mapCenter}
+                    zoom={17}
+                    onLoad={(map) => {
+                      mapRef.current = map;
+                    }}
+                  >
+                    {selectedUserId !== "" ? (
+                      <UserPolylineMap
+                        path={path}
+                        currentPosition={currentPosition}
+                        selectedUser={selectedUser}
+                        mapRef={mapRef}
+                      />
+                    ) : (
+                      <UserListMap
+                        enhancedUserList={enhancedUserList}
+                        mapRef={mapRef}
+                        onMarkerClick={handleUserClick}
+                      />
+                    )}
+                  </GoogleMap>
                 </>
               )}
             </div>
