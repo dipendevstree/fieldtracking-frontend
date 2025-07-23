@@ -241,7 +241,7 @@ export default function Livetracking() {
       {/* Show user list or timeline and map when filters are selected and data exists */}
       {hasFiltersSelected && !isLoading && enhancedUserList.length > 0 && (
         <Card>
-          <CardContent className="flex gap-6 p-0">
+          <CardContent className="flex gap-4 p-0">
             {/* Sidebar with Users or Timeline */}
             <div
               className="w-100 space-y-2 overflow-y-auto p-2"
@@ -296,7 +296,7 @@ export default function Livetracking() {
               )}
             </div>
             {/* Map View */}
-            <div className="flex-1">
+            <div className="flex-1 pr-4">
               {mapCenter && (
                 <>
                   {selectedUserId !== "" ? (

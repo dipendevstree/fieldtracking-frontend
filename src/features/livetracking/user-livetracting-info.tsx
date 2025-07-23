@@ -79,6 +79,7 @@ const UserTrackingTimeline = ({
           lat: parseFloat(item.lat),
           lng: parseFloat(item.long),
         }));
+
         setPath(path);
         setCurrentPosition(path[path.length - 1]);
         setMapCenter(path[0]);
@@ -126,22 +127,17 @@ const UserTrackingTimeline = ({
           lat: parseFloat(event.lat),
           lng: parseFloat(event.long),
         };
-
         // This updater function ensures we always have the latest path and distance
         setPath((prevPath) => {
-          if (prevPath.length > 0) {
-            const lastPoint = prevPath[prevPath.length - 1];
-            // Calculate the small distance between the last point and the new one
-            const distanceIncrement = getHaversineDistance(
+          const lastPoint = prevPath[prevPath.length - 1];
+          if (lastPoint) {
+            const increment = getHaversineDistance(
               lastPoint.lat,
               lastPoint.lng,
               newPoint.lat,
               newPoint.lng
             );
-            // Use a functional update for distance to avoid race conditions
-            setTotalDistance(
-              (prevDistance) => prevDistance + distanceIncrement
-            );
+            setTotalDistance((prev) => prev + increment);
           }
           return [...prevPath, newPoint];
         });

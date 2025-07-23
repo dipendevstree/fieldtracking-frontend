@@ -38,8 +38,8 @@ export function isValidLatLng(
 export function getUserIconMarker() {
   const svg = `
     <svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" fill="none">
-      <!-- Green circular background -->
-      <circle cx="30" cy="30" r="30" fill="#00AD34"/>
+       <!-- Green circular background -->
+       <circle cx="30" cy="30" r="30" fill="#00AD34"/>
       
       <!-- Inner translucent ring -->
       <circle cx="30" cy="30" r="24" fill="#ffffff" fill-opacity="0.2"/>
@@ -52,7 +52,7 @@ export function getUserIconMarker() {
 
   return {
     url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-    scaledSize: new window.google.maps.Size(40, 40),
+    scaledSize: new window.google.maps.Size(30, 30),
     anchor: new window.google.maps.Point(20, 20),
   };
 }
@@ -91,7 +91,6 @@ export function getStartPointMarkerIcon(name: string) {
   };
 }
 
-// src/utils/geolocation.ts
 
 /**
  * Calculates the great-circle distance between two points on the Earth using the Haversine formula.
