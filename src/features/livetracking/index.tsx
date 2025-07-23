@@ -12,8 +12,9 @@ import { useGetAllTerritoriesForDropdown } from "../userterritory/services/user-
 import UserTrackingTimeline from "./user-livetracting-info";
 import UserPolylineMap from "./components/UserPolylineMap";
 import UserListMap from "./components/UserListMap";
-import { useGetUsers } from "./services/live-tracking-services";
+import { useInfiniteUsers } from "./services/live-tracking-services";
 import { GoogleMap } from "@react-google-maps/api";
+import { useInView } from "react-intersection-observer";
 
 // Assuming you have a Button component
 const AHMEDABAD_CENTER = { lat: 23.0225, lng: 72.5714 };
@@ -47,6 +48,8 @@ export default function Livetracking() {
     lng: number;
   } | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
+
+  const { ref: loadMoreRef, inView } = useInView({ threshold: 0 });
   // Get userId from query
   const params = new URLSearchParams(window.location.search);
   const userId = params.get("userId");
@@ -63,15 +66,19 @@ export default function Livetracking() {
     pagination.roleId || pagination.territoryId || pagination.searchFor;
 
   // Only call useGetUsers when filters are selected
-  const { listData: userList = [], isLoading } = useGetUsers(pagination);
+  // const { listData: userList = [], isLoading } = useGetUsers(pagination);
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useInfiniteUsers(pagination);
 
-  const enhancedUserList = userList.map((user: any) => ({
-    ...user,
-    fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
-    latLong: user.latLongDetails
-      ? { lat: user.latLongDetails.lat, lng: user.latLongDetails.long }
-      : null,
-  }));
+  const enhancedUserList = (data?.pages ?? [])
+    .flatMap((page: any) => page.list ?? [])
+    .map((user: any) => ({
+      ...user,
+      fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+      latLong: user.latLongDetails
+        ? { lat: user.latLongDetails.lat, lng: user.latLongDetails.long }
+        : null,
+    }));
 
   const { data: territoriesList } = useGetAllTerritoriesForDropdown();
   const territories = useSelectOptions<any>({
@@ -79,6 +86,12 @@ export default function Livetracking() {
     labelKey: "name",
     valueKey: "id",
   });
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleGlobalSearchChange = useCallback(
     debounce((value: string | undefined) => {
@@ -132,7 +145,6 @@ export default function Livetracking() {
       );
 
     const firstValidCoord = validCoords[0] || AHMEDABAD_CENTER;
-
     setMapCenter((prev) => {
       if (
         prev &&
@@ -146,14 +158,14 @@ export default function Livetracking() {
   };
 
   useEffect(() => {
-    updateMapCenterFromUserList(userList);
-  }, [userList]);
+    updateMapCenterFromUserList(enhancedUserList);
+  }, []);
 
   const handleBackToList = () => {
     setSelectedUserId("");
     setPath([]);
     setCurrentPosition(null);
-    updateMapCenterFromUserList(userList);
+    updateMapCenterFromUserList(enhancedUserList);
     const newParams = new URLSearchParams(window.location.search);
     newParams.delete("userId");
     window.history.pushState({}, "", `?${newParams}`);
@@ -259,43 +271,58 @@ export default function Livetracking() {
                   />
                 </>
               ) : (
-                enhancedUserList.map((user: any) => (
-                  <Card
-                    key={user.id}
-                    className={`cursor-pointer p-2 transition-all hover:shadow-md`}
-                    onClick={() => handleUserClick(user.id)}
-                  >
-                    <CardContent className="flex items-center gap-2 p-0">
-                      <img
-                        src={
-                          user.avatar ||
-                          `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                            user.fullName
-                          )}`
-                        }
-                        alt={user.fullName}
-                        className="h-10 w-10 rounded-full object-cover"
-                      />
-                      <div className="flex-1">
-                        <div className="font-medium">{user.fullName}</div>
-                        <div className="text-xs text-gray-500">
-                          {user.role?.roleName || "No Role"}
-                        </div>
-                      </div>
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs ${
-                          user.status === "verified"
-                            ? "bg-green-100 text-green-600"
-                            : "bg-red-100 text-red-600"
-                        }`}
+                <div>
+                  {enhancedUserList.map((user: any, index: number) => {
+                    const isLast = index === enhancedUserList.length - 1;
+                    return (
+                      <Card
+                        key={user.id}
+                        className={`cursor-pointer p-2 transition-all hover:shadow-md`}
+                        onClick={() => handleUserClick(user.id)}
                       >
-                        {user.status === "verified" ? "Active" : "Offline"}
-                      </span>
-                    </CardContent>
-                  </Card>
-                ))
+                        <div ref={isLast ? loadMoreRef : undefined}>
+                          <CardContent className="flex items-center gap-2 p-0">
+                            <img
+                              src={
+                                user.avatar ||
+                                `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                  user.fullName
+                                )}`
+                              }
+                              alt={user.fullName}
+                              className="h-10 w-10 rounded-full object-cover"
+                            />
+                            <div className="flex-1">
+                              <div className="font-medium">{user.fullName}</div>
+                              <div className="text-xs text-gray-500">
+                                {user.role?.roleName || "No Role"}
+                              </div>
+                            </div>
+                            <span
+                              className={`rounded-full px-2 py-0.5 text-xs ${
+                                user.status === "verified"
+                                  ? "bg-green-100 text-green-600"
+                                  : "bg-red-100 text-red-600"
+                              }`}
+                            >
+                              {user.status === "verified"
+                                ? "Active"
+                                : "Offline"}
+                            </span>
+                          </CardContent>
+                        </div>
+                      </Card>
+                    );
+                  })}
+                  {isFetchingNextPage && (
+                    <div className="flex justify-center py-4 text-sm text-muted-foreground">
+                      Loading more...
+                    </div>
+                  )}
+                </div>
               )}
             </div>
+
             {/* Map View */}
             <div className="flex-1 pr-4">
               {mapCenter && (
