@@ -111,7 +111,7 @@ const UserTrackingTimeline = ({
         });
       }
     }
-  }, [trackingData, isFetched, setPath, setCurrentPosition, setMapCenter]); // Dependencies are complete
+  }, [isFetched]); // Dependencies are complete
 
   // MODIFIED: Socket effect now efficiently updates the distance.
   useEffect(() => {
@@ -158,7 +158,7 @@ const UserTrackingTimeline = ({
       socket.off("connect", handleConnect);
       socket.off("live_location", handleLiveLocation);
     };
-  }, [socket, userId, setPath, setCurrentPosition, setMapCenter]); // Added props to dependency array
+  }, [socket, userId]); // Added props to dependency array
 
   // Dynamic timeline formatter (no changes needed here)
   const formatTimelineData = (sessions: any[]) => {
