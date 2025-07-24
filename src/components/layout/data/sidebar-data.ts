@@ -34,7 +34,7 @@ export const sidebarData: SidebarData = {
         {
           title: "User Management",
           icon: Shield,
-          menuKey: "Use_Management",
+          menuKey: "User_Management",
           items: [
             {
               title: "Add User",
@@ -102,8 +102,20 @@ export const sidebarData: SidebarData = {
             },
             {
               title: "Reports & Analytics",
-              url: "/approvals/reports-analytics",
+              url: "/",
               menuKey: "reports_analytics",
+            },
+          ],
+        },
+        {
+          title: "Reports",
+          icon: Shield,
+          menuKey: "reports",
+          items: [
+            {
+              title: "All Reports",
+              url: "/reports",
+              menuKey: "all_reports",
             },
           ],
         },
