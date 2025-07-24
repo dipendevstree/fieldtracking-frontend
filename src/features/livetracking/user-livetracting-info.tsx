@@ -260,7 +260,11 @@ const UserTrackingTimeline = ({
         </button>
       </div>
       <div className="[&_*]:overflow-visible [&_*]:max-w-full [&_*]:w-full">
-        <GlobalFilterSection key={"calendar-view-filters"} filters={filters} />
+        <GlobalFilterSection
+          key={"calendar-view-filters"}
+          filters={filters}
+          className=""
+        />
       </div>
 
       {/* Stats Cards */}
