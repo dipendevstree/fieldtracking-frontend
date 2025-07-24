@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
+import { DEFAULT_PAGE_NUMBER } from "@/data/app.data";
 import debounce from "lodash.debounce";
 import { cn } from "@/lib/utils";
 import { useSelectOptions } from "@/hooks/use-select-option";
@@ -29,7 +29,7 @@ const containerStyle = {
 export default function Livetracking() {
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
-    limit: DEFAULT_PAGE_SIZE,
+    limit: 15,
     startDate: new Date().toISOString().split("T")[0],
     endDate: new Date().toISOString().split("T")[0],
     searchFor: "",
@@ -228,7 +228,7 @@ export default function Livetracking() {
           setSelectedUserId("");
           setPagination({
             page: DEFAULT_PAGE_NUMBER,
-            limit: DEFAULT_PAGE_SIZE,
+            limit: 15,
             startDate: new Date().toISOString().split("T")[0],
             endDate: new Date().toISOString().split("T")[0],
             searchFor: "",
@@ -277,7 +277,7 @@ export default function Livetracking() {
                     return (
                       <Card
                         key={user.id}
-                        className={`cursor-pointer p-2 transition-all hover:shadow-md`}
+                        className={`cursor-pointer p-2 transition-all hover:shadow-md mb-2`}
                         onClick={() => handleUserClick(user.id)}
                       >
                         <div ref={isLast ? loadMoreRef : undefined}>
@@ -295,7 +295,7 @@ export default function Livetracking() {
                             <div className="flex-1">
                               <div className="font-medium">{user.fullName}</div>
                               <div className="text-xs text-gray-500">
-                                {user.role?.roleName || "No Role"}
+                                {user.phoneNumber || "No Role"}
                               </div>
                             </div>
                             <span

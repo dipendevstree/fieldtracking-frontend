@@ -75,11 +75,10 @@ const UserTrackingTimeline = ({
   useEffect(() => {
     if (isFetched) {
       if (trackingData && trackingData.length > 0) {
-        const path = trackingData.map((item: any) => ({
+        const path = [...trackingData].reverse().map((item: any) => ({
           lat: parseFloat(item.lat),
           lng: parseFloat(item.long),
         }));
-
         setPath(path);
         setCurrentPosition(path[path.length - 1]);
         setMapCenter(path[0]);

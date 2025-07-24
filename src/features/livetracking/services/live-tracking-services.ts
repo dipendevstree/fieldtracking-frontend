@@ -98,7 +98,7 @@ export const useFetchLiveTrackingData = (
   });
 
   return {
-    data: query.data ?? [],
+    data: query?.data ?? [],
     isLoading: query.isLoading,
     error: query.error,
     refetch: query.refetch,
@@ -129,7 +129,7 @@ export const useInfiniteUsers = (baseParams: any) => {
       throw new Error(response?.message || "Failed to fetch data");
     },
 
-    getNextPageParam: (lastPage: any, pages:any) => {
+    getNextPageParam: (lastPage: any, pages: any) => {
       const totalFetched = pages.flatMap((p: any) => p?.list ?? []).length;
       const totalAvailable = lastPage?.totalCount ?? 0;
       return totalFetched < totalAvailable ? pages.length + 1 : undefined;
