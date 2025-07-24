@@ -9,6 +9,12 @@ const API = {
     getDepartment: 'department/list',
     organizationTypes: 'organizationType/list',
   },
+  category:{
+    list:'expensesCategory/list',
+    create:'expensesCategory/create',
+    delete:'expensesCategory/delete',
+    update:'expensesCategory/patch'
+  },
   liveTracking: {
     list: 'liveTracking/list',
     user:'users',
