@@ -1,0 +1,43 @@
+import { ColumnDef } from '@tanstack/react-table'
+import { CustomDataTableColumnHeader } from '@/components/shared/custom-table-header-column'
+import { DataTableRowActions } from './table-action-button'
+
+export const columns: ColumnDef<any>[] = [
+  {
+    accessorKey: 'typeName',
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title='Customer Type' />
+    ),
+    cell: ({ row }) => {
+      const customerType = row.original.typeName || ''
+      return <div className='text-sm font-medium'>{customerType}</div>
+    },
+    enableHiding: false,
+  },
+  {
+    accessorKey: 'createdAt',
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title='Created Date' />
+    ),
+    cell: ({ row }) => {
+      const createdAt = row.original.createdAt || row.original.createdDate
+      const formattedDate = createdAt
+        ? new Date(createdAt).toLocaleDateString('en-US', {
+            month: 'numeric',
+            day: 'numeric',
+            year: 'numeric',
+          })
+        : '-'
+      return (
+        <div className='text-muted-foreground text-sm'>{formattedDate}</div>
+      )
+    },
+  },
+  {
+    id: 'actions',
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title='Action' />
+    ),
+    cell: ({ row }) => <DataTableRowActions row={row} />,
+  },
+]

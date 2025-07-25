@@ -32,6 +32,35 @@ export const sidebarData: SidebarData = {
           menuKey: "live_tracking",
         },
         {
+          title: 'Customers',
+           // url: '/customers',
+          icon: Building2,
+          items: [
+            {
+              title: 'Customer Directory',
+              url: '/customers',
+            },
+            
+            {
+              title: 'Add Customer',
+              url: '/customers/add-customer',
+            },
+            // {
+            //   title: 'Customer Analytics',
+            //   url: '/customers/analytics',
+            // },
+            // {
+            //   title: 'Import History',
+            //   url: '/customers/imports',
+            // },
+            {
+              title: 'Customer Type',
+              url: '/customer-type',
+            }
+          ],
+        },
+      
+        {
           title: "User Management",
           icon: Shield,
           menuKey: "Use_Management",
