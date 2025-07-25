@@ -105,6 +105,11 @@ export const sidebarData: SidebarData = {
               url: "/",
               menuKey: "reports_analytics",
             },
+            {
+              title: "Category",
+              url: "/approvals/expense-category",
+              menuKey: "expense_category",
+            },
           ],
         },
         {
