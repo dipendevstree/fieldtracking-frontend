@@ -14,7 +14,8 @@ import CategoryExpanses from "./components/category/expenses-category";
 export type ApprovalsTabValue =
   | "/approvals/daily-expense"
   | "/approvals/monthly-consolidated"
-  | "/approvals/reports-analytics";
+  | "/approvals/reports-analytics"
+  | "/approvals/expense-category";
 
 export default function ExpenseApprovalsPage() {
   const { latestLocation } = useRouter();
@@ -36,7 +37,7 @@ export default function ExpenseApprovalsPage() {
         onValueChange={handleTabChange}
         className="mt-4 space-y-5"
       >
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="/approvals">Daily Expenses</TabsTrigger>
           <TabsTrigger value="/approvals/monthly-consolidated">
             Monthly Consolidated
@@ -44,7 +45,7 @@ export default function ExpenseApprovalsPage() {
           <TabsTrigger value="/approvals/reports-analytics">
             Reports & Analytics
           </TabsTrigger>
-          <TabsTrigger value="/approvals/category-expenses">
+          <TabsTrigger value="/approvals/expense-category">
             Category Expenses
           </TabsTrigger>
         </TabsList>
@@ -58,7 +59,7 @@ export default function ExpenseApprovalsPage() {
         >
           <MonthlyExpenses />
         </TabsContent>
-        <TabsContent value="/approvals/category-expenses" className="space-y-4">
+        <TabsContent value="/approvals/expense-category" className="space-y-4">
           <CategoryExpanses />
         </TabsContent>
         {/* <TabsContent value='/approvals/reports-analytics' className='space-y-4'>

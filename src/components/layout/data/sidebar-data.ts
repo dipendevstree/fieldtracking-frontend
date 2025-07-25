@@ -122,6 +122,11 @@ export const sidebarData: SidebarData = {
               url: "/reports",
               menuKey: "all_reports",
             },
+            {
+              title: "Performance Reports",
+              url: "/reports/performance",
+              menuKey: "performance_reports",
+            },
           ],
         },
       ],

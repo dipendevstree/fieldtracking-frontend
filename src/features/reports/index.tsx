@@ -4,6 +4,7 @@ import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Main } from "@/components/layout/main";
 import AllReports from "./all-reports";
+import PerformanceReport from "./performance-reports";
 
 export type ApprovalsTabValue =
   | "/reports"
@@ -36,7 +37,7 @@ export default function Reports() {
       >
         <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="/reports">Expense Reports</TabsTrigger>
-          <TabsTrigger value="/reports/performance">Performance</TabsTrigger>
+          <TabsTrigger value="/reports/performance">Performance Reports</TabsTrigger>
           <TabsTrigger value="/reports/field-activity">
             Field Activity
           </TabsTrigger>
@@ -52,7 +53,7 @@ export default function Reports() {
           <AllReports />
         </TabsContent>
         <TabsContent value="/reports/performance" className="space-y-4">
-          performance
+          <PerformanceReport />
         </TabsContent>
         <TabsContent value="/reports/field-activity" className="space-y-4">
           field-activity
