@@ -1,14 +1,26 @@
-import React, { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { AlertCircle, Plus, Trash2, Search } from "lucide-react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Form } from "@/components/ui/form";
 import BulkImport from "./bulk-import";
@@ -20,9 +32,9 @@ import { Autocomplete, LoadScript } from "@react-google-maps/api";
 import { useGetAllRolesForDropdown } from "@/features/UserManagement/services/Roles.hook";
 import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
 import type { CustomerType } from "@/features/customer-type/type/type";
-import { useNavigate } from '@tanstack/react-router';
-import { useCreateCustomer } from '../services/Customers.hook';
-import type { CreateCustomerPayload } from '../services/Customers.hook';
+import { useNavigate } from "@tanstack/react-router";
+import { useCreateCustomer } from "../services/Customers.hook";
+import type { CreateCustomerPayload } from "../services/Customers.hook";
 
 // Define Zod schema
 const customerFormSchema = z.object({
@@ -35,15 +47,17 @@ const customerFormSchema = z.object({
   zipCode: z.string().min(1, "Zip Code is required"),
   country: z.string().min(1, "Country is required"),
   notes: z.string().optional(),
-  location: z.string().min(1, "Location is required"),
   latitude: z.number().min(1, "Latitude is required"),
   longitude: z.number().min(1, "Longitude is required"),
   contacts: z
     .array(
       z.object({
-        id: z.number(),
+        id: z.any(),
         name: z.string().min(1, "Contact Name is required"),
-        email: z.string().email("Invalid email address").min(1, "Email is required"),
+        email: z
+          .string()
+          .email("Invalid email address")
+          .min(1, "Email is required"),
         phone: z.string().min(1, "Phone Number is required"),
         designation: z.string().optional(),
         isPrimary: z.boolean(),
@@ -60,10 +74,14 @@ interface AddCustomerPageProps {
   onCustomerAdded?: () => void;
 }
 
-export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustomerPageProps) {
+export default function AddCustomerPage({
+  onCustomerAdded: _unused1,
+}: AddCustomerPageProps) {
   const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState<string>("individual");
-  const [submissionStatus, setSubmissionStatus] = useState<"idle" | "success" | "error">("idle");
+  const [submissionStatus, setSubmissionStatus] = useState<
+    "idle" | "success" | "error"
+  >("idle");
   const [messageType, setMessageType] = useState<"draft" | "final">("final");
   const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const formRef = useRef<HTMLFormElement>(null);
@@ -74,7 +92,7 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
     setTimeout(() => {
       setSubmissionStatus("idle");
       form.reset(); // Reset form on success
-      navigate({ to: '/customers' });
+      navigate({ to: "/customers" });
     }, 2000);
   });
 
@@ -90,82 +108,102 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
       zipCode: "",
       country: "",
       notes: "",
-      location: "",
       latitude: undefined,
       longitude: undefined,
-      contacts: [{ 
-        id: Date.now(), 
-        name: "", 
-        email: "", 
-        phone: "", 
-        designation: "", 
-        isPrimary: true,
-        userRole: "", 
-        assignedRep: "", 
-      }],
+      contacts: [
+        {
+          id: Date.now(),
+          name: "",
+          email: "",
+          phone: "",
+          designation: "",
+          isPrimary: true,
+          userRole: "",
+          assignedRep: "",
+        },
+      ],
     },
   });
-  
+
   // Remove unused reset variable
-  const { control, handleSubmit, formState: { errors }, setValue } = form;
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+  } = form;
   const { fields, append, remove, update } = useFieldArray({
     control,
     name: "contacts",
   });
 
-  const { allCustomerType = [] } = useGetAllCustomerType({ page: 1, limit: 100 });
+  console.log(errors, "errors");
+
+  const { allCustomerType = [] } = useGetAllCustomerType({
+    page: 1,
+    limit: 100,
+  });
   const { data: industryList = [] } = useGetIndustry();
-  const [selectedRoleIds, setSelectedRoleIds] = useState<Record<number, string>>({});
+  const [selectedRoleIds, setSelectedRoleIds] = useState<
+    Record<number, string>
+  >({});
   const { data: _usersList = [] } = useGetUsersForDropdown({
-    roleId: '',  
-    enabled: false, 
+    roleId: "",
+    enabled: false,
   });
 
   // Add a new function to get users for a specific contact's role
   const getUsersForRole = (roleId: string) => {
     if (!roleId) return Promise.resolve([]);
-    
-    return fetch(`https://fieldtracking-api.devstree.in/api/v1/users/list?roleId=${roleId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+
+    return fetch(
+      `https://fieldtracking-api.devstree.in/api/v1/users/list?roleId=${roleId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
       }
-    })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('Failed to fetch users');
-      }
-      return response.json();
-    })
-    .then(data => {
-      if (data && data.data && Array.isArray(data.data.list)) {
-        return data.data.list;
-      }
-      return [];
-    })
-    .catch(error => {
-      console.error('Error fetching users:', error);
-      return [];
-    });
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch users");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        if (data && data.data && Array.isArray(data.data.list)) {
+          return data.data.list;
+        }
+        return [];
+      })
+      .catch((error) => {
+        console.error("Error fetching users:", error);
+        return [];
+      });
   };
 
   // Add state to store users per contact
-  const [usersPerContact, setUsersPerContact] = useState<Record<number, Array<{id: string, firstName: string, lastName: string}>>>({});
-  const [loadingUsersForContact, setLoadingUsersForContact] = useState<Record<number, boolean>>({});
+  const [usersPerContact, setUsersPerContact] = useState<
+    Record<number, Array<{ id: string; firstName: string; lastName: string }>>
+  >({});
+  const [loadingUsersForContact, setLoadingUsersForContact] = useState<
+    Record<number, boolean>
+  >({});
 
   // Function to load users for a specific contact when role changes
   const loadUsersForContact = async (contactId: number, roleId: string) => {
     if (!roleId) return;
-    
+
     try {
-      setLoadingUsersForContact(prev => ({ ...prev, [contactId]: true }));
+      setLoadingUsersForContact((prev) => ({ ...prev, [contactId]: true }));
       const users = await getUsersForRole(roleId);
-      setUsersPerContact(prev => ({ ...prev, [contactId]: users }));
+      setUsersPerContact((prev) => ({ ...prev, [contactId]: users }));
     } catch (_err) {
-      setUsersPerContact(prev => ({ ...prev, [contactId]: [] }));
+      setUsersPerContact((prev) => ({ ...prev, [contactId]: [] }));
     } finally {
-      setLoadingUsersForContact(prev => ({ ...prev, [contactId]: false }));
+      setLoadingUsersForContact((prev) => ({ ...prev, [contactId]: false }));
     }
   };
 
@@ -175,42 +213,45 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
     industryName: string;
   }>({
     listData: industryList ?? [],
-    labelKey: 'industryName',
-    valueKey: 'industryId',
+    labelKey: "industryName",
+    valueKey: "industryId",
   });
 
   // Get roles from API
   const { data: rolesList = [] } = useGetAllRolesForDropdown();
-  
+
   // Transform roles data for dropdown
   const roleOptions = useSelectOptions<{
     roleId: string;
     roleName: string;
   }>({
     listData: rolesList ?? [],
-    labelKey: 'roleName',
-    valueKey: 'roleId',
+    labelKey: "roleName",
+    valueKey: "roleId",
   });
 
   // For now, we'll just check if there's a customer ID in the URL or passed as prop
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const customerId = urlParams.get('id');
-    
+    const customerId = urlParams.get("id");
+
     if (customerId) {
       setIsEditMode(true);
-      setValue('companyName', '');
-      setValue('industry', industryOptions[0]?.value?.toString() || '');
-      setValue('address', '');
-      setValue('city', '');
+      setValue("companyName", "");
+      setValue("industry", industryOptions[0]?.value?.toString() || "");
+      setValue("address", "");
+      setValue("city", "");
     }
-  }, [industryOptions, setValue]);
+  }, [industryOptions]);
 
   // Remove the setPrimaryContact function that enforces only one primary contact
   const togglePrimaryContact = (id: number) => {
-    const contactIndex = fields.findIndex(contact => contact.id === id);
+    const contactIndex = fields.findIndex((contact) => contact.id === id);
     if (contactIndex !== -1) {
-      const updatedContact = { ...fields[contactIndex], isPrimary: !fields[contactIndex].isPrimary };
+      const updatedContact = {
+        ...fields[contactIndex],
+        isPrimary: !fields[contactIndex].isPrimary,
+      };
       update(contactIndex, updatedContact);
     }
   };
@@ -228,14 +269,18 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
       }
 
       // Check if at least one contact is marked as primary
-      const hasPrimaryContact = data.contacts.some(contact => contact.isPrimary);
+      const hasPrimaryContact = data.contacts.some(
+        (contact) => contact.isPrimary
+      );
       if (!hasPrimaryContact) {
         // If no primary contact is selected, mark the first one as primary
         data.contacts[0].isPrimary = true;
       }
 
       // Find primary contacts (can be multiple now)
-      const primaryContacts = data.contacts.filter(contact => contact.isPrimary);
+      const primaryContacts = data.contacts.filter(
+        (contact) => contact.isPrimary
+      );
       const firstPrimaryContact = primaryContacts[0]; // Use first primary for main phone number
 
       // Prepare API payload
@@ -251,30 +296,31 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
         latitude: data.latitude,
         longitude: data.longitude,
         country: data.country || "",
-        customerContacts: data.contacts.map(contact => ({
+        customerContacts: data.contacts.map((contact) => ({
           customerName: contact.name,
           email: contact.email,
           designation: contact.designation || "",
           phoneNumber: contact.phone,
           isPrimary: contact.isPrimary,
-          assignUserId: contact.assignedRep || null
-        }))
+          assignUserId: contact.assignedRep || null,
+        })),
       };
 
       // Call the mutation
       createCustomer(payload);
-
     } catch (_error) {
       setSubmissionStatus("error");
       setTimeout(() => setSubmissionStatus("idle"), 3000);
     }
   };
 
-  const onError = (errors: import("react-hook-form").FieldErrors<TCustomerFormSchema>) => {
+  const onError = (
+    errors: import("react-hook-form").FieldErrors<TCustomerFormSchema>
+  ) => {
     const firstError = Object.keys(errors)[0];
     const errorElement = document.getElementById(`${firstError}-error`);
     if (errorElement) {
-      errorElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
     }
   };
 
@@ -283,22 +329,22 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
   }: {
     onSelectLocation: (place: google.maps.places.PlaceResult | null) => void;
   }) => {
-    const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-  
+    const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(
+      null
+    );
+
     const onLoad = (autocomplete: google.maps.places.Autocomplete) => {
       autocompleteRef.current = autocomplete;
     };
-  
+
     const onPlaceChanged = () => {
       if (autocompleteRef.current !== null) {
-        const place = autocompleteRef.current.getPlace();
+        const place: any = autocompleteRef.current.getPlace();
         onSelectLocation(place);
       }
-  };
+    };
 
-
-
-  return (
+    return (
       <LoadScript
         googleMapsApiKey="AIzaSyCEkQ_KW66M2BjP03QiJ3R4dyzPWcOfuvw"
         libraries={["places"]}
@@ -307,11 +353,12 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
           <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
             <Search className="h-4 w-4 text-gray-400" />
           </div>
+
           <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-            <Input 
+            <Input
               type="text"
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
-              placeholder="Search for an address..." 
+              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="Search for an address..."
             />
           </Autocomplete>
         </div>
@@ -331,11 +378,11 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
       userRole: "",
       assignedRep: "",
     });
-   
+
     // Initialize state for the new contact
-    setSelectedRoleIds(prev => ({ ...prev, [newContactId]: "" }));
-    setUsersPerContact(prev => ({ ...prev, [newContactId]: [] }));
-    setLoadingUsersForContact(prev => ({ ...prev, [newContactId]: false }));
+    setSelectedRoleIds((prev) => ({ ...prev, [newContactId]: "" }));
+    setUsersPerContact((prev) => ({ ...prev, [newContactId]: [] }));
+    setLoadingUsersForContact((prev) => ({ ...prev, [newContactId]: false }));
   };
 
   // Before submitting the form, let's ensure the contacts are properly included
@@ -344,20 +391,19 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
       ...data,
       contacts: fields.map((field, index) => {
         const contactValues = data.contacts[index] || {};
-        
+
         // Ensure we have the correct id
         return {
           ...contactValues,
           id: field.id,
-          isPrimary: !!contactValues.isPrimary
+          isPrimary: !!contactValues.isPrimary,
         };
-      })
+      }),
     };
-    
 
     onSubmitForm(formData);
   }, onError);
-  
+
   // Update the form reference
   return (
     <div className="flex-1 space-y-4 p-4 pt-22">
@@ -367,7 +413,11 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
         </h2>
       </div>
 
-      <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-4">
+      <Tabs
+        value={selectedTab}
+        onValueChange={setSelectedTab}
+        className="space-y-4"
+      >
         <TabsList className="grid w-auto grid-cols-3">
           <TabsTrigger value="individual">Add Individual</TabsTrigger>
           <TabsTrigger value="bulk">Bulk Import</TabsTrigger>
@@ -376,43 +426,28 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
 
         <TabsContent value="individual" className="space-y-4">
           <CardContent>
-            
             <Form {...form}>
-              <form ref={formRef} onSubmit={(e) => {
-                e.preventDefault();
-                
-                // Get the current form values
-                const formValues = form.getValues();
-                const updatedContacts = fields.map((field, index) => {
-                  const contactValues = formValues.contacts[index] || {};
-                  
-                  return {
-                    ...contactValues,
-                    id: field.id,
-                    isPrimary: !!field.isPrimary
-                  };
-                });
-                
-                // Update the form values with the complete contacts array
-                const updatedFormValues = {
-                  ...formValues,
-                  contacts: updatedContacts
-                };
-                
-                // Submit the form with the updated values
-                onSubmitForm(updatedFormValues);
-              }} className="space-y-8">
+              <form
+                ref={formRef}
+                onSubmit={handleSubmit(onSubmitForm, onError)}
+                className="space-y-8"
+              >
                 <Card className="mb-6">
                   <CardHeader className="pb-0">
-                    <CardTitle className="text-xl font-semibold">Add New Customer</CardTitle>
+                    <CardTitle className="text-xl font-semibold">
+                      Add New Customer
+                    </CardTitle>
                     <CardDescription>
-                      Add a new customer to your database with complete contact and business information.
+                      Add a new customer to your database with complete contact
+                      and business information.
                     </CardDescription>
                     <div className="border-t border-gray-200 -mx-4 mb-2" />
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      <h4 className="text-lg font-semibold">Company Information</h4>
+                      <h4 className="text-lg font-semibold">
+                        Company Information
+                      </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                           <Label htmlFor="companyName">Company Name *</Label>
@@ -424,12 +459,19 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
                                 {...field}
                                 id="companyName"
                                 placeholder="Enter Company Name"
-                                aria-describedby={errors.companyName ? "companyName-error" : undefined}
+                                aria-describedby={
+                                  errors.companyName
+                                    ? "companyName-error"
+                                    : undefined
+                                }
                               />
                             )}
                           />
                           {errors.companyName && (
-                            <p id="companyName-error" className="flex items-center gap-1 text-xs text-red-500">
+                            <p
+                              id="companyName-error"
+                              className="flex items-center gap-1 text-xs text-red-500"
+                            >
                               <AlertCircle className="h-3 w-3" />
                               {errors.companyName.message}
                             </p>
@@ -449,28 +491,39 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
                                   }
                                 }}
                               >
-                                <SelectTrigger className="w-full max-w-m" id="industry">
+                                <SelectTrigger
+                                  className="w-full max-w-m"
+                                  id="industry"
+                                >
                                   <SelectValue placeholder="Select Industry" />
                                 </SelectTrigger>
-                                <SelectContent id="industry-content" className="!w-full">
+                                <SelectContent
+                                  id="industry-content"
+                                  className="!w-full"
+                                >
                                   {industryOptions.length > 0 ? (
                                     industryOptions.map((option) => (
-                                        <SelectItem 
-                                        key={option.value} 
+                                      <SelectItem
+                                        key={option.value}
                                         value={String(option.value)}
-                                        >
+                                      >
                                         {option.label}
-                                        </SelectItem>
+                                      </SelectItem>
                                     ))
                                   ) : (
-                                    <div className="px-4 py-2 text-gray-500">No industries found</div>
+                                    <div className="px-4 py-2 text-gray-500">
+                                      No industries found
+                                    </div>
                                   )}
                                 </SelectContent>
                               </Select>
                             )}
                           />
                           {errors.industry && (
-                            <p id="industry-error" className="flex items-center gap-1 text-xs text-red-500">
+                            <p
+                              id="industry-error"
+                              className="flex items-center gap-1 text-xs text-red-500"
+                            >
                               <AlertCircle className="h-3 w-3" />
                               {errors.industry.message}
                             </p>
@@ -482,110 +535,143 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
                             name="customerType"
                             control={control}
                             render={({ field }) => (
-                              <Select 
-                                value={field.value || ""} 
+                              <Select
+                                value={field.value || ""}
                                 onValueChange={(val) => {
                                   if (val) {
                                     field.onChange(val);
                                   }
                                 }}
                               >
-                                <SelectTrigger className="w-full max-w-m" id="customerType">
+                                <SelectTrigger
+                                  className="w-full max-w-m"
+                                  id="customerType"
+                                >
                                   <SelectValue placeholder="Select Customer Type" />
                                 </SelectTrigger>
                                 <SelectContent id="customerType-content">
-                                  {allCustomerType && allCustomerType.length > 0 ? (
+                                  {allCustomerType &&
+                                  allCustomerType.length > 0 ? (
                                     allCustomerType
-                                      .filter((type: CustomerType) => typeof type.customerTypeId === "string" && type.customerTypeId.trim() !== "")
+                                      .filter(
+                                        (type: CustomerType) =>
+                                          typeof type.customerTypeId ===
+                                            "string" &&
+                                          type.customerTypeId.trim() !== ""
+                                      )
                                       .map((type: CustomerType) => (
-                                        <SelectItem 
-                                          key={type.customerTypeId} 
+                                        <SelectItem
+                                          key={type.customerTypeId}
                                           value={type.customerTypeId}
                                         >
-                                          {type.typeName || 'Unnamed Type'}
+                                          {type.typeName || "Unnamed Type"}
                                         </SelectItem>
                                       ))
                                   ) : (
-                                    <div className="px-4 py-2 text-gray-500">No customer types found</div>
+                                    <div className="px-4 py-2 text-gray-500">
+                                      No customer types found
+                                    </div>
                                   )}
                                 </SelectContent>
                               </Select>
                             )}
                           />
                           {errors.customerType && (
-                            <p id="customerType-error" className="flex items-center gap-1 text-xs text-red-500">
+                            <p
+                              id="customerType-error"
+                              className="flex items-center gap-1 text-xs text-red-500"
+                            >
                               <AlertCircle className="h-3 w-3" />
                               {errors.customerType.message}
                             </p>
                           )}
                         </div>
-                       
+
                         <div className="space-y-2">
-                          <Label htmlFor="location">Search Address</Label>
+                          <Label htmlFor="location">Street Address</Label>
                           <LocationSearchBox
                             onSelectLocation={(place) => {
-                              if (place && place.formatted_address) {
-                                form.setValue("location", place.formatted_address);
-                                
-                                // Add proper null checking for geometry and location
+                              if (place && place.name) {
+                                form.setValue("address", place.name, {
+                                  shouldValidate: true,
+                                });
+
                                 if (place.geometry && place.geometry.location) {
-                                  form.setValue("latitude", place.geometry.location.lat());
-                                  form.setValue("longitude", place.geometry.location.lng());
+                                  form.setValue(
+                                    "latitude",
+                                    place.geometry.location.lat(),
+                                    {
+                                      shouldValidate: true,
+                                    }
+                                  );
+                                  form.setValue(
+                                    "longitude",
+                                    place.geometry.location.lng(),
+                                    {
+                                      shouldValidate: true,
+                                    }
+                                  );
                                 }
-                                
-                                // Extract address components to fill other fields
+
                                 if (place.address_components) {
-                                  let street = "";
                                   let city = "";
                                   let state = "";
                                   let zipCode = "";
                                   let country = "";
-                                  
-                                  place.address_components.forEach(component => {
-                                    const types = component.types;
-                                    
-                                    if (types.includes('street_number') || types.includes('route')) {
-                                      street = street 
-                                        ? `${street} ${component.long_name}`
-                                        : component.long_name;
+
+                                  place.address_components.forEach(
+                                    (component) => {
+                                      const types = component.types;
+                                      if (types.includes("locality"))
+                                        city = component.long_name;
+                                      if (
+                                        types.includes(
+                                          "administrative_area_level_1"
+                                        )
+                                      )
+                                        state = component.long_name;
+                                      if (types.includes("postal_code"))
+                                        zipCode = component.long_name;
+                                      if (types.includes("country"))
+                                        country = component.long_name;
                                     }
-                                    
-                                    if (types.includes('locality')) {
-                                      city = component.long_name;
-                                    }
-                                    
-                                    if (types.includes('administrative_area_level_1')) {
-                                      state = component.long_name;
-                                    }
-                                    
-                                    if (types.includes('postal_code')) {
-                                      zipCode = component.long_name;
-                                    }
-                                    
-                                    if (types.includes('country')) {
-                                      country = component.long_name;
-                                    }
-                                  });
-                                  
-                                  if (street) form.setValue('address', street);
-                                  if (city) form.setValue('city', city);
-                                  if (state) form.setValue('state', state);
-                                  if (zipCode) form.setValue('zipCode', zipCode);
-                                  if (country) form.setValue('country', country);
-                                        }
-                                  }
-                                }}
-                              />
-                          <p className="text-xs text-muted-foreground">
-                            Search for an address to automatically fill the address fields below
-                          </p>
-                          {errors.location && (
-                            <p id="location-error" className="flex items-center gap-1 text-xs text-red-500">
+                                  );
+
+                                  if (city)
+                                    form.setValue("city", city, {
+                                      shouldValidate: true,
+                                    });
+                                  if (state)
+                                    form.setValue("state", state, {
+                                      shouldValidate: true,
+                                    });
+                                  if (zipCode)
+                                    form.setValue("zipCode", zipCode, {
+                                      shouldValidate: true,
+                                    });
+                                  if (country)
+                                    form.setValue("country", country, {
+                                      shouldValidate: true,
+                                    });
+                                }
+                              }
+                            }}
+                          />
+
+                          {(errors.latitude ||
+                            errors.longitude ||
+                            errors.address) && (
+                            <p
+                              id="address-error"
+                              className="flex items-center gap-1 text-xs text-red-500"
+                            >
                               <AlertCircle className="h-3 w-3" />
-                              {errors.location.message}
+                              {errors?.address?.message ||
+                                "Unable to find location details. Please select adifferent address."}
                             </p>
                           )}
                         </div>
+
                         <div className="space-y-2">
                           <Label htmlFor="city">City *</Label>
                           <Controller
@@ -596,12 +682,17 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
                                 {...field}
                                 id="city"
                                 placeholder="Enter City"
-                                aria-describedby={errors.city ? "city-error" : undefined}
+                                aria-describedby={
+                                  errors.city ? "city-error" : undefined
+                                }
                               />
                             )}
                           />
                           {errors.city && (
-                            <p id="city-error" className="flex items-center gap-1 text-xs text-red-500">
+                            <p
+                              id="city-error"
+                              className="flex items-center gap-1 text-xs text-red-500"
+                            >
                               <AlertCircle className="h-3 w-3" />
                               {errors.city.message}
                             </p>
@@ -617,12 +708,17 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
                                 {...field}
                                 id="state"
                                 placeholder="Enter State/Province"
-                                aria-describedby={errors.state ? "state-error" : undefined}
+                                aria-describedby={
+                                  errors.state ? "state-error" : undefined
+                                }
                               />
                             )}
                           />
                           {errors.state && (
-                            <p id="state-error" className="flex items-center gap-1 text-xs text-red-500">
+                            <p
+                              id="state-error"
+                              className="flex items-center gap-1 text-xs text-red-500"
+                            >
                               <AlertCircle className="h-3 w-3" />
                               {errors.state.message}
                             </p>
@@ -638,12 +734,17 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
                                 {...field}
                                 id="zipCode"
                                 placeholder="Enter ZIP/Postal Code"
-                                aria-describedby={errors.zipCode ? "zipCode-error" : undefined}
+                                aria-describedby={
+                                  errors.zipCode ? "zipCode-error" : undefined
+                                }
                               />
                             )}
                           />
                           {errors.zipCode && (
-                            <p id="zipCode-error" className="flex items-center gap-1 text-xs text-red-500">
+                            <p
+                              id="zipCode-error"
+                              className="flex items-center gap-1 text-xs text-red-500"
+                            >
                               <AlertCircle className="h-3 w-3" />
                               {errors.zipCode.message}
                             </p>
@@ -659,12 +760,17 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
                                 {...field}
                                 id="country"
                                 placeholder="Enter Country"
-                                aria-describedby={errors.country ? "country-error" : undefined}
+                                aria-describedby={
+                                  errors.country ? "country-error" : undefined
+                                }
                               />
                             )}
                           />
                           {errors.country && (
-                            <p id="country-error" className="flex items-center gap-1 text-xs text-red-500">
+                            <p
+                              id="country-error"
+                              className="flex items-center gap-1 text-xs text-red-500"
+                            >
                               <AlertCircle className="h-4 w-4" />
                               {errors.country.message}
                             </p>
@@ -684,12 +790,17 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
                             id="notes"
                             placeholder="Any additional information about the customer..."
                             rows={3}
-                            aria-describedby={errors.notes ? "notes-error" : undefined}
+                            aria-describedby={
+                              errors.notes ? "notes-error" : undefined
+                            }
                           />
                         )}
                       />
                       {errors.notes && (
-                        <p id="notes-error" className="flex items-center gap-1 text-xs text-red-500">
+                        <p
+                          id="notes-error"
+                          className="flex items-center gap-1 text-xs text-red-500"
+                        >
                           <AlertCircle className="h-3 w-3" />
                           {errors.notes.message}
                         </p>
@@ -699,9 +810,11 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
                 </Card>
                 <Card className="mb-6">
                   <CardHeader className="flex flex-row items-center justify-between pb-0">
-                    <CardTitle className="text-lg font-semibold">Customer Contacts </CardTitle>
+                    <CardTitle className="text-lg font-semibold">
+                      Customer Contacts{" "}
+                    </CardTitle>
                     <Button
-                    type="button"
+                      type="button"
                       onClick={addNewContact}
                       variant="outline"
                       size="sm"
@@ -714,27 +827,35 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       {fields.map((contact, index) => (
                         <div
-                        key={contact.id}
+                          key={contact.id}
                           className="border rounded-lg p-4 space-y-3 bg-gray-50 relative"
                           style={{ minHeight: 260 }}
                         >
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center space-x-2">
-                              <span className="font-medium">Contact {index + 1}</span>
+                              <span className="font-medium">
+                                Contact {index + 1}
+                              </span>
                               {contact.isPrimary && (
-                                <span className="bg-black text-white text-xs px-2 py-1 rounded">Primary Contact</span>
+                                <span className="bg-black text-white text-xs px-2 py-1 rounded">
+                                  Primary Contact
+                                </span>
                               )}
                             </div>
                             <div className="flex items-center space-x-2">
                               <label className="flex items-center gap-2 cursor-pointer">
-                                <span className="font-medium text-sm">Primary</span>
+                                <span className="font-medium text-sm">
+                                  Primary
+                                </span>
                                 <div className="relative inline-block">
                                   <input
                                     type="checkbox"
                                     id={`primary-contact-${contact.id}`}
                                     name={`primary-contact-${contact.id}`}
                                     checked={contact.isPrimary}
-                                    onChange={() => togglePrimaryContact(contact.id)}
+                                    onChange={() =>
+                                      togglePrimaryContact(contact.id)
+                                    }
                                     className="sr-only peer"
                                     tabIndex={-1}
                                     aria-label="Primary"
@@ -758,31 +879,54 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
                           <div className="border-t border-gray-200 -mx-4 max-w-m" />
                           {contact.isPrimary && (
                             <div className="p-3 rounded mb-2">
-                              <Label htmlFor={`userRole-${index}`}>Assigned Sales Rep</Label>
+                              <Label htmlFor={`userRole-${index}`}>
+                                Assigned Sales Rep
+                              </Label>
                               <div className="flex gap-4 mt-2">
                                 <Controller
                                   name={`contacts.${index}.userRole`}
                                   control={control}
                                   render={({ field }) => (
-                                    <Select 
-                                      value={field.value || ""} 
+                                    <Select
+                                      value={field.value || ""}
                                       onValueChange={async (val) => {
                                         if (val) {
                                           field.onChange(val);
-                                          setSelectedRoleIds(prev => ({ ...prev, [contact.id]: val }));
-                                          setUsersPerContact(prev => ({ ...prev, [contact.id]: [] }));
-                                          const assignedRepField = form.getValues(`contacts.${index}.assignedRep`);
+                                          setSelectedRoleIds((prev) => ({
+                                            ...prev,
+                                            [contact.id]: val,
+                                          }));
+                                          setUsersPerContact((prev) => ({
+                                            ...prev,
+                                            [contact.id]: [],
+                                          }));
+                                          const assignedRepField =
+                                            form.getValues(
+                                              `contacts.${index}.assignedRep`
+                                            );
                                           if (assignedRepField) {
-                                            form.setValue(`contacts.${index}.assignedRep`, "");
+                                            form.setValue(
+                                              `contacts.${index}.assignedRep`,
+                                              ""
+                                            );
                                           }
-                                          await loadUsersForContact(contact.id, val);
+                                          await loadUsersForContact(
+                                            contact.id,
+                                            val
+                                          );
                                         }
                                       }}
                                     >
-                                      <SelectTrigger className="w-full max-w-m" id={`userRole-${index}`}>
+                                      <SelectTrigger
+                                        className="w-full max-w-m"
+                                        id={`userRole-${index}`}
+                                      >
                                         <SelectValue placeholder="User Role" />
                                       </SelectTrigger>
-                                      <SelectContent id={`userRole-content-${index}`} className="!w-full">
+                                      <SelectContent
+                                        id={`userRole-content-${index}`}
+                                        className="!w-full"
+                                      >
                                         {roleOptions.length > 0 ? (
                                           roleOptions.map((option) => (
                                             <SelectItem
@@ -793,7 +937,9 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
                                             </SelectItem>
                                           ))
                                         ) : (
-                                          <div className="px-4 py-2 text-gray-500">No roles found</div>
+                                          <div className="px-4 py-2 text-gray-500">
+                                            No roles found
+                                          </div>
                                         )}
                                       </SelectContent>
                                     </Select>
@@ -803,31 +949,52 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
                                   name={`contacts.${index}.assignedRep`}
                                   control={control}
                                   render={({ field }) => (
-                                    <Select 
-                                      value={field.value || ""} 
+                                    <Select
+                                      value={field.value || ""}
                                       onValueChange={(val) => {
                                         if (val) {
                                           field.onChange(val);
                                         }
                                       }}
-                                      disabled={!selectedRoleIds[contact.id] || loadingUsersForContact[contact.id]}
+                                      disabled={
+                                        !selectedRoleIds[contact.id] ||
+                                        loadingUsersForContact[contact.id]
+                                      }
                                     >
-                                      <SelectTrigger className="w-full max-w-m" id={`assignedRep-${index}`}>
-                                        <SelectValue placeholder={loadingUsersForContact[contact.id] ? "Loading..." : "User Assign"} />
+                                      <SelectTrigger
+                                        className="w-full max-w-m"
+                                        id={`assignedRep-${index}`}
+                                      >
+                                        <SelectValue
+                                          placeholder={
+                                            loadingUsersForContact[contact.id]
+                                              ? "Loading..."
+                                              : "User Assign"
+                                          }
+                                        />
                                       </SelectTrigger>
-                                      <SelectContent id={`assignedRep-content-${index}`}>
-                                        {usersPerContact[contact.id]?.length > 0 ? (
-                                          usersPerContact[contact.id].map((user) => (
-                                            <SelectItem
-                                              key={user.id}
-                                              value={String(user.id)}
-                                            >
-                                              {user.firstName + ' ' + user.lastName}
-                                            </SelectItem>
-                                          ))
+                                      <SelectContent
+                                        id={`assignedRep-content-${index}`}
+                                      >
+                                        {usersPerContact[contact.id]?.length >
+                                        0 ? (
+                                          usersPerContact[contact.id].map(
+                                            (user) => (
+                                              <SelectItem
+                                                key={user.id}
+                                                value={String(user.id)}
+                                              >
+                                                {user.firstName +
+                                                  " " +
+                                                  user.lastName}
+                                              </SelectItem>
+                                            )
+                                          )
                                         ) : (
                                           <div className="px-4 py-2 text-gray-500">
-                                            {loadingUsersForContact[contact.id] ? "Loading users..." : "No users found for this role"}
+                                            {loadingUsersForContact[contact.id]
+                                              ? "Loading users..."
+                                              : "No users found for this role"}
                                           </div>
                                         )}
                                       </SelectContent>
@@ -845,7 +1012,9 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
                           )}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <Label htmlFor={`contact-name-${index}`}>Contact Name *</Label>
+                              <Label htmlFor={`contact-name-${index}`}>
+                                Contact Name *
+                              </Label>
                               <Controller
                                 name={`contacts.${index}.name`}
                                 control={control}
@@ -854,40 +1023,58 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
                                     {...field}
                                     id={`contact-name-${index}`}
                                     placeholder="Enter Contact Name"
-                                    aria-describedby={errors.contacts?.[index]?.name ? `contact-name-${index}-error` : undefined}
-                                    />
+                                    aria-describedby={
+                                      errors.contacts?.[index]?.name
+                                        ? `contact-name-${index}-error`
+                                        : undefined
+                                    }
+                                  />
                                 )}
                               />
                               {errors.contacts?.[index]?.name && (
-                                <p id={`contact-name-${index}-error`} className="flex items-center gap-1 text-xs text-red-500">
+                                <p
+                                  id={`contact-name-${index}-error`}
+                                  className="flex items-center gap-1 text-xs text-red-500"
+                                >
                                   <AlertCircle className="h-3 w-3" />
                                   {errors.contacts[index].name.message}
                                 </p>
                               )}
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor={`contact-designation-${index}`}>Designation</Label>
+                              <Label htmlFor={`contact-designation-${index}`}>
+                                Designation
+                              </Label>
                               <Controller
                                 name={`contacts.${index}.designation`}
                                 control={control}
                                 render={({ field }) => (
                                   <Input
-                                  {...field}
+                                    {...field}
                                     id={`contact-designation-${index}`}
                                     placeholder="Enter Designation"
-                                    aria-describedby={errors.contacts?.[index]?.designation ? `contact-designation-${index}-error` : undefined}
+                                    aria-describedby={
+                                      errors.contacts?.[index]?.designation
+                                        ? `contact-designation-${index}-error`
+                                        : undefined
+                                    }
                                   />
                                 )}
                               />
                               {errors.contacts?.[index]?.designation && (
-                                <p id={`contact-designation-${index}-error`} className="flex items-center gap-1 text-xs text-red-500">
+                                <p
+                                  id={`contact-designation-${index}-error`}
+                                  className="flex items-center gap-1 text-xs text-red-500"
+                                >
                                   <AlertCircle className="h-3 w-3" />
                                   {errors.contacts[index].designation.message}
                                 </p>
                               )}
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor={`contact-email-${index}`}>Email Address *</Label>
+                              <Label htmlFor={`contact-email-${index}`}>
+                                Email Address *
+                              </Label>
                               <Controller
                                 name={`contacts.${index}.email`}
                                 control={control}
@@ -897,20 +1084,29 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
                                     id={`contact-email-${index}`}
                                     type="email"
                                     placeholder="Enter Email Address"
-                                    aria-describedby={errors.contacts?.[index]?.email ? `contact-email-${index}-error` : undefined}
+                                    aria-describedby={
+                                      errors.contacts?.[index]?.email
+                                        ? `contact-email-${index}-error`
+                                        : undefined
+                                    }
                                   />
                                 )}
                               />
                               {errors.contacts?.[index]?.email && (
-                                <p id={`contact-email-${index}-error`} className="flex items-center gap-1 text-xs text-red-500">
+                                <p
+                                  id={`contact-email-${index}-error`}
+                                  className="flex items-center gap-1 text-xs text-red-500"
+                                >
                                   <AlertCircle className="h-3 w-3" />
                                   {errors.contacts[index].email.message}
                                 </p>
                               )}
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor={`contact-phone-${index}`}>Phone Number *</Label>
-                              
+                              <Label htmlFor={`contact-phone-${index}`}>
+                                Phone Number *
+                              </Label>
+
                               <Controller
                                 name={`contacts.${index}.phone`}
                                 control={control}
@@ -920,12 +1116,19 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
                                     id={`contact-phone-${index}`}
                                     type="tel"
                                     placeholder="Enter Phone Number"
-                                    aria-describedby={errors.contacts?.[index]?.phone ? `contact-phone-${index}-error` : undefined}
+                                    aria-describedby={
+                                      errors.contacts?.[index]?.phone
+                                        ? `contact-phone-${index}-error`
+                                        : undefined
+                                    }
                                   />
                                 )}
                               />
                               {errors.contacts?.[index]?.phone && (
-                                <p id={`contact-phone-${index}-error`} className="flex items-center gap-1 text-xs text-red-500">
+                                <p
+                                  id={`contact-phone-${index}-error`}
+                                  className="flex items-center gap-1 text-xs text-red-500"
+                                >
                                   <AlertCircle className="h-3 w-3" />
                                   {errors.contacts[index].phone.message}
                                 </p>
@@ -936,30 +1139,47 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
                       ))}
                     </div>
                     <div className="flex justify-end gap-4 pt-6">
-                      <Button 
-                        type="submit"
-                        className="px-8"
-                      >
+                      <Button type="submit" className="px-8">
                         {isEditMode ? "Update" : "Save"}
                       </Button>
                     </div>
                     {submissionStatus === "success" && (
                       <div className="fixed top-4 right-4 bg-green-50 border border-green-200 text-green-800 px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 animate-in fade-in slide-in-from-top-5 duration-300 z-50">
-                        <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        <svg
+                          className="w-5 h-5 text-green-500"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                         <span className="font-medium">
-                          {messageType === "draft" ? "Draft saved successfully!" : "Customer added successfully!"}
+                          {messageType === "draft"
+                            ? "Draft saved successfully!"
+                            : "Customer added successfully!"}
                         </span>
                       </div>
                     )}
                     {submissionStatus === "error" && (
                       <div className="fixed top-4 right-4 bg-red-50 border border-red-200 text-red-800 px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 animate-in fade-in slide-in-from-top-5 duration-300 z-50">
-                        <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                        <svg
+                          className="w-5 h-5 text-red-500"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                         <span className="font-medium">
-                          {messageType === "draft" ? "Error saving draft. Please try again." : "Error adding customer. Please try again."}
+                          {messageType === "draft"
+                            ? "Error saving draft. Please try again."
+                            : "Error adding customer. Please try again."}
                         </span>
                       </div>
                     )}
@@ -972,13 +1192,13 @@ export default function AddCustomerPage({ onCustomerAdded: _unused1 }: AddCustom
 
         <TabsContent value="bulk" className="space-y-4">
           <CardContent>
-          <BulkImport />
+            <BulkImport />
           </CardContent>
         </TabsContent>
 
         <TabsContent value="uploads" className="space-y-4">
           <CardContent>
-          <UploadHistory />
+            <UploadHistory />
           </CardContent>
         </TabsContent>
       </Tabs>
