@@ -1,41 +1,34 @@
-import { useEffect, useState } from 'react'
-import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from '@/data/app.data'
-import { Building2, Users } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Main } from '@/components/layout/main'
-import TablePageLayout from '@/components/layout/table-page-layout'
-import { ErrorPage } from '@/components/shared/custom-error'
-import AllUsersTable from '../UserManagement/components/table'
-import { useGetAllUsers } from '../UserManagement/services/AllUsers.hook'
-import { ErrorResponse } from '../merchants/types'
-import { CustomersActionModal } from './components/action-form-modal'
-import CustomersTable from './components/table'
+import { useEffect, useState } from "react";
+import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
+import { Building2, Users } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Main } from "@/components/layout/main";
+import TablePageLayout from "@/components/layout/table-page-layout";
+import { ErrorPage } from "@/components/shared/custom-error";
+import AllUsersTable from "../UserManagement/components/table";
+import { useGetAllUsers } from "../UserManagement/services/AllUsers.hook";
+import { ErrorResponse } from "../merchants/types";
+import { CustomersActionModal } from "./components/action-form-modal";
+import CustomersTable from "./components/table";
 import {
   useGetCustomers,
-  useGetPendingUsers,
-  useUserStatusCounts,
-} from './services/Customers.hook'
-import { useUsersStore } from './store/customers.store'
+  useCustomerStatusCounts,
+} from "./services/Customers.hook";
+import { useCustomersStore } from "./store/customers.store";
 
 const Customers = () => {
-  const [selectedTab, setSelectedTab] = useState('customers')
+  const [selectedTab, setSelectedTab] = useState("customers");
   const [titleObj, setTitleObj] = useState({
-    title: 'Customers',
-    description: 'Manage all customers in the system',
-  })
+    title: "Customers",
+    description: "Manage all customers in the system",
+  });
 
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
-  })
-
-  const [userPagination, setUserPagination] = useState({
-    page: DEFAULT_PAGE_NUMBER,
-    limit: DEFAULT_PAGE_SIZE,
-    status: 'pending',
-  })
+  });
 
   // Customers data
   const {
@@ -43,134 +36,125 @@ const Customers = () => {
     data: Customer,
     isLoading: customersLoading,
     error: customersError,
-  } = useGetCustomers(pagination)
-console.log('Customer:', Customer)
+  } = useGetCustomers(pagination);
+  console.log("Customer:", Customer);
   // All users data
   const {
     totalCount: allUsersTotalCount = 0,
     allUsers = [],
     isLoading: allUsersLoading,
     error: allUsersError,
-  } = useGetAllUsers(pagination)
-
-  // Pending users data
-  const {
-    totalCount: pendingUsersTotalCount = 0,
-    pendingUser = [],
-    isLoading: pendingUsersLoading,
-    error: pendingUsersError,
-  } = useGetPendingUsers(userPagination)
+  } = useGetAllUsers(pagination);
 
   // User status counts
-  const { userStatusCounts, totalCustomers } = useUserStatusCounts() || {
-    userStatusCounts: {},
-    totalCustomers: 0,
-  }
+  const { customerStatusCounts, totalCustomers } =
+    useCustomerStatusCounts() || {
+      userStatusCounts: {},
+      totalCustomers: 0,
+    };
 
-  const { setOpen, open } = useUsersStore()
+  const { setOpen, open } = useCustomersStore();
 
   // Consolidated error handling
-  const error = customersError || pendingUsersError || allUsersError
+  const error = customersError || allUsersError;
   if (error) {
-    const errorResponse = (error as ErrorResponse)?.response?.data
+    const errorResponse = (error as ErrorResponse)?.response?.data;
     return (
       <ErrorPage
         errorCode={errorResponse?.statusCode}
         message={errorResponse?.message}
       />
-    )
+    );
   }
 
   const handleAddMerchant = () => {
-    setOpen('add')
-  }
+    setOpen("add");
+  };
 
   const onPaginationChange = (page: number, pageSize: number) => {
-    setPagination((prev) => ({ ...prev, page, limit: pageSize }))
-  }
-
-  const onUserPaginationChange = (page: number, pageSize: number) => {
-    setUserPagination((prev) => ({ ...prev, page, limit: pageSize }))
-  }
+    setPagination((prev) => ({ ...prev, page, limit: pageSize }));
+  };
 
   const getTitleObj = (tab: string) => ({
-    title: tab === 'customers' 
-      ? 'Customers'
-      : tab === 'system-logs'
-      ? 'All Users'
-      : 'Pending Admins',
-    description: tab === 'customers'
-      ? 'Manage all customers in the system'
-      : tab === 'system-logs'
-      ? 'Monitor all users'
-      : 'Manage pending admin approvals',
-  })
+    title:
+      tab === "customers"
+        ? "Customers"
+        : tab === "system-logs"
+          ? "All Users"
+          : "Pending Admins",
+    description:
+      tab === "customers"
+        ? "Manage all customers in the system"
+        : tab === "system-logs"
+          ? "Monitor all users"
+          : "Manage pending admin approvals",
+  });
 
   useEffect(() => {
-    setTitleObj(getTitleObj(selectedTab))
-  }, [selectedTab])
+    setTitleObj(getTitleObj(selectedTab));
+  }, [selectedTab]);
 
   // Helper function to calculate total users safely
   const getTotalUsers = () => {
-    if (!userStatusCounts) return 0
+    if (!customerStatusCounts) return 0;
     return (
-      (userStatusCounts.created || 0) +
-      (userStatusCounts.verified || 0) +
-      (userStatusCounts.rejected || 0)
-    )
-  }
+      (customerStatusCounts.created || 0) +
+      (customerStatusCounts.verified || 0) +
+      (customerStatusCounts.rejected || 0)
+    );
+  };
 
   return (
-    <Main className={cn('flex flex-col gap-2 p-4')}>
-      <div className='mt-2 flex items-center justify-between space-y-2'>
+    <Main className={cn("flex flex-col gap-2 p-4")}>
+      <div className="mt-2 flex items-center justify-between space-y-2">
         <div>
-          <h2 className='text-3xl font-bold tracking-tight'>
+          <h2 className="text-3xl font-bold tracking-tight">
             Customer Management
           </h2>
-          <p className='text-muted-foreground'>
+          <p className="text-muted-foreground">
             Manage customers and approve admin registrations
           </p>
         </div>
       </div>
 
-      <div className='mt-2 grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+      <div className="mt-2 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
               Total Customers
             </CardTitle>
-            <Building2 className='text-muted-foreground h-4 w-4' />
+            <Building2 className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{totalCustomers || 0}</div>
+            <div className="text-2xl font-bold">{totalCustomers || 0}</div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Total Users</CardTitle>
-            <Users className='text-muted-foreground h-4 w-4' />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <Users className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{getTotalUsers()}</div>
-            <p className='text-muted-foreground text-xs'>
+            <div className="text-2xl font-bold">{getTotalUsers()}</div>
+            <p className="text-muted-foreground text-xs">
               Across all customers
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
               Verified Customers
             </CardTitle>
-            <Users className='text-muted-foreground h-4 w-4' />
+            <Users className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>
-              {userStatusCounts?.verified || 0}
+            <div className="text-2xl font-bold">
+              {customerStatusCounts?.verified || 0}
             </div>
-            <p className='text-muted-foreground text-xs'>
+            <p className="text-muted-foreground text-xs">
               Across all customers
             </p>
           </CardContent>
@@ -180,21 +164,21 @@ console.log('Customer:', Customer)
       <Tabs
         value={selectedTab}
         onValueChange={setSelectedTab}
-        className='mt-4 space-y-4'
+        className="mt-4 space-y-4"
       >
-        <TabsList className='grid w-full grid-cols-3'>
-          <TabsTrigger value='customers'>Customers</TabsTrigger>
-          <TabsTrigger value='pending-admins'>Pending Admins</TabsTrigger>
-          <TabsTrigger value='system-logs'>All Users</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="customers">Customers</TabsTrigger>
+          <TabsTrigger value="pending-admins">Pending Admins</TabsTrigger>
+          <TabsTrigger value="system-logs">All Users</TabsTrigger>
         </TabsList>
 
-        <TabsContent value='customers' className='space-y-4'>
+        <TabsContent value="customers" className="space-y-4">
           <TablePageLayout
             title={titleObj?.title}
             description={titleObj?.description}
             onAddButtonClick={handleAddMerchant}
-            moduleAction='add'
-            modulePermission='customers'
+            moduleAction="add"
+            modulePermission="customers"
             showActionButton={true}
           >
             <CustomersTable
@@ -207,26 +191,7 @@ console.log('Customer:', Customer)
           </TablePageLayout>
         </TabsContent>
 
-        <TabsContent value='pending-admins' className='space-y-4'>
-          <TablePageLayout
-            title={titleObj?.title}
-            description={titleObj?.description}
-            onAddButtonClick={handleAddMerchant}
-            showActionButton={false}
-          >
-            <AllUsersTable
-              data={pendingUser}
-              totalCount={pendingUsersTotalCount}
-              loading={pendingUsersLoading}
-              currentPage={userPagination.page}
-              paginationCallbacks={{
-                onPaginationChange: onUserPaginationChange,
-              }}
-            />
-          </TablePageLayout>
-        </TabsContent>
-
-        <TabsContent value='system-logs' className='space-y-4'>
+        <TabsContent value="system-logs" className="space-y-4">
           <TablePageLayout
             title={titleObj?.title}
             description={titleObj?.description}
@@ -245,9 +210,9 @@ console.log('Customer:', Customer)
         </TabsContent>
       </Tabs>
 
-      {open && <CustomersActionModal key={'customers-action-modal'} />}
+      {open && <CustomersActionModal key={"customers-action-modal"} />}
     </Main>
-  )
-}
+  );
+};
 
-export default Customers
+export default Customers;

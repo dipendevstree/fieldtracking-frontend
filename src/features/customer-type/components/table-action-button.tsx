@@ -43,7 +43,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
           variant='ghost'
           className='data-[state=open]:bg-muted flex h-8 w-8 cursor-pointer p-0'
         >
-          <CustomTooltip title='Actions' asChild={true}>
+          <CustomTooltip title='Actions'>
             <div className="flex items-center justify-center">
               <DotsHorizontalIcon className='h-4 w-4' />
               <span className='sr-only'>Open menu</span>

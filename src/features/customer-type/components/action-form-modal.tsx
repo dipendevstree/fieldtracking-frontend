@@ -18,7 +18,6 @@ export function CustomerTypeActionModal() {
     isPending: isCreateLoading,
     isSuccess: isCreateSuccess,
     isError: isCreateError,
-    error: createError,
   } = useCreateCustomerType()
 
   const {

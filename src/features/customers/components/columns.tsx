@@ -26,6 +26,7 @@ interface Customer {
   contactPerson: string
   phoneNumber: string
   customerId: string
+  streetAddress: string
 }
 
 interface GetColumnsProps {
@@ -67,7 +68,7 @@ export const getColumns = ({ onEdit }: GetColumnsProps): ColumnDef<Customer>[] =
     id: 'actions',
     cell: ({ row }) => (
       <DataTableRowActions 
-        row={row} 
+        row={row as any} 
         onEdit={onEdit ? () => onEdit(row.original.customerId) : undefined}
       />
     ),

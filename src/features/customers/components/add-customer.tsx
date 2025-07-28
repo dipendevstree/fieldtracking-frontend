@@ -131,6 +131,7 @@ export default function AddCustomerPage({
     handleSubmit,
     formState: { errors },
     setValue,
+    getValues,
   } = form;
   const { fields, append, remove, update } = useFieldArray({
     control,
@@ -244,12 +245,17 @@ export default function AddCustomerPage({
 
   // Remove the setPrimaryContact function that enforces only one primary contact
   const togglePrimaryContact = (id: number) => {
-    const contactIndex = fields.findIndex((contact) => contact.id === id);
+    const contactIndex = fields.findIndex((field) => field.id === id);
     if (contactIndex !== -1) {
+      const contactValues = getValues(`contacts.${contactIndex}`);
       const updatedContact = {
-        ...fields[contactIndex],
-        isPrimary: !fields[contactIndex].isPrimary,
+        ...contactValues,
+        id,
+        userRole: "",
+        assignedRep: "",
+        isPrimary: !contactValues.isPrimary,
       };
+      console.log("hasdasello", updatedContact);
       update(contactIndex, updatedContact);
     }
   };
