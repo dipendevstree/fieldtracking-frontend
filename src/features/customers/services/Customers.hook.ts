@@ -56,6 +56,11 @@ interface Industry {
   industryName: string;
 }
 
+interface CustomerFilter {
+  customerTypeId: string;
+  typeName: string;
+}
+
 interface Menu {
   menuId: string;
   menuName: string;
@@ -106,6 +111,19 @@ export const useGetEmployeeRange = () => {
 export const useGetIndustry = () => {
   const query = useFetchData<{ list: Industry[]; totalCount: number }>({
     url: API.industry.list,
+  });
+  return {
+    ...query,
+    data: query.data?.list,
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
+export const useGetCustomerFilter = () => {
+  const query = useFetchData<{ list: CustomerFilter[]; totalCount: number }>({
+    url: API.customerType.list,
   });
   return {
     ...query,

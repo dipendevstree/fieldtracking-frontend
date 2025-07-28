@@ -1,22 +1,22 @@
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Plus, Download } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useGetCustomers } from "@/features/customers/services/Customers.hook";
+import {
+  useGetCustomerFilter,
+  useGetCustomers,
+  useGetIndustry,
+} from "@/features/customers/services/Customers.hook";
 import { useCustomersStore } from "../store/customers.store";
 import CustomersTable from "./table";
 import { CustomersActionModal } from "./action-form-modal";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import { ErrorPage } from "@/components/shared/custom-error";
+import { useSelectOptions } from "@/hooks/use-select-option";
+import { FilterConfig } from "@/components/global-filter-section";
+import debounce from "lodash.debounce";
+import GlobalFilterSection from "@/components/global-table-filter-section";
 
 // Define error response type
 interface ErrorResponse {
@@ -37,13 +37,82 @@ export const CustomerDirectoryPage = () => {
     sort: "desc",
   });
 
+  const queryParams = useMemo(
+    () => ({
+      ...pagination,
+      searchFor: filters.search || "",
+      industryId: filters.industryId || "",
+      customerTypeId: filters.customerTypeId || "",
+    }),
+    [pagination, filters]
+  );
+
   // Get customer data
   const {
     Customer: customers = [],
     totalCount = 0,
     isLoading,
     error,
-  } = useGetCustomers(pagination);
+  } = useGetCustomers(queryParams);
+
+  const { data: industryList = [] } = useGetIndustry();
+  const { data: customerList = [] } = useGetCustomerFilter();
+
+  const industryOptions = useSelectOptions({
+    listData: industryList ?? [],
+    labelKey: "industryName",
+    valueKey: "industryId",
+  }).map((option) => ({
+    ...option,
+    value: String(option.value),
+  }));
+
+  const customerOptions = useSelectOptions({
+    listData: customerList ?? [],
+    labelKey: "typeName",
+    valueKey: "customerTypeId",
+  }).map((option) => ({
+    ...option,
+    value: String(option.value),
+  }));
+
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      setFilters({ search: value });
+    }, 800),
+    []
+  );
+
+  const handleGlobalSearchChange = (value: string | undefined) => {
+    const searchValue = value ?? "";
+    debouncedSearch(searchValue);
+  };
+
+  const filtersConfig: FilterConfig[] = [
+    {
+      key: "search",
+      type: "search",
+      placeholder: "Search customers...",
+      value: filters.search,
+      onChange: handleGlobalSearchChange,
+    },
+    {
+      key: "customerId",
+      type: "select",
+      placeholder: "Customer Type",
+      value: filters.customerTypeId,
+      onChange: (value) => setFilters({ customerTypeId: value ?? "" }),
+      options: customerOptions,
+    },
+    {
+      key: "industryId",
+      type: "select",
+      placeholder: "Industry Type",
+      value: filters.industryId,
+      onChange: (value) => setFilters({ industryId: value ?? "" }),
+      options: industryOptions,
+    },
+  ];
 
   // Show loading state
   if (isLoading)
@@ -119,60 +188,10 @@ export const CustomerDirectoryPage = () => {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="flex justify-between items-center mb-5">
-            <div className="relative w-[260px]">
-              <Input
-                placeholder="Search customers..."
-                value={filters.search}
-                onChange={(e) => setFilters({ search: e.target.value })}
-                className="pl-4"
-              />
-            </div>
-            <div className="flex gap-3">
-              <Select
-                value={filters.status}
-                onValueChange={(value) => setFilters({ status: value })}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Select status" />
-                </SelectTrigger>
-                <SelectContent>
-                  {["All Status", "Active", "Inactive", "Draft"].map(
-                    (option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    )
-                  )}
-                </SelectContent>
-              </Select>
-
-              <Select
-                value={filters.customerTypeId}
-                onValueChange={(value) => setFilters({ customerTypeId: value })}
-              >
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="All Industries" />
-                </SelectTrigger>
-                <SelectContent>
-                  {[
-                    "All Types",
-                    "Technology",
-                    "Manufacturing",
-                    "Healthcare",
-                    "Finance",
-                    "Retail",
-                    "Consulting",
-                    "Education",
-                  ].map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {option}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <GlobalFilterSection
+            key="customer-directory-filters"
+            filters={filtersConfig}
+          />
 
           {/* Table */}
           <div className="w-full overflow-x-auto">
