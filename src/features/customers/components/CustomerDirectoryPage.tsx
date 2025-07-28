@@ -72,6 +72,7 @@ export const CustomerDirectoryPage = () => {
   };
 
   const handleEditCustomer = (customerId: string) => {
+    navigate({ to: `/customers/edit-customer/${customerId}` });
     // Find the customer data
     const customerToEdit = customers.find(
       (customer) => customer.customerId === customerId

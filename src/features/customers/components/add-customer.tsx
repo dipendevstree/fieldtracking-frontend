@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -25,13 +25,17 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Form } from "@/components/ui/form";
 import BulkImport from "./bulk-import";
 import UploadHistory from "./upload-history";
-import { useGetIndustry } from "../services/Customers.hook";
+import {
+  useGetCustomerById,
+  useGetIndustry,
+  useUpdateCustomer,
+} from "../services/Customers.hook";
 import { useGetAllCustomerType } from "@/features/customer-type/services/CustomerTypehook";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { useGetAllRolesForDropdown } from "@/features/UserManagement/services/Roles.hook";
 import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
 import type { CustomerType } from "@/features/customer-type/type/type";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { useCreateCustomer } from "../services/Customers.hook";
 import type { CreateCustomerPayload } from "../services/Customers.hook";
 import { LocationAutoSearchBox } from "./LocationAutoSearchBox";
@@ -83,8 +87,22 @@ export default function AddCustomerPage({
     "idle" | "success" | "error"
   >("idle");
   const [messageType, setMessageType] = useState<"draft" | "final">("final");
-  const [isEditMode, setIsEditMode] = useState<boolean>(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const { customerId } = useParams({ strict: false });
+  const isEditMode = !!customerId;
+
+  const { data: customer } = useGetCustomerById(
+    customerId ?? "",
+    isEditMode // Only run this query if we are in edit mode
+  );
+
+  const { mutate: updateCustomer } = useUpdateCustomer(customerId ?? "", () => {
+    setSubmissionStatus("success");
+    setTimeout(() => {
+      setSubmissionStatus("idle");
+      navigate({ to: "/customers" });
+    }, 2000);
+  });
 
   // Add create customer mutation
   const { mutate: createCustomer } = useCreateCustomer(() => {
@@ -98,6 +116,7 @@ export default function AddCustomerPage({
 
   const form = useForm<TCustomerFormSchema>({
     resolver: zodResolver(customerFormSchema),
+    shouldUnregister: false,
     defaultValues: {
       companyName: "",
       industry: "",
@@ -130,13 +149,15 @@ export default function AddCustomerPage({
     control,
     handleSubmit,
     formState: { errors },
-    setValue,
     getValues,
+    reset,
   } = form;
-  const { fields, append, remove, update } = useFieldArray({
+  const { fields, append, remove, update, replace } = useFieldArray({
     control,
     name: "contacts",
   });
+
+  console.log("ereroeroeoreor", errors);
 
   const { allCustomerType = [] } = useGetAllCustomerType({
     page: 1,
@@ -150,6 +171,55 @@ export default function AddCustomerPage({
     roleId: "",
     enabled: false,
   });
+
+  useEffect(() => {
+    if (isEditMode && customer) {
+      // a. Map the API data to the form's schema
+      const formValues: TCustomerFormSchema = {
+        companyName: customer.companyName,
+        industry: customer.industryId,
+        customerType: customer.customerTypeId,
+        address: customer.streetAddress,
+        city: customer.city,
+        state: customer.state,
+        country: customer.country,
+        zipCode: String(customer.zipCode || ""), // Zod schema expects string
+        notes: customer.additionalNotes || "",
+        latitude: customer.latitude,
+        longitude: customer.longitude,
+        contacts:
+          customer.customerContacts?.map((contact: any) => {
+            const contactId = contact.customerContactId || Date.now(); // Use real ID or generate one
+            // Pre-populate state for existing contacts
+            if (contact.userRole?.roleId) {
+              setSelectedRoleIds((prev) => ({
+                ...prev,
+                [contactId]: contact.userRole.roleId,
+              }));
+              loadUsersForContact(contactId, contact.userRole.roleId);
+            }
+            return {
+              id: contactId, // useFieldArray needs a unique id
+              name: contact.customerName,
+              email: contact.email,
+              phone: contact.phoneNumber,
+              designation: contact.designation || "",
+              isPrimary: contact.isPrimary,
+              userRole: contact.userRole?.roleId || "",
+              assignedRep: contact.assignUserId || "",
+            };
+          }) || [],
+      };
+
+      // b. Populate the entire form
+      reset(formValues);
+
+      // c. (Optional but good practice) Manually sync the field array state if reset doesn't cover it
+      if (!isEditMode && formValues.contacts.length > 0) {
+        replace(formValues.contacts);
+      }
+    }
+  }, [isEditMode, customer, reset, replace]);
 
   // Add a new function to get users for a specific contact's role
   const getUsersForRole = (roleId: string) => {
@@ -229,20 +299,6 @@ export default function AddCustomerPage({
     valueKey: "roleId",
   });
 
-  // For now, we'll just check if there's a customer ID in the URL or passed as prop
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const customerId = urlParams.get("id");
-
-    if (customerId) {
-      setIsEditMode(true);
-      setValue("companyName", "");
-      setValue("industry", industryOptions[0]?.value?.toString() || "");
-      setValue("address", "");
-      setValue("city", "");
-    }
-  }, [industryOptions]);
-
   // Remove the setPrimaryContact function that enforces only one primary contact
   const togglePrimaryContact = (id: number) => {
     const contactIndex = fields.findIndex((field) => field.id === id);
@@ -311,7 +367,11 @@ export default function AddCustomerPage({
       };
 
       // Call the mutation
-      createCustomer(payload);
+      if (isEditMode) {
+        updateCustomer(payload);
+      } else {
+        createCustomer(payload);
+      }
     } catch (_error) {
       setSubmissionStatus("error");
       setTimeout(() => setSubmissionStatus("idle"), 3000);
@@ -371,7 +431,7 @@ export default function AddCustomerPage({
     <div className="flex-1 space-y-4 p-4 pt-22">
       <div className="flex items-center justify-between space-y-0">
         <h2 className="text-3xl font-bold tracking-tight">
-          {isEditMode ? "Edit Customer" : "Customer Management"}
+          {"Customer Management"}
         </h2>
       </div>
 
@@ -397,7 +457,7 @@ export default function AddCustomerPage({
                 <Card className="mb-6">
                   <CardHeader className="pb-0">
                     <CardTitle className="text-xl font-semibold">
-                      Add New Customer
+                      {isEditMode ? "Edit Customer" : "Add New Customer"}
                     </CardTitle>
                     <CardDescription>
                       Add a new customer to your database with complete contact

@@ -31,9 +31,10 @@ const API = {
   },
   customerMain: {
     list: 'customer/list',
+    getCustomerById:"customer",
     create: 'customer/create',
     createSingle: 'customer/create-single',
-    update: 'customer/update',
+    update: 'customer/patch',
     delete: 'customer/delete',
     statusCounts: 'customer/status-counts',
     pendingList: 'customer/status-pending-list',
