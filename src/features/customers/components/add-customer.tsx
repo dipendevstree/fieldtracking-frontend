@@ -2,7 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { AlertCircle, Plus, Trash2, Search } from "lucide-react";
+import { AlertCircle, Plus, Trash2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -28,13 +28,13 @@ import UploadHistory from "./upload-history";
 import { useGetIndustry } from "../services/Customers.hook";
 import { useGetAllCustomerType } from "@/features/customer-type/services/CustomerTypehook";
 import { useSelectOptions } from "@/hooks/use-select-option";
-import { Autocomplete, LoadScript } from "@react-google-maps/api";
 import { useGetAllRolesForDropdown } from "@/features/UserManagement/services/Roles.hook";
 import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
 import type { CustomerType } from "@/features/customer-type/type/type";
 import { useNavigate } from "@tanstack/react-router";
 import { useCreateCustomer } from "../services/Customers.hook";
 import type { CreateCustomerPayload } from "../services/Customers.hook";
+import { LocationAutoSearchBox } from "./LocationAutoSearchBox";
 
 // Define Zod schema
 const customerFormSchema = z.object({
@@ -136,8 +136,6 @@ export default function AddCustomerPage({
     control,
     name: "contacts",
   });
-
-  console.log(errors, "errors");
 
   const { allCustomerType = [] } = useGetAllCustomerType({
     page: 1,
@@ -324,48 +322,6 @@ export default function AddCustomerPage({
     }
   };
 
-  const LocationSearchBox = ({
-    onSelectLocation,
-  }: {
-    onSelectLocation: (place: google.maps.places.PlaceResult | null) => void;
-  }) => {
-    const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(
-      null
-    );
-
-    const onLoad = (autocomplete: google.maps.places.Autocomplete) => {
-      autocompleteRef.current = autocomplete;
-    };
-
-    const onPlaceChanged = () => {
-      if (autocompleteRef.current !== null) {
-        const place: any = autocompleteRef.current.getPlace();
-        onSelectLocation(place);
-      }
-    };
-
-    return (
-      <LoadScript
-        googleMapsApiKey="AIzaSyCEkQ_KW66M2BjP03QiJ3R4dyzPWcOfuvw"
-        libraries={["places"]}
-      >
-        <div className="relative">
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <Search className="h-4 w-4 text-gray-400" />
-          </div>
-
-          <Autocomplete onLoad={onLoad} onPlaceChanged={onPlaceChanged}>
-            <Input
-              type="text"
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Search for an address..."
-            />
-          </Autocomplete>
-        </div>
-      </LoadScript>
-    );
-  };
-
   const addNewContact = () => {
     const newContactId = Date.now();
     append({
@@ -530,7 +486,7 @@ export default function AddCustomerPage({
                           )}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="customerType">Customer Type</Label>
+                          <Label htmlFor="customerType">Customer Type *</Label>
                           <Controller
                             name="customerType"
                             control={control}
@@ -586,77 +542,71 @@ export default function AddCustomerPage({
                             </p>
                           )}
                         </div>
-
                         <div className="space-y-2">
-                          <Label htmlFor="location">Street Address</Label>
-                          <LocationSearchBox
-                            onSelectLocation={(place) => {
-                              if (place && place.name) {
-                                form.setValue("address", place.name, {
-                                  shouldValidate: true,
-                                });
+                          <Label htmlFor="address">Street Address *</Label>
+                          <Controller
+                            name="address"
+                            control={control}
+                            render={({ field }) => (
+                              <LocationAutoSearchBox
+                                // Pass the field value and onChange handler from the Controller
+                                value={field.value}
+                                onValueChange={field.onChange}
+                                onSelectLocation={(place) => {
+                                  if (place) {
+                                    // Set the other location-related fields
+                                    form.setValue(
+                                      "latitude",
+                                      place.geometry?.location?.lat() ?? 0,
+                                      { shouldValidate: true }
+                                    );
+                                    form.setValue(
+                                      "longitude",
+                                      place.geometry?.location?.lng() ?? 0,
+                                      { shouldValidate: true }
+                                    );
 
-                                if (place.geometry && place.geometry.location) {
-                                  form.setValue(
-                                    "latitude",
-                                    place.geometry.location.lat(),
-                                    {
-                                      shouldValidate: true,
-                                    }
-                                  );
-                                  form.setValue(
-                                    "longitude",
-                                    place.geometry.location.lng(),
-                                    {
-                                      shouldValidate: true,
-                                    }
-                                  );
-                                }
+                                    let city = "";
+                                    let state = "";
+                                    let zipCode = "";
+                                    let country = "";
 
-                                if (place.address_components) {
-                                  let city = "";
-                                  let state = "";
-                                  let zipCode = "";
-                                  let country = "";
-
-                                  place.address_components.forEach(
-                                    (component) => {
-                                      const types = component.types;
-                                      if (types.includes("locality"))
-                                        city = component.long_name;
-                                      if (
-                                        types.includes(
-                                          "administrative_area_level_1"
+                                    place.address_components?.forEach(
+                                      (component) => {
+                                        const types = component.types;
+                                        if (types.includes("locality"))
+                                          city = component.long_name;
+                                        if (
+                                          types.includes(
+                                            "administrative_area_level_1"
+                                          )
                                         )
-                                      )
-                                        state = component.long_name;
-                                      if (types.includes("postal_code"))
-                                        zipCode = component.long_name;
-                                      if (types.includes("country"))
-                                        country = component.long_name;
-                                    }
-                                  );
+                                          state = component.long_name;
+                                        if (types.includes("postal_code"))
+                                          zipCode = component.long_name;
+                                        if (types.includes("country"))
+                                          country = component.long_name;
+                                      }
+                                    );
 
-                                  if (city)
                                     form.setValue("city", city, {
                                       shouldValidate: true,
                                     });
-                                  if (state)
                                     form.setValue("state", state, {
                                       shouldValidate: true,
                                     });
-                                  if (zipCode)
                                     form.setValue("zipCode", zipCode, {
                                       shouldValidate: true,
                                     });
-                                  if (country)
                                     form.setValue("country", country, {
                                       shouldValidate: true,
                                     });
-                                }
-                              }
-                            }}
+                                  }
+                                }}
+                              />
+                            )}
                           />
+                          {/* The validation error message remains the same */}
 
                           {(errors.latitude ||
                             errors.longitude ||
@@ -667,11 +617,10 @@ export default function AddCustomerPage({
                             >
                               <AlertCircle className="h-3 w-3" />
                               {errors?.address?.message ||
-                                "Unable to find location details. Please select adifferent address."}
+                                "Please select a valid street address."}
                             </p>
                           )}
                         </div>
-
                         <div className="space-y-2">
                           <Label htmlFor="city">City *</Label>
                           <Controller
@@ -699,7 +648,7 @@ export default function AddCustomerPage({
                           )}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="state">State/Province</Label>
+                          <Label htmlFor="state">State/Province *</Label>
                           <Controller
                             name="state"
                             control={control}
@@ -725,7 +674,7 @@ export default function AddCustomerPage({
                           )}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="zipCode">ZIP/Postal Code</Label>
+                          <Label htmlFor="zipCode">ZIP/Postal Code *</Label>
                           <Controller
                             name="zipCode"
                             control={control}
@@ -751,7 +700,7 @@ export default function AddCustomerPage({
                           )}
                         </div>
                         <div className="space-y-3">
-                          <Label htmlFor="country">Country</Label>
+                          <Label htmlFor="country">Country *</Label>
                           <Controller
                             name="country"
                             control={control}
@@ -878,7 +827,7 @@ export default function AddCustomerPage({
                           </div>
                           <div className="border-t border-gray-200 -mx-4 max-w-m" />
                           {contact.isPrimary && (
-                            <div className="p-3 rounded mb-2">
+                            <div className="rounded mb-4">
                               <Label htmlFor={`userRole-${index}`}>
                                 Assigned Sales Rep
                               </Label>
