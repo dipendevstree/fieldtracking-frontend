@@ -460,9 +460,11 @@ export default function AddCustomerPage({
                       {isEditMode ? "Edit Customer" : "Add New Customer"}
                     </CardTitle>
                     <CardDescription>
-                      Add a new customer to your database with complete contact
-                      and business information.
+                      {isEditMode
+                        ? "Update existing customer details and contact information."
+                        : "Add a new customer to your database with complete contact and business information."}
                     </CardDescription>
+
                     <div className="border-t border-gray-200 -mx-4 mb-2" />
                   </CardHeader>
                   <CardContent>
