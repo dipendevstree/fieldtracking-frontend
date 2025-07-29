@@ -452,6 +452,11 @@ export default function AddCustomerPage({
               <form
                 ref={formRef}
                 onSubmit={handleSubmit(onSubmitForm, onError)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                  }
+                }}
                 className="space-y-8"
               >
                 <Card className="mb-6">
