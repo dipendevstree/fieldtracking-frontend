@@ -28,6 +28,7 @@ import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedUserTerritoryIndexRouteImport } from './routes/_authenticated/user-territory/index'
 import { Route as AuthenticatedUserManagementIndexRouteImport } from './routes/_authenticated/user-management/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
+import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authenticated/reports/index'
 import { Route as AuthenticatedProductsIndexRouteImport } from './routes/_authenticated/products/index'
 import { Route as AuthenticatedOrganizationsIndexRouteImport } from './routes/_authenticated/organizations/index'
 import { Route as AuthenticatedMerchantsIndexRouteImport } from './routes/_authenticated/merchants/index'
@@ -36,6 +37,8 @@ import { Route as AuthenticatedLivetrackingIndexRouteImport } from './routes/_au
 import { Route as AuthenticatedInventoryIndexRouteImport } from './routes/_authenticated/inventory/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
 import { Route as AuthenticatedDriversIndexRouteImport } from './routes/_authenticated/drivers/index'
+import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
+import { Route as AuthenticatedCustomerTypeIndexRouteImport } from './routes/_authenticated/customer-type/index'
 import { Route as AuthenticatedCategoriesIndexRouteImport } from './routes/_authenticated/categories/index'
 import { Route as AuthenticatedCalendarIndexRouteImport } from './routes/_authenticated/calendar/index'
 import { Route as AuthenticatedBuyersIndexRouteImport } from './routes/_authenticated/buyers/index'
@@ -56,6 +59,7 @@ import { Route as AuthenticatedManagementsCategoriesRouteImport } from './routes
 import { Route as AuthenticatedDriversTrackingRouteImport } from './routes/_authenticated/drivers/tracking'
 import { Route as AuthenticatedDriversPaymentsRouteImport } from './routes/_authenticated/drivers/payments'
 import { Route as AuthenticatedDriversOrdersRouteImport } from './routes/_authenticated/drivers/orders'
+import { Route as AuthenticatedCustomersAddCustomerRouteImport } from './routes/_authenticated/customers/add-customer'
 import { Route as AuthenticatedCalendarVisitReportRouteImport } from './routes/_authenticated/calendar/visit-report'
 import { Route as AuthenticatedCalendarUpcomingVisitRouteImport } from './routes/_authenticated/calendar/upcoming-visit'
 import { Route as AuthenticatedCalendarTaskAssignmentRouteImport } from './routes/_authenticated/calendar/task-assignment'
@@ -65,11 +69,13 @@ import { Route as AuthenticatedBuyersPartnershipsRouteImport } from './routes/_a
 import { Route as AuthenticatedBuyersOrdersRouteImport } from './routes/_authenticated/buyers/orders'
 import { Route as AuthenticatedBuyersInsuranceRouteImport } from './routes/_authenticated/buyers/insurance'
 import { Route as AuthenticatedApprovalsMonthlyConsolidatedRouteImport } from './routes/_authenticated/approvals/monthly-consolidated'
+import { Route as AuthenticatedApprovalsExpenseCategoryRouteImport } from './routes/_authenticated/approvals/expense-category'
 import { Route as AuthenticatedFeedbackformFeedbackformRouteImport } from './routes/_authenticated/Feedbackform/Feedbackform'
 import { Route as AuthenticatedUserTerritoryViewTerritorywiseUserTerritoyIdRouteImport } from './routes/_authenticated/user-territory/view-territorywise-user.$territoyId'
 import { Route as AuthenticatedUserManagementEditRolesPermissionRoleIdRouteImport } from './routes/_authenticated/user-management/edit-roles-permission.$roleId'
 import { Route as AuthenticatedMerchantsDetailsIdRouteImport } from './routes/_authenticated/merchants/details.$id'
 import { Route as AuthenticatedDriversDetailsOrderIdRouteImport } from './routes/_authenticated/drivers/details.$orderId'
+import { Route as AuthenticatedCustomersEditCustomerCustomerIdRouteImport } from './routes/_authenticated/customers/edit-customer.$customerId'
 import { Route as AuthenticatedCalendarScheduleVisitIdRouteImport } from './routes/_authenticated/calendar/schedule-visit.$id'
 import { Route as AuthenticatedApprovalsDailyExpenseDetailsIdRouteImport } from './routes/_authenticated/approvals/daily-expense-details.$id'
 
@@ -172,6 +178,12 @@ const AuthenticatedSettingsIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedReportsIndexRoute =
+  AuthenticatedReportsIndexRouteImport.update({
+    id: '/reports/',
+    path: '/reports/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedProductsIndexRoute =
   AuthenticatedProductsIndexRouteImport.update({
     id: '/products/',
@@ -218,6 +230,18 @@ const AuthenticatedDriversIndexRoute =
   AuthenticatedDriversIndexRouteImport.update({
     id: '/drivers/',
     path: '/drivers/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCustomersIndexRoute =
+  AuthenticatedCustomersIndexRouteImport.update({
+    id: '/customers/',
+    path: '/customers/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCustomerTypeIndexRoute =
+  AuthenticatedCustomerTypeIndexRouteImport.update({
+    id: '/customer-type/',
+    path: '/customer-type/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCategoriesIndexRoute =
@@ -340,6 +364,12 @@ const AuthenticatedDriversOrdersRoute =
     path: '/drivers/orders',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedCustomersAddCustomerRoute =
+  AuthenticatedCustomersAddCustomerRouteImport.update({
+    id: '/customers/add-customer',
+    path: '/customers/add-customer',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedCalendarVisitReportRoute =
   AuthenticatedCalendarVisitReportRouteImport.update({
     id: '/calendar/visit-report',
@@ -394,6 +424,12 @@ const AuthenticatedApprovalsMonthlyConsolidatedRoute =
     path: '/approvals/monthly-consolidated',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedApprovalsExpenseCategoryRoute =
+  AuthenticatedApprovalsExpenseCategoryRouteImport.update({
+    id: '/approvals/expense-category',
+    path: '/approvals/expense-category',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedFeedbackformFeedbackformRoute =
   AuthenticatedFeedbackformFeedbackformRouteImport.update({
     id: '/Feedbackform/Feedbackform',
@@ -422,6 +458,12 @@ const AuthenticatedDriversDetailsOrderIdRoute =
   AuthenticatedDriversDetailsOrderIdRouteImport.update({
     id: '/drivers/details/$orderId',
     path: '/drivers/details/$orderId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedCustomersEditCustomerCustomerIdRoute =
+  AuthenticatedCustomersEditCustomerCustomerIdRouteImport.update({
+    id: '/customers/edit-customer/$customerId',
+    path: '/customers/edit-customer/$customerId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCalendarScheduleVisitIdRoute =
@@ -453,6 +495,7 @@ export interface FileRoutesByFullPath {
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
   '/Feedbackform/Feedbackform': typeof AuthenticatedFeedbackformFeedbackformRoute
+  '/approvals/expense-category': typeof AuthenticatedApprovalsExpenseCategoryRoute
   '/approvals/monthly-consolidated': typeof AuthenticatedApprovalsMonthlyConsolidatedRoute
   '/buyers/insurance': typeof AuthenticatedBuyersInsuranceRoute
   '/buyers/orders': typeof AuthenticatedBuyersOrdersRoute
@@ -462,6 +505,7 @@ export interface FileRoutesByFullPath {
   '/calendar/task-assignment': typeof AuthenticatedCalendarTaskAssignmentRoute
   '/calendar/upcoming-visit': typeof AuthenticatedCalendarUpcomingVisitRoute
   '/calendar/visit-report': typeof AuthenticatedCalendarVisitReportRoute
+  '/customers/add-customer': typeof AuthenticatedCustomersAddCustomerRoute
   '/drivers/orders': typeof AuthenticatedDriversOrdersRoute
   '/drivers/payments': typeof AuthenticatedDriversPaymentsRoute
   '/drivers/tracking': typeof AuthenticatedDriversTrackingRoute
@@ -482,6 +526,8 @@ export interface FileRoutesByFullPath {
   '/buyers': typeof AuthenticatedBuyersIndexRoute
   '/calendar': typeof AuthenticatedCalendarIndexRoute
   '/categories': typeof AuthenticatedCategoriesIndexRoute
+  '/customer-type': typeof AuthenticatedCustomerTypeIndexRoute
+  '/customers': typeof AuthenticatedCustomersIndexRoute
   '/drivers': typeof AuthenticatedDriversIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/inventory': typeof AuthenticatedInventoryIndexRoute
@@ -490,12 +536,14 @@ export interface FileRoutesByFullPath {
   '/merchants': typeof AuthenticatedMerchantsIndexRoute
   '/organizations': typeof AuthenticatedOrganizationsIndexRoute
   '/products': typeof AuthenticatedProductsIndexRoute
+  '/reports': typeof AuthenticatedReportsIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/user-management': typeof AuthenticatedUserManagementIndexRoute
   '/user-territory': typeof AuthenticatedUserTerritoryIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/approvals/daily-expense-details/$id': typeof AuthenticatedApprovalsDailyExpenseDetailsIdRoute
   '/calendar/schedule-visit/$id': typeof AuthenticatedCalendarScheduleVisitIdRoute
+  '/customers/edit-customer/$customerId': typeof AuthenticatedCustomersEditCustomerCustomerIdRoute
   '/drivers/details/$orderId': typeof AuthenticatedDriversDetailsOrderIdRoute
   '/merchants/details/$id': typeof AuthenticatedMerchantsDetailsIdRoute
   '/user-management/edit-roles-permission/$roleId': typeof AuthenticatedUserManagementEditRolesPermissionRoleIdRoute
@@ -515,6 +563,7 @@ export interface FileRoutesByTo {
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
   '/Feedbackform/Feedbackform': typeof AuthenticatedFeedbackformFeedbackformRoute
+  '/approvals/expense-category': typeof AuthenticatedApprovalsExpenseCategoryRoute
   '/approvals/monthly-consolidated': typeof AuthenticatedApprovalsMonthlyConsolidatedRoute
   '/buyers/insurance': typeof AuthenticatedBuyersInsuranceRoute
   '/buyers/orders': typeof AuthenticatedBuyersOrdersRoute
@@ -524,6 +573,7 @@ export interface FileRoutesByTo {
   '/calendar/task-assignment': typeof AuthenticatedCalendarTaskAssignmentRoute
   '/calendar/upcoming-visit': typeof AuthenticatedCalendarUpcomingVisitRoute
   '/calendar/visit-report': typeof AuthenticatedCalendarVisitReportRoute
+  '/customers/add-customer': typeof AuthenticatedCustomersAddCustomerRoute
   '/drivers/orders': typeof AuthenticatedDriversOrdersRoute
   '/drivers/payments': typeof AuthenticatedDriversPaymentsRoute
   '/drivers/tracking': typeof AuthenticatedDriversTrackingRoute
@@ -544,6 +594,8 @@ export interface FileRoutesByTo {
   '/buyers': typeof AuthenticatedBuyersIndexRoute
   '/calendar': typeof AuthenticatedCalendarIndexRoute
   '/categories': typeof AuthenticatedCategoriesIndexRoute
+  '/customer-type': typeof AuthenticatedCustomerTypeIndexRoute
+  '/customers': typeof AuthenticatedCustomersIndexRoute
   '/drivers': typeof AuthenticatedDriversIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/inventory': typeof AuthenticatedInventoryIndexRoute
@@ -552,12 +604,14 @@ export interface FileRoutesByTo {
   '/merchants': typeof AuthenticatedMerchantsIndexRoute
   '/organizations': typeof AuthenticatedOrganizationsIndexRoute
   '/products': typeof AuthenticatedProductsIndexRoute
+  '/reports': typeof AuthenticatedReportsIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/user-management': typeof AuthenticatedUserManagementIndexRoute
   '/user-territory': typeof AuthenticatedUserTerritoryIndexRoute
   '/users': typeof AuthenticatedUsersIndexRoute
   '/approvals/daily-expense-details/$id': typeof AuthenticatedApprovalsDailyExpenseDetailsIdRoute
   '/calendar/schedule-visit/$id': typeof AuthenticatedCalendarScheduleVisitIdRoute
+  '/customers/edit-customer/$customerId': typeof AuthenticatedCustomersEditCustomerCustomerIdRoute
   '/drivers/details/$orderId': typeof AuthenticatedDriversDetailsOrderIdRoute
   '/merchants/details/$id': typeof AuthenticatedMerchantsDetailsIdRoute
   '/user-management/edit-roles-permission/$roleId': typeof AuthenticatedUserManagementEditRolesPermissionRoleIdRoute
@@ -581,6 +635,7 @@ export interface FileRoutesById {
   '/(errors)/503': typeof errors503Route
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/Feedbackform/Feedbackform': typeof AuthenticatedFeedbackformFeedbackformRoute
+  '/_authenticated/approvals/expense-category': typeof AuthenticatedApprovalsExpenseCategoryRoute
   '/_authenticated/approvals/monthly-consolidated': typeof AuthenticatedApprovalsMonthlyConsolidatedRoute
   '/_authenticated/buyers/insurance': typeof AuthenticatedBuyersInsuranceRoute
   '/_authenticated/buyers/orders': typeof AuthenticatedBuyersOrdersRoute
@@ -590,6 +645,7 @@ export interface FileRoutesById {
   '/_authenticated/calendar/task-assignment': typeof AuthenticatedCalendarTaskAssignmentRoute
   '/_authenticated/calendar/upcoming-visit': typeof AuthenticatedCalendarUpcomingVisitRoute
   '/_authenticated/calendar/visit-report': typeof AuthenticatedCalendarVisitReportRoute
+  '/_authenticated/customers/add-customer': typeof AuthenticatedCustomersAddCustomerRoute
   '/_authenticated/drivers/orders': typeof AuthenticatedDriversOrdersRoute
   '/_authenticated/drivers/payments': typeof AuthenticatedDriversPaymentsRoute
   '/_authenticated/drivers/tracking': typeof AuthenticatedDriversTrackingRoute
@@ -610,6 +666,8 @@ export interface FileRoutesById {
   '/_authenticated/buyers/': typeof AuthenticatedBuyersIndexRoute
   '/_authenticated/calendar/': typeof AuthenticatedCalendarIndexRoute
   '/_authenticated/categories/': typeof AuthenticatedCategoriesIndexRoute
+  '/_authenticated/customer-type/': typeof AuthenticatedCustomerTypeIndexRoute
+  '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
   '/_authenticated/drivers/': typeof AuthenticatedDriversIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/_authenticated/inventory/': typeof AuthenticatedInventoryIndexRoute
@@ -618,12 +676,14 @@ export interface FileRoutesById {
   '/_authenticated/merchants/': typeof AuthenticatedMerchantsIndexRoute
   '/_authenticated/organizations/': typeof AuthenticatedOrganizationsIndexRoute
   '/_authenticated/products/': typeof AuthenticatedProductsIndexRoute
+  '/_authenticated/reports/': typeof AuthenticatedReportsIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/user-management/': typeof AuthenticatedUserManagementIndexRoute
   '/_authenticated/user-territory/': typeof AuthenticatedUserTerritoryIndexRoute
   '/_authenticated/users/': typeof AuthenticatedUsersIndexRoute
   '/_authenticated/approvals/daily-expense-details/$id': typeof AuthenticatedApprovalsDailyExpenseDetailsIdRoute
   '/_authenticated/calendar/schedule-visit/$id': typeof AuthenticatedCalendarScheduleVisitIdRoute
+  '/_authenticated/customers/edit-customer/$customerId': typeof AuthenticatedCustomersEditCustomerCustomerIdRoute
   '/_authenticated/drivers/details/$orderId': typeof AuthenticatedDriversDetailsOrderIdRoute
   '/_authenticated/merchants/details/$id': typeof AuthenticatedMerchantsDetailsIdRoute
   '/_authenticated/user-management/edit-roles-permission/$roleId': typeof AuthenticatedUserManagementEditRolesPermissionRoleIdRoute
@@ -647,6 +707,7 @@ export interface FileRouteTypes {
     | '/503'
     | '/'
     | '/Feedbackform/Feedbackform'
+    | '/approvals/expense-category'
     | '/approvals/monthly-consolidated'
     | '/buyers/insurance'
     | '/buyers/orders'
@@ -656,6 +717,7 @@ export interface FileRouteTypes {
     | '/calendar/task-assignment'
     | '/calendar/upcoming-visit'
     | '/calendar/visit-report'
+    | '/customers/add-customer'
     | '/drivers/orders'
     | '/drivers/payments'
     | '/drivers/tracking'
@@ -676,6 +738,8 @@ export interface FileRouteTypes {
     | '/buyers'
     | '/calendar'
     | '/categories'
+    | '/customer-type'
+    | '/customers'
     | '/drivers'
     | '/help-center'
     | '/inventory'
@@ -684,12 +748,14 @@ export interface FileRouteTypes {
     | '/merchants'
     | '/organizations'
     | '/products'
+    | '/reports'
     | '/settings/'
     | '/user-management'
     | '/user-territory'
     | '/users'
     | '/approvals/daily-expense-details/$id'
     | '/calendar/schedule-visit/$id'
+    | '/customers/edit-customer/$customerId'
     | '/drivers/details/$orderId'
     | '/merchants/details/$id'
     | '/user-management/edit-roles-permission/$roleId'
@@ -709,6 +775,7 @@ export interface FileRouteTypes {
     | '/503'
     | '/'
     | '/Feedbackform/Feedbackform'
+    | '/approvals/expense-category'
     | '/approvals/monthly-consolidated'
     | '/buyers/insurance'
     | '/buyers/orders'
@@ -718,6 +785,7 @@ export interface FileRouteTypes {
     | '/calendar/task-assignment'
     | '/calendar/upcoming-visit'
     | '/calendar/visit-report'
+    | '/customers/add-customer'
     | '/drivers/orders'
     | '/drivers/payments'
     | '/drivers/tracking'
@@ -738,6 +806,8 @@ export interface FileRouteTypes {
     | '/buyers'
     | '/calendar'
     | '/categories'
+    | '/customer-type'
+    | '/customers'
     | '/drivers'
     | '/help-center'
     | '/inventory'
@@ -746,12 +816,14 @@ export interface FileRouteTypes {
     | '/merchants'
     | '/organizations'
     | '/products'
+    | '/reports'
     | '/settings'
     | '/user-management'
     | '/user-territory'
     | '/users'
     | '/approvals/daily-expense-details/$id'
     | '/calendar/schedule-visit/$id'
+    | '/customers/edit-customer/$customerId'
     | '/drivers/details/$orderId'
     | '/merchants/details/$id'
     | '/user-management/edit-roles-permission/$roleId'
@@ -774,6 +846,7 @@ export interface FileRouteTypes {
     | '/(errors)/503'
     | '/_authenticated/'
     | '/_authenticated/Feedbackform/Feedbackform'
+    | '/_authenticated/approvals/expense-category'
     | '/_authenticated/approvals/monthly-consolidated'
     | '/_authenticated/buyers/insurance'
     | '/_authenticated/buyers/orders'
@@ -783,6 +856,7 @@ export interface FileRouteTypes {
     | '/_authenticated/calendar/task-assignment'
     | '/_authenticated/calendar/upcoming-visit'
     | '/_authenticated/calendar/visit-report'
+    | '/_authenticated/customers/add-customer'
     | '/_authenticated/drivers/orders'
     | '/_authenticated/drivers/payments'
     | '/_authenticated/drivers/tracking'
@@ -803,6 +877,8 @@ export interface FileRouteTypes {
     | '/_authenticated/buyers/'
     | '/_authenticated/calendar/'
     | '/_authenticated/categories/'
+    | '/_authenticated/customer-type/'
+    | '/_authenticated/customers/'
     | '/_authenticated/drivers/'
     | '/_authenticated/help-center/'
     | '/_authenticated/inventory/'
@@ -811,12 +887,14 @@ export interface FileRouteTypes {
     | '/_authenticated/merchants/'
     | '/_authenticated/organizations/'
     | '/_authenticated/products/'
+    | '/_authenticated/reports/'
     | '/_authenticated/settings/'
     | '/_authenticated/user-management/'
     | '/_authenticated/user-territory/'
     | '/_authenticated/users/'
     | '/_authenticated/approvals/daily-expense-details/$id'
     | '/_authenticated/calendar/schedule-visit/$id'
+    | '/_authenticated/customers/edit-customer/$customerId'
     | '/_authenticated/drivers/details/$orderId'
     | '/_authenticated/merchants/details/$id'
     | '/_authenticated/user-management/edit-roles-permission/$roleId'
@@ -973,6 +1051,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/reports/': {
+      id: '/_authenticated/reports/'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AuthenticatedReportsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/products/': {
       id: '/_authenticated/products/'
       path: '/products'
@@ -1027,6 +1112,20 @@ declare module '@tanstack/react-router' {
       path: '/drivers'
       fullPath: '/drivers'
       preLoaderRoute: typeof AuthenticatedDriversIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/customers/': {
+      id: '/_authenticated/customers/'
+      path: '/customers'
+      fullPath: '/customers'
+      preLoaderRoute: typeof AuthenticatedCustomersIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/customer-type/': {
+      id: '/_authenticated/customer-type/'
+      path: '/customer-type'
+      fullPath: '/customer-type'
+      preLoaderRoute: typeof AuthenticatedCustomerTypeIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/categories/': {
@@ -1169,6 +1268,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDriversOrdersRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/customers/add-customer': {
+      id: '/_authenticated/customers/add-customer'
+      path: '/customers/add-customer'
+      fullPath: '/customers/add-customer'
+      preLoaderRoute: typeof AuthenticatedCustomersAddCustomerRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/calendar/visit-report': {
       id: '/_authenticated/calendar/visit-report'
       path: '/calendar/visit-report'
@@ -1232,6 +1338,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedApprovalsMonthlyConsolidatedRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/approvals/expense-category': {
+      id: '/_authenticated/approvals/expense-category'
+      path: '/approvals/expense-category'
+      fullPath: '/approvals/expense-category'
+      preLoaderRoute: typeof AuthenticatedApprovalsExpenseCategoryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/Feedbackform/Feedbackform': {
       id: '/_authenticated/Feedbackform/Feedbackform'
       path: '/Feedbackform/Feedbackform'
@@ -1265,6 +1378,13 @@ declare module '@tanstack/react-router' {
       path: '/drivers/details/$orderId'
       fullPath: '/drivers/details/$orderId'
       preLoaderRoute: typeof AuthenticatedDriversDetailsOrderIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/customers/edit-customer/$customerId': {
+      id: '/_authenticated/customers/edit-customer/$customerId'
+      path: '/customers/edit-customer/$customerId'
+      fullPath: '/customers/edit-customer/$customerId'
+      preLoaderRoute: typeof AuthenticatedCustomersEditCustomerCustomerIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/calendar/schedule-visit/$id': {
@@ -1350,6 +1470,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRouteRoute: typeof AuthenticatedSettingsRouteRouteWithChildren
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedFeedbackformFeedbackformRoute: typeof AuthenticatedFeedbackformFeedbackformRoute
+  AuthenticatedApprovalsExpenseCategoryRoute: typeof AuthenticatedApprovalsExpenseCategoryRoute
   AuthenticatedApprovalsMonthlyConsolidatedRoute: typeof AuthenticatedApprovalsMonthlyConsolidatedRoute
   AuthenticatedBuyersInsuranceRoute: typeof AuthenticatedBuyersInsuranceRoute
   AuthenticatedBuyersOrdersRoute: typeof AuthenticatedBuyersOrdersRoute
@@ -1359,6 +1480,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCalendarTaskAssignmentRoute: typeof AuthenticatedCalendarTaskAssignmentRoute
   AuthenticatedCalendarUpcomingVisitRoute: typeof AuthenticatedCalendarUpcomingVisitRoute
   AuthenticatedCalendarVisitReportRoute: typeof AuthenticatedCalendarVisitReportRoute
+  AuthenticatedCustomersAddCustomerRoute: typeof AuthenticatedCustomersAddCustomerRoute
   AuthenticatedDriversOrdersRoute: typeof AuthenticatedDriversOrdersRoute
   AuthenticatedDriversPaymentsRoute: typeof AuthenticatedDriversPaymentsRoute
   AuthenticatedDriversTrackingRoute: typeof AuthenticatedDriversTrackingRoute
@@ -1372,6 +1494,8 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBuyersIndexRoute: typeof AuthenticatedBuyersIndexRoute
   AuthenticatedCalendarIndexRoute: typeof AuthenticatedCalendarIndexRoute
   AuthenticatedCategoriesIndexRoute: typeof AuthenticatedCategoriesIndexRoute
+  AuthenticatedCustomerTypeIndexRoute: typeof AuthenticatedCustomerTypeIndexRoute
+  AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
   AuthenticatedDriversIndexRoute: typeof AuthenticatedDriversIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
   AuthenticatedInventoryIndexRoute: typeof AuthenticatedInventoryIndexRoute
@@ -1379,10 +1503,12 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMerchantsIndexRoute: typeof AuthenticatedMerchantsIndexRoute
   AuthenticatedOrganizationsIndexRoute: typeof AuthenticatedOrganizationsIndexRoute
   AuthenticatedProductsIndexRoute: typeof AuthenticatedProductsIndexRoute
+  AuthenticatedReportsIndexRoute: typeof AuthenticatedReportsIndexRoute
   AuthenticatedUserManagementIndexRoute: typeof AuthenticatedUserManagementIndexRoute
   AuthenticatedUserTerritoryIndexRoute: typeof AuthenticatedUserTerritoryIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
   AuthenticatedApprovalsDailyExpenseDetailsIdRoute: typeof AuthenticatedApprovalsDailyExpenseDetailsIdRoute
+  AuthenticatedCustomersEditCustomerCustomerIdRoute: typeof AuthenticatedCustomersEditCustomerCustomerIdRoute
   AuthenticatedDriversDetailsOrderIdRoute: typeof AuthenticatedDriversDetailsOrderIdRoute
   AuthenticatedMerchantsDetailsIdRoute: typeof AuthenticatedMerchantsDetailsIdRoute
   AuthenticatedUserManagementEditRolesPermissionRoleIdRoute: typeof AuthenticatedUserManagementEditRolesPermissionRoleIdRoute
@@ -1396,6 +1522,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedFeedbackformFeedbackformRoute:
     AuthenticatedFeedbackformFeedbackformRoute,
+  AuthenticatedApprovalsExpenseCategoryRoute:
+    AuthenticatedApprovalsExpenseCategoryRoute,
   AuthenticatedApprovalsMonthlyConsolidatedRoute:
     AuthenticatedApprovalsMonthlyConsolidatedRoute,
   AuthenticatedBuyersInsuranceRoute: AuthenticatedBuyersInsuranceRoute,
@@ -1409,6 +1537,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCalendarUpcomingVisitRoute:
     AuthenticatedCalendarUpcomingVisitRoute,
   AuthenticatedCalendarVisitReportRoute: AuthenticatedCalendarVisitReportRoute,
+  AuthenticatedCustomersAddCustomerRoute:
+    AuthenticatedCustomersAddCustomerRoute,
   AuthenticatedDriversOrdersRoute: AuthenticatedDriversOrdersRoute,
   AuthenticatedDriversPaymentsRoute: AuthenticatedDriversPaymentsRoute,
   AuthenticatedDriversTrackingRoute: AuthenticatedDriversTrackingRoute,
@@ -1423,6 +1553,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBuyersIndexRoute: AuthenticatedBuyersIndexRoute,
   AuthenticatedCalendarIndexRoute: AuthenticatedCalendarIndexRoute,
   AuthenticatedCategoriesIndexRoute: AuthenticatedCategoriesIndexRoute,
+  AuthenticatedCustomerTypeIndexRoute: AuthenticatedCustomerTypeIndexRoute,
+  AuthenticatedCustomersIndexRoute: AuthenticatedCustomersIndexRoute,
   AuthenticatedDriversIndexRoute: AuthenticatedDriversIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
   AuthenticatedInventoryIndexRoute: AuthenticatedInventoryIndexRoute,
@@ -1430,11 +1562,14 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMerchantsIndexRoute: AuthenticatedMerchantsIndexRoute,
   AuthenticatedOrganizationsIndexRoute: AuthenticatedOrganizationsIndexRoute,
   AuthenticatedProductsIndexRoute: AuthenticatedProductsIndexRoute,
+  AuthenticatedReportsIndexRoute: AuthenticatedReportsIndexRoute,
   AuthenticatedUserManagementIndexRoute: AuthenticatedUserManagementIndexRoute,
   AuthenticatedUserTerritoryIndexRoute: AuthenticatedUserTerritoryIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
   AuthenticatedApprovalsDailyExpenseDetailsIdRoute:
     AuthenticatedApprovalsDailyExpenseDetailsIdRoute,
+  AuthenticatedCustomersEditCustomerCustomerIdRoute:
+    AuthenticatedCustomersEditCustomerCustomerIdRoute,
   AuthenticatedDriversDetailsOrderIdRoute:
     AuthenticatedDriversDetailsOrderIdRoute,
   AuthenticatedMerchantsDetailsIdRoute: AuthenticatedMerchantsDetailsIdRoute,
