@@ -49,7 +49,7 @@ export default function UserPolylineMap({
             checked={showLabels}
             onChange={() => setShowLabels((prev) => !prev)}
           />
-          Number
+          {path.length}
         </label>
       </div>
 
