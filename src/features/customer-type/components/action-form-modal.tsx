@@ -116,6 +116,7 @@ export function CustomerTypeActionModal() {
           if (!value) closeModal()
           else setOpen('add')
         }}
+        resetOnSubmitSuccess
       />
 
       {/* Edit + Delete Modals */}

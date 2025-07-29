@@ -48,24 +48,22 @@ const ExpenseCategory = () => {
 
   return (
     <Main className={cn("flex flex-col gap-2 p-4")}>
-      <div className="mt-6">
-        <TablePageLayout
-          title="All Categories"
-          description="Manage category assignments"
-          onAddButtonClick={handleAddCategory}
-          addButtonText="Add Category"
-          modulePermission="expense_category"
-          moduleAction="add"
-        >
-          <CategoryTable
-            data={allCategories}
-            totalCount={totalCount}
-            loading={isLoading}
-            currentPage={pagination.page}
-            paginationCallbacks={{ onPaginationChange }}
-          />
-        </TablePageLayout>
-      </div>
+      <TablePageLayout
+        title="All Categories"
+        description="Manage category assignments"
+        onAddButtonClick={handleAddCategory}
+        addButtonText="Add Category"
+        modulePermission="expense_category"
+        moduleAction="add"
+      >
+        <CategoryTable
+          data={allCategories}
+          totalCount={totalCount}
+          loading={isLoading}
+          currentPage={pagination.page}
+          paginationCallbacks={{ onPaginationChange }}
+        />
+      </TablePageLayout>
 
       {open && <CategoryActionModal key={"category-action-modal"} />}
     </Main>

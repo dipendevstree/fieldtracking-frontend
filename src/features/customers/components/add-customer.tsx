@@ -106,7 +106,7 @@ export default function AddCustomerPage({
 
   // Add create customer mutation
   const { mutate: createCustomer } = useCreateCustomer(() => {
-    setSubmissionStatus("success");
+    // setSubmissionStatus("success");
     setTimeout(() => {
       setSubmissionStatus("idle");
       form.reset(); // Reset form on success
@@ -452,6 +452,11 @@ export default function AddCustomerPage({
               <form
                 ref={formRef}
                 onSubmit={handleSubmit(onSubmitForm, onError)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                  }
+                }}
                 className="space-y-8"
               >
                 <Card className="mb-6">
@@ -460,9 +465,11 @@ export default function AddCustomerPage({
                       {isEditMode ? "Edit Customer" : "Add New Customer"}
                     </CardTitle>
                     <CardDescription>
-                      Add a new customer to your database with complete contact
-                      and business information.
+                      {isEditMode
+                        ? "Update existing customer details and contact information."
+                        : "Add a new customer to your database with complete contact and business information."}
                     </CardDescription>
+
                     <div className="border-t border-gray-200 -mx-4 mb-2" />
                   </CardHeader>
                   <CardContent>
@@ -1153,7 +1160,14 @@ export default function AddCustomerPage({
                         </div>
                       ))}
                     </div>
-                    <div className="flex justify-end gap-4 pt-6">
+                    <div className="flex justify-end gap-2 pt-6">
+                      <Button
+                        className="px-8"
+                        onClick={() => navigate({ to: "/customers" })}
+                        variant={"outline"}
+                      >
+                        Cancel
+                      </Button>
                       <Button type="submit" className="px-8">
                         {isEditMode ? "Update" : "Save"}
                       </Button>
