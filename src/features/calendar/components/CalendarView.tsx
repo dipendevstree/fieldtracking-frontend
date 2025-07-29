@@ -68,6 +68,8 @@ export interface FormData {
   salesRep: string
   search: string
   territoryId: string
+  customerId:string
+  priority:string
 }
 
 type MappedVisit = {

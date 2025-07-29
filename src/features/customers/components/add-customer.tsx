@@ -106,7 +106,7 @@ export default function AddCustomerPage({
 
   // Add create customer mutation
   const { mutate: createCustomer } = useCreateCustomer(() => {
-    setSubmissionStatus("success");
+    // setSubmissionStatus("success");
     setTimeout(() => {
       setSubmissionStatus("idle");
       form.reset(); // Reset form on success
@@ -1153,7 +1153,14 @@ export default function AddCustomerPage({
                         </div>
                       ))}
                     </div>
-                    <div className="flex justify-end gap-4 pt-6">
+                    <div className="flex justify-end gap-2 pt-6">
+                      <Button
+                        className="px-8"
+                        onClick={() => navigate({ to: "/customers" })}
+                        variant={"outline"}
+                      >
+                        Cancel
+                      </Button>
                       <Button type="submit" className="px-8">
                         {isEditMode ? "Update" : "Save"}
                       </Button>
