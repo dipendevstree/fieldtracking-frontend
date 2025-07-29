@@ -15,6 +15,7 @@ import UserListMap from "./components/UserListMap";
 import { useInfiniteUsers } from "./services/live-tracking-services";
 import { GoogleMap } from "@react-google-maps/api";
 import { useInView } from "react-intersection-observer";
+import { socket } from "@/socket/socket";
 
 // Assuming you have a Button component
 const AHMEDABAD_CENTER = { lat: 23.0225, lng: 72.5714 };
@@ -162,6 +163,9 @@ export default function Livetracking() {
   }, []);
 
   const handleBackToList = () => {
+    if (socket) {
+      socket.emit("untrack_user", { userId });
+    }
     setSelectedUserId("");
     setPath([]);
     setCurrentPosition(null);

@@ -13,6 +13,7 @@ import {
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import { FilterConfig } from "@/components/global-filter-section";
 import { getHaversineDistance } from "./data/commonFunction";
+import moment from "moment-timezone";
 
 interface UserTrackingTimelineProps {
   userId: any;
@@ -121,7 +122,18 @@ const UserTrackingTimeline = ({
     };
 
     const handleLiveLocation = (event: any) => {
-      if (event?.lat && event?.long) {
+      console.log(
+        "event123456",
+        event,
+        moment(event.date).format("YYYY-MM-DD"),
+        selectedDate
+      );
+
+      if (
+        event?.lat &&
+        event?.long &&
+        moment(event.date).format("YYYY-MM-DD") === selectedDate
+      ) {
         const newPoint = {
           lat: parseFloat(event.lat),
           lng: parseFloat(event.long),
@@ -157,7 +169,7 @@ const UserTrackingTimeline = ({
       socket.off("connect", handleConnect);
       socket.off("live_location", handleLiveLocation);
     };
-  }, [socket, userId]); // Added props to dependency array
+  }, [socket, userId, selectedDate]); // Added props to dependency array
 
   // Dynamic timeline formatter (no changes needed here)
   const formatTimelineData = (sessions: any[]) => {

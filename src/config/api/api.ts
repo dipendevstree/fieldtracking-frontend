@@ -23,6 +23,23 @@ const API = {
     userTracking:'user-tracking/user',
     userList:'users/list'
   },
+  customerType: {
+    list: 'customerType/list',
+    create: 'customerType/create',
+    update: 'customerType/patch',
+    delete: 'customerType/delete',
+  },
+  customerMain: {
+    list: 'customer/list',
+    getCustomerById:"customer",
+    create: 'customer/create',
+    createSingle: 'customer/create-single',
+    update: 'customer/patch',
+    delete: 'customer/delete',
+    statusCounts: 'customer/status-counts',
+    pendingList: 'customer/status-pending-list',
+    updateStatus: 'customer/update-status'
+  },
   merchants: {
     list: 'merchant/list',
     create: 'merchant/add-merchant',
