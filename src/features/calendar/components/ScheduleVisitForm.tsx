@@ -405,7 +405,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                     </p>
                   )}
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                {/* <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="city">
                       City <span className="text-red-500">*</span>
@@ -492,7 +492,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                       </p>
                     )}
                   </div>
-                </div>
+                </div> */}
 
                 <div className="grid grid-cols-2 gap-4 border-t pt-4 mt-2">
                   <div className="w-full space-y-2">
