@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { AlertCircle, Plus, Trash2 } from "lucide-react";
+import { AlertCircle, MapPin, Plus, Trash2 } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -38,7 +38,8 @@ import type { CustomerType } from "@/features/customer-type/type/type";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useCreateCustomer } from "../services/Customers.hook";
 import type { CreateCustomerPayload } from "../services/Customers.hook";
-import { LocationAutoSearchBox } from "./LocationAutoSearchBox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import LocationPicker from "./LocationPicker";
 
 // Define Zod schema
 const customerFormSchema = z.object({
@@ -86,6 +87,11 @@ export default function AddCustomerPage({
   const [submissionStatus, setSubmissionStatus] = useState<
     "idle" | "success" | "error"
   >("idle");
+  const [locationInputMode, setLocationInputMode] = useState<"search" | "map">(
+    "map"
+  );
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [latLng, setLatLng] = useState("");
   const [messageType, setMessageType] = useState<"draft" | "final">("final");
   const formRef = useRef<HTMLFormElement>(null);
   const { customerId } = useParams({ strict: false });
@@ -96,23 +102,19 @@ export default function AddCustomerPage({
     isEditMode // Only run this query if we are in edit mode
   );
 
-  const { mutate: updateCustomer } = useUpdateCustomer(customerId ?? "", () => {
-    setSubmissionStatus("success");
-    setTimeout(() => {
-      setSubmissionStatus("idle");
+  const { mutate: updateCustomer, isPending: updatePending } =
+    useUpdateCustomer(customerId ?? "", () => {
       navigate({ to: "/customers" });
-    }, 2000);
-  });
+    });
 
   // Add create customer mutation
-  const { mutate: createCustomer } = useCreateCustomer(() => {
-    // setSubmissionStatus("success");
-    setTimeout(() => {
-      setSubmissionStatus("idle");
+  const { mutate: createCustomer, isPending: createPending } =
+    useCreateCustomer(() => {
       form.reset(); // Reset form on success
       navigate({ to: "/customers" });
-    }, 2000);
-  });
+    });
+
+  const isPending = updatePending || createPending;
 
   const form = useForm<TCustomerFormSchema>({
     resolver: zodResolver(customerFormSchema),
@@ -144,7 +146,25 @@ export default function AddCustomerPage({
     },
   });
 
-  // Remove unused reset variable
+  // *** HANDLER FUNCTION TO RECEIVE DATA FROM LOCATION PICKER ***
+  const handleMapLocationSelect = (data: {
+    lat: number;
+    lng: number;
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    postalCode: string;
+  }) => {
+    form.setValue("latitude", data.lat, { shouldValidate: true });
+    form.setValue("longitude", data.lng, { shouldValidate: true });
+    form.setValue("address", data.address, { shouldValidate: true });
+    form.setValue("city", data.city, { shouldValidate: true });
+    form.setValue("state", data.state, { shouldValidate: true });
+    form.setValue("country", data.country, { shouldValidate: true });
+    form.setValue("zipCode", data.postalCode, { shouldValidate: true });
+  };
+
   const {
     control,
     handleSubmit,
@@ -426,9 +446,15 @@ export default function AddCustomerPage({
     onSubmitForm(formData);
   }, onError);
 
-  // Update the form reference
   return (
     <div className="flex-1 space-y-4 p-4 pt-22">
+      <LocationPicker
+        open={isMapModalOpen}
+        onOpenChange={setIsMapModalOpen}
+        onLocationSelect={handleMapLocationSelect}
+        latLng={latLng}
+      />
+
       <div className="flex items-center justify-between space-y-0">
         <h2 className="text-3xl font-bold tracking-tight">
           {"Customer Management"}
@@ -460,6 +486,7 @@ export default function AddCustomerPage({
                 className="space-y-8"
               >
                 <Card className="mb-6">
+                  {/* ... CardHeader ... */}
                   <CardHeader className="pb-0">
                     <CardTitle className="text-xl font-semibold">
                       {isEditMode ? "Edit Customer" : "Add New Customer"}
@@ -615,75 +642,113 @@ export default function AddCustomerPage({
                             </p>
                           )}
                         </div>
+
                         <div className="space-y-2">
-                          <Label htmlFor="address">Street Address *</Label>
+                          <Label htmlFor="notes">Additional Notes</Label>
+                          <Controller
+                            name="notes"
+                            control={control}
+                            render={({ field }) => (
+                              <Textarea
+                                {...field}
+                                id="notes"
+                                placeholder="Any additional information about the customer..."
+                                rows={3}
+                                aria-describedby={
+                                  errors.notes ? "notes-error" : undefined
+                                }
+                              />
+                            )}
+                          />
+                          {errors.notes && (
+                            <p
+                              id="notes-error"
+                              className="flex items-center gap-1 text-xs text-red-500"
+                            >
+                              <AlertCircle className="h-3 w-3" />
+                              {errors.notes.message}
+                            </p>
+                          )}
+                        </div>
+                        {/* Location Section */}
+                        <div className="space-y-2">
+                          <Label>Location Input Method</Label>
+                          <RadioGroup
+                            value={locationInputMode}
+                            onValueChange={(value) =>
+                              setLocationInputMode(value as "search" | "map")
+                            }
+                            className="flex items-center space-x-4 pt-1"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="map" id="r_map" />
+                              <Label
+                                htmlFor="r_map"
+                                className="cursor-pointer font-normal"
+                              >
+                                Add From Map
+                              </Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="search" id="r_search" />
+                              <Label
+                                htmlFor="r_search"
+                                className="cursor-pointer font-normal"
+                              >
+                                Add From Lat Lng
+                              </Label>
+                            </div>
+                          </RadioGroup>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Find Location *</Label>
+                          {locationInputMode === "search" ? (
+                            <Input
+                              type="text"
+                              placeholder="Enter Like 23.114007367862843, 72.5413259310343"
+                              value={latLng}
+                              onChange={(e) => {
+                                setLatLng(e.target.value);
+                              }}
+                            />
+                          ) : (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setIsMapModalOpen(true)}
+                              className="w-full justify-start text-left font-normal"
+                            >
+                              <MapPin className="mr-2 h-4 w-4" />
+                              Add Location from Map
+                            </Button>
+                          )}
+                          {(errors.latitude || errors.longitude) && (
+                            <p
+                              id="address-error"
+                              className="flex items-center gap-1 text-xs text-red-500"
+                            >
+                              <AlertCircle className="h-3 w-3" />
+                              {errors?.latitude?.message ||
+                                errors?.longitude?.message ||
+                                "Please select a valid location."}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="space-y-2 col-span-2">
+                          <Label>Street Address *</Label>
                           <Controller
                             name="address"
                             control={control}
                             render={({ field }) => (
-                              <LocationAutoSearchBox
-                                // Pass the field value and onChange handler from the Controller
-                                value={field.value}
-                                onValueChange={field.onChange}
-                                onSelectLocation={(place) => {
-                                  if (place) {
-                                    // Set the other location-related fields
-                                    form.setValue(
-                                      "latitude",
-                                      place.geometry?.location?.lat() ?? 0,
-                                      { shouldValidate: true }
-                                    );
-                                    form.setValue(
-                                      "longitude",
-                                      place.geometry?.location?.lng() ?? 0,
-                                      { shouldValidate: true }
-                                    );
-
-                                    let city = "";
-                                    let state = "";
-                                    let zipCode = "";
-                                    let country = "";
-
-                                    place.address_components?.forEach(
-                                      (component) => {
-                                        const types = component.types;
-                                        if (types.includes("locality"))
-                                          city = component.long_name;
-                                        if (
-                                          types.includes(
-                                            "administrative_area_level_1"
-                                          )
-                                        )
-                                          state = component.long_name;
-                                        if (types.includes("postal_code"))
-                                          zipCode = component.long_name;
-                                        if (types.includes("country"))
-                                          country = component.long_name;
-                                      }
-                                    );
-
-                                    form.setValue("city", city, {
-                                      shouldValidate: true,
-                                    });
-                                    form.setValue("state", state, {
-                                      shouldValidate: true,
-                                    });
-                                    form.setValue("zipCode", zipCode, {
-                                      shouldValidate: true,
-                                    });
-                                    form.setValue("country", country, {
-                                      shouldValidate: true,
-                                    });
-                                  }
-                                }}
+                              <Input
+                                {...field}
+                                id="address"
+                                placeholder="Enter Street Address "
                               />
                             )}
                           />
-                          {/* The validation error message remains the same */}
-
-                          {(errors.latitude ||
-                            errors.longitude ||
-                            errors.address) && (
+                          {errors.address && (
                             <p
                               id="address-error"
                               className="flex items-center gap-1 text-xs text-red-500"
@@ -694,6 +759,7 @@ export default function AddCustomerPage({
                             </p>
                           )}
                         </div>
+
                         <div className="space-y-2">
                           <Label htmlFor="city">City *</Label>
                           <Controller
@@ -800,36 +866,9 @@ export default function AddCustomerPage({
                         </div>
                       </div>
                     </div>
-
-                    <div className="space-y-2 mt-3">
-                      <Label htmlFor="notes">Additional Notes</Label>
-                      <Controller
-                        name="notes"
-                        control={control}
-                        render={({ field }) => (
-                          <Textarea
-                            {...field}
-                            id="notes"
-                            placeholder="Any additional information about the customer..."
-                            rows={3}
-                            aria-describedby={
-                              errors.notes ? "notes-error" : undefined
-                            }
-                          />
-                        )}
-                      />
-                      {errors.notes && (
-                        <p
-                          id="notes-error"
-                          className="flex items-center gap-1 text-xs text-red-500"
-                        >
-                          <AlertCircle className="h-3 w-3" />
-                          {errors.notes.message}
-                        </p>
-                      )}
-                    </div>
                   </CardContent>
                 </Card>
+
                 <Card className="mb-6">
                   <CardHeader className="flex flex-row items-center justify-between pb-0">
                     <CardTitle className="text-lg font-semibold">
@@ -1168,8 +1207,18 @@ export default function AddCustomerPage({
                       >
                         Cancel
                       </Button>
-                      <Button type="submit" className="px-8">
-                        {isEditMode ? "Update" : "Save"}
+                      <Button
+                        type="submit"
+                        className="px-8"
+                        disabled={isPending}
+                      >
+                        {isEditMode
+                          ? isPending
+                            ? "Updating..."
+                            : "Update"
+                          : isPending
+                            ? "Saving..."
+                            : "Save"}
                       </Button>
                     </div>
                     {submissionStatus === "success" && (
