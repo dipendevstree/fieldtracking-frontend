@@ -686,7 +686,7 @@ export default function AddCustomerPage({
                                 htmlFor="r_map"
                                 className="cursor-pointer font-normal"
                               >
-                                Add From Map
+                                From Map
                               </Label>
                             </div>
                             <div className="flex items-center space-x-2">
@@ -695,7 +695,7 @@ export default function AddCustomerPage({
                                 htmlFor="r_search"
                                 className="cursor-pointer font-normal"
                               >
-                                Add From Lat Lng
+                                From Lat Lng
                               </Label>
                             </div>
                           </RadioGroup>
@@ -705,7 +705,7 @@ export default function AddCustomerPage({
                           {locationInputMode === "search" ? (
                             <Input
                               type="text"
-                              placeholder="Enter Like 23.114007367862843, 72.5413259310343"
+                              placeholder="23.114007367862843, 72.5413259310343"
                               value={latLng}
                               onChange={(e) => {
                                 setLatLng(e.target.value);

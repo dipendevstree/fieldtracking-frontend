@@ -1,8 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Controller, FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams } from "@tanstack/react-router";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, MapPin } from "lucide-react";
 import moment from "moment-timezone";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
@@ -24,7 +24,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Main } from "@/components/layout/main";
+import { Checkbox } from "@/components/ui/checkbox"; // Import Checkbox
 import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
 import { formSchema, TFormSchema } from "../data/schema";
 import {
@@ -33,7 +35,7 @@ import {
   useGetVisitByID,
   useGetAllCustomer,
 } from "../services/calendar-view.hook";
-import { LocationAutoSearchBox } from "@/features/customers/components/LocationAutoSearchBox";
+import LocationPicker from "@/features/customers/components/LocationPicker";
 
 interface ScheduleVisitFormProps {
   onClose: () => void;
@@ -41,8 +43,15 @@ interface ScheduleVisitFormProps {
 
 export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
   const params = useParams({ strict: false });
-  const visitId = params.id; // Get visit ID from URL parameters
+  const visitId = params.id;
   const isEditMode = !!visitId;
+
+  const [isCustomLocation, setIsCustomLocation] = useState(false); // State for checkbox
+  const [locationInputMode, setLocationInputMode] = useState<"search" | "map">(
+    "map"
+  );
+  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
+  const [latLng, setLatLng] = useState("");
 
   const form = useForm<TFormSchema>({
     resolver: zodResolver(formSchema),
@@ -78,73 +87,18 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
 
   const customerId = watch("customer");
 
-  // Fetch visit data by ID when in edit mode
   const {
     data: visitData,
     isLoading: isVisitLoading,
     error: visitError,
   } = useGetVisitByID(visitId || "", isEditMode);
 
-  // useEffect(() => {
-  //   if (visitData && isEditMode) {
-  //     const formatDateForInput = (dateString: string) => {
-  //       if (!dateString) return ''
-  //       return moment(dateString).format('YYYY-MM-DD')
-  //     }
-
-  //     const formatTimeForInput = (timeString: string) => {
-  //       if (!timeString) return ''
-  //       return moment(timeString, 'h:mm A').format('HH:mm')
-  //     }
-  //     console.log(
-  //       'visitData.salesRepresentativeUser',
-  //       visitData.salesRepresentativeUser
-  //     )
-  //     console.log('visitData.priority', visitData.priority)
-
-  //     const formData = {
-  //       purpose: visitData.purpose || '',
-  //       customer: visitData.customerId || '',
-  //       roleId: String(visitData.salesRepresentativeUser?.roleId) ?? '',
-  //       salesRep: visitData.salesRepresentativeUser?.id || '',
-  //       date: formatDateForInput(visitData.date),
-  //       time: formatTimeForInput(visitData.time),
-  //       location: visitData.location || visitData.streetAddress || '',
-  //       address: visitData.streetAddress || '',
-  //       city: visitData.city || '',
-  //       state: visitData.state || '',
-  //       zipCode: visitData.zipCode ? String(visitData.zipCode) : '',
-  //       country: visitData.country || '',
-  //       latitude: visitData.latitude || undefined,
-  //       longitude: visitData.longitude || undefined,
-  //       reportType: visitData.reportType || '',
-  //       priority: visitData.priority ?? 'Medium',
-  //       duration: visitData.duration ? String(visitData.duration) : '1',
-  //       preparationNotes: visitData.preparationNotes || '',
-  //     }
-  //     visitData && form.reset(formData)
-  //   } else if (!isEditMode) {
-  //     reset()
-  //   }
-  // }, [visitData, isEditMode])
   useEffect(() => {
-    // Reset form when switching between edit and create modes
-    if (!isEditMode) {
-      reset();
-      return;
-    }
-
-    // Handle edit mode: Populate form with visitData
-    if (visitData) {
-      const formatDateForInput = (dateString: string) => {
-        if (!dateString) return "";
-        return moment(dateString).format("YYYY-MM-DD");
-      };
-
-      const formatTimeForInput = (timeString: string) => {
-        if (!timeString) return "";
-        return moment(timeString, "h:mm A").format("HH:mm");
-      };
+    if (isEditMode && visitData) {
+      const formatDateForInput = (dateString: string) =>
+        dateString ? moment(dateString).format("YYYY-MM-DD") : "";
+      const formatTimeForInput = (timeString: string) =>
+        timeString ? moment(timeString, "h:mm A").format("HH:mm") : "";
 
       const formData: TFormSchema = {
         purpose: visitData.purpose || "",
@@ -169,10 +123,12 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
         duration: visitData.duration ? String(visitData.duration) : "1",
         preparationNotes: visitData.preparationNotes || "",
       };
-
-      reset(formData); // Reset form with visitData
+      reset(formData);
+    } else if (!isEditMode) {
+      reset();
+      setIsCustomLocation(false);
     }
-  }, [visitData, isEditMode, reset, setValue]);
+  }, [visitData, isEditMode, reset]);
 
   const { data: customerList = [], isLoading: isCustomersLoading } =
     useGetAllCustomer();
@@ -194,153 +150,118 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
     listData: enhancedUserList,
     labelKey: "fullName",
     valueKey: "id",
-  }).map((option) => ({
-    ...option,
-    value: String(option.value),
-  }));
+  }).map((option) => ({ ...option, value: String(option.value) }));
 
-  // Auto-fill location when customer is selected (only for new visits)
-  // useEffect(() => {
-  //   if (customerId && !isEditMode) {
-  //     const selectedCustomer = customerList.find(
-  //       (customer: any) => customer.customerId === customerId
-  //     )
-  //     if (selectedCustomer) {
-  //       const address = [
-  //         selectedCustomer.streetAddress,
-  //         selectedCustomer.city,
-  //         selectedCustomer.state,
-  //         selectedCustomer.country,
-  //         selectedCustomer.zipCode,
-  //       ]
-  //         .filter(Boolean)
-  //         .join(', ')
-  //       setValue('location', address)
-  //       setValue('address', selectedCustomer.streetAddress || '')
-  //       setValue('city', selectedCustomer.city || '')
-  //       setValue('state', selectedCustomer.state || '')
-  //       setValue('zipCode', String(selectedCustomer.zipCode) || '')
-  //       setValue('country', selectedCustomer.country || '')
-  //       setValue('latitude', selectedCustomer.latitude)
-  //       setValue('longitude', selectedCustomer.longitude)
-  //     }
-  //   }
-  // }, [customerId, customerList, setValue, isEditMode])
-  // console.log('roleId', roleId)
-
-  // useEffect(() => {
-  //   form.setValue('roleId', roleId)
-  // }, [roleId])
-  // useEffect(() => {
-  //   visitData?.priority && form.setValue('priority', visitData?.priority)
-  // }, [visitData, form])
   useEffect(() => {
-    // Update customer-related fields when customerId changes
-    if (customerId && !isEditMode && customerList?.length) {
+    if (customerId && customerList?.length) {
       const selectedCustomer = customerList.find(
-        (customer: any) => customer.customerId === customerId
+        (c: any) => c.customerId === customerId
       );
+
       if (selectedCustomer) {
-        const address = [
+        // When a customer is selected, auto-fill the address but keep custom location off.
+        setIsCustomLocation(false);
+        const fullAddress = [
           selectedCustomer.streetAddress,
           selectedCustomer.city,
           selectedCustomer.state,
           selectedCustomer.country,
-          selectedCustomer.zipCode,
         ]
           .filter(Boolean)
           .join(", ");
-
-        setValue("location", address);
-        setValue("address", selectedCustomer.streetAddress || "");
-        setValue("city", selectedCustomer.city || "");
-        setValue("state", selectedCustomer.state || "");
-        setValue("zipCode", String(selectedCustomer.zipCode) || "");
-        setValue("country", selectedCustomer.country || "");
-        setValue("latitude", selectedCustomer.latitude || undefined);
-        setValue("longitude", selectedCustomer.longitude || undefined);
-        setValue("customer", selectedCustomer.customerId || "");
+        setValue("location", fullAddress, { shouldValidate: true });
+        setValue("address", selectedCustomer.streetAddress || "", {
+          shouldValidate: true,
+        });
+        setValue("city", selectedCustomer.city || "", { shouldValidate: true });
+        setValue("state", selectedCustomer.state || "", {
+          shouldValidate: true,
+        });
+        setValue("zipCode", String(selectedCustomer.zipCode || ""), {
+          shouldValidate: true,
+        });
+        setValue("country", selectedCustomer.country || "", {
+          shouldValidate: true,
+        });
+        setValue("latitude", selectedCustomer.latitude, {
+          shouldValidate: true,
+        });
+        setValue("longitude", selectedCustomer.longitude, {
+          shouldValidate: true,
+        });
       }
     }
   }, [customerId, customerList, setValue, isEditMode]);
 
-  const priorityId = watch("priority");
-  console.log("priorityId", priorityId);
+  const handleMapLocationSelect = (data: {
+    lat: number;
+    lng: number;
+    address: string;
+    city: string;
+    state: string;
+    country: string;
+    postalCode: string;
+  }) => {
+    setValue("location", data.address, { shouldValidate: true });
+    setValue("address", data.address, { shouldValidate: true });
+    setValue("city", data.city, { shouldValidate: true });
+    setValue("state", data.state, { shouldValidate: true });
+    setValue("zipCode", data.postalCode, { shouldValidate: true });
+    setValue("country", data.country, { shouldValidate: true });
+    setValue("latitude", data.lat, { shouldValidate: true });
+    setValue("longitude", data.lng, { shouldValidate: true });
+    setIsMapModalOpen(false);
+  };
 
-  useEffect(() => {
-    if (priorityId) {
-      form.setValue("priority", priorityId);
-    }
-  }, [priorityId]);
-
-  // Optional: Log for debugging
-  useEffect(() => {
-    console.log("Form Values:", watch());
-    console.log("Errors:", errors);
-  }, [watch, errors]);
-
-  const onSubmit = (data: any) => {
+  const onSubmit = (data: TFormSchema) => {
     const formattedTime = moment(data.time, "HH:mm").format("h:mm A");
-    let payload = {};
+    const visitDetails = {
+      time: formattedTime,
+      duration: parseInt(data.duration),
+      purpose: data.purpose,
+      customerId: data.customer,
+      priority: data.priority,
+      streetAddress: data.address || "",
+      city: data.city || "",
+      state: data.state || "",
+      zipCode: data.zipCode ? parseInt(data.zipCode) : 0,
+      latitude: data.latitude || 0,
+      longitude: data.longitude || 0,
+      country: data.country || "",
+      preparationNotes: data.preparationNotes || "",
+    };
 
     if (isEditMode) {
-      payload = {
+      updateVisit({
         date: moment(data.date).format("DD-MM-YYYY"),
-        time: formattedTime,
-        duration: parseInt(data.duration),
-        purpose: data.purpose,
-        customerId: data.customer,
-        priority: data.priority,
-        streetAddress: data.location || "",
-        city: data.city || "",
-        state: data.state || "",
-        zipCode: data.zipCode ? parseInt(data.zipCode) : 0,
-        latitude: data.latitude || 0,
-        longitude: data.longitude || 0,
-        country: data.country || "",
-        preparationNotes: data.preparationNotes || "",
-      };
-      updateVisit(payload);
+        ...visitDetails,
+      });
     } else {
-      payload = {
+      createVisit({
         salesRepresentativeUserId: data.salesRep,
-
         date: moment(data.date).format("DD-MM-YYYY"),
-        visits: [
-          {
-            time: formattedTime,
-            duration: parseInt(data.duration),
-            purpose: data.purpose,
-            customerId: data.customer,
-            priority: data.priority,
-            streetAddress: data.location || "",
-            city: data.city || "",
-            state: data.state || "",
-            zipCode: data.zipCode ? parseInt(data.zipCode) : 0,
-            latitude: data.latitude || 0,
-            longitude: data.longitude || 0,
-            country: data.country || "",
-            preparationNotes: data.preparationNotes || "",
-          },
-        ],
-      };
-      createVisit(payload);
+        visits: [visitDetails],
+      });
     }
   };
 
   const { mutate: createVisit, isPending: isCreateLoading } =
     useCreateVisits(onClose);
-
   const { mutate: updateVisit, isPending: isUpdateLoading } = useUpdateVisits(
     visitId || "",
     onClose
   );
-
   const isLoading = isCreateLoading || isUpdateLoading;
   const showLoadingSpinner = isEditMode && isVisitLoading;
 
   return (
     <Main className="flex flex-col gap-6 p-6">
+      <LocationPicker
+        open={isMapModalOpen}
+        onOpenChange={setIsMapModalOpen}
+        onLocationSelect={handleMapLocationSelect}
+        latLng={latLng}
+      />
       <Card>
         <CardHeader>
           <CardTitle>
@@ -375,14 +296,11 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
             <FormProvider {...form}>
               <form
                 onSubmit={handleSubmit(onSubmit)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                  }
-                }}
+                onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
                 className="space-y-4"
               >
                 <div className="grid grid-cols-2 gap-4">
+                  {/* Purpose */}
                   <div className="space-y-2">
                     <Label htmlFor="purpose">
                       Purpose of Visit <span className="text-red-500">*</span>
@@ -405,6 +323,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                       </p>
                     )}
                   </div>
+                  {/* Customer */}
                   <div className="space-y-2">
                     <Label htmlFor="customer">
                       Customer <span className="text-red-500">*</span>
@@ -434,115 +353,148 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                     )}
                   </div>
                 </div>
+
+                {/* Sales Rep */}
+                <div className="space-y-2">
+                  <Label htmlFor="salesRep">
+                    Sales Representative <span className="text-red-500">*</span>
+                  </Label>
+                  <Controller
+                    name="salesRep"
+                    control={control}
+                    render={({ field }) => (
+                      <SearchableSelect
+                        options={users}
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder={
+                          isUsersLoading ? "Loading..." : "Select user..."
+                        }
+                        disabled={isUsersLoading || isEditMode}
+                      />
+                    )}
+                  />
+                  {errors.salesRep && (
+                    <p className="flex items-center gap-1 text-xs text-red-500">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.salesRep.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Always visible address fields */}
+                <div className="space-y-2">
+                  <Label htmlFor="address">
+                    Street Address <span className="text-red-500">*</span>
+                  </Label>
+                  <Controller
+                    name="address"
+                    control={control}
+                    render={({ field }) => (
+                      <Input
+                        {...field}
+                        id="address"
+                        placeholder="Enter Street Address"
+                      />
+                    )}
+                  />
+                  {errors.address && (
+                    <p className="flex items-center gap-1 text-xs text-red-500">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.address.message}
+                    </p>
+                  )}
+                </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="salesRep">
-                      Sales Representative{" "}
-                      <span className="text-red-500">*</span>
+                    <Label htmlFor="city">
+                      City <span className="text-red-500">*</span>
                     </Label>
                     <Controller
-                      name="salesRep"
+                      name="city"
                       control={control}
                       render={({ field }) => (
-                        <SearchableSelect
-                          options={users}
-                          value={field.value}
-                          onChange={field.onChange}
-                          placeholder={
-                            isUsersLoading ? "Loading..." : "Select user..."
-                          }
-                          disabled={isUsersLoading}
-                        />
+                        <Input {...field} id="city" placeholder="Enter City" />
                       )}
                     />
-                    {errors.salesRep && (
+                    {errors.city && (
                       <p className="flex items-center gap-1 text-xs text-red-500">
                         <AlertCircle className="h-3 w-3" />
-                        {errors.salesRep.message}
+                        {errors.city.message}
                       </p>
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="location">
-                      Location <span className="text-red-500">*</span>
+                    <Label htmlFor="state">
+                      State/Province <span className="text-red-500">*</span>
                     </Label>
                     <Controller
-                      name="location"
+                      name="state"
                       control={control}
                       render={({ field }) => (
-                        <LocationAutoSearchBox
-                          value={field.value}
-                          onValueChange={(e: any) =>
-                            field.onChange(e.target.value)
-                          }
-                          onSelectLocation={(place) => {
-                            if (place && place.formatted_address) {
-                              setValue("location", place.formatted_address);
-                              if (place.geometry && place.geometry.location) {
-                                setValue(
-                                  "latitude",
-                                  place.geometry.location.lat()
-                                );
-                                setValue(
-                                  "longitude",
-                                  place.geometry.location.lng()
-                                );
-                              }
-                              if (place.address_components) {
-                                let street = "";
-                                let city = "";
-                                let state = "";
-                                let zipCode = "";
-                                let country = "";
-                                place.address_components.forEach(
-                                  (component) => {
-                                    const types = component.types;
-                                    if (
-                                      types.includes("street_number") ||
-                                      types.includes("route")
-                                    ) {
-                                      street = street
-                                        ? `${street} ${component.long_name}`
-                                        : component.long_name;
-                                    }
-                                    if (types.includes("locality")) {
-                                      city = component.long_name;
-                                    }
-                                    if (
-                                      types.includes(
-                                        "administrative_area_level_1"
-                                      )
-                                    ) {
-                                      state = component.long_name;
-                                    }
-                                    if (types.includes("postal_code")) {
-                                      zipCode = component.long_name;
-                                    }
-                                    if (types.includes("country")) {
-                                      country = component.long_name;
-                                    }
-                                  }
-                                );
-                                if (street) setValue("address", street);
-                                if (city) setValue("city", city);
-                                if (state) setValue("state", state);
-                                if (zipCode) setValue("zipCode", zipCode);
-                                if (country) setValue("country", country);
-                              }
-                            }
-                          }}
+                        <Input
+                          {...field}
+                          id="state"
+                          placeholder="Enter State"
                         />
                       )}
                     />
-                    {errors.location && (
-                      <p className="text-xs flex items-center gap-1 text-red-500">
+                    {errors.state && (
+                      <p className="flex items-center gap-1 text-xs text-red-500">
                         <AlertCircle className="h-3 w-3" />
-                        {errors.location.message}
+                        {errors.state.message}
                       </p>
                     )}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="zipCode">
+                      ZIP/Postal Code <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="zipCode"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          id="zipCode"
+                          placeholder="Enter Zip Code"
+                        />
+                      )}
+                    />
+                    {errors.zipCode && (
+                      <p className="flex items-center gap-1 text-xs text-red-500">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.zipCode.message}
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="country">
+                      Country <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="country"
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          id="country"
+                          placeholder="Enter Country"
+                        />
+                      )}
+                    />
+                    {errors.country && (
+                      <p className="flex items-center gap-1 text-xs text-red-500">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.country.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 border-t pt-4 mt-2">
                   <div className="w-full space-y-2">
                     <Label htmlFor="date">
                       Date <span className="text-red-500">*</span>
@@ -584,7 +536,6 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                     )}
                   </div>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="priority">
@@ -594,22 +545,19 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                       name="priority"
                       control={control}
                       render={({ field }) => (
-                        console.log("field.value", field.value),
-                        (
-                          <ShadSelect
-                            value={field.value}
-                            onValueChange={field.onChange}
-                          >
-                            <SelectTrigger id="priority" className="w-full">
-                              <SelectValue placeholder="Select Priority" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="High">High</SelectItem>
-                              <SelectItem value="Medium">Medium</SelectItem>
-                              <SelectItem value="Low">Low</SelectItem>
-                            </SelectContent>
-                          </ShadSelect>
-                        )
+                        <ShadSelect
+                          value={field.value}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger id="priority" className="w-full">
+                            <SelectValue placeholder="Select Priority" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="High">High</SelectItem>
+                            <SelectItem value="Medium">Medium</SelectItem>
+                            <SelectItem value="Low">Low</SelectItem>
+                          </SelectContent>
+                        </ShadSelect>
                       )}
                     />
                     {errors.priority && (
@@ -652,7 +600,91 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                     )}
                   />
                 </div>
-                <div className="flex justify-end space-x-2">
+                {/* --- Checkbox to show custom location tools --- */}
+                <div className="flex items-center space-x-2 pt-2">
+                  <Checkbox
+                    id="custom-location"
+                    checked={isCustomLocation}
+                    onCheckedChange={(checked) =>
+                      setIsCustomLocation(Boolean(checked))
+                    }
+                  />
+                  <Label
+                    htmlFor="custom-location"
+                    className="cursor-pointer font-normal"
+                  >
+                    Set a Different/More Specific Visit Location
+                  </Label>
+                </div>
+
+                {/* --- Conditionally rendered location tools --- */}
+                {isCustomLocation && (
+                  <div className="grid grid-cols-2 gap-4 border-t pt-4 mt-2 animate-in fade-in-0 duration-300">
+                    <div className="space-y-2">
+                      <Label>Location Input Method</Label>
+                      <RadioGroup
+                        value={locationInputMode}
+                        onValueChange={(value) =>
+                          setLocationInputMode(value as "search" | "map")
+                        }
+                        className="flex items-center space-x-4 pt-1"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="map" id="r_map" />
+                          <Label
+                            htmlFor="r_map"
+                            className="cursor-pointer font-normal"
+                          >
+                            From Map
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="search" id="r_search" />
+                          <Label
+                            htmlFor="r_search"
+                            className="cursor-pointer font-normal"
+                          >
+                            From Lat Lng
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="location-finder">
+                        Find Location <span className="text-red-500">*</span>
+                      </Label>
+                      {locationInputMode === "search" ? (
+                        <Input
+                          id="location-finder"
+                          type="text"
+                          placeholder="23.114007367862843, 72.5413259310343"
+                          value={latLng}
+                          onChange={(e) => setLatLng(e.target.value)}
+                        />
+                      ) : (
+                        <Button
+                          id="location-finder"
+                          type="button"
+                          variant="outline"
+                          onClick={() => setIsMapModalOpen(true)}
+                          className="w-full justify-start text-left font-normal"
+                        >
+                          <MapPin className="mr-2 h-4 w-4" />
+                          Change Location from Map
+                        </Button>
+                      )}
+                      {(errors.latitude || errors.longitude) && (
+                        <p className="text-xs flex items-center gap-1 text-red-500">
+                          <AlertCircle className="h-3 w-3" />
+                          {errors.latitude?.message ||
+                            errors.longitude?.message ||
+                            "Please select a valid location."}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                )}
+                <div className="flex justify-end space-x-2 pt-4">
                   <Button type="button" variant="outline" onClick={onClose}>
                     Cancel
                   </Button>
