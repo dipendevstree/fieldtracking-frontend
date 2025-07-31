@@ -15,6 +15,7 @@ import { FilterConfig } from "@/components/global-filter-section";
 import { getHaversineDistance } from "./data/commonFunction";
 import moment from "moment-timezone";
 import { getFormattedAddress } from "@/utils/commonFunction";
+import { useGetAllVisit } from "../calendar/services/calendar-view.hook";
 
 interface UserTrackingTimelineProps {
   userId: any;
@@ -43,6 +44,13 @@ const UserTrackingTimeline = ({
 
   // Destructure isLoading state from custom hooks
   const { user, isLoading: isUserLoading } = userDetailsById(userId ?? "");
+  const { data: visits } = useGetAllVisit({
+    startDate: new Date().toISOString().split("T")[0],
+    endDate: new Date().toISOString().split("T")[0],
+    status: "completed",
+    salesRepresentativeUserId: userId ?? "",
+  });
+
   const { userSession, isLoading: isSessionLoading } = getWorkDaySession(
     userId ?? "",
     selectedDate
@@ -198,30 +206,36 @@ const UserTrackingTimeline = ({
 
     return sessions.flatMap((session, index) => {
       const timeline: any[] = [];
-
       // Punch In
       timeline.push({
         id: session.workDaySessionId + "_in",
         type: "punch_in",
         title: "Punch In",
-        location: "Location not provided",
+        location: session.dayStartAddress ?? "Location not provided",
         time: format(new Date(session.startTime), "hh:mm a"),
         color: "bg-teal-500",
       });
 
       // Tasks (if any)
-      if (session.tasks && session.tasks.length > 0) {
-        session.tasks.forEach((task: any) => {
-          timeline.push({
-            id: task.id,
-            type: "task",
-            title: `Task - ${task.title}`,
-            description: task.description,
-            time: task.startTime
-              ? format(new Date(task.startTime), "hh:mm a")
-              : undefined,
-            color: "bg-gray-400",
-          });
+      if (visits && visits.length > 0) {
+        visits.forEach((task: any) => {
+          const visitTime = new Date(task.visitCheckOutTime);
+          const sessionStart = new Date(session.startTime);
+          const sessionEnd = session.endTime
+            ? new Date(session.endTime)
+            : new Date();
+          if (visitTime >= sessionStart && visitTime <= sessionEnd) {
+            timeline.push({
+              id: task.visitId,
+              type: "task",
+              title: `Visit - ${task.purpose}`,
+              description: task?.customer?.companyName,
+              time: task.visitCheckOutTime
+                ? format(new Date(task.visitCheckOutTime), "hh:mm a")
+                : undefined,
+              color: "bg-gray-400",
+            });
+          }
         });
       }
 
@@ -249,7 +263,7 @@ const UserTrackingTimeline = ({
           id: session.workDaySessionId + "_out",
           type: "punch_out",
           title: "Punch Out",
-          location: "Location not provided",
+          location: session.dayEndAddress ?? "Location not provided",
           time: format(new Date(session.endTime), "hh:mm a"),
           color: "bg-red-500",
         });
@@ -261,14 +275,13 @@ const UserTrackingTimeline = ({
           type: "separator",
         });
       }
-
       return timeline;
     });
   };
 
   const timelineData = useMemo(
     () => formatTimelineData((userSession?.sessions ?? []).slice().reverse()),
-    [userSession?.sessions]
+    [userSession?.sessions, visits]
   );
 
   // Loading state UI

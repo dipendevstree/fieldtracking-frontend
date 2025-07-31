@@ -315,7 +315,7 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
     let checkedCount = 0;
     let totalCount = relevantMenus.length;
 
-    relevantMenus.forEach((menu, originalIndex) => {
+    relevantMenus.forEach((menu) => {
       // Find the actual index in the full processMenuItems array
       const actualIndex = processMenuItems.findIndex(
         (m) => m.organizationMenuId === menu.organizationMenuId
