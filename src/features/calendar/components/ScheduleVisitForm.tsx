@@ -82,10 +82,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
     reset,
     setValue,
     formState: { errors },
-    watch,
   } = form;
-
-  const customerId = watch("customer");
 
   const {
     data: visitData,
@@ -152,46 +149,6 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
     valueKey: "id",
   }).map((option) => ({ ...option, value: String(option.value) }));
 
-  useEffect(() => {
-    if (customerId && customerList?.length) {
-      const selectedCustomer = customerList.find(
-        (c: any) => c.customerId === customerId
-      );
-
-      if (selectedCustomer) {
-        // When a customer is selected, auto-fill the address but keep custom location off.
-        setIsCustomLocation(false);
-        const fullAddress = [
-          selectedCustomer.streetAddress,
-          selectedCustomer.city,
-          selectedCustomer.state,
-          selectedCustomer.country,
-        ]
-          .filter(Boolean)
-          .join(", ");
-        setValue("location", fullAddress, { shouldValidate: true });
-        setValue("address", selectedCustomer.streetAddress || "", {
-          shouldValidate: true,
-        });
-        setValue("city", selectedCustomer.city || "", { shouldValidate: true });
-        setValue("state", selectedCustomer.state || "", {
-          shouldValidate: true,
-        });
-        setValue("zipCode", String(selectedCustomer.zipCode || ""), {
-          shouldValidate: true,
-        });
-        setValue("country", selectedCustomer.country || "", {
-          shouldValidate: true,
-        });
-        setValue("latitude", selectedCustomer.latitude, {
-          shouldValidate: true,
-        });
-        setValue("longitude", selectedCustomer.longitude, {
-          shouldValidate: true,
-        });
-      }
-    }
-  }, [customerId, customerList, setValue, isEditMode]);
 
   const handleMapLocationSelect = (data: {
     lat: number;
@@ -335,7 +292,64 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                         <SearchableSelect
                           options={customerOptions}
                           value={field.value}
-                          onChange={field.onChange}
+                          onChange={(value) => {
+                            field.onChange(value); // update form value
+                            const selectedCustomer = customerList.find(
+                              (c: any) => c.customerId === value
+                            );
+                            if (selectedCustomer) {
+                              // Only autofill when user changes customer
+                              setIsCustomLocation(false);
+                              const fullAddress = [
+                                selectedCustomer.streetAddress,
+                                selectedCustomer.city,
+                                selectedCustomer.state,
+                                selectedCustomer.country,
+                              ]
+                                .filter(Boolean)
+                                .join(", ");
+                              setValue("location", fullAddress, {
+                                shouldValidate: true,
+                              });
+                              setValue(
+                                "address",
+                                selectedCustomer.streetAddress || "",
+                                {
+                                  shouldValidate: true,
+                                }
+                              );
+                              setValue("city", selectedCustomer.city || "", {
+                                shouldValidate: true,
+                              });
+                              setValue("state", selectedCustomer.state || "", {
+                                shouldValidate: true,
+                              });
+                              setValue(
+                                "zipCode",
+                                String(selectedCustomer.zipCode || ""),
+                                {
+                                  shouldValidate: true,
+                                }
+                              );
+                              setValue(
+                                "country",
+                                selectedCustomer.country || "",
+                                {
+                                  shouldValidate: true,
+                                }
+                              );
+                              setValue("latitude", selectedCustomer.latitude, {
+                                shouldValidate: true,
+                              });
+                              setValue(
+                                "longitude",
+                                selectedCustomer.longitude,
+                                {
+                                  shouldValidate: true,
+                                }
+                              );
+                            }
+                          }}
                           placeholder={
                             isCustomersLoading
                               ? "Loading..."
@@ -345,6 +359,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                         />
                       )}
                     />
+
                     {errors.customer && (
                       <p className="text-xs flex items-center gap-1 text-red-500">
                         <AlertCircle className="h-3 w-3" />
