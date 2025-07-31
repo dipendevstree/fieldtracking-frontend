@@ -16,6 +16,7 @@ import { useInfiniteUsers } from "./services/live-tracking-services";
 import { GoogleMap } from "@react-google-maps/api";
 import { useInView } from "react-intersection-observer";
 import { socket } from "@/socket/socket";
+import { useSearch } from "@tanstack/react-router";
 
 // Assuming you have a Button component
 const AHMEDABAD_CENTER = { lat: 23.0225, lng: 72.5714 };
@@ -39,6 +40,8 @@ export default function Livetracking() {
     includeLatLong: true,
   });
 
+  const { userId }: any = useSearch({ from: "/_authenticated/livetracking/" });
+
   const [currentPosition, setCurrentPosition] = useState<{
     lat: number;
     lng: number;
@@ -51,9 +54,7 @@ export default function Livetracking() {
   const mapRef = useRef<google.maps.Map | null>(null);
 
   const { ref: loadMoreRef, inView } = useInView({ threshold: 0 });
-  // Get userId from query
-  const params = new URLSearchParams(window.location.search);
-  const userId = params.get("userId");
+
   const [selectedUserId, setSelectedUserId] = useState(userId);
   const { data: allRoles } = useGetAllRolesForDropdown();
   const roles = useSelectOptions({
@@ -174,6 +175,10 @@ export default function Livetracking() {
     newParams.delete("userId");
     window.history.pushState({}, "", `?${newParams}`);
   };
+
+  useEffect(() => {
+    setSelectedUserId(userId);
+  }, [userId]);
 
   const filters: FilterConfig[] = [
     {
@@ -304,12 +309,12 @@ export default function Livetracking() {
                             </div>
                             <span
                               className={`rounded-full px-2 py-0.5 text-xs ${
-                                user.status === "verified"
+                                user.isOnline
                                   ? "bg-green-100 text-green-600"
                                   : "bg-red-100 text-red-600"
                               }`}
                             >
-                              {user.status === "verified"
+                              {user.isOnline
                                 ? "Active"
                                 : "Offline"}
                             </span>
@@ -339,7 +344,7 @@ export default function Livetracking() {
                       mapRef.current = map;
                     }}
                   >
-                    {selectedUserId !== "" ? (
+                    {selectedUserId !== undefined && selectedUserId !== "" ? (
                       <UserPolylineMap
                         path={path}
                         currentPosition={currentPosition}

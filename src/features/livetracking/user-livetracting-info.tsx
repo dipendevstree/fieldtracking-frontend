@@ -14,6 +14,7 @@ import GlobalFilterSection from "@/components/global-table-filter-section";
 import { FilterConfig } from "@/components/global-filter-section";
 import { getHaversineDistance } from "./data/commonFunction";
 import moment from "moment-timezone";
+import { getFormattedAddress } from "@/utils/commonFunction";
 
 interface UserTrackingTimelineProps {
   userId: any;
@@ -36,6 +37,9 @@ const UserTrackingTimeline = ({
     new Date().toISOString().split("T")[0]
   );
   const [totalDistance, setTotalDistance] = useState(0);
+  const [nearestAddress, setNearestAddress] = useState<string | null>(
+    "No location info available"
+  );
 
   // Destructure isLoading state from custom hooks
   const { user, isLoading: isUserLoading } = userDetailsById(userId ?? "");
@@ -72,6 +76,22 @@ const UserTrackingTimeline = ({
       value: selectedDate,
     },
   ];
+  const fetchAddress = async () => {
+    if (trackingData && trackingData.length > 0) {
+      const lastPoint = trackingData[trackingData.length - 1];
+      const lat = parseFloat(lastPoint.lat);
+      const lng = parseFloat(lastPoint.long);
+
+      const address = await getFormattedAddress(lat, lng);
+      setNearestAddress(address || "No location info available");
+    } else {
+      setNearestAddress("No location info available");
+    }
+  };
+  // Fetch address for the last tracking data point
+  useEffect(() => {
+    fetchAddress();
+  }, [trackingData]);
 
   useEffect(() => {
     if (isFetched) {
@@ -420,8 +440,7 @@ const UserTrackingTimeline = ({
           <div className="flex items-start gap-2">
             <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400" />
             <div className="text-sm leading-relaxed text-gray-600">
-              {userSession?.nearestLocation?.address ??
-                "No location info available"}
+              {nearestAddress ?? "No location info available"}
             </div>
           </div>
         </div>

@@ -37,3 +37,32 @@ export function jsonToFormData(json: Record<string, any>, prefix: string = ''): 
 
   return formData;
 }
+
+
+
+/**
+ * Reverse geocodes latitude and longitude into a full formatted address string.
+ *
+ * @param lat - Latitude coordinate
+ * @param lng - Longitude coordinate
+ * @returns A Promise that resolves to the formatted address or null if not found
+ */
+export const getFormattedAddress = (
+  lat: number,
+  lng: number
+): Promise<string | null> => {
+  return new Promise((resolve) => {
+    new google.maps.Geocoder().geocode(
+      { location: { lat, lng } },
+      (results, status) => {
+        if (status === "OK" && results?.length) {
+          resolve(results[0].formatted_address);
+        } else {
+          resolve(null);
+        }
+      }
+    );
+  });
+};
+
+
