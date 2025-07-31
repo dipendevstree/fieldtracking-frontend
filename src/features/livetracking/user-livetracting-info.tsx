@@ -132,7 +132,8 @@ const UserTrackingTimeline = ({
       if (
         event?.lat &&
         event?.long &&
-        moment(event.date).format("YYYY-MM-DD") === selectedDate
+        moment(event.date).format("YYYY-MM-DD") === selectedDate &&
+        event.userId === userId
       ) {
         const newPoint = {
           lat: parseFloat(event.lat),

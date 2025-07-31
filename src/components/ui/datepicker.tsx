@@ -13,9 +13,14 @@ import {
 interface SimpleDatePickerProps {
   date: string;
   setDate: (date: string) => void;
+  className?: string;
 }
 
-export function SimpleDatePicker({ date, setDate }: SimpleDatePickerProps) {
+export function SimpleDatePicker({
+  date,
+  setDate,
+  className,
+}: SimpleDatePickerProps) {
   const [open, setOpen] = useState(false);
   const parsedDate = date ? new Date(date) : undefined;
 
@@ -34,7 +39,8 @@ export function SimpleDatePicker({ date, setDate }: SimpleDatePickerProps) {
           variant="outline"
           className={cn(
             "w-[415px] pl-3 text-left font-normal",
-            !date && "text-muted-foreground"
+            !date && "text-muted-foreground",
+            className
           )}
         >
           {date ? format(new Date(date), "PPP") : <span>Pick a date</span>}

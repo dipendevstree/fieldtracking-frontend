@@ -1,13 +1,20 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
+import {
+  DEFAULT_PAGE_NUMBER,
+  DEFAULT_PAGE_SIZE,
+  Priority,
+} from "@/data/app.data";
 import debounce from "lodash.debounce";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { FilterConfig } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import { useGetAllRolesForDropdown } from "@/features/UserManagement/services/Roles.hook";
 import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
-import { useGetAllVisit } from "../services/calendar-view.hook";
+import {
+  useGetAllCustomer,
+  useGetAllVisit,
+} from "../services/calendar-view.hook";
 import { FormData } from "./CalendarView";
 import UpcomingVisitsTable from "./upcoming-visits-table";
 
@@ -19,11 +26,20 @@ export default function UpcomingVisits() {
     endDate: new Date().toISOString().split("T")[0],
     searchFor: "",
     roleId: "",
-    salesRepId: "",
+    salesRepresentativeUserId: "",
+    isUpcoming: true,
+    customerId: "",
+    status: "",
   });
 
   const { watch, setValue } = useForm<FormData>({
-    defaultValues: { roleId: "", salesRep: "", search: "" },
+    defaultValues: {
+      roleId: "",
+      salesRep: "",
+      search: "",
+      customerId: "",
+      priority: "",
+    },
   });
 
   const { data: visits, totalCount, isLoading } = useGetAllVisit(pagination);
@@ -42,6 +58,18 @@ export default function UpcomingVisits() {
 
   const roleId = watch("roleId");
   const selectedRep = watch("salesRep");
+  const customerId = watch("customerId");
+  const priority = watch("priority");
+
+  useEffect(() => {
+    setPagination((prev) => ({
+      ...prev,
+      roleId,
+      salesRepresentativeUserId: selectedRep,
+      customerId,
+      priority,
+    }));
+  }, [roleId, selectedRep, customerId, priority]);
 
   const debouncedSearch = useCallback(
     debounce((value: string) => {
@@ -57,6 +85,21 @@ export default function UpcomingVisits() {
     setValue("search", searchValue);
     debouncedSearch(searchValue);
   };
+
+  const { data: customers } = useGetAllCustomer();
+  const customerOptions = useSelectOptions({
+    listData: customers ?? [],
+    labelKey: "companyName",
+    valueKey: "customerId",
+  }).map((option) => ({
+    ...option,
+    value: String(option.value),
+  }));
+
+  const priorityOptions = Object.entries(Priority).map(([key, value]) => ({
+    label: key,
+    value,
+  }));
 
   const { data: allRoles } = useGetAllRolesForDropdown();
   const roles = useSelectOptions({
@@ -112,6 +155,22 @@ export default function UpcomingVisits() {
       placeholder: "Select salesRep",
       value: selectedRep,
       options: users,
+    },
+    {
+      key: "customerId",
+      type: "select",
+      onChange: (value) => setValue("customerId", value ?? ""),
+      placeholder: "Select customer",
+      value: customerId,
+      options: customerOptions,
+    },
+    {
+      key: "priority",
+      type: "select",
+      onChange: (value) => setValue("priority", value ?? ""),
+      placeholder: "Select priority",
+      value: priority,
+      options: priorityOptions,
     },
   ];
 
