@@ -1,4 +1,4 @@
-import { Building2, Home, MapPin, Shield } from "lucide-react";
+import { AppWindow, Building2, Calendar, ChartColumn, Home, MapPin, Shield, ShieldUser } from "lucide-react";
 import { type SidebarData } from "../types";
 
 export const sidebarData: SidebarData = {
@@ -62,7 +62,7 @@ export const sidebarData: SidebarData = {
       
         {
           title: "User Management",
-          icon: Shield,
+          icon: ShieldUser,
           menuKey: "User_Management",
           items: [
             {
@@ -84,7 +84,7 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "Calendar",
-          icon: Shield,
+          icon: Calendar,
           menuKey: "calendar",
           items: [
             {
@@ -116,7 +116,7 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "Approvals",
-          icon: Shield,
+          icon: AppWindow,
           menuKey: "approvals",
           items: [
             {
@@ -143,7 +143,7 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "Reports",
-          icon: Shield,
+          icon: ChartColumn,
           menuKey: "reports",
           items: [
             {
