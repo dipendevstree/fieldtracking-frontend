@@ -1,3 +1,3 @@
 import { io } from "socket.io-client";
 
-export const socket = io("https://userfieldtracking-api.devstree.in");
+export const socket = io("https://userfieldtrack360-api.devstree.in/");
