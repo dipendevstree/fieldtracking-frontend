@@ -46,12 +46,7 @@ import { Route as AuthenticatedApprovalsIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedUserManagementRolesRouteImport } from './routes/_authenticated/user-management/roles'
 import { Route as AuthenticatedUserManagementAddRolesPermissionRouteImport } from './routes/_authenticated/user-management/add-roles-permission'
 import { Route as AuthenticatedSettingsResetPasswordRouteImport } from './routes/_authenticated/settings/reset-password'
-import { Route as AuthenticatedSettingsNotifictionsRouteImport } from './routes/_authenticated/settings/notifictions'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
-import { Route as AuthenticatedSettingsMobileFeaturesRouteImport } from './routes/_authenticated/settings/mobile-features'
-import { Route as AuthenticatedSettingsLimitsChar38ControlsRouteImport } from './routes/_authenticated/settings/limits-&-controls'
-import { Route as AuthenticatedSettingsGeneralRouteImport } from './routes/_authenticated/settings/general'
-import { Route as AuthenticatedSettingsFieldTrackingRouteImport } from './routes/_authenticated/settings/field-tracking'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
@@ -293,40 +288,10 @@ const AuthenticatedSettingsResetPasswordRoute =
     path: '/reset-password',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
-const AuthenticatedSettingsNotifictionsRoute =
-  AuthenticatedSettingsNotifictionsRouteImport.update({
-    id: '/notifictions',
-    path: '/notifictions',
-    getParentRoute: () => AuthenticatedSettingsRouteRoute,
-  } as any)
 const AuthenticatedSettingsNotificationsRoute =
   AuthenticatedSettingsNotificationsRouteImport.update({
     id: '/notifications',
     path: '/notifications',
-    getParentRoute: () => AuthenticatedSettingsRouteRoute,
-  } as any)
-const AuthenticatedSettingsMobileFeaturesRoute =
-  AuthenticatedSettingsMobileFeaturesRouteImport.update({
-    id: '/mobile-features',
-    path: '/mobile-features',
-    getParentRoute: () => AuthenticatedSettingsRouteRoute,
-  } as any)
-const AuthenticatedSettingsLimitsChar38ControlsRoute =
-  AuthenticatedSettingsLimitsChar38ControlsRouteImport.update({
-    id: '/limits-&-controls',
-    path: '/limits-&-controls',
-    getParentRoute: () => AuthenticatedSettingsRouteRoute,
-  } as any)
-const AuthenticatedSettingsGeneralRoute =
-  AuthenticatedSettingsGeneralRouteImport.update({
-    id: '/general',
-    path: '/general',
-    getParentRoute: () => AuthenticatedSettingsRouteRoute,
-  } as any)
-const AuthenticatedSettingsFieldTrackingRoute =
-  AuthenticatedSettingsFieldTrackingRouteImport.update({
-    id: '/field-tracking',
-    path: '/field-tracking',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
 const AuthenticatedSettingsDisplayRoute =
@@ -569,12 +534,7 @@ export interface FileRoutesByFullPath {
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
-  '/settings/field-tracking': typeof AuthenticatedSettingsFieldTrackingRoute
-  '/settings/general': typeof AuthenticatedSettingsGeneralRoute
-  '/settings/limits-&-controls': typeof AuthenticatedSettingsLimitsChar38ControlsRoute
-  '/settings/mobile-features': typeof AuthenticatedSettingsMobileFeaturesRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
-  '/settings/notifictions': typeof AuthenticatedSettingsNotifictionsRoute
   '/settings/reset-password': typeof AuthenticatedSettingsResetPasswordRoute
   '/user-management/add-roles-permission': typeof AuthenticatedUserManagementAddRolesPermissionRoute
   '/user-management/roles': typeof AuthenticatedUserManagementRolesRoute
@@ -644,12 +604,7 @@ export interface FileRoutesByTo {
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
-  '/settings/field-tracking': typeof AuthenticatedSettingsFieldTrackingRoute
-  '/settings/general': typeof AuthenticatedSettingsGeneralRoute
-  '/settings/limits-&-controls': typeof AuthenticatedSettingsLimitsChar38ControlsRoute
-  '/settings/mobile-features': typeof AuthenticatedSettingsMobileFeaturesRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
-  '/settings/notifictions': typeof AuthenticatedSettingsNotifictionsRoute
   '/settings/reset-password': typeof AuthenticatedSettingsResetPasswordRoute
   '/user-management/add-roles-permission': typeof AuthenticatedUserManagementAddRolesPermissionRoute
   '/user-management/roles': typeof AuthenticatedUserManagementRolesRoute
@@ -723,12 +678,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
-  '/_authenticated/settings/field-tracking': typeof AuthenticatedSettingsFieldTrackingRoute
-  '/_authenticated/settings/general': typeof AuthenticatedSettingsGeneralRoute
-  '/_authenticated/settings/limits-&-controls': typeof AuthenticatedSettingsLimitsChar38ControlsRoute
-  '/_authenticated/settings/mobile-features': typeof AuthenticatedSettingsMobileFeaturesRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
-  '/_authenticated/settings/notifictions': typeof AuthenticatedSettingsNotifictionsRoute
   '/_authenticated/settings/reset-password': typeof AuthenticatedSettingsResetPasswordRoute
   '/_authenticated/user-management/add-roles-permission': typeof AuthenticatedUserManagementAddRolesPermissionRoute
   '/_authenticated/user-management/roles': typeof AuthenticatedUserManagementRolesRoute
@@ -802,12 +752,7 @@ export interface FileRouteTypes {
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
-    | '/settings/field-tracking'
-    | '/settings/general'
-    | '/settings/limits-&-controls'
-    | '/settings/mobile-features'
     | '/settings/notifications'
-    | '/settings/notifictions'
     | '/settings/reset-password'
     | '/user-management/add-roles-permission'
     | '/user-management/roles'
@@ -877,12 +822,7 @@ export interface FileRouteTypes {
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
-    | '/settings/field-tracking'
-    | '/settings/general'
-    | '/settings/limits-&-controls'
-    | '/settings/mobile-features'
     | '/settings/notifications'
-    | '/settings/notifictions'
     | '/settings/reset-password'
     | '/user-management/add-roles-permission'
     | '/user-management/roles'
@@ -955,12 +895,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
-    | '/_authenticated/settings/field-tracking'
-    | '/_authenticated/settings/general'
-    | '/_authenticated/settings/limits-&-controls'
-    | '/_authenticated/settings/mobile-features'
     | '/_authenticated/settings/notifications'
-    | '/_authenticated/settings/notifictions'
     | '/_authenticated/settings/reset-password'
     | '/_authenticated/user-management/add-roles-permission'
     | '/_authenticated/user-management/roles'
@@ -1268,46 +1203,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsResetPasswordRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
-    '/_authenticated/settings/notifictions': {
-      id: '/_authenticated/settings/notifictions'
-      path: '/notifictions'
-      fullPath: '/settings/notifictions'
-      preLoaderRoute: typeof AuthenticatedSettingsNotifictionsRouteImport
-      parentRoute: typeof AuthenticatedSettingsRouteRoute
-    }
     '/_authenticated/settings/notifications': {
       id: '/_authenticated/settings/notifications'
       path: '/notifications'
       fullPath: '/settings/notifications'
       preLoaderRoute: typeof AuthenticatedSettingsNotificationsRouteImport
-      parentRoute: typeof AuthenticatedSettingsRouteRoute
-    }
-    '/_authenticated/settings/mobile-features': {
-      id: '/_authenticated/settings/mobile-features'
-      path: '/mobile-features'
-      fullPath: '/settings/mobile-features'
-      preLoaderRoute: typeof AuthenticatedSettingsMobileFeaturesRouteImport
-      parentRoute: typeof AuthenticatedSettingsRouteRoute
-    }
-    '/_authenticated/settings/limits-&-controls': {
-      id: '/_authenticated/settings/limits-&-controls'
-      path: '/limits-&-controls'
-      fullPath: '/settings/limits-&-controls'
-      preLoaderRoute: typeof AuthenticatedSettingsLimitsChar38ControlsRouteImport
-      parentRoute: typeof AuthenticatedSettingsRouteRoute
-    }
-    '/_authenticated/settings/general': {
-      id: '/_authenticated/settings/general'
-      path: '/general'
-      fullPath: '/settings/general'
-      preLoaderRoute: typeof AuthenticatedSettingsGeneralRouteImport
-      parentRoute: typeof AuthenticatedSettingsRouteRoute
-    }
-    '/_authenticated/settings/field-tracking': {
-      id: '/_authenticated/settings/field-tracking'
-      path: '/field-tracking'
-      fullPath: '/settings/field-tracking'
-      preLoaderRoute: typeof AuthenticatedSettingsFieldTrackingRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
     '/_authenticated/settings/display': {
@@ -1570,12 +1470,7 @@ interface AuthenticatedSettingsRouteRouteChildren {
   AuthenticatedSettingsAccountRoute: typeof AuthenticatedSettingsAccountRoute
   AuthenticatedSettingsAppearanceRoute: typeof AuthenticatedSettingsAppearanceRoute
   AuthenticatedSettingsDisplayRoute: typeof AuthenticatedSettingsDisplayRoute
-  AuthenticatedSettingsFieldTrackingRoute: typeof AuthenticatedSettingsFieldTrackingRoute
-  AuthenticatedSettingsGeneralRoute: typeof AuthenticatedSettingsGeneralRoute
-  AuthenticatedSettingsLimitsChar38ControlsRoute: typeof AuthenticatedSettingsLimitsChar38ControlsRoute
-  AuthenticatedSettingsMobileFeaturesRoute: typeof AuthenticatedSettingsMobileFeaturesRoute
   AuthenticatedSettingsNotificationsRoute: typeof AuthenticatedSettingsNotificationsRoute
-  AuthenticatedSettingsNotifictionsRoute: typeof AuthenticatedSettingsNotifictionsRoute
   AuthenticatedSettingsResetPasswordRoute: typeof AuthenticatedSettingsResetPasswordRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
 }
@@ -1588,17 +1483,8 @@ const AuthenticatedSettingsRouteRouteChildren: AuthenticatedSettingsRouteRouteCh
     AuthenticatedSettingsAccountRoute: AuthenticatedSettingsAccountRoute,
     AuthenticatedSettingsAppearanceRoute: AuthenticatedSettingsAppearanceRoute,
     AuthenticatedSettingsDisplayRoute: AuthenticatedSettingsDisplayRoute,
-    AuthenticatedSettingsFieldTrackingRoute:
-      AuthenticatedSettingsFieldTrackingRoute,
-    AuthenticatedSettingsGeneralRoute: AuthenticatedSettingsGeneralRoute,
-    AuthenticatedSettingsLimitsChar38ControlsRoute:
-      AuthenticatedSettingsLimitsChar38ControlsRoute,
-    AuthenticatedSettingsMobileFeaturesRoute:
-      AuthenticatedSettingsMobileFeaturesRoute,
     AuthenticatedSettingsNotificationsRoute:
       AuthenticatedSettingsNotificationsRoute,
-    AuthenticatedSettingsNotifictionsRoute:
-      AuthenticatedSettingsNotifictionsRoute,
     AuthenticatedSettingsResetPasswordRoute:
       AuthenticatedSettingsResetPasswordRoute,
     AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,

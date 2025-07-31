@@ -3,29 +3,29 @@ import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from '@/data/app.data'
 import { cn } from '@/lib/utils'
 import { Main } from '@/components/layout/main'
 import { EnhancedError } from '@/types'
-// import { useGetNotificationsData } from './services/notificationshook'
-// import { useNotificationsStore } from './store/notifications.store'
+import { useGetLimitsControlsData } from './services/LImits&Controlshook'
+import { useLimitsControlsStore } from './store/limits-&-controls.store'
 import { ErrorPage } from '@/components/shared/custom-error'
-import Notifications from './components/Notifications'
-import { NotificationsActionModal } from './components/action-form-modal'
+import LimitsControls from './components/LimitsControls'
+import { LimitsControlsActionModal } from './components/action-form-modal'
 
-const NotificationsPage = () => {
+const LimitsControlsPage = () => {
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
   })
 
-  // Notifications data
+  // Limits Controls data
   // const {
-  //   notificationConfig,
-  //   notificationRules = [],
-  //   notificationTemplates = [],
+  //   expenseLimits = [],
+  //   locationAdjustments = [],
+  //   expirySettings,
   //   totalCount = 0,
   //   isLoading,
   //   error,
-  // } = useGetNotificationsData(pagination)
+  // } = useGetLimitsControlsData(pagination)
 
-  // const { setOpen, setCurrentConfig, setCurrentRule, setCurrentTemplate } = useNotificationsStore()
+  // const { setOpen, setCurrentLimit, setCurrentAdjustment, setCurrentExpirySettings } = useLimitsControlsStore()
 
   // if (error) {
   //   const errorResponse = (error as EnhancedError)?.response?.data
@@ -37,65 +37,65 @@ const NotificationsPage = () => {
   //   )
   // }
 
-  const handleEditNotificationConfig = () => {
-    // setCurrentConfig(notificationConfig)
-    // setOpen('edit-config')
+  const handleAddExpenseLimit = () => {
+      // setOpen('add-limit')
   }
 
-  const handleAddNotificationRule = () => {
-    // setOpen('add-rule')
+  const handleAddLocationAdjustment = () => {
+    // setOpen('add-adjustment')
   }
 
-  const handleAddNotificationTemplate = () => {
-    // setOpen('add-template')
+  const handleEditExpirySettings = () => {
+    // setCurrentExpirySettings(expirySettings)
+    // setOpen('edit-expiry-settings')
   }
 
   return (
     <Main className={cn('flex flex-col gap-2 p-4')}>
       
-      {/* Notifications Configuration Section */}
+      {/* Limits Controls Configuration Section */}
       <div className='mt-6'>
         <div className="mb-6">
-          <h1 className="text-2xl font-bold">Notification Configuration</h1>
+          <h1 className="text-2xl font-bold">Expense Limits & Controls</h1>
           <p className="text-muted-foreground">
-            Configure alerts, reminders, and notification preferences for various events.
+            Configure expense limits based on designation, location, and category.
           </p>
         </div>
 
         {/* Settings Configuration */}
         <div className="mb-8">
-          <Notifications />
+          <LimitsControls />
         </div>
 
         {/* Action Buttons */}
         <div className="flex gap-4">
           <button
-            onClick={handleEditNotificationConfig}
+            onClick={handleAddExpenseLimit}
             className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
             // disabled={isLoading}
           >
-            Edit Notification Configuration
+            Add Expense Limit
           </button>
           <button
-            onClick={handleAddNotificationRule}
+            onClick={handleAddLocationAdjustment}
             className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90"
             // disabled={isLoading}
           >
-            Add Notification Rule
+            Add Location Adjustment
           </button>
           <button
-            onClick={handleAddNotificationTemplate}
+            onClick={handleEditExpirySettings}
             className="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/90"
             // disabled={isLoading}
           >
-            Add Notification Template
+            Edit Expiry Settings
           </button>
         </div>
       </div>
 
-      <NotificationsActionModal key={'notifications-action-modal'} />
+      <LimitsControlsActionModal key={'limits-controls-action-modal'} />
     </Main>
   )
 }
 
-export default NotificationsPage
+export default LimitsControlsPage
