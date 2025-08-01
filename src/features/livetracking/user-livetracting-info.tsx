@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { MapPin, Loader2, ArrowLeft } from "lucide-react";
+import { MapPin, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { socket } from "../../socket/socket";
 
@@ -24,7 +24,7 @@ interface UserTrackingTimelineProps {
     React.SetStateAction<{ lat: number; lng: number } | null>
   >;
   setMapCenter: (center: { lat: number; lng: number }) => void;
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 const UserTrackingTimeline = ({
@@ -32,7 +32,7 @@ const UserTrackingTimeline = ({
   setPath,
   setCurrentPosition,
   setMapCenter,
-  onBack,
+  // onBack,
 }: UserTrackingTimelineProps) => {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
@@ -296,7 +296,7 @@ const UserTrackingTimeline = ({
 
   return (
     <div className="bg-gray-50 p-4 rounded-[4px]">
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <button
           onClick={onBack}
           className="text-sm text-teal-600 hover:underline flex items-center gap-1"
@@ -304,7 +304,7 @@ const UserTrackingTimeline = ({
           <ArrowLeft className="h-4 w-4" />
           Back to list
         </button>
-      </div>
+      </div> */}
       <div className="[&_*]:overflow-visible [&_*]:max-w-full [&_*]:w-full">
         <GlobalFilterSection
           key={"calendar-view-filters"}
@@ -314,7 +314,7 @@ const UserTrackingTimeline = ({
       </div>
 
       {/* Stats Cards */}
-      <div className="py-6">
+      <div className="py-4">
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-lg border border-gray-200 bg-white p-4 text-center shadow-sm">
             <div className="mb-2 text-xs text-gray-500">Total Visit</div>
@@ -380,7 +380,10 @@ const UserTrackingTimeline = ({
         </div>
 
         <div className="border-b border-gray-100 p-4">
-          <div className="relative pl-2">
+          <div
+            className="relative pl-2 "
+            style={{ maxHeight: "30vh", overflow: "auto" }}
+          >
             {/* Handle Empty State for Timeline */}
             {timelineData.length > 0 ? (
               timelineData.map((item, index) => {
