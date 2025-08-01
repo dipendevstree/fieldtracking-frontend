@@ -41,6 +41,7 @@ interface SidebarData {
   user: UserProfile
   teams: Team[]
   navGroups: NavGroup[]
+ 
 }
 
 export type { NavCollapsible, NavGroup, NavItem, NavLink, SidebarData }
