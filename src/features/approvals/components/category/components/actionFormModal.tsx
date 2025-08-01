@@ -100,7 +100,7 @@ export function CategoryActionModal() {
             key="delete-category"
             open={open === "delete"}
             currentRow={currentRow}
-            itemIdentifier={"id" as keyof typeof currentRow}
+            itemIdentifier={"categoryName" as keyof typeof currentRow}
             itemName="Category"
             onDelete={handleDeleteCategory}
             onOpenChange={(value) => {
