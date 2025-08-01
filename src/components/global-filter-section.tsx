@@ -3,8 +3,9 @@ import { Select } from "./shared/custom-select";
 import { SimpleDatePicker } from "./ui/datepicker";
 import { Input } from "./ui/input";
 import { useDebounce } from "./use-debauce";
+import { SearchableSelect } from "./ui/SearchableSelect";
 
-type FilterType = "select" | "search" | "date";
+type FilterType = "select" | "search" | "date" | "searchable-select";
 
 export interface FilterConfig {
   type: FilterType;
@@ -77,6 +78,22 @@ export function DataTableToolbarCompact({
               />
             );
           }
+
+          if (filter.type === "searchable-select") {
+            return (
+              <div className="w-full max-w-md">
+                <SearchableSelect
+                  key={filter.key}
+                  options={filter.options ?? []}
+                  value={filter.value}
+                  placeholder={filter.placeholder}
+                  onChange={filter.onChange ?? (() => {})}
+                  disabled={false}
+                />
+              </div>
+            );
+          }
+
           if (filter.type === "date") {
             return (
               <SimpleDatePicker

@@ -34,7 +34,6 @@ export default function UserPolylineMap({
           position: "absolute",
           top: "10px",
           left: "182px",
-          zIndex: 9999, // 🔼 Higher than map controls
           backgroundColor: "white",
           padding: "8px 12px",
           borderRadius: "6px",

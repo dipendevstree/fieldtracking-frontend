@@ -230,6 +230,7 @@ const UserTrackingTimeline = ({
               type: "task",
               title: `Visit - ${task.purpose}`,
               description: task?.customer?.companyName,
+              location: task?.checkoutAddress,
               time: task.visitCheckOutTime
                 ? format(new Date(task.visitCheckOutTime), "hh:mm a")
                 : undefined,

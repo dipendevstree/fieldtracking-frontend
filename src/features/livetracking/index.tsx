@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DEFAULT_PAGE_NUMBER } from "@/data/app.data";
-import debounce from "lodash.debounce";
+
 import { cn } from "@/lib/utils";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,7 +12,11 @@ import { useGetAllTerritoriesForDropdown } from "../userterritory/services/user-
 import UserTrackingTimeline from "./user-livetracting-info";
 import UserPolylineMap from "./components/UserPolylineMap";
 import UserListMap from "./components/UserListMap";
-import { useInfiniteUsers } from "./services/live-tracking-services";
+import {
+  useGetUsers,
+  useInfiniteUsers,
+  userDetailsById,
+} from "./services/live-tracking-services";
 import { GoogleMap } from "@react-google-maps/api";
 import { useInView } from "react-intersection-observer";
 import { socket } from "@/socket/socket";
@@ -63,6 +67,19 @@ export default function Livetracking() {
     valueKey: "roleId",
   });
 
+  const { listData: userListDropDownData = [] } = useGetUsers();
+
+  const userListDropDownList = userListDropDownData?.map((user: any) => ({
+    ...user,
+    fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+  }));
+
+  const usersOptions = useSelectOptions<any>({
+    listData: userListDropDownList,
+    labelKey: "fullName",
+    valueKey: "id",
+  }).map((option) => ({ ...option, value: String(option.value) }));
+
   // Check if any filter is selected
   const hasFiltersSelected =
     pagination.roleId || pagination.territoryId || pagination.searchFor;
@@ -72,15 +89,20 @@ export default function Livetracking() {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
     useInfiniteUsers(pagination);
 
+  const { user } = userDetailsById(userId);
+
+  const enhanceUser = (user: any) => ({
+    ...user,
+    fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+    latLong: user.latLongDetails
+      ? { lat: user.latLongDetails.lat, lng: user.latLongDetails.long }
+      : null,
+  });
+  const enhancedSingleUser = user ? enhanceUser(user) : null;
+
   const enhancedUserList = (data?.pages ?? [])
     .flatMap((page: any) => page.list ?? [])
-    .map((user: any) => ({
-      ...user,
-      fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
-      latLong: user.latLongDetails
-        ? { lat: user.latLongDetails.lat, lng: user.latLongDetails.long }
-        : null,
-    }));
+    .map(enhanceUser);
 
   const { data: territoriesList } = useGetAllTerritoriesForDropdown();
   const territories = useSelectOptions<any>({
@@ -94,18 +116,6 @@ export default function Livetracking() {
       fetchNextPage();
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  const handleGlobalSearchChange = useCallback(
-    debounce((value: string | undefined) => {
-      setPagination((prev) => ({
-        ...prev,
-        searchFor: value ?? "",
-        page: DEFAULT_PAGE_NUMBER,
-      }));
-      setSelectedUserId(""); // reset selected user
-    }, 500),
-    []
-  );
 
   const handleChangeTerritory = (value: string | undefined) => {
     setPagination((prev) => ({
@@ -128,6 +138,8 @@ export default function Livetracking() {
 
   const handleUserClick = (userId: string) => {
     setSelectedUserId(userId);
+    setPath([]); // Reset path
+    setCurrentPosition(null); // Reset current position
     // Update URL to reflect selected user
     const newParams = new URLSearchParams(window.location.search);
     newParams.set("userId", userId);
@@ -198,11 +210,24 @@ export default function Livetracking() {
       options: roles as Option[],
     },
     {
-      key: "search",
-      type: "search",
-      onChange: handleGlobalSearchChange,
-      placeholder: "Search Users...",
-      value: pagination.searchFor,
+      type: "searchable-select",
+      key: "userSelect",
+      placeholder: "Select User",
+      value: selectedUserId,
+      options: usersOptions,
+      onChange: (value) => {
+        if (value) {
+          handleUserClick(value);
+        } else {
+          // Handle case when user clears the selection
+          setSelectedUserId("");
+          setPath([]); // Reset path
+          setCurrentPosition(null); // Reset current position
+          const newParams = new URLSearchParams(window.location.search);
+          newParams.delete("userId");
+          window.history.pushState({}, "", `?${newParams}`);
+        }
+      },
     },
   ];
 
@@ -269,9 +294,10 @@ export default function Livetracking() {
               className="w-100 space-y-2 overflow-y-auto p-2"
               style={{ height: "60vh" }}
             >
-              {selectedUserId && selectedUser ? (
+              {selectedUserId && (selectedUser || enhancedSingleUser) ? (
                 <>
                   <UserTrackingTimeline
+                    key={selectedUserId}
                     userId={selectedUserId}
                     setPath={setPath}
                     setCurrentPosition={setCurrentPosition}
@@ -314,9 +340,7 @@ export default function Livetracking() {
                                   : "bg-red-100 text-red-600"
                               }`}
                             >
-                              {user.isOnline
-                                ? "Active"
-                                : "Offline"}
+                              {user.isOnline ? "Active" : "Offline"}
                             </span>
                           </CardContent>
                         </div>
@@ -346,9 +370,10 @@ export default function Livetracking() {
                   >
                     {selectedUserId !== undefined && selectedUserId !== "" ? (
                       <UserPolylineMap
+                        key={selectedUserId}
                         path={path}
                         currentPosition={currentPosition}
-                        selectedUser={selectedUser}
+                        selectedUser={selectedUser || enhancedSingleUser}
                         mapRef={mapRef}
                       />
                     ) : (
