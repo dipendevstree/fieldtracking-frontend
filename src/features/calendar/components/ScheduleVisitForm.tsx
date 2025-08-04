@@ -1,8 +1,13 @@
 import { useEffect, useState } from "react";
-import { Controller, FormProvider, useForm } from "react-hook-form";
+import {
+  Controller,
+  FormProvider,
+  useForm,
+  useFieldArray,
+} from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useParams } from "@tanstack/react-router";
-import { AlertCircle, MapPin } from "lucide-react";
+import { AlertCircle, MapPin, Trash2 } from "lucide-react";
 import moment from "moment-timezone";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
@@ -26,7 +31,7 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Main } from "@/components/layout/main";
-import { Checkbox } from "@/components/ui/checkbox"; // Import Checkbox
+import { Checkbox } from "@/components/ui/checkbox";
 import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
 import { formSchema, TFormSchema } from "../data/schema";
 import {
@@ -46,33 +51,30 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
   const visitId = params.id;
   const isEditMode = !!visitId;
 
-  const [isCustomLocation, setIsCustomLocation] = useState(false); // State for checkbox
-  const [locationInputMode, setLocationInputMode] = useState<"search" | "map">(
-    "map"
-  );
-  const [isMapModalOpen, setIsMapModalOpen] = useState(false);
-  const [latLng, setLatLng] = useState("");
-
   const form = useForm<TFormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      purpose: "",
-      customer: "",
-      salesRep: "",
       date: new Date().toISOString().split("T")[0],
-      time: "",
-      location: "",
-      address: "",
-      city: "",
-      state: "",
-      zipCode: "",
-      country: "",
-      latitude: undefined,
-      longitude: undefined,
-      reportType: "",
-      priority: "Medium",
-      duration: "1",
-      preparationNotes: "",
+      salesRep: "",
+      visits: [
+        {
+          purpose: "",
+          customer: "",
+          time: "",
+          location: "",
+          address: "",
+          city: "",
+          state: "",
+          zipCode: "",
+          country: "",
+          latitude: undefined,
+          longitude: undefined,
+          reportType: "",
+          priority: "Medium",
+          duration: "1",
+          preparationNotes: "",
+        },
+      ],
     },
   });
 
@@ -83,6 +85,11 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
     setValue,
     formState: { errors },
   } = form;
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "visits",
+  });
 
   const {
     data: visitData,
@@ -98,32 +105,57 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
         timeString ? moment(timeString, "h:mm A").format("HH:mm") : "";
 
       const formData: TFormSchema = {
-        purpose: visitData.purpose || "",
-        customer: visitData.customerId || "",
-        salesRep: visitData.salesRepresentativeUser?.id || "",
         date: formatDateForInput(visitData.date),
-        time: formatTimeForInput(visitData.time),
-        location: visitData.location || visitData.streetAddress || "",
-        address: visitData.streetAddress || "",
-        city: visitData.city || "",
-        state: visitData.state || "",
-        zipCode: visitData.zipCode ? String(visitData.zipCode) : "",
-        country: visitData.country || "",
-        latitude: visitData.latitude || undefined,
-        longitude: visitData.longitude || undefined,
-        reportType: visitData.reportType || "",
-        priority:
-          visitData.priority &&
-          ["Low", "Medium", "High"].includes(visitData.priority)
-            ? visitData.priority
-            : "Medium",
-        duration: visitData.duration ? String(visitData.duration) : "1",
-        preparationNotes: visitData.preparationNotes || "",
+        salesRep: visitData.salesRepresentativeUser?.id || "",
+        visits: [
+          {
+            purpose: visitData.purpose || "",
+            customer: visitData.customerId || "",
+            time: formatTimeForInput(visitData.time),
+            location: visitData.location || visitData.streetAddress || "",
+            address: visitData.streetAddress || "",
+            city: visitData.city || "",
+            state: visitData.state || "",
+            zipCode: visitData.zipCode ? String(visitData.zipCode) : "",
+            country: visitData.country || "",
+            latitude: visitData.latitude || undefined,
+            longitude: visitData.longitude || undefined,
+            reportType: visitData.reportType || "",
+            priority:
+              visitData.priority &&
+              ["Low", "Medium", "High"].includes(visitData.priority)
+                ? visitData.priority
+                : "Medium",
+            duration: visitData.duration ? String(visitData.duration) : "1",
+            preparationNotes: visitData.preparationNotes || "",
+          },
+        ],
       };
       reset(formData);
     } else if (!isEditMode) {
-      reset();
-      setIsCustomLocation(false);
+      reset({
+        date: new Date().toISOString().split("T")[0],
+        salesRep: "",
+        visits: [
+          {
+            purpose: "",
+            customer: "",
+            time: "",
+            location: "",
+            address: "",
+            city: "",
+            state: "",
+            zipCode: "",
+            country: "",
+            latitude: undefined,
+            longitude: undefined,
+            reportType: "",
+            priority: "Medium",
+            duration: "1",
+            preparationNotes: "",
+          },
+        ],
+      });
     }
   }, [visitData, isEditMode, reset]);
 
@@ -149,55 +181,91 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
     valueKey: "id",
   }).map((option) => ({ ...option, value: String(option.value) }));
 
+  const [locationStates, setLocationStates] = useState<
+    {
+      isCustomLocation: boolean;
+      locationInputMode: "search" | "map";
+      isMapModalOpen: boolean;
+      latLng: string;
+    }[]
+  >(
+    fields.map(() => ({
+      isCustomLocation: false,
+      locationInputMode: "map",
+      isMapModalOpen: false,
+      latLng: "",
+    }))
+  );
 
-  const handleMapLocationSelect = (data: {
-    lat: number;
-    lng: number;
-    address: string;
-    city: string;
-    state: string;
-    country: string;
-    postalCode: string;
-  }) => {
-    setValue("location", data.address, { shouldValidate: true });
-    setValue("address", data.address, { shouldValidate: true });
-    setValue("city", data.city, { shouldValidate: true });
-    setValue("state", data.state, { shouldValidate: true });
-    setValue("zipCode", data.postalCode, { shouldValidate: true });
-    setValue("country", data.country, { shouldValidate: true });
-    setValue("latitude", data.lat, { shouldValidate: true });
-    setValue("longitude", data.lng, { shouldValidate: true });
-    setIsMapModalOpen(false);
+  useEffect(() => {
+    setLocationStates(
+      fields.map((_, index) => ({
+        isCustomLocation: locationStates[index]?.isCustomLocation || false,
+        locationInputMode: locationStates[index]?.locationInputMode || "map",
+        isMapModalOpen: locationStates[index]?.isMapModalOpen || false,
+        latLng: locationStates[index]?.latLng || "",
+      }))
+    );
+  }, [fields.length]);
+
+  const handleMapLocationSelect = (
+    data: {
+      lat: number;
+      lng: number;
+      address: string;
+      city: string;
+      state: string;
+      country: string;
+      postalCode: string;
+    },
+    index: number
+  ) => {
+    setValue(`visits.${index}.location`, data.address, {
+      shouldValidate: true,
+    });
+    setValue(`visits.${index}.address`, data.address, { shouldValidate: true });
+    setValue(`visits.${index}.city`, data.city, { shouldValidate: true });
+    setValue(`visits.${index}.state`, data.state, { shouldValidate: true });
+    setValue(`visits.${index}.zipCode`, data.postalCode, {
+      shouldValidate: true,
+    });
+    setValue(`visits.${index}.country`, data.country, { shouldValidate: true });
+    setValue(`visits.${index}.latitude`, data.lat, { shouldValidate: true });
+    setValue(`visits.${index}.longitude`, data.lng, { shouldValidate: true });
+    setLocationStates((prev) =>
+      prev.map((state, i) =>
+        i === index ? { ...state, isMapModalOpen: false } : state
+      )
+    );
   };
 
   const onSubmit = (data: TFormSchema) => {
-    const formattedTime = moment(data.time, "HH:mm").format("h:mm A");
-    const visitDetails = {
-      time: formattedTime,
-      duration: parseInt(data.duration),
-      purpose: data.purpose,
-      customerId: data.customer,
-      priority: data.priority,
-      streetAddress: data.address || "",
-      city: data.city || "",
-      state: data.state || "",
-      zipCode: data.zipCode ? parseInt(data.zipCode) : 0,
-      latitude: data.latitude || 0,
-      longitude: data.longitude || 0,
-      country: data.country || "",
-      preparationNotes: data.preparationNotes || "",
-    };
+    const visitDetails = data.visits.map((visit) => ({
+      time: moment(visit.time, "HH:mm").format("h:mm A"),
+      duration: parseInt(visit.duration),
+      purpose: visit.purpose,
+      customerId: visit.customer,
+      priority: visit.priority,
+      streetAddress: visit.address || "",
+      city: visit.city || "",
+      state: visit.state || "",
+      zipCode: visit.zipCode ? parseInt(visit.zipCode) : 0,
+      latitude: visit.latitude || 0,
+      longitude: visit.longitude || 0,
+      country: visit.country || "",
+      preparationNotes: visit.preparationNotes || "",
+    }));
 
     if (isEditMode) {
       updateVisit({
         date: moment(data.date).format("DD-MM-YYYY"),
-        ...visitDetails,
+        ...visitDetails[0],
       });
     } else {
       createVisit({
         salesRepresentativeUserId: data.salesRep,
         date: moment(data.date).format("DD-MM-YYYY"),
-        visits: [visitDetails],
+        visits: visitDetails,
       });
     }
   };
@@ -211,511 +279,558 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
   const isLoading = isCreateLoading || isUpdateLoading;
   const showLoadingSpinner = isEditMode && isVisitLoading;
 
+  const addNewVisit = () => {
+    append({
+      purpose: "",
+      customer: "",
+      time: "",
+      location: "",
+      address: "",
+      city: "",
+      state: "",
+      zipCode: "",
+      country: "",
+      latitude: 0,
+      longitude: 0,
+      reportType: "",
+      priority: "Medium",
+      duration: "1",
+      preparationNotes: "",
+    });
+  };
+
   return (
     <Main className="flex flex-col gap-6 p-6">
-      <LocationPicker
-        open={isMapModalOpen}
-        onOpenChange={setIsMapModalOpen}
-        onLocationSelect={handleMapLocationSelect}
-        latLng={latLng}
-      />
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            {isEditMode ? "Edit Visit" : "Schedule New Visit"}
-          </CardTitle>
-          <CardDescription>
-            {isEditMode
-              ? "Update the visit details below"
-              : "Fill in the details to schedule a new visit"}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {showLoadingSpinner ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-center">
-                <div className="border-primary mx-auto h-8 w-8 animate-spin rounded-full border-b-2"></div>
-                <p className="text-muted-foreground mt-2 text-sm">
-                  Loading visit details...
-                </p>
+      {locationStates.map((state, index) => (
+        <LocationPicker
+          key={index}
+          open={state.isMapModalOpen}
+          onOpenChange={(open) =>
+            setLocationStates((prev) =>
+              prev.map((s, i) =>
+                i === index ? { ...s, isMapModalOpen: open } : s
+              )
+            )
+          }
+          onLocationSelect={(data) => handleMapLocationSelect(data, index)}
+          latLng={state.latLng}
+        />
+      ))}
+      <div className="grid grid-cols-12 gap-4">
+        <Card className="col-span-8">
+          <CardHeader>
+            <CardTitle>
+              {isEditMode ? "Edit Visit" : "Schedule New Visit"}
+            </CardTitle>
+            <CardDescription>
+              {isEditMode
+                ? "Update the visit details below"
+                : "Fill in the details to schedule new visits"}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {showLoadingSpinner ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-center">
+                  <div className="border-primary mx-auto h-8 w-8 animate-spin rounded-full border-b-2"></div>
+                  <p className="text-muted-foreground mt-2 text-sm">
+                    Loading visit details...
+                  </p>
+                </div>
               </div>
-            </div>
-          ) : visitError ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="text-center">
-                <AlertCircle className="mx-auto h-8 w-8 text-red-500" />
-                <p className="mt-2 text-sm text-red-500">
-                  Error loading visit details: {visitError.message}
-                </p>
+            ) : visitError ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-center">
+                  <AlertCircle className="mx-auto h-8 w-8 text-red-500" />
+                  <p className="mt-2 text-sm text-red-500">
+                    Error loading visit details: {visitError.message}
+                  </p>
+                </div>
               </div>
-            </div>
-          ) : (
-            <FormProvider {...form}>
-              <form
-                onSubmit={handleSubmit(onSubmit)}
-                onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
-                className="space-y-4"
-              >
-                <div className="grid grid-cols-2 gap-4">
-                  {/* Purpose */}
-                  <div className="space-y-2">
-                    <Label htmlFor="purpose">
-                      Purpose of Visit <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="purpose"
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          id="purpose"
-                          placeholder="Enter purpose of visit"
-                          {...field}
-                        />
-                      )}
-                    />
-                    {errors.purpose && (
-                      <p className="flex items-center gap-1 text-xs text-red-500">
-                        <AlertCircle className="h-3 w-3" />
-                        {errors.purpose.message}
-                      </p>
-                    )}
-                  </div>
-                  {/* Customer */}
-                  <div className="space-y-2">
-                    <Label htmlFor="customer">
-                      Customer <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="customer"
-                      control={control}
-                      render={({ field }) => (
-                        <SearchableSelect
-                          options={customerOptions}
-                          value={field.value}
-                          onChange={(value) => {
-                            field.onChange(value); // update form value
-                            const selectedCustomer = customerList.find(
-                              (c: any) => c.customerId === value
-                            );
-                            if (selectedCustomer) {
-                              // Only autofill when user changes customer
-                              setIsCustomLocation(false);
-                              const fullAddress = [
-                                selectedCustomer.streetAddress,
-                                selectedCustomer.city,
-                                selectedCustomer.state,
-                                selectedCustomer.country,
-                              ]
-                                .filter(Boolean)
-                                .join(", ");
-                              setValue("location", fullAddress, {
-                                shouldValidate: true,
-                              });
-                              setValue(
-                                "address",
-                                selectedCustomer.streetAddress || "",
-                                {
-                                  shouldValidate: true,
-                                }
-                              );
-                              setValue("city", selectedCustomer.city || "", {
-                                shouldValidate: true,
-                              });
-                              setValue("state", selectedCustomer.state || "", {
-                                shouldValidate: true,
-                              });
-                              setValue(
-                                "zipCode",
-                                String(selectedCustomer.zipCode || ""),
-                                {
-                                  shouldValidate: true,
-                                }
-                              );
-                              setValue(
-                                "country",
-                                selectedCustomer.country || "",
-                                {
-                                  shouldValidate: true,
-                                }
-                              );
-                              setValue("latitude", selectedCustomer.latitude, {
-                                shouldValidate: true,
-                              });
-                              setValue(
-                                "longitude",
-                                selectedCustomer.longitude,
-                                {
-                                  shouldValidate: true,
-                                }
-                              );
-                            }
-                          }}
-                          placeholder={
-                            isCustomersLoading
-                              ? "Loading..."
-                              : "Select customer..."
-                          }
-                          disabled={isCustomersLoading}
-                        />
-                      )}
-                    />
-
-                    {errors.customer && (
-                      <p className="text-xs flex items-center gap-1 text-red-500">
-                        <AlertCircle className="h-3 w-3" />
-                        {errors.customer.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Sales Rep */}
-                <div className="space-y-2">
-                  <Label htmlFor="salesRep">
-                    Sales Representative <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="salesRep"
-                    control={control}
-                    render={({ field }) => (
-                      <SearchableSelect
-                        options={users}
-                        value={field.value}
-                        onChange={field.onChange}
-                        placeholder={
-                          isUsersLoading ? "Loading..." : "Select user..."
-                        }
-                        disabled={isUsersLoading || isEditMode}
-                      />
-                    )}
-                  />
-                  {errors.salesRep && (
-                    <p className="flex items-center gap-1 text-xs text-red-500">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.salesRep.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* Always visible address fields */}
-                <div className="space-y-2">
-                  <Label htmlFor="address">
-                    Street Address <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="address"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        {...field}
-                        id="address"
-                        placeholder="Enter Street Address"
-                      />
-                    )}
-                  />
-                  {errors.address && (
-                    <p className="flex items-center gap-1 text-xs text-red-500">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.address.message}
-                    </p>
-                  )}
-                </div>
-                {/* <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="city">
-                      City <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="city"
-                      control={control}
-                      render={({ field }) => (
-                        <Input {...field} id="city" placeholder="Enter City" />
-                      )}
-                    />
-                    {errors.city && (
-                      <p className="flex items-center gap-1 text-xs text-red-500">
-                        <AlertCircle className="h-3 w-3" />
-                        {errors.city.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="state">
-                      State/Province <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="state"
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          id="state"
-                          placeholder="Enter State"
-                        />
-                      )}
-                    />
-                    {errors.state && (
-                      <p className="flex items-center gap-1 text-xs text-red-500">
-                        <AlertCircle className="h-3 w-3" />
-                        {errors.state.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="zipCode">
-                      ZIP/Postal Code <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="zipCode"
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          id="zipCode"
-                          placeholder="Enter Zip Code"
-                        />
-                      )}
-                    />
-                    {errors.zipCode && (
-                      <p className="flex items-center gap-1 text-xs text-red-500">
-                        <AlertCircle className="h-3 w-3" />
-                        {errors.zipCode.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="country">
-                      Country <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="country"
-                      control={control}
-                      render={({ field }) => (
-                        <Input
-                          {...field}
-                          id="country"
-                          placeholder="Enter Country"
-                        />
-                      )}
-                    />
-                    {errors.country && (
-                      <p className="flex items-center gap-1 text-xs text-red-500">
-                        <AlertCircle className="h-3 w-3" />
-                        {errors.country.message}
-                      </p>
-                    )}
-                  </div>
-                </div> */}
-
-                <div className="grid grid-cols-2 gap-4 border-t pt-4 mt-2">
-                  <div className="w-full space-y-2">
-                    <Label htmlFor="date">
-                      Date <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="date"
-                      control={control}
-                      render={({ field }) => (
-                        <SimpleDatePicker
-                          date={field.value || ""}
-                          setDate={(date: string) => field.onChange(date)}
-                          className={"w-full"}
-                        />
-                      )}
-                    />
-                    {errors.date && (
-                      <p className="text-xs flex items-center gap-1 text-red-500">
-                        <AlertCircle className="h-3 w-3" />
-                        {errors.date.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="time">
-                      Time <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="time"
-                      control={control}
-                      render={({ field }) => (
-                        <Input type="time" id="time" {...field} />
-                      )}
-                    />
-                    {errors.time && (
-                      <p className="text-xs flex items-center gap-1 text-red-500">
-                        <AlertCircle className="h-3 w-3" />
-                        {errors.time.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="priority">
-                      Priority <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="priority"
-                      control={control}
-                      render={({ field }) => (
-                        <ShadSelect
-                          value={field.value}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger id="priority" className="w-full">
-                            <SelectValue placeholder="Select Priority" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="High">High</SelectItem>
-                            <SelectItem value="Medium">Medium</SelectItem>
-                            <SelectItem value="Low">Low</SelectItem>
-                          </SelectContent>
-                        </ShadSelect>
-                      )}
-                    />
-                    {errors.priority && (
-                      <p className="text-xs flex items-center gap-1 text-red-500">
-                        <AlertCircle className="h-3 w-3" />
-                        {errors.priority.message}
-                      </p>
-                    )}
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="duration">
-                      Duration (hours) <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="duration"
-                      control={control}
-                      render={({ field }) => (
-                        <Input id="duration" type="number" min="1" {...field} />
-                      )}
-                    />
-                    {errors.duration && (
-                      <p className="text-xs flex items-center gap-1 text-red-500">
-                        <AlertCircle className="h-3 w-3" />
-                        {errors.duration.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="preparationNotes">Preparation Notes</Label>
-                  <Controller
-                    name="preparationNotes"
-                    control={control}
-                    render={({ field }) => (
-                      <Input
-                        id="preparationNotes"
-                        placeholder="Any special preparation or notes for the visit..."
-                        {...field}
-                      />
-                    )}
-                  />
-                </div>
-                {/* --- Checkbox to show custom location tools --- */}
-                <div className="flex items-center space-x-2 pt-2">
-                  <Checkbox
-                    id="custom-location"
-                    checked={isCustomLocation}
-                    onCheckedChange={(checked) =>
-                      setIsCustomLocation(Boolean(checked))
-                    }
-                  />
-                  <Label
-                    htmlFor="custom-location"
-                    className="cursor-pointer font-normal"
-                  >
-                    Set a Different/More Specific Visit Location
-                  </Label>
-                </div>
-
-                {/* --- Conditionally rendered location tools --- */}
-                {isCustomLocation && (
-                  <div className="grid grid-cols-2 gap-4 border-t pt-4 mt-2 animate-in fade-in-0 duration-300">
+            ) : (
+              <FormProvider {...form}>
+                <form
+                  onSubmit={handleSubmit(onSubmit)}
+                  onKeyDown={(e) => e.key === "Enter" && e.preventDefault()}
+                  className="space-y-4"
+                >
+                  {/* Shared Date and Sales Representative Fields */}
+                  <div className="grid grid-cols-2 gap-4 border-b pb-4">
                     <div className="space-y-2">
-                      <Label>Location Input Method</Label>
-                      <RadioGroup
-                        value={locationInputMode}
-                        onValueChange={(value) =>
-                          setLocationInputMode(value as "search" | "map")
-                        }
-                        className="flex items-center space-x-4 pt-1"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="map" id="r_map" />
-                          <Label
-                            htmlFor="r_map"
-                            className="cursor-pointer font-normal"
-                          >
-                            From Map
-                          </Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="search" id="r_search" />
-                          <Label
-                            htmlFor="r_search"
-                            className="cursor-pointer font-normal"
-                          >
-                            From Lat Lng
-                          </Label>
-                        </div>
-                      </RadioGroup>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="location-finder">
-                        Find Location <span className="text-red-500">*</span>
+                      <Label htmlFor="date">
+                        Date <span className="text-red-500">*</span>
                       </Label>
-                      {locationInputMode === "search" ? (
-                        <Input
-                          id="location-finder"
-                          type="text"
-                          placeholder="23.114007367862843, 72.5413259310343"
-                          value={latLng}
-                          onChange={(e) => setLatLng(e.target.value)}
-                        />
-                      ) : (
-                        <Button
-                          id="location-finder"
-                          type="button"
-                          variant="outline"
-                          onClick={() => setIsMapModalOpen(true)}
-                          className="w-full justify-start text-left font-normal"
-                        >
-                          <MapPin className="mr-2 h-4 w-4" />
-                          Change Location from Map
-                        </Button>
-                      )}
-                      {(errors.latitude || errors.longitude) && (
+                      <Controller
+                        name="date"
+                        control={control}
+                        render={({ field }) => (
+                          <SimpleDatePicker
+                            date={field.value || ""}
+                            setDate={(date: string) => field.onChange(date)}
+                            className={"w-full"}
+                          />
+                        )}
+                      />
+                      {errors.date && (
                         <p className="text-xs flex items-center gap-1 text-red-500">
                           <AlertCircle className="h-3 w-3" />
-                          {errors.latitude?.message ||
-                            errors.longitude?.message ||
-                            "Please select a valid location."}
+                          {errors.date.message}
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="salesRep">
+                        Sales Representative{" "}
+                        <span className="text-red-500">*</span>
+                      </Label>
+                      <Controller
+                        name="salesRep"
+                        control={control}
+                        render={({ field }) => (
+                          <SearchableSelect
+                            options={users}
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder={
+                              isUsersLoading ? "Loading..." : "Select user..."
+                            }
+                            disabled={isUsersLoading || isEditMode}
+                          />
+                        )}
+                      />
+                      {errors.salesRep && (
+                        <p className="flex items-center gap-1 text-xs text-red-500">
+                          <AlertCircle className="h-3 w-3" />
+                          {errors.salesRep.message}
                         </p>
                       )}
                     </div>
                   </div>
-                )}
-                <div className="flex justify-end space-x-2 pt-4">
-                  <Button type="button" variant="outline" onClick={onClose}>
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={isLoading}>
-                    {isLoading
-                      ? "Saving..."
-                      : isEditMode
-                        ? "Update Visit"
-                        : "Schedule Visit"}
-                  </Button>
-                </div>
-              </form>
-            </FormProvider>
-          )}
-        </CardContent>
-      </Card>
+
+                  {/* Visit Forms */}
+                  {fields.map((field, index) => (
+                    <div
+                      key={field.id}
+                      className="border p-4 rounded-md relative"
+                    >
+                      <div className="flex justify-between items-center mb-4">
+                        <h3 className="text-lg font-semibold">
+                          Visit {index + 1}
+                        </h3>
+                        {fields.length > 1 && !isEditMode && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => remove(index)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        {/* Purpose */}
+                        <div className="space-y-2">
+                          <Label htmlFor={`visits.${index}.purpose`}>
+                            Purpose of Visit{" "}
+                            <span className="text-red-500">*</span>
+                          </Label>
+                          <Controller
+                            name={`visits.${index}.purpose`}
+                            control={control}
+                            render={({ field }) => (
+                              <Input
+                                id={`visits.${index}.purpose`}
+                                placeholder="Enter purpose of visit"
+                                {...field}
+                              />
+                            )}
+                          />
+                          {errors.visits?.[index]?.purpose && (
+                            <p className="flex items-center gap-1 text-xs text-red-500">
+                              <AlertCircle className="h-3 w-3" />
+                              {errors.visits[index].purpose.message}
+                            </p>
+                          )}
+                        </div>
+                        {/* Customer */}
+                        <div className="space-y-2">
+                          <Label htmlFor={`visits.${index}.customer`}>
+                            Customer <span className="text-red-500">*</span>
+                          </Label>
+                          <Controller
+                            name={`visits.${index}.customer`}
+                            control={control}
+                            render={({ field }) => (
+                              <SearchableSelect
+                                options={customerOptions}
+                                value={field.value}
+                                onChange={(value) => {
+                                  field.onChange(value);
+                                  const selectedCustomer = customerList.find(
+                                    (c: any) => c.customerId === value
+                                  );
+                                  if (selectedCustomer) {
+                                    setLocationStates((prev) =>
+                                      prev.map((state, i) =>
+                                        i === index
+                                          ? {
+                                              ...state,
+                                              isCustomLocation: false,
+                                            }
+                                          : state
+                                      )
+                                    );
+                                    const fullAddress = [
+                                      selectedCustomer.streetAddress,
+                                      selectedCustomer.city,
+                                      selectedCustomer.state,
+                                      selectedCustomer.country,
+                                    ]
+                                      .filter(Boolean)
+                                      .join(", ");
+                                    setValue(
+                                      `visits.${index}.location`,
+                                      fullAddress,
+                                      {
+                                        shouldValidate: true,
+                                      }
+                                    );
+                                    setValue(
+                                      `visits.${index}.address`,
+                                      selectedCustomer.streetAddress || "",
+                                      { shouldValidate: true }
+                                    );
+                                    setValue(
+                                      `visits.${index}.city`,
+                                      selectedCustomer.city || "",
+                                      { shouldValidate: true }
+                                    );
+                                    setValue(
+                                      `visits.${index}.state`,
+                                      selectedCustomer.state || "",
+                                      { shouldValidate: true }
+                                    );
+                                    setValue(
+                                      `visits.${index}.zipCode`,
+                                      String(selectedCustomer.zipCode || ""),
+                                      { shouldValidate: true }
+                                    );
+                                    setValue(
+                                      `visits.${index}.country`,
+                                      selectedCustomer.country || "",
+                                      { shouldValidate: true }
+                                    );
+                                    setValue(
+                                      `visits.${index}.latitude`,
+                                      selectedCustomer.latitude,
+                                      { shouldValidate: true }
+                                    );
+                                    setValue(
+                                      `visits.${index}.longitude`,
+                                      selectedCustomer.longitude,
+                                      { shouldValidate: true }
+                                    );
+                                  }
+                                }}
+                                placeholder={
+                                  isCustomersLoading
+                                    ? "Loading..."
+                                    : "Select customer..."
+                                }
+                                disabled={isCustomersLoading}
+                              />
+                            )}
+                          />
+                          {errors.visits?.[index]?.customer && (
+                            <p className="text-xs flex items-center gap-1 text-red-500">
+                              <AlertCircle className="h-3 w-3" />
+                              {errors.visits[index].customer.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Address Fields */}
+                      <div className="space-y-2 mt-4">
+                        <Label htmlFor={`visits.${index}.address`}>
+                          Street Address <span className="text-red-500">*</span>
+                        </Label>
+                        <Controller
+                          name={`visits.${index}.address`}
+                          control={control}
+                          render={({ field }) => (
+                            <Input
+                              {...field}
+                              id={`visits.${index}.address`}
+                              placeholder="Enter Street Address"
+                            />
+                          )}
+                        />
+                        {errors.visits?.[index]?.address && (
+                          <p className="flex items-center gap-1 text-xs text-red-500">
+                            <AlertCircle className="h-3 w-3" />
+                            {errors.visits[index].address.message}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 mt-4">
+                        <div className="space-y-2">
+                          <Label htmlFor={`visits.${index}.time`}>
+                            Time <span className="text-red-500">*</span>
+                          </Label>
+                          <Controller
+                            name={`visits.${index}.time`}
+                            control={control}
+                            render={({ field }) => (
+                              <Input
+                                type="time"
+                                id={`visits.${index}.time`}
+                                {...field}
+                              />
+                            )}
+                          />
+                          {errors.visits?.[index]?.time && (
+                            <p className="text-xs flex items-center gap-1 text-red-500">
+                              <AlertCircle className="h-3 w-3" />
+                              {errors.visits[index].time.message}
+                            </p>
+                          )}
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`visits.${index}.duration`}>
+                            Duration (hours){" "}
+                            <span className="text-red-500">*</span>
+                          </Label>
+                          <Controller
+                            name={`visits.${index}.duration`}
+                            control={control}
+                            render={({ field }) => (
+                              <Input
+                                id={`visits.${index}.duration`}
+                                type="number"
+                                min="1"
+                                {...field}
+                              />
+                            )}
+                          />
+                          {errors.visits?.[index]?.duration && (
+                            <p className="text-xs flex items-center gap-1 text-red-500">
+                              <AlertCircle className="h-3 w-3" />
+                              {errors.visits[index].duration.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 mt-4">
+                        <div className="space-y-2">
+                          <Label htmlFor={`visits.${index}.priority`}>
+                            Priority <span className="text-red-500">*</span>
+                          </Label>
+                          <Controller
+                            name={`visits.${index}.priority`}
+                            control={control}
+                            render={({ field }) => (
+                              <ShadSelect
+                                value={field.value}
+                                onValueChange={field.onChange}
+                              >
+                                <SelectTrigger
+                                  id={`visits.${index}.priority`}
+                                  className="w-full"
+                                >
+                                  <SelectValue placeholder="Select Priority" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="High">High</SelectItem>
+                                  <SelectItem value="Medium">Medium</SelectItem>
+                                  <SelectItem value="Low">Low</SelectItem>
+                                </SelectContent>
+                              </ShadSelect>
+                            )}
+                          />
+                          {errors.visits?.[index]?.priority && (
+                            <p className="text-xs flex items-center gap-1 text-red-500">
+                              <AlertCircle className="h-3 w-3" />
+                              {errors.visits[index].priority.message}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="space-y-2 mt-4">
+                        <Label htmlFor={`visits.${index}.preparationNotes`}>
+                          Preparation Notes
+                        </Label>
+                        <Controller
+                          name={`visits.${index}.preparationNotes`}
+                          control={control}
+                          render={({ field }) => (
+                            <Input
+                              id={`visits.${index}.preparationNotes`}
+                              placeholder="Any special preparation or notes for the visit..."
+                              {...field}
+                            />
+                          )}
+                        />
+                      </div>
+                      {/* Checkbox for Custom Location */}
+                      <div className="flex items-center space-x-2 pt-4">
+                        <Checkbox
+                          id={`custom-location-${index}`}
+                          checked={locationStates[index]?.isCustomLocation}
+                          onCheckedChange={(checked) =>
+                            setLocationStates((prev) =>
+                              prev.map((state, i) =>
+                                i === index
+                                  ? {
+                                      ...state,
+                                      isCustomLocation: Boolean(checked),
+                                    }
+                                  : state
+                              )
+                            )
+                          }
+                        />
+                        <Label
+                          htmlFor={`custom-location-${index}`}
+                          className="cursor-pointer font-normal"
+                        >
+                          Set a Different/More Specific Visit Location
+                        </Label>
+                      </div>
+                      {/* Conditionally Rendered Location Tools */}
+                      {locationStates[index]?.isCustomLocation && (
+                        <div className="grid grid-cols-2 gap-4 border-t pt-4 mt-2 animate-in fade-in-0 duration-300">
+                          <div className="space-y-2">
+                            <Label>Location Input Method</Label>
+                            <RadioGroup
+                              value={locationStates[index]?.locationInputMode}
+                              onValueChange={(value) =>
+                                setLocationStates((prev) =>
+                                  prev.map((state, i) =>
+                                    i === index
+                                      ? {
+                                          ...state,
+                                          locationInputMode: value as
+                                            | "search"
+                                            | "map",
+                                        }
+                                      : state
+                                  )
+                                )
+                              }
+                              className="flex items-center space-x-4 pt-1"
+                            >
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem
+                                  value="map"
+                                  id={`r_map-${index}`}
+                                />
+                                <Label
+                                  htmlFor={`r_map-${index}`}
+                                  className="cursor-pointer font-normal"
+                                >
+                                  From Map
+                                </Label>
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <RadioGroupItem
+                                  value="search"
+                                  id={`r_search-${index}`}
+                                />
+                                <Label
+                                  htmlFor={`r_search-${index}`}
+                                  className="cursor-pointer font-normal"
+                                >
+                                  From Lat Lng
+                                </Label>
+                              </div>
+                            </RadioGroup>
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`location-finder-${index}`}>
+                              Find Location{" "}
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            {locationStates[index]?.locationInputMode ===
+                            "search" ? (
+                              <Input
+                                id={`location-finder-${index}`}
+                                type="text"
+                                placeholder="23.114007367862843, 72.5413259310343"
+                                value={locationStates[index]?.latLng}
+                                onChange={(e) =>
+                                  setLocationStates((prev) =>
+                                    prev.map((state, i) =>
+                                      i === index
+                                        ? { ...state, latLng: e.target.value }
+                                        : state
+                                    )
+                                  )
+                                }
+                              />
+                            ) : (
+                              <Button
+                                id={`location-finder-${index}`}
+                                type="button"
+                                variant="outline"
+                                onClick={() =>
+                                  setLocationStates((prev) =>
+                                    prev.map((state, i) =>
+                                      i === index
+                                        ? { ...state, isMapModalOpen: true }
+                                        : state
+                                    )
+                                  )
+                                }
+                                className="w-full justify-start text-left font-normal"
+                              >
+                                <MapPin className="mr-2 h-4 w-4" />
+                                Change Location from Map
+                              </Button>
+                            )}
+                            {(errors.visits?.[index]?.latitude ||
+                              errors.visits?.[index]?.longitude) && (
+                              <p className="text-xs flex items-center gap-1 text-red-500">
+                                <AlertCircle className="h-3 w-3" />
+                                {errors.visits[index]?.latitude?.message ||
+                                  errors.visits[index]?.longitude?.message ||
+                                  "Please select a valid location."}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                  {!isEditMode && (
+                    <Button
+                      type="button"
+                      onClick={addNewVisit}
+                      className="mt-4"
+                    >
+                      Add Another Visit
+                    </Button>
+                  )}
+                  <div className="flex justify-end space-x-2 pt-4">
+                    <Button type="button" variant="outline" onClick={onClose}>
+                      Cancel
+                    </Button>
+                    <Button type="submit" disabled={isLoading}>
+                      {isLoading
+                        ? "Saving..."
+                        : isEditMode
+                          ? "Update Visit"
+                          : "Schedule Visits"}
+                    </Button>
+                  </div>
+                </form>
+              </FormProvider>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="col-span-4"></Card>
+      </div>
     </Main>
   );
 }
