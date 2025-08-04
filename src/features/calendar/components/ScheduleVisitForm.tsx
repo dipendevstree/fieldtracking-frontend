@@ -6,8 +6,8 @@ import {
   useFieldArray,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useParams } from "@tanstack/react-router";
-import { AlertCircle, MapPin, Trash2 } from "lucide-react";
+import { useParams, useSearch } from "@tanstack/react-router";
+import { AlertCircle, MapPin, Trash2, Clock } from "lucide-react";
 import moment from "moment-timezone";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
@@ -32,6 +32,18 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Main } from "@/components/layout/main";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+
 import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
 import { formSchema, TFormSchema } from "../data/schema";
 import {
@@ -39,17 +51,62 @@ import {
   useUpdateVisits,
   useGetVisitByID,
   useGetAllCustomer,
+  useGetAllVisit,
+  useDeleteVisits,
 } from "../services/calendar-view.hook";
 import LocationPicker from "@/features/customers/components/LocationPicker";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
+import {
+  DeleteVisitDialogProps,
+  MappedVisit,
+  ScheduleVisitFormProps,
+  Visit,
+} from "../type/type";
 
-interface ScheduleVisitFormProps {
-  onClose: () => void;
+function DeleteVisitDialog({ visit, isOpen, onClose }: DeleteVisitDialogProps) {
+  if (!visit) return null;
+
+  const { mutate: deleteVisit, isPending: isLoading } = useDeleteVisits(
+    visit.id,
+    onClose
+  );
+
+  return (
+    <AlertDialog open={isOpen} onOpenChange={onClose}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete the visit
+            for <strong>{visit.purpose}</strong>.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel onClick={onClose}>Cancel</AlertDialogCancel>
+          <AlertDialogAction
+            onClick={() => deleteVisit()}
+            disabled={isLoading}
+            className="bg-red-600 text-white hover:bg-red-700 focus:ring-red-500"
+          >
+            {isLoading ? "Deleting..." : "Confirm Delete"}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 }
 
 export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
   const params = useParams({ strict: false });
   const visitId = params.id;
   const isEditMode = !!visitId;
+
+  const { salesRepId }: any = useSearch({
+    from: "/_authenticated/calendar/schedule-visit",
+  });
+
+  const isCreateWithPrefill = !isEditMode && salesRepId;
 
   const form = useForm<TFormSchema>({
     resolver: zodResolver(formSchema),
@@ -83,6 +140,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
     control,
     reset,
     setValue,
+    watch,
     formState: { errors },
   } = form;
 
@@ -91,11 +149,70 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
     name: "visits",
   });
 
+  const selectedDate = watch("date");
+  const selectedRep = watch("salesRep");
+
   const {
     data: visitData,
     isLoading: isVisitLoading,
     error: visitError,
   } = useGetVisitByID(visitId || "", isEditMode);
+
+  const {
+    data: visits,
+    isLoading: isVisitsLoading,
+    error: visitsError,
+  } = useGetAllVisit({
+    startDate: selectedDate,
+    endDate: selectedDate,
+    salesRepresentativeUserId: selectedRep,
+  });
+
+  const [visitToDelete, setVisitToDelete] = useState<MappedVisit | null>(null);
+
+  const upcomingVisits: MappedVisit[] =
+    visits?.map((visit: Visit) => ({
+      id: visit.id || visit.visitId || "",
+      rep:
+        `${visit.salesRepresentativeUser.firstName} ${visit.salesRepresentativeUser.lastName}`.trim() ||
+        "Unknown",
+      salesRepId: visit.salesRepresentativeUser.id || "",
+      roleId: visit.salesRepresentativeUser.roleId || "",
+      customer:
+        typeof visit.customer === "string"
+          ? visit.customer
+          : visit.customer?.companyName || "Unknown",
+      contact: visit.contact || "N/A",
+      date: new Date(visit.date).toISOString().split("T")[0],
+      time: visit.time,
+      purpose: visit.purpose,
+      location: visit.location || "N/A",
+      status:
+        visit.status.charAt(0).toUpperCase() +
+        visit.status.slice(1).toLowerCase(),
+      priority: visit.priority,
+      originalVisit: visit,
+    })) || [];
+
+  const getStatusBadge = (status: string) => {
+    const variants: Record<string, string> = {
+      Confirmed: "bg-green-100 text-green-800",
+      Pending: "bg-yellow-100 text-yellow-800",
+      Cancelled: "bg-red-100 text-red-800",
+      Completed: "bg-blue-100 text-blue-800",
+      "In-progress": "bg-purple-100 text-purple-800",
+    };
+    return variants[status] || "bg-gray-100 text-gray-800";
+  };
+
+  const getPriorityBadge = (priority: string) => {
+    const variants: Record<string, string> = {
+      High: "bg-red-100 text-red-800",
+      Medium: "bg-yellow-100 text-yellow-800",
+      Low: "bg-green-100 text-green-800",
+    };
+    return variants[priority] || "bg-gray-100 text-gray-800";
+  };
 
   useEffect(() => {
     if (isEditMode && visitData) {
@@ -132,6 +249,30 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
         ],
       };
       reset(formData);
+    } else if (isCreateWithPrefill) {
+      reset({
+        date: new Date().toISOString().split("T")[0],
+        salesRep: salesRepId,
+        visits: [
+          {
+            purpose: "",
+            customer: "",
+            time: "",
+            location: "",
+            address: "",
+            city: "",
+            state: "",
+            zipCode: "",
+            country: "",
+            latitude: undefined,
+            longitude: undefined,
+            reportType: "",
+            priority: "Medium",
+            duration: "1",
+            preparationNotes: "",
+          },
+        ],
+      });
     } else if (!isEditMode) {
       reset({
         date: new Date().toISOString().split("T")[0],
@@ -157,7 +298,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
         ],
       });
     }
-  }, [visitData, isEditMode, reset]);
+  }, [visitData, isEditMode, reset, salesRepId]);
 
   const { data: customerList = [], isLoading: isCustomersLoading } =
     useGetAllCustomer();
@@ -270,8 +411,34 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
     }
   };
 
-  const { mutate: createVisit, isPending: isCreateLoading } =
-    useCreateVisits(onClose);
+  const { mutate: createVisit, isPending: isCreateLoading } = useCreateVisits(
+    () => {
+      const salesRepId = watch("salesRep");
+      reset({
+        date: new Date().toISOString().split("T")[0],
+        salesRep: salesRepId,
+        visits: [
+          {
+            purpose: "",
+            customer: "",
+            time: "",
+            location: "",
+            address: "",
+            city: "",
+            state: "",
+            zipCode: "",
+            country: "",
+            latitude: undefined,
+            longitude: undefined,
+            reportType: "",
+            priority: "Medium",
+            duration: "1",
+            preparationNotes: "",
+          },
+        ],
+      });
+    }
+  );
   const { mutate: updateVisit, isPending: isUpdateLoading } = useUpdateVisits(
     visitId || "",
     onClose
@@ -300,7 +467,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
   };
 
   return (
-    <Main className="flex flex-col gap-6 p-6">
+    <Main className="flex flex-col gap-4 !p-0">
       {locationStates.map((state, index) => (
         <LocationPicker
           key={index}
@@ -316,18 +483,13 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
           latLng={state.latLng}
         />
       ))}
+      <DeleteVisitDialog
+        visit={visitToDelete}
+        isOpen={!!visitToDelete}
+        onClose={() => setVisitToDelete(null)}
+      />
       <div className="grid grid-cols-12 gap-4">
         <Card className="col-span-8">
-          <CardHeader>
-            <CardTitle>
-              {isEditMode ? "Edit Visit" : "Schedule New Visit"}
-            </CardTitle>
-            <CardDescription>
-              {isEditMode
-                ? "Update the visit details below"
-                : "Fill in the details to schedule new visits"}
-            </CardDescription>
-          </CardHeader>
           <CardContent>
             {showLoadingSpinner ? (
               <div className="flex items-center justify-center py-8">
@@ -408,411 +570,420 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                   </div>
 
                   {/* Visit Forms */}
-                  {fields.map((field, index) => (
-                    <div
-                      key={field.id}
-                      className="border p-4 rounded-md relative"
-                    >
-                      <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-semibold">
-                          Visit {index + 1}
-                        </h3>
-                        {fields.length > 1 && !isEditMode && (
-                          <Button
-                            type="button"
-                            size="sm"
-                            onClick={() => remove(index)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                  <ScrollArea className="h-[calc(100vh-380px)] pr-4">
+                    {fields.map((field, index) => (
+                      <div
+                        key={field.id}
+                        className={cn(
+                          "border p-4 rounded-md relative",
+                          index !== 0 && "mt-4"
                         )}
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        {/* Purpose */}
-                        <div className="space-y-2">
-                          <Label htmlFor={`visits.${index}.purpose`}>
-                            Purpose of Visit{" "}
-                            <span className="text-red-500">*</span>
-                          </Label>
-                          <Controller
-                            name={`visits.${index}.purpose`}
-                            control={control}
-                            render={({ field }) => (
-                              <Input
-                                id={`visits.${index}.purpose`}
-                                placeholder="Enter purpose of visit"
-                                {...field}
-                              />
-                            )}
-                          />
-                          {errors.visits?.[index]?.purpose && (
-                            <p className="flex items-center gap-1 text-xs text-red-500">
-                              <AlertCircle className="h-3 w-3" />
-                              {errors.visits[index].purpose.message}
-                            </p>
-                          )}
-                        </div>
-                        {/* Customer */}
-                        <div className="space-y-2">
-                          <Label htmlFor={`visits.${index}.customer`}>
-                            Customer <span className="text-red-500">*</span>
-                          </Label>
-                          <Controller
-                            name={`visits.${index}.customer`}
-                            control={control}
-                            render={({ field }) => (
-                              <SearchableSelect
-                                options={customerOptions}
-                                value={field.value}
-                                onChange={(value) => {
-                                  field.onChange(value);
-                                  const selectedCustomer = customerList.find(
-                                    (c: any) => c.customerId === value
-                                  );
-                                  if (selectedCustomer) {
-                                    setLocationStates((prev) =>
-                                      prev.map((state, i) =>
-                                        i === index
-                                          ? {
-                                              ...state,
-                                              isCustomLocation: false,
-                                            }
-                                          : state
-                                      )
-                                    );
-                                    const fullAddress = [
-                                      selectedCustomer.streetAddress,
-                                      selectedCustomer.city,
-                                      selectedCustomer.state,
-                                      selectedCustomer.country,
-                                    ]
-                                      .filter(Boolean)
-                                      .join(", ");
-                                    setValue(
-                                      `visits.${index}.location`,
-                                      fullAddress,
-                                      {
-                                        shouldValidate: true,
-                                      }
-                                    );
-                                    setValue(
-                                      `visits.${index}.address`,
-                                      selectedCustomer.streetAddress || "",
-                                      { shouldValidate: true }
-                                    );
-                                    setValue(
-                                      `visits.${index}.city`,
-                                      selectedCustomer.city || "",
-                                      { shouldValidate: true }
-                                    );
-                                    setValue(
-                                      `visits.${index}.state`,
-                                      selectedCustomer.state || "",
-                                      { shouldValidate: true }
-                                    );
-                                    setValue(
-                                      `visits.${index}.zipCode`,
-                                      String(selectedCustomer.zipCode || ""),
-                                      { shouldValidate: true }
-                                    );
-                                    setValue(
-                                      `visits.${index}.country`,
-                                      selectedCustomer.country || "",
-                                      { shouldValidate: true }
-                                    );
-                                    setValue(
-                                      `visits.${index}.latitude`,
-                                      selectedCustomer.latitude,
-                                      { shouldValidate: true }
-                                    );
-                                    setValue(
-                                      `visits.${index}.longitude`,
-                                      selectedCustomer.longitude,
-                                      { shouldValidate: true }
-                                    );
-                                  }
-                                }}
-                                placeholder={
-                                  isCustomersLoading
-                                    ? "Loading..."
-                                    : "Select customer..."
-                                }
-                                disabled={isCustomersLoading}
-                              />
-                            )}
-                          />
-                          {errors.visits?.[index]?.customer && (
-                            <p className="text-xs flex items-center gap-1 text-red-500">
-                              <AlertCircle className="h-3 w-3" />
-                              {errors.visits[index].customer.message}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Address Fields */}
-                      <div className="space-y-2 mt-4">
-                        <Label htmlFor={`visits.${index}.address`}>
-                          Street Address <span className="text-red-500">*</span>
-                        </Label>
-                        <Controller
-                          name={`visits.${index}.address`}
-                          control={control}
-                          render={({ field }) => (
-                            <Input
-                              {...field}
-                              id={`visits.${index}.address`}
-                              placeholder="Enter Street Address"
-                            />
-                          )}
-                        />
-                        {errors.visits?.[index]?.address && (
-                          <p className="flex items-center gap-1 text-xs text-red-500">
-                            <AlertCircle className="h-3 w-3" />
-                            {errors.visits[index].address.message}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4 mt-4">
-                        <div className="space-y-2">
-                          <Label htmlFor={`visits.${index}.time`}>
-                            Time <span className="text-red-500">*</span>
-                          </Label>
-                          <Controller
-                            name={`visits.${index}.time`}
-                            control={control}
-                            render={({ field }) => (
-                              <Input
-                                type="time"
-                                id={`visits.${index}.time`}
-                                {...field}
-                              />
-                            )}
-                          />
-                          {errors.visits?.[index]?.time && (
-                            <p className="text-xs flex items-center gap-1 text-red-500">
-                              <AlertCircle className="h-3 w-3" />
-                              {errors.visits[index].time.message}
-                            </p>
-                          )}
-                        </div>
-                        <div className="space-y-2">
-                          <Label htmlFor={`visits.${index}.duration`}>
-                            Duration (hours){" "}
-                            <span className="text-red-500">*</span>
-                          </Label>
-                          <Controller
-                            name={`visits.${index}.duration`}
-                            control={control}
-                            render={({ field }) => (
-                              <Input
-                                id={`visits.${index}.duration`}
-                                type="number"
-                                min="1"
-                                {...field}
-                              />
-                            )}
-                          />
-                          {errors.visits?.[index]?.duration && (
-                            <p className="text-xs flex items-center gap-1 text-red-500">
-                              <AlertCircle className="h-3 w-3" />
-                              {errors.visits[index].duration.message}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4 mt-4">
-                        <div className="space-y-2">
-                          <Label htmlFor={`visits.${index}.priority`}>
-                            Priority <span className="text-red-500">*</span>
-                          </Label>
-                          <Controller
-                            name={`visits.${index}.priority`}
-                            control={control}
-                            render={({ field }) => (
-                              <ShadSelect
-                                value={field.value}
-                                onValueChange={field.onChange}
-                              >
-                                <SelectTrigger
-                                  id={`visits.${index}.priority`}
-                                  className="w-full"
-                                >
-                                  <SelectValue placeholder="Select Priority" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="High">High</SelectItem>
-                                  <SelectItem value="Medium">Medium</SelectItem>
-                                  <SelectItem value="Low">Low</SelectItem>
-                                </SelectContent>
-                              </ShadSelect>
-                            )}
-                          />
-                          {errors.visits?.[index]?.priority && (
-                            <p className="text-xs flex items-center gap-1 text-red-500">
-                              <AlertCircle className="h-3 w-3" />
-                              {errors.visits[index].priority.message}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                      <div className="space-y-2 mt-4">
-                        <Label htmlFor={`visits.${index}.preparationNotes`}>
-                          Preparation Notes
-                        </Label>
-                        <Controller
-                          name={`visits.${index}.preparationNotes`}
-                          control={control}
-                          render={({ field }) => (
-                            <Input
-                              id={`visits.${index}.preparationNotes`}
-                              placeholder="Any special preparation or notes for the visit..."
-                              {...field}
-                            />
-                          )}
-                        />
-                      </div>
-                      {/* Checkbox for Custom Location */}
-                      <div className="flex items-center space-x-2 pt-4">
-                        <Checkbox
-                          id={`custom-location-${index}`}
-                          checked={locationStates[index]?.isCustomLocation}
-                          onCheckedChange={(checked) =>
-                            setLocationStates((prev) =>
-                              prev.map((state, i) =>
-                                i === index
-                                  ? {
-                                      ...state,
-                                      isCustomLocation: Boolean(checked),
-                                    }
-                                  : state
-                              )
-                            )
-                          }
-                        />
-                        <Label
-                          htmlFor={`custom-location-${index}`}
-                          className="cursor-pointer font-normal"
-                        >
-                          Set a Different/More Specific Visit Location
-                        </Label>
-                      </div>
-                      {/* Conditionally Rendered Location Tools */}
-                      {locationStates[index]?.isCustomLocation && (
-                        <div className="grid grid-cols-2 gap-4 border-t pt-4 mt-2 animate-in fade-in-0 duration-300">
-                          <div className="space-y-2">
-                            <Label>Location Input Method</Label>
-                            <RadioGroup
-                              value={locationStates[index]?.locationInputMode}
-                              onValueChange={(value) =>
-                                setLocationStates((prev) =>
-                                  prev.map((state, i) =>
-                                    i === index
-                                      ? {
-                                          ...state,
-                                          locationInputMode: value as
-                                            | "search"
-                                            | "map",
-                                        }
-                                      : state
-                                  )
-                                )
-                              }
-                              className="flex items-center space-x-4 pt-1"
+                      >
+                        <div className="flex justify-between items-center mb-4">
+                          <h3 className="text-lg font-semibold">
+                            Visit {index + 1}
+                          </h3>
+                          {fields.length > 1 && !isEditMode && (
+                            <Button
+                              type="button"
+                              size="sm"
+                              onClick={() => remove(index)}
                             >
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem
-                                  value="map"
-                                  id={`r_map-${index}`}
-                                />
-                                <Label
-                                  htmlFor={`r_map-${index}`}
-                                  className="cursor-pointer font-normal"
-                                >
-                                  From Map
-                                </Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem
-                                  value="search"
-                                  id={`r_search-${index}`}
-                                />
-                                <Label
-                                  htmlFor={`r_search-${index}`}
-                                  className="cursor-pointer font-normal"
-                                >
-                                  From Lat Lng
-                                </Label>
-                              </div>
-                            </RadioGroup>
-                          </div>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          {/* Purpose */}
                           <div className="space-y-2">
-                            <Label htmlFor={`location-finder-${index}`}>
-                              Find Location{" "}
+                            <Label htmlFor={`visits.${index}.purpose`}>
+                              Purpose of Visit{" "}
                               <span className="text-red-500">*</span>
                             </Label>
-                            {locationStates[index]?.locationInputMode ===
-                            "search" ? (
-                              <Input
-                                id={`location-finder-${index}`}
-                                type="text"
-                                placeholder="23.114007367862843, 72.5413259310343"
-                                value={locationStates[index]?.latLng}
-                                onChange={(e) =>
-                                  setLocationStates((prev) =>
-                                    prev.map((state, i) =>
-                                      i === index
-                                        ? { ...state, latLng: e.target.value }
-                                        : state
-                                    )
-                                  )
-                                }
-                              />
-                            ) : (
-                              <Button
-                                id={`location-finder-${index}`}
-                                type="button"
-                                variant="outline"
-                                onClick={() =>
-                                  setLocationStates((prev) =>
-                                    prev.map((state, i) =>
-                                      i === index
-                                        ? { ...state, isMapModalOpen: true }
-                                        : state
-                                    )
-                                  )
-                                }
-                                className="w-full justify-start text-left font-normal"
-                              >
-                                <MapPin className="mr-2 h-4 w-4" />
-                                Change Location from Map
-                              </Button>
+                            <Controller
+                              name={`visits.${index}.purpose`}
+                              control={control}
+                              render={({ field }) => (
+                                <Input
+                                  id={`visits.${index}.purpose`}
+                                  placeholder="Enter purpose of visit"
+                                  {...field}
+                                />
+                              )}
+                            />
+                            {errors.visits?.[index]?.purpose && (
+                              <p className="flex items-center gap-1 text-xs text-red-500">
+                                <AlertCircle className="h-3 w-3" />
+                                {errors.visits[index].purpose.message}
+                              </p>
                             )}
-                            {(errors.visits?.[index]?.latitude ||
-                              errors.visits?.[index]?.longitude) && (
+                          </div>
+                          {/* Customer */}
+                          <div className="space-y-2">
+                            <Label htmlFor={`visits.${index}.customer`}>
+                              Customer <span className="text-red-500">*</span>
+                            </Label>
+                            <Controller
+                              name={`visits.${index}.customer`}
+                              control={control}
+                              render={({ field }) => (
+                                <SearchableSelect
+                                  options={customerOptions}
+                                  value={field.value}
+                                  onChange={(value) => {
+                                    field.onChange(value);
+                                    const selectedCustomer = customerList.find(
+                                      (c: any) => c.customerId === value
+                                    );
+                                    if (selectedCustomer) {
+                                      setLocationStates((prev) =>
+                                        prev.map((state, i) =>
+                                          i === index
+                                            ? {
+                                                ...state,
+                                                isCustomLocation: false,
+                                              }
+                                            : state
+                                        )
+                                      );
+                                      const fullAddress = [
+                                        selectedCustomer.streetAddress,
+                                        selectedCustomer.city,
+                                        selectedCustomer.state,
+                                        selectedCustomer.country,
+                                      ]
+                                        .filter(Boolean)
+                                        .join(", ");
+                                      setValue(
+                                        `visits.${index}.location`,
+                                        fullAddress,
+                                        {
+                                          shouldValidate: true,
+                                        }
+                                      );
+                                      setValue(
+                                        `visits.${index}.address`,
+                                        selectedCustomer.streetAddress || "",
+                                        { shouldValidate: true }
+                                      );
+                                      setValue(
+                                        `visits.${index}.city`,
+                                        selectedCustomer.city || "",
+                                        { shouldValidate: true }
+                                      );
+                                      setValue(
+                                        `visits.${index}.state`,
+                                        selectedCustomer.state || "",
+                                        { shouldValidate: true }
+                                      );
+                                      setValue(
+                                        `visits.${index}.zipCode`,
+                                        String(selectedCustomer.zipCode || ""),
+                                        { shouldValidate: true }
+                                      );
+                                      setValue(
+                                        `visits.${index}.country`,
+                                        selectedCustomer.country || "",
+                                        { shouldValidate: true }
+                                      );
+                                      setValue(
+                                        `visits.${index}.latitude`,
+                                        selectedCustomer.latitude,
+                                        { shouldValidate: true }
+                                      );
+                                      setValue(
+                                        `visits.${index}.longitude`,
+                                        selectedCustomer.longitude,
+                                        { shouldValidate: true }
+                                      );
+                                    }
+                                  }}
+                                  placeholder={
+                                    isCustomersLoading
+                                      ? "Loading..."
+                                      : "Select customer..."
+                                  }
+                                  disabled={isCustomersLoading}
+                                />
+                              )}
+                            />
+                            {errors.visits?.[index]?.customer && (
                               <p className="text-xs flex items-center gap-1 text-red-500">
                                 <AlertCircle className="h-3 w-3" />
-                                {errors.visits[index]?.latitude?.message ||
-                                  errors.visits[index]?.longitude?.message ||
-                                  "Please select a valid location."}
+                                {errors.visits[index].customer.message}
                               </p>
                             )}
                           </div>
                         </div>
-                      )}
-                    </div>
-                  ))}
-                  {!isEditMode && (
-                    <Button
-                      type="button"
-                      onClick={addNewVisit}
-                      className="mt-4"
-                    >
-                      Add Another Visit
-                    </Button>
-                  )}
-                  <div className="flex justify-end space-x-2 pt-4">
+
+                        {/* Address Fields */}
+                        <div className="space-y-2 mt-4">
+                          <Label htmlFor={`visits.${index}.address`}>
+                            Street Address{" "}
+                            <span className="text-red-500">*</span>
+                          </Label>
+                          <Controller
+                            name={`visits.${index}.address`}
+                            control={control}
+                            render={({ field }) => (
+                              <Input
+                                {...field}
+                                id={`visits.${index}.address`}
+                                placeholder="Enter Street Address"
+                              />
+                            )}
+                          />
+                          {errors.visits?.[index]?.address && (
+                            <p className="flex items-center gap-1 text-xs text-red-500">
+                              <AlertCircle className="h-3 w-3" />
+                              {errors.visits[index].address.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 mt-4">
+                          <div className="space-y-2">
+                            <Label htmlFor={`visits.${index}.time`}>
+                              Time <span className="text-red-500">*</span>
+                            </Label>
+                            <Controller
+                              name={`visits.${index}.time`}
+                              control={control}
+                              render={({ field }) => (
+                                <Input
+                                  type="time"
+                                  id={`visits.${index}.time`}
+                                  {...field}
+                                />
+                              )}
+                            />
+                            {errors.visits?.[index]?.time && (
+                              <p className="text-xs flex items-center gap-1 text-red-500">
+                                <AlertCircle className="h-3 w-3" />
+                                {errors.visits[index].time.message}
+                              </p>
+                            )}
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor={`visits.${index}.duration`}>
+                              Duration (hours){" "}
+                              <span className="text-red-500">*</span>
+                            </Label>
+                            <Controller
+                              name={`visits.${index}.duration`}
+                              control={control}
+                              render={({ field }) => (
+                                <Input
+                                  id={`visits.${index}.duration`}
+                                  type="number"
+                                  min="1"
+                                  {...field}
+                                />
+                              )}
+                            />
+                            {errors.visits?.[index]?.duration && (
+                              <p className="text-xs flex items-center gap-1 text-red-500">
+                                <AlertCircle className="h-3 w-3" />
+                                {errors.visits[index].duration.message}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mt-4">
+                          <div className="space-y-2">
+                            <Label htmlFor={`visits.${index}.priority`}>
+                              Priority <span className="text-red-500">*</span>
+                            </Label>
+                            <Controller
+                              name={`visits.${index}.priority`}
+                              control={control}
+                              render={({ field }) => (
+                                <ShadSelect
+                                  value={field.value}
+                                  onValueChange={field.onChange}
+                                >
+                                  <SelectTrigger
+                                    id={`visits.${index}.priority`}
+                                    className="w-full"
+                                  >
+                                    <SelectValue placeholder="Select Priority" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="High">High</SelectItem>
+                                    <SelectItem value="Medium">
+                                      Medium
+                                    </SelectItem>
+                                    <SelectItem value="Low">Low</SelectItem>
+                                  </SelectContent>
+                                </ShadSelect>
+                              )}
+                            />
+                            {errors.visits?.[index]?.priority && (
+                              <p className="text-xs flex items-center gap-1 text-red-500">
+                                <AlertCircle className="h-3 w-3" />
+                                {errors.visits[index].priority.message}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="space-y-2 mt-4">
+                          <Label htmlFor={`visits.${index}.preparationNotes`}>
+                            Preparation Notes
+                          </Label>
+                          <Controller
+                            name={`visits.${index}.preparationNotes`}
+                            control={control}
+                            render={({ field }) => (
+                              <Input
+                                id={`visits.${index}.preparationNotes`}
+                                placeholder="Any special preparation or notes for the visit..."
+                                {...field}
+                              />
+                            )}
+                          />
+                        </div>
+                        {/* Checkbox for Custom Location */}
+                        <div className="flex items-center space-x-2 pt-4">
+                          <Checkbox
+                            id={`custom-location-${index}`}
+                            checked={locationStates[index]?.isCustomLocation}
+                            onCheckedChange={(checked) =>
+                              setLocationStates((prev) =>
+                                prev.map((state, i) =>
+                                  i === index
+                                    ? {
+                                        ...state,
+                                        isCustomLocation: Boolean(checked),
+                                      }
+                                    : state
+                                )
+                              )
+                            }
+                          />
+                          <Label
+                            htmlFor={`custom-location-${index}`}
+                            className="cursor-pointer font-normal"
+                          >
+                            Set a Different/More Specific Visit Location
+                          </Label>
+                        </div>
+                        {/* Conditionally Rendered Location Tools */}
+                        {locationStates[index]?.isCustomLocation && (
+                          <div className="grid grid-cols-2 gap-4 border-t pt-4 mt-2 animate-in fade-in-0 duration-300">
+                            <div className="space-y-2">
+                              <Label>Location Input Method</Label>
+                              <RadioGroup
+                                value={locationStates[index]?.locationInputMode}
+                                onValueChange={(value) =>
+                                  setLocationStates((prev) =>
+                                    prev.map((state, i) =>
+                                      i === index
+                                        ? {
+                                            ...state,
+                                            locationInputMode: value as
+                                              | "search"
+                                              | "map",
+                                          }
+                                        : state
+                                    )
+                                  )
+                                }
+                                className="flex items-center space-x-4 pt-1"
+                              >
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem
+                                    value="map"
+                                    id={`r_map-${index}`}
+                                  />
+                                  <Label
+                                    htmlFor={`r_map-${index}`}
+                                    className="cursor-pointer font-normal"
+                                  >
+                                    From Map
+                                  </Label>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <RadioGroupItem
+                                    value="search"
+                                    id={`r_search-${index}`}
+                                  />
+                                  <Label
+                                    htmlFor={`r_search-${index}`}
+                                    className="cursor-pointer font-normal"
+                                  >
+                                    From Lat Lng
+                                  </Label>
+                                </div>
+                              </RadioGroup>
+                            </div>
+                            <div className="space-y-2">
+                              <Label htmlFor={`location-finder-${index}`}>
+                                Find Location{" "}
+                                <span className="text-red-500">*</span>
+                              </Label>
+                              {locationStates[index]?.locationInputMode ===
+                              "search" ? (
+                                <Input
+                                  id={`location-finder-${index}`}
+                                  type="text"
+                                  placeholder="23.114007367862843, 72.5413259310343"
+                                  value={locationStates[index]?.latLng}
+                                  onChange={(e) =>
+                                    setLocationStates((prev) =>
+                                      prev.map((state, i) =>
+                                        i === index
+                                          ? { ...state, latLng: e.target.value }
+                                          : state
+                                      )
+                                    )
+                                  }
+                                />
+                              ) : (
+                                <Button
+                                  id={`location-finder-${index}`}
+                                  type="button"
+                                  variant="outline"
+                                  onClick={() =>
+                                    setLocationStates((prev) =>
+                                      prev.map((state, i) =>
+                                        i === index
+                                          ? { ...state, isMapModalOpen: true }
+                                          : state
+                                      )
+                                    )
+                                  }
+                                  className="w-full justify-start text-left font-normal"
+                                >
+                                  <MapPin className="mr-2 h-4 w-4" />
+                                  Change Location from Map
+                                </Button>
+                              )}
+                              {(errors.visits?.[index]?.latitude ||
+                                errors.visits?.[index]?.longitude) && (
+                                <p className="text-xs flex items-center gap-1 text-red-500">
+                                  <AlertCircle className="h-3 w-3" />
+                                  {errors.visits[index]?.latitude?.message ||
+                                    errors.visits[index]?.longitude?.message ||
+                                    "Please select a valid location."}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                    {!isEditMode && (
+                      <Button
+                        className="mt-3"
+                        type="button"
+                        onClick={addNewVisit}
+                      >
+                        Add Another Visit
+                      </Button>
+                    )}
+                  </ScrollArea>
+                  <div className="flex justify-end space-x-2 ">
                     <Button type="button" variant="outline" onClick={onClose}>
                       Cancel
                     </Button>
@@ -829,7 +1000,127 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
             )}
           </CardContent>
         </Card>
-        <Card className="col-span-4"></Card>
+        <Card className="col-span-4">
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Today's Schedule</CardTitle>
+              <CardDescription className="mt-2">
+                Visits scheduled for{" "}
+                {moment(selectedDate).format("MMMM D, YYYY")}{" "}
+                {selectedRep ? `for selected representative` : ""}
+              </CardDescription>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {isVisitsLoading && <p>Loading visits...</p>}
+            {visitsError && (
+              <p className="text-red-500">
+                Error fetching visits: {visitsError.message}
+              </p>
+            )}
+            {!isVisitsLoading &&
+              !visitsError &&
+              upcomingVisits.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-8 text-center">
+                  <div className="rounded-full bg-gray-100 p-4 mb-4">
+                    <MapPin className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                    No Visits Found
+                  </h3>
+                  <p className="text-sm text-gray-500 max-w-xs">
+                    No visits are scheduled for{" "}
+                    {moment(selectedDate).format("MMMM D, YYYY")}
+                    {selectedRep
+                      ? " with the selected sales representative"
+                      : ""}
+                    .
+                  </p>
+                </div>
+              )}
+            <ScrollArea className="h-[calc(100vh-300px)] pr-4">
+              <div className="grid grid-cols-1 gap-4">
+                {upcomingVisits
+                  .filter(
+                    (visit) =>
+                      visit.date === selectedDate &&
+                      (!selectedRep || visit.salesRepId === selectedRep)
+                  )
+                  .map((visit) => (
+                    <div
+                      key={visit.id}
+                      className="flex items-center space-x-4 rounded-lg border p-2"
+                    >
+                      <div className="flex-shrink-0">
+                        <Clock className="text-muted-foreground h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center space-x-2">
+                          <p className="text-sm font-medium">{visit.time}</p>
+                          <Badge className={getPriorityBadge(visit.priority)}>
+                            {visit.priority}
+                          </Badge>
+                          <Badge className={getStatusBadge(visit.status)}>
+                            {visit.status}
+                          </Badge>
+                        </div>
+                        <p className="text-muted-foreground text-sm">
+                          {visit.customer} - {visit.purpose}
+                        </p>
+                        <p className="text-muted-foreground text-xs">
+                          Rep: {visit.rep}
+                        </p>
+                        {/* <div className="flex gap-1 mt-1">
+                          <PermissionGate
+                            requiredPermission="calender_view"
+                            action="viewOwn"
+                          >
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              aria-label={`View details for visit ${visit.id}`}
+                            >
+                              <Eye />
+                            </Button>
+                          </PermissionGate>
+                          <PermissionGate
+                            requiredPermission="calender_view"
+                            action="edit"
+                          >
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                navigate({
+                                  to: `/calendar/schedule-visit/${visit.id}`,
+                                })
+                              }
+                              aria-label={`Edit visit ${visit.id}`}
+                            >
+                              <Edit />
+                            </Button>
+                          </PermissionGate>
+                          <PermissionGate
+                            requiredPermission="calender_view"
+                            action="delete"
+                          >
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setVisitToDelete(visit)}
+                              aria-label={`Delete visit ${visit.id}`}
+                            >
+                              <Trash />
+                            </Button>
+                          </PermissionGate>
+                        </div> */}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </ScrollArea>
+          </CardContent>
+        </Card>
       </div>
     </Main>
   );

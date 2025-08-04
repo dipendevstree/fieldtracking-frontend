@@ -65,7 +65,7 @@ interface Analytics {
 
 export interface FormData {
   roleId: string;
-  salesRep: string;
+  salesRepresentativeUserId: string;
   search: string;
   territoryId: string;
   customerId: string;
@@ -141,7 +141,7 @@ export default function CalendarView() {
     endDate: new Date().toISOString().split("T")[0],
     searchFor: "",
     roleId: "",
-    salesRepId: "",
+    salesRepresentativeUserId: "",
   });
 
   // State to manage which visit is targeted for deletion
@@ -154,14 +154,18 @@ export default function CalendarView() {
   });
 
   const { watch, setValue } = useForm<FormData>({
-    defaultValues: { roleId: "", salesRep: "", search: "" },
+    defaultValues: { roleId: "", salesRepresentativeUserId: "", search: "" },
   });
 
   const roleId = watch("roleId");
-  const selectedRep = watch("salesRep");
+  const selectedRep = watch("salesRepresentativeUserId");
 
   useEffect(() => {
-    setPagination((prev) => ({ ...prev, roleId, salesRepId: selectedRep }));
+    setPagination((prev) => ({
+      ...prev,
+      roleId,
+      salesRepresentativeUserId: selectedRep,
+    }));
   }, [roleId, selectedRep]);
 
   const { data: analytics } = useGetAnalytics(analyticsPagination) as {
@@ -285,7 +289,7 @@ export default function CalendarView() {
     {
       key: "salesRep",
       type: "select",
-      onChange: (value) => setValue("salesRep", value ?? ""),
+      onChange: (value) => setValue("salesRepresentativeUserId", value ?? ""),
       placeholder: "Select salesRep",
       value: selectedRep,
       options: users,
