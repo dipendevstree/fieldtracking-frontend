@@ -580,9 +580,11 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                         )}
                       >
                         <div className="flex justify-between items-center mb-4">
-                          <h3 className="text-lg font-semibold">
-                            Visit {index + 1}
-                          </h3>
+                          {!isEditMode && (
+                            <h3 className="text-lg font-semibold">
+                              Visit {index + 1}
+                            </h3>
+                          )}
                           {fields.length > 1 && !isEditMode && (
                             <Button
                               type="button"
