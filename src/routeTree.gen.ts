@@ -22,6 +22,7 @@ import { Route as authSignupRouteImport } from './routes/(auth)/signup'
 import { Route as authSignInRouteImport } from './routes/(auth)/sign-in'
 import { Route as authOtpRouteImport } from './routes/(auth)/otp'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
+import { Route as authFeedbackFormRouteImport } from './routes/(auth)/feedback-form'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
 import { Route as AuthenticatedManagementsRouteRouteImport } from './routes/_authenticated/managements/route'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
@@ -78,7 +79,6 @@ import { Route as AuthenticatedBuyersInsuranceRouteImport } from './routes/_auth
 import { Route as AuthenticatedApprovalsMonthlyConsolidatedRouteImport } from './routes/_authenticated/approvals/monthly-consolidated'
 import { Route as AuthenticatedApprovalsExpenseCategoryRouteImport } from './routes/_authenticated/approvals/expense-category'
 import { Route as AuthenticatedFeedbackformFeedbackformRouteImport } from './routes/_authenticated/Feedbackform/Feedbackform'
-import { Route as authFeedbackFormVisitidRouteImport } from './routes/(auth)/feedback-form.$visitid'
 import { Route as AuthenticatedUserTerritoryViewTerritorywiseUserTerritoyIdRouteImport } from './routes/_authenticated/user-territory/view-territorywise-user.$territoyId'
 import { Route as AuthenticatedUserManagementEditRolesPermissionRoleIdRouteImport } from './routes/_authenticated/user-management/edit-roles-permission.$roleId'
 import { Route as AuthenticatedMerchantsDetailsIdRouteImport } from './routes/_authenticated/merchants/details.$id'
@@ -149,6 +149,11 @@ const authOtpRoute = authOtpRouteImport.update({
 const authForgotPasswordRoute = authForgotPasswordRouteImport.update({
   id: '/(auth)/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const authFeedbackFormRoute = authFeedbackFormRouteImport.update({
+  id: '/(auth)/feedback-form',
+  path: '/feedback-form',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSettingsRouteRoute =
@@ -486,11 +491,6 @@ const AuthenticatedFeedbackformFeedbackformRoute =
     path: '/Feedbackform/Feedbackform',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
-const authFeedbackFormVisitidRoute = authFeedbackFormVisitidRouteImport.update({
-  id: '/(auth)/feedback-form/$visitid',
-  path: '/feedback-form/$visitid',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AuthenticatedUserTerritoryViewTerritorywiseUserTerritoyIdRoute =
   AuthenticatedUserTerritoryViewTerritorywiseUserTerritoyIdRouteImport.update({
     id: '/user-territory/view-territorywise-user/$territoyId',
@@ -537,6 +537,7 @@ const AuthenticatedApprovalsDailyExpenseDetailsIdRoute =
 export interface FileRoutesByFullPath {
   '/managements': typeof AuthenticatedManagementsRouteRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
+  '/feedback-form': typeof authFeedbackFormRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
   '/sign-in': typeof authSignInRoute
@@ -549,7 +550,6 @@ export interface FileRoutesByFullPath {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
-  '/feedback-form/$visitid': typeof authFeedbackFormVisitidRoute
   '/Feedbackform/Feedbackform': typeof AuthenticatedFeedbackformFeedbackformRoute
   '/approvals/expense-category': typeof AuthenticatedApprovalsExpenseCategoryRoute
   '/approvals/monthly-consolidated': typeof AuthenticatedApprovalsMonthlyConsolidatedRoute
@@ -613,6 +613,7 @@ export interface FileRoutesByFullPath {
   '/user-territory/view-territorywise-user/$territoyId': typeof AuthenticatedUserTerritoryViewTerritorywiseUserTerritoyIdRoute
 }
 export interface FileRoutesByTo {
+  '/feedback-form': typeof authFeedbackFormRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
   '/sign-in': typeof authSignInRoute
@@ -625,7 +626,6 @@ export interface FileRoutesByTo {
   '/500': typeof errors500Route
   '/503': typeof errors503Route
   '/': typeof AuthenticatedIndexRoute
-  '/feedback-form/$visitid': typeof authFeedbackFormVisitidRoute
   '/Feedbackform/Feedbackform': typeof AuthenticatedFeedbackformFeedbackformRoute
   '/approvals/expense-category': typeof AuthenticatedApprovalsExpenseCategoryRoute
   '/approvals/monthly-consolidated': typeof AuthenticatedApprovalsMonthlyConsolidatedRoute
@@ -693,6 +693,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_authenticated/managements': typeof AuthenticatedManagementsRouteRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
+  '/(auth)/feedback-form': typeof authFeedbackFormRoute
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
   '/(auth)/otp': typeof authOtpRoute
   '/(auth)/sign-in': typeof authSignInRoute
@@ -705,7 +706,6 @@ export interface FileRoutesById {
   '/(errors)/500': typeof errors500Route
   '/(errors)/503': typeof errors503Route
   '/_authenticated/': typeof AuthenticatedIndexRoute
-  '/(auth)/feedback-form/$visitid': typeof authFeedbackFormVisitidRoute
   '/_authenticated/Feedbackform/Feedbackform': typeof AuthenticatedFeedbackformFeedbackformRoute
   '/_authenticated/approvals/expense-category': typeof AuthenticatedApprovalsExpenseCategoryRoute
   '/_authenticated/approvals/monthly-consolidated': typeof AuthenticatedApprovalsMonthlyConsolidatedRoute
@@ -773,6 +773,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/managements'
     | '/settings'
+    | '/feedback-form'
     | '/forgot-password'
     | '/otp'
     | '/sign-in'
@@ -785,7 +786,6 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
-    | '/feedback-form/$visitid'
     | '/Feedbackform/Feedbackform'
     | '/approvals/expense-category'
     | '/approvals/monthly-consolidated'
@@ -849,6 +849,7 @@ export interface FileRouteTypes {
     | '/user-territory/view-territorywise-user/$territoyId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/feedback-form'
     | '/forgot-password'
     | '/otp'
     | '/sign-in'
@@ -861,7 +862,6 @@ export interface FileRouteTypes {
     | '/500'
     | '/503'
     | '/'
-    | '/feedback-form/$visitid'
     | '/Feedbackform/Feedbackform'
     | '/approvals/expense-category'
     | '/approvals/monthly-consolidated'
@@ -928,6 +928,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/_authenticated/managements'
     | '/_authenticated/settings'
+    | '/(auth)/feedback-form'
     | '/(auth)/forgot-password'
     | '/(auth)/otp'
     | '/(auth)/sign-in'
@@ -940,7 +941,6 @@ export interface FileRouteTypes {
     | '/(errors)/500'
     | '/(errors)/503'
     | '/_authenticated/'
-    | '/(auth)/feedback-form/$visitid'
     | '/_authenticated/Feedbackform/Feedbackform'
     | '/_authenticated/approvals/expense-category'
     | '/_authenticated/approvals/monthly-consolidated'
@@ -1006,6 +1006,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  authFeedbackFormRoute: typeof authFeedbackFormRoute
   authForgotPasswordRoute: typeof authForgotPasswordRoute
   authOtpRoute: typeof authOtpRoute
   authSignInRoute: typeof authSignInRoute
@@ -1017,7 +1018,6 @@ export interface RootRouteChildren {
   errors404Route: typeof errors404Route
   errors500Route: typeof errors500Route
   errors503Route: typeof errors503Route
-  authFeedbackFormVisitidRoute: typeof authFeedbackFormVisitidRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1111,6 +1111,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof authForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth)/feedback-form': {
+      id: '/(auth)/feedback-form'
+      path: '/feedback-form'
+      fullPath: '/feedback-form'
+      preLoaderRoute: typeof authFeedbackFormRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/settings': {
@@ -1505,13 +1512,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFeedbackformFeedbackformRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
-    '/(auth)/feedback-form/$visitid': {
-      id: '/(auth)/feedback-form/$visitid'
-      path: '/feedback-form/$visitid'
-      fullPath: '/feedback-form/$visitid'
-      preLoaderRoute: typeof authFeedbackFormVisitidRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/user-territory/view-territorywise-user/$territoyId': {
       id: '/_authenticated/user-territory/view-territorywise-user/$territoyId'
       path: '/user-territory/view-territorywise-user/$territoyId'
@@ -1763,6 +1763,7 @@ const AuthenticatedRouteRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  authFeedbackFormRoute: authFeedbackFormRoute,
   authForgotPasswordRoute: authForgotPasswordRoute,
   authOtpRoute: authOtpRoute,
   authSignInRoute: authSignInRoute,
@@ -1774,7 +1775,6 @@ const rootRouteChildren: RootRouteChildren = {
   errors404Route: errors404Route,
   errors500Route: errors500Route,
   errors503Route: errors503Route,
-  authFeedbackFormVisitidRoute: authFeedbackFormVisitidRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
