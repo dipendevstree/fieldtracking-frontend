@@ -65,7 +65,7 @@ interface Analytics {
 
 export interface FormData {
   roleId: string;
-  salesRepresentativeUserId: string;
+  salesRep: string;
   search: string;
   territoryId: string;
   customerId: string;
@@ -154,11 +154,11 @@ export default function CalendarView() {
   });
 
   const { watch, setValue } = useForm<FormData>({
-    defaultValues: { roleId: "", salesRepresentativeUserId: "", search: "" },
+    defaultValues: { roleId: "", salesRep: "", search: "" },
   });
 
   const roleId = watch("roleId");
-  const selectedRep = watch("salesRepresentativeUserId");
+  const selectedRep = watch("salesRep");
 
   useEffect(() => {
     setPagination((prev) => ({
@@ -289,7 +289,7 @@ export default function CalendarView() {
     {
       key: "salesRep",
       type: "select",
-      onChange: (value) => setValue("salesRepresentativeUserId", value ?? ""),
+      onChange: (value) => setValue("salesRep", value ?? ""),
       placeholder: "Select salesRep",
       value: selectedRep,
       options: users,
