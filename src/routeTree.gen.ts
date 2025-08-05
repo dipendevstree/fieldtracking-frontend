@@ -22,6 +22,7 @@ import { Route as authSignupRouteImport } from './routes/(auth)/signup'
 import { Route as authSignInRouteImport } from './routes/(auth)/sign-in'
 import { Route as authOtpRouteImport } from './routes/(auth)/otp'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
+import { Route as authFeedbackFormRouteImport } from './routes/(auth)/feedback-form'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
 import { Route as AuthenticatedManagementsRouteRouteImport } from './routes/_authenticated/managements/route'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
@@ -149,6 +150,11 @@ const authOtpRoute = authOtpRouteImport.update({
 const authForgotPasswordRoute = authForgotPasswordRouteImport.update({
   id: '/(auth)/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const authFeedbackFormRoute = authFeedbackFormRouteImport.update({
+  id: '/(auth)/feedback-form',
+  path: '/feedback-form',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSettingsRouteRoute =
@@ -538,6 +544,7 @@ const AuthenticatedApprovalsDailyExpenseDetailsIdRoute =
 export interface FileRoutesByFullPath {
   '/managements': typeof AuthenticatedManagementsRouteRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
+  '/feedback-form': typeof authFeedbackFormRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
   '/sign-in': typeof authSignInRoute
@@ -614,6 +621,7 @@ export interface FileRoutesByFullPath {
   '/user-territory/view-territorywise-user/$territoyId': typeof AuthenticatedUserTerritoryViewTerritorywiseUserTerritoyIdRoute
 }
 export interface FileRoutesByTo {
+  '/feedback-form': typeof authFeedbackFormRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
   '/sign-in': typeof authSignInRoute
@@ -694,6 +702,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_authenticated/managements': typeof AuthenticatedManagementsRouteRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
+  '/(auth)/feedback-form': typeof authFeedbackFormRoute
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
   '/(auth)/otp': typeof authOtpRoute
   '/(auth)/sign-in': typeof authSignInRoute
@@ -774,6 +783,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/managements'
     | '/settings'
+    | '/feedback-form'
     | '/forgot-password'
     | '/otp'
     | '/sign-in'
@@ -850,6 +860,7 @@ export interface FileRouteTypes {
     | '/user-territory/view-territorywise-user/$territoyId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/feedback-form'
     | '/forgot-password'
     | '/otp'
     | '/sign-in'
@@ -929,6 +940,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/_authenticated/managements'
     | '/_authenticated/settings'
+    | '/(auth)/feedback-form'
     | '/(auth)/forgot-password'
     | '/(auth)/otp'
     | '/(auth)/sign-in'
@@ -1007,6 +1019,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  authFeedbackFormRoute: typeof authFeedbackFormRoute
   authForgotPasswordRoute: typeof authForgotPasswordRoute
   authOtpRoute: typeof authOtpRoute
   authSignInRoute: typeof authSignInRoute
@@ -1111,6 +1124,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof authForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth)/feedback-form': {
+      id: '/(auth)/feedback-form'
+      path: '/feedback-form'
+      fullPath: '/feedback-form'
+      preLoaderRoute: typeof authFeedbackFormRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/settings': {
@@ -1765,6 +1785,7 @@ const AuthenticatedRouteRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  authFeedbackFormRoute: authFeedbackFormRoute,
   authForgotPasswordRoute: authForgotPasswordRoute,
   authOtpRoute: authOtpRoute,
   authSignInRoute: authSignInRoute,
