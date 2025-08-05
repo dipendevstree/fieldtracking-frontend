@@ -28,6 +28,7 @@ import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedUserTerritoryIndexRouteImport } from './routes/_authenticated/user-territory/index'
 import { Route as AuthenticatedUserManagementIndexRouteImport } from './routes/_authenticated/user-management/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
+import { Route as AuthenticatedSettingIndexRouteImport } from './routes/_authenticated/setting/index'
 import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authenticated/reports/index'
 import { Route as AuthenticatedProductsIndexRouteImport } from './routes/_authenticated/products/index'
 import { Route as AuthenticatedOrganizationsIndexRouteImport } from './routes/_authenticated/organizations/index'
@@ -184,6 +185,12 @@ const AuthenticatedSettingsIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
+const AuthenticatedSettingIndexRoute =
+  AuthenticatedSettingIndexRouteImport.update({
+    id: '/setting/',
+    path: '/setting/',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedReportsIndexRoute =
   AuthenticatedReportsIndexRouteImport.update({
@@ -593,6 +600,7 @@ export interface FileRoutesByFullPath {
   '/organizations': typeof AuthenticatedOrganizationsIndexRoute
   '/products': typeof AuthenticatedProductsIndexRoute
   '/reports': typeof AuthenticatedReportsIndexRoute
+  '/setting': typeof AuthenticatedSettingIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/user-management': typeof AuthenticatedUserManagementIndexRoute
   '/user-territory': typeof AuthenticatedUserTerritoryIndexRoute
@@ -668,6 +676,7 @@ export interface FileRoutesByTo {
   '/organizations': typeof AuthenticatedOrganizationsIndexRoute
   '/products': typeof AuthenticatedProductsIndexRoute
   '/reports': typeof AuthenticatedReportsIndexRoute
+  '/setting': typeof AuthenticatedSettingIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/user-management': typeof AuthenticatedUserManagementIndexRoute
   '/user-territory': typeof AuthenticatedUserTerritoryIndexRoute
@@ -747,6 +756,7 @@ export interface FileRoutesById {
   '/_authenticated/organizations/': typeof AuthenticatedOrganizationsIndexRoute
   '/_authenticated/products/': typeof AuthenticatedProductsIndexRoute
   '/_authenticated/reports/': typeof AuthenticatedReportsIndexRoute
+  '/_authenticated/setting/': typeof AuthenticatedSettingIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/user-management/': typeof AuthenticatedUserManagementIndexRoute
   '/_authenticated/user-territory/': typeof AuthenticatedUserTerritoryIndexRoute
@@ -826,6 +836,7 @@ export interface FileRouteTypes {
     | '/organizations'
     | '/products'
     | '/reports'
+    | '/setting'
     | '/settings/'
     | '/user-management'
     | '/user-territory'
@@ -901,6 +912,7 @@ export interface FileRouteTypes {
     | '/organizations'
     | '/products'
     | '/reports'
+    | '/setting'
     | '/settings'
     | '/user-management'
     | '/user-territory'
@@ -979,6 +991,7 @@ export interface FileRouteTypes {
     | '/_authenticated/organizations/'
     | '/_authenticated/products/'
     | '/_authenticated/reports/'
+    | '/_authenticated/setting/'
     | '/_authenticated/settings/'
     | '/_authenticated/user-management/'
     | '/_authenticated/user-territory/'
@@ -1141,6 +1154,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/'
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
+    '/_authenticated/setting/': {
+      id: '/_authenticated/setting/'
+      path: '/setting'
+      fullPath: '/setting'
+      preLoaderRoute: typeof AuthenticatedSettingIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/reports/': {
       id: '/_authenticated/reports/'
@@ -1663,6 +1683,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOrganizationsIndexRoute: typeof AuthenticatedOrganizationsIndexRoute
   AuthenticatedProductsIndexRoute: typeof AuthenticatedProductsIndexRoute
   AuthenticatedReportsIndexRoute: typeof AuthenticatedReportsIndexRoute
+  AuthenticatedSettingIndexRoute: typeof AuthenticatedSettingIndexRoute
   AuthenticatedUserManagementIndexRoute: typeof AuthenticatedUserManagementIndexRoute
   AuthenticatedUserTerritoryIndexRoute: typeof AuthenticatedUserTerritoryIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
@@ -1722,6 +1743,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOrganizationsIndexRoute: AuthenticatedOrganizationsIndexRoute,
   AuthenticatedProductsIndexRoute: AuthenticatedProductsIndexRoute,
   AuthenticatedReportsIndexRoute: AuthenticatedReportsIndexRoute,
+  AuthenticatedSettingIndexRoute: AuthenticatedSettingIndexRoute,
   AuthenticatedUserManagementIndexRoute: AuthenticatedUserManagementIndexRoute,
   AuthenticatedUserTerritoryIndexRoute: AuthenticatedUserTerritoryIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,

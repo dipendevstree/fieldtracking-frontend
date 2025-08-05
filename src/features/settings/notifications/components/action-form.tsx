@@ -501,7 +501,7 @@ export function NotificationRuleActionForm({
             </div>
           </form>
         </Form>
-        
+
         <DialogFooter className='flex gap-2 pt-4'>
           <DialogClose asChild>
             <Button variant='outline'>Cancel</Button>

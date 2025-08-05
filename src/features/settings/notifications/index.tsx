@@ -2,15 +2,17 @@ import { useState } from 'react'
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from '@/data/app.data'
 import { cn } from '@/lib/utils'
 import { Main } from '@/components/layout/main'
-import { EnhancedError } from '@/types'
+// import { EnhancedError } from '@/types'
 // import { useGetNotificationsData } from './services/notificationshook'
 // import { useNotificationsStore } from './store/notifications.store'
-import { ErrorPage } from '@/components/shared/custom-error'
+// import { ErrorPage } from '@/components/shared/custom-error'
 import Notifications from './components/Notifications'
 import { NotificationsActionModal } from './components/action-form-modal'
 
 const NotificationsPage = () => {
-  const [pagination, setPagination] = useState({
+  const [
+    // pagination, setPagination
+  ] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
   })

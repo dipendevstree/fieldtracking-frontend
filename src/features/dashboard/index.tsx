@@ -1,198 +1,259 @@
-import { Main } from '@/components/layout/main'
-import { Button } from '@/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Overview } from './components/overview'
-import { RecentSales } from './components/recent-sales'
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Main } from "@/components/layout/main";
+import { cn } from "@/lib/utils";
+import { Users, Download } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
-// Define types for metric card props
-interface MetricCardProps {
-  title: string
-  value: string
-  change: string
-  icon: React.ReactNode
-}
+// Import the actual page components
+import OverviewPage from "./overview/components/OverView";
+import LiveTrackingPage from "./Live-Tracking/components/LiveTracking";
+import ApprovalsPage from "./Approvals/components/approvals";
 
-// Reusable MetricCard component
-const MetricCard: React.FC<MetricCardProps> = ({ title, value, change, icon }) => (
-  <Card>
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <CardTitle className="text-sm font-medium">{title}</CardTitle>
-      {icon}
-    </CardHeader>
-    <CardContent>
-      <div className="text-2xl font-bold">{value}</div>
-      <p className="text-muted-foreground text-xs">{change}</p>
-    </CardContent>
-  </Card>
-)
+// Define valid tab values with proper typing
+export type DashboardTabValue =
+  | "/dashboard"
+  | "/dashboard/overview"
+  | "/dashboard/live-tracking"
+  | "/dashboard/approvals";
 
-// Dashboard header component
-const DashboardHeader: React.FC = () => (
-  <div className="mb-2 flex items-center justify-between space-y-2">
-    <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-    <div className="flex items-center space-x-2">
-      <Button>Download</Button>
-    </div>
-  </div>
-)
+// Tab configuration for better maintainability
+const DASHBOARD_TABS = [
+  {
+    value: "/dashboard/overview",
+    label: "Overview",
+    component: OverviewPage,
+  },
+  {
+    value: "/dashboard/live-tracking",
+    label: "Live Tracking",
+    component: LiveTrackingPage,
+  },
+  {
+    value: "/dashboard/approvals",
+    label: "Approvals",
+    component: ApprovalsPage,
+  },
+] as const;
 
-// Tabs navigation component
-const DashboardTabsNav: React.FC = () => (
-  <div className="w-full overflow-x-auto pb-2">
-    <TabsList>
-      <TabsTrigger value="overview">Overview</TabsTrigger>
-      {/* <TabsTrigger value="analytics" disabled>
-        Analytics
-      </TabsTrigger>
-      <TabsTrigger value="reports" disabled>
-        Reports
-      </TabsTrigger>
-      <TabsTrigger value="notifications" disabled>
-        Notifications
-      </TabsTrigger> */}
-    </TabsList>
-  </div>
-)
-
-// Overview section component
-const OverviewSection: React.FC = () => (
-  <Card className="col-span-1 lg:col-span-4">
-    <CardHeader>
-      <CardTitle>Overview</CardTitle>
-    </CardHeader>
-    <CardContent className="pl-2">
-      <Overview />
-    </CardContent>
-  </Card>
-)
-
-// Recent sales section component
-const RecentSalesSection: React.FC = () => (
-  <Card className="col-span-1 lg:col-span-3">
-    <CardHeader>
-      <CardTitle>Recent Sales</CardTitle>
-      <CardDescription>You made 265 sales this month.</CardDescription>
-    </CardHeader>
-    <CardContent>
-      <RecentSales />
-    </CardContent>
-  </Card>
-)
-
-// Main Dashboard component
-export default function Dashboard() {
-  const metrics = [
+// Mock data for Overview
+const overviewMock = {
+  salesReps: [
     {
-      title: 'Total Revenue',
-      value: '$45,231.89',
-      change: '+20.1% from last month',
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          className="text-muted-foreground h-4 w-4"
-        >
-          <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-        </svg>
-      ),
+      id: "1",
+      name: "Alice Johnson",
+      email: "alice@example.com",
+      status: "active" as const,
+      location: "New York",
+      lastSeen: "2024-06-01 10:00",
+      todayVisits: 5,
+      todayRevenue: 1200,
+      avatar: "",
+      role: "Sales Rep",
+      territory: "East",
+      phone: "123-456-7890",
+      isOnline: true,
+      currentLocation: {
+        lat: 40.7128,
+        lng: -74.006,
+        accuracy: 10,
+        timestamp: "2024-06-01T10:00:00Z",
+      },
+      activityStatus: "working" as const,
+      createdAt: "",
+      updatedAt: "",
     },
     {
-      title: 'Total Drivers',
-      value: '+2350',
-      change: '+180.1% from last month',
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          className="text-muted-foreground h-4 w-4"
-        >
-          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-          <circle cx="9" cy="7" r="4" />
-          <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-        </svg>
-      ),
+      id: "2",
+      name: "Bob Smith",
+      email: "bob@example.com",
+      status: "idle" as const,
+      location: "Los Angeles",
+      lastSeen: "2024-06-01 09:30",
+      todayVisits: 3,
+      todayRevenue: 800,
+      avatar: "",
+      role: "Sales Rep",
+      territory: "West",
+      phone: "123-456-7891",
+      isOnline: true,
+      currentLocation: {
+        lat: 34.0522,
+        lng: -118.2437,
+        accuracy: 15,
+        timestamp: "2024-06-01T09:30:00Z",
+      },
+      activityStatus: "traveling" as const,
+      createdAt: "",
+      updatedAt: "",
+    },
+  ],
+  kpis: {
+    totalSalesReps: 12,
+    activeInField: 8,
+    totalRevenue: 25000,
+    monthlyGrowth: 15,
+    totalCustomers: 150,
+    totalVisits: 45,
+    averageSessionDuration: 120,
+    conversionRate: 0.25,
+  },
+};
+
+// Mock data for Live Tracking
+const liveTrackingMock = {
+  users: [
+    {
+      userId: "1",
+      firstName: "Alice",
+      lastName: "Johnson",
+      fullName: "Alice Johnson",
+      email: "alice@example.com",
+      phone: "123-456-7890",
+      roleId: "1",
+      roleName: "Sales Representative",
+      territoryId: "1",
+      territoryName: "East Territory",
+      isOnline: true,
+      lastSeen: "2024-06-01T10:00:00Z",
+      currentLocation: {
+        lat: 40.7128,
+        lng: -74.006,
+        accuracy: 10,
+        timestamp: "2024-06-01T10:00:00Z",
+      },
+      status: "active" as const,
+      activityStatus: "working" as const,
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-06-01T10:00:00Z",
     },
     {
-      title: 'Total Sellers',
-      value: '+12,234',
-      change: '+19% from last month',
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          className="text-muted-foreground h-4 w-4"
-        >
-          <rect width="20" height="14" x="2" y="5" rx="2" />
-          <path d="M2 10h20" />
-        </svg>
-      ),
+      userId: "2",
+      firstName: "Bob",
+      lastName: "Smith",
+      fullName: "Bob Smith",
+      email: "bob@example.com",
+      phone: "123-456-7891",
+      roleId: "1",
+      roleName: "Sales Representative",
+      territoryId: "2",
+      territoryName: "West Territory",
+      isOnline: true,
+      lastSeen: "2024-06-01T09:30:00Z",
+      currentLocation: {
+        lat: 34.0522,
+        lng: -118.2437,
+        accuracy: 15,
+        timestamp: "2024-06-01T09:30:00Z",
+      },
+      status: "idle" as const,
+      activityStatus: "traveling" as const,
+      createdAt: "2024-01-01T00:00:00Z",
+      updatedAt: "2024-06-01T09:30:00Z",
     },
-    {
-      title: 'Total Buyers',
-      value: '+573',
-      change: '+201 since last hour',
-      icon: (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          className="text-muted-foreground h-4 w-4"
-        >
-          <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-        </svg>
-      ),
-    },
-  ]
+  ],
+};
+
+// Mock data for Approvals
+const approvalsMock = [
+  {
+    approvalId: "1",
+    type: "expense" as const,
+    employeeId: "1",
+    employeeName: "Alice Johnson",
+    amount: 150.0,
+    currency: "USD",
+    description: "Travel expenses for client meeting",
+    submittedDate: "2024-06-01T08:00:00Z",
+    status: "pending" as const,
+    priority: "medium" as const,
+    createdAt: "2024-06-01T08:00:00Z",
+    updatedAt: "2024-06-01T08:00:00Z",
+  },
+  {
+    approvalId: "2",
+    type: "allowance" as const,
+    employeeId: "2",
+    employeeName: "Bob Smith",
+    amount: 75.5,
+    currency: "USD",
+    description: "Meal allowance for field visit",
+    submittedDate: "2024-06-01T09:00:00Z",
+    status: "pending" as const,
+    priority: "low" as const,
+    createdAt: "2024-06-01T09:00:00Z",
+    updatedAt: "2024-06-01T09:00:00Z",
+  },
+];
+
+export default function DashboardPage() {
+  // Initialize with first tab as default (overview)
+  const [activeTab, setActiveTab] = useState<DashboardTabValue>(
+    "/dashboard/overview"
+  );
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as DashboardTabValue);
+  };
+
+  const handleExportReport = () => {
+    // TODO: Implement report export functionality
+    // console.log('Exporting dashboard report...')
+  };
 
   return (
-    <Main>
-      <DashboardHeader />
-      <Tabs orientation="vertical" defaultValue="overview" className="space-y-4">
-        <DashboardTabsNav />
-        <TabsContent value="overview" className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {metrics.map((metric, index) => (
-              <MetricCard
-                key={index}
-                title={metric.title}
-                value={metric.value}
-                change={metric.change}
-                icon={metric.icon}
-              />
-            ))}
-          </div>
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-7">
-            <OverviewSection />
-            <RecentSalesSection />
-          </div>
+    <Main className={cn("flex flex-col gap-2 p-4")}>
+      <div className="flex items-center justify-between space-y-2">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">
+            Field Sales Dashboard
+          </h2>
+          <p className="text-muted-foreground">
+            Monitor your field sales team performance and activities
+          </p>
+        </div>
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" onClick={handleExportReport}>
+            <Download className="h-4 w-4 mr-2" />
+            Export Report
+          </Button>
+          <Button asChild>
+            <Link to="/user-management">
+              <Users className="h-4 w-4 mr-2" />
+              Add Sales Rep
+            </Link>
+          </Button>
+        </div>
+      </div>
+
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="mt-4 space-y-5"
+      >
+        <TabsList className="grid w-full grid-cols-3">
+          {DASHBOARD_TABS.map((tab) => (
+            <TabsTrigger key={tab.value} value={tab.value}>
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        {/* Render tab content with mock data */}
+        <TabsContent value="/dashboard/overview" className="space-y-4">
+          <OverviewPage
+            salesReps={overviewMock.salesReps}
+            kpis={overviewMock.kpis}
+          />
+        </TabsContent>
+        <TabsContent value="/dashboard/live-tracking" className="space-y-4">
+          <LiveTrackingPage users={liveTrackingMock.users} />
+        </TabsContent>
+        <TabsContent value="/dashboard/approvals" className="space-y-4">
+          <ApprovalsPage approvals={approvalsMock} />
         </TabsContent>
       </Tabs>
     </Main>
-  )
+  );
 }
