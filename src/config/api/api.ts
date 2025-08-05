@@ -8,6 +8,7 @@ const API = {
     signup: 'auth/signup',
     getDepartment: 'department/list',
     organizationTypes: 'organizationType/list',
+    setPassword: 'auth/changePassword',
   },
   category:{
     list:'expensesCategory/list',
