@@ -86,7 +86,7 @@ const UserTrackingTimeline = ({
   ];
   const fetchAddress = async () => {
     if (trackingData && trackingData.length > 0) {
-      const lastPoint = trackingData[trackingData.length - 1];
+      const lastPoint = trackingData[0];
       const lat = parseFloat(lastPoint.lat);
       const lng = parseFloat(lastPoint.long);
 
