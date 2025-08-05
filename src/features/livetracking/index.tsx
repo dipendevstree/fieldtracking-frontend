@@ -17,7 +17,6 @@ import {
   userDetailsById,
 } from "./services/live-tracking-services";
 import { GoogleMap } from "@react-google-maps/api";
-import { socket } from "@/socket/socket";
 import { useSearch } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 
@@ -122,8 +121,6 @@ export default function Livetracking() {
 
   const handleUserClick = (userId: string) => {
     setSelectedUserId(userId);
-    setPath([]);
-    setCurrentPosition(null);
     const newParams = new URLSearchParams(window.location.search);
     newParams.set("userId", userId);
     window.history.pushState({}, "", `?${newParams}`);
@@ -156,20 +153,20 @@ export default function Livetracking() {
 
   useEffect(() => {
     updateMapCenterFromUserList(enhancedUserList);
-  }, [enhancedUserList]);
+  }, []);
 
-  const handleBackToList = () => {
-    if (socket) {
-      socket.emit("untrack_user", { userId });
-    }
-    setSelectedUserId("");
-    setPath([]);
-    setCurrentPosition(null);
-    updateMapCenterFromUserList(enhancedUserList);
-    const newParams = new URLSearchParams(window.location.search);
-    newParams.delete("userId");
-    window.history.pushState({}, "", `?${newParams}`);
-  };
+  // const handleBackToList = () => {
+  //   if (socket) {
+  //     socket.emit("untrack_user", { userId });
+  //   }
+  //   setSelectedUserId("");
+  //   setPath([]);
+  //   setCurrentPosition(null);
+  //   updateMapCenterFromUserList(enhancedUserList);
+  //   const newParams = new URLSearchParams(window.location.search);
+  //   newParams.delete("userId");
+  //   window.history.pushState({}, "", `?${newParams}`);
+  // };
 
   useEffect(() => {
     setSelectedUserId(userId);
@@ -201,13 +198,6 @@ export default function Livetracking() {
       onChange: (value) => {
         if (value) {
           handleUserClick(value);
-        } else {
-          setSelectedUserId("");
-          setPath([]);
-          setCurrentPosition(null);
-          const newParams = new URLSearchParams(window.location.search);
-          newParams.delete("userId");
-          window.history.pushState({}, "", `?${newParams}`);
         }
       },
     },
@@ -288,7 +278,6 @@ export default function Livetracking() {
                   setPath={setPath}
                   setCurrentPosition={setCurrentPosition}
                   setMapCenter={setMapCenter}
-                  onBack={handleBackToList}
                 />
               ) : (
                 <>
@@ -356,7 +345,7 @@ export default function Livetracking() {
             <div className="flex-1 pr-4">
               {mapCenter && (
                 <GoogleMap
-                key={selectedUserId}
+                  key={selectedUserId}
                   mapContainerStyle={containerStyle}
                   center={mapCenter}
                   zoom={17}
