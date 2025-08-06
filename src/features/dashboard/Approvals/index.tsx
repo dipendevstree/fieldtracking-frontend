@@ -3,11 +3,11 @@ import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import { cn } from "@/lib/utils";
 import { Main } from "@/components/layout/main";
 import TablePageLayout from "@/components/layout/table-page-layout";
-// import { ErrorResponse } from '../../merchants/types'
+import { ErrorResponse } from "../../merchants/types";
 import ApprovalsTable from "./components/table";
-// import { useGetAllApprovals } from './services/Approvals.hook'
+import { useGetAllApprovals } from "./services/Approvals.hook";
 import { useApprovalsStore } from "./store/approvals.store";
-// import { ErrorPage } from '@/components/shared/custom-error'
+import { ErrorPage } from "@/components/shared/custom-error";
 
 const Approvals = () => {
   const [pagination, setPagination] = useState({
@@ -16,24 +16,24 @@ const Approvals = () => {
   });
 
   // Approvals data
-  // const {
-  //   totalCount = 0,
-  //   allApprovals = [],
-  //   isLoading,
-  //   error,
-  // } = useGetAllApprovals(pagination)
+  const {
+    totalCount = 0,
+    allApprovals = [],
+    isLoading,
+    error,
+  } = useGetAllApprovals(pagination);
 
   const { setOpen } = useApprovalsStore();
 
-  // if (error) {
-  //   const errorResponse = (error as ErrorResponse)?.response?.data
-  //   return (
-  //     <ErrorPage
-  //       errorCode={errorResponse?.statusCode}
-  //       message={errorResponse?.message}
-  //     />
-  //   )
-  // }
+  if (error) {
+    const errorResponse = (error as ErrorResponse)?.response?.data;
+    return (
+      <ErrorPage
+        errorCode={errorResponse?.statusCode}
+        message={errorResponse?.message}
+      />
+    );
+  }
 
   const handleAddApproval = () => {
     setOpen("workflow");

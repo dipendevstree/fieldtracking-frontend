@@ -20,7 +20,7 @@ interface ApproversTableProps {
 const ApproversTable = ({
   hierarchyData,
   categoryData,
-  totalCount,
+  totalCount: _totalCount,
   loading,
   paginationCallbacks,
   currentPage,

@@ -20,12 +20,10 @@ import CustomButton from '@/components/shared/custom-button'
 import { 
   generalSettingsFormSchema, 
   companyInfoFormSchema,
-  systemPreferencesFormSchema,
   TGeneralSettingsFormSchema,
-  TCompanyInfoFormSchema,
-  TSystemPreferencesFormSchema 
+  TCompanyInfoFormSchema
 } from '../data/schema'
-import { GeneralSettings, CompanyInfo, SystemPreferences } from '../type/type'
+import { GeneralSettings, CompanyInfo } from '../type/type'
 
 // General Settings Action Form
 interface GeneralSettingsFormProps {

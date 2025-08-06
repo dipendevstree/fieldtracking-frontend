@@ -14,9 +14,20 @@ import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import CustomButton from "@/components/shared/custom-button";
-import { approvalActionSchema, approvalWorkflowSchema, ApprovalActionSchema, ApprovalWorkflowSchema } from "../data/schema";
+import {
+  approvalActionSchema,
+  approvalWorkflowSchema,
+  ApprovalActionSchema,
+  ApprovalWorkflowSchema,
+} from "../data/schema";
 import { useEffect } from "react";
 import { Approval, ApprovalWorkflow } from "../type/type";
 
@@ -42,7 +53,7 @@ export function ApprovalActionForm({
     resolver: zodResolver(approvalActionSchema),
     defaultValues: {
       approvalId: currentApproval?.approvalId ?? "",
-      action: 'approve',
+      action: "approve",
       comment: "",
       rejectionReason: "",
     },
@@ -56,7 +67,7 @@ export function ApprovalActionForm({
     formState: { errors },
   } = form;
 
-  const selectedAction = watch('action');
+  const selectedAction = watch("action");
 
   const onSubmit = (values: ApprovalActionSchema) => {
     onSubmitValues(values);
@@ -71,12 +82,12 @@ export function ApprovalActionForm({
     if (!loading && resetOnSubmitSuccess) {
       reset({
         approvalId: currentApproval?.approvalId ?? "",
-        action: 'approve',
+        action: "approve",
         comment: "",
         rejectionReason: "",
       });
     }
-  }, [loading, resetOnSubmitSuccess, currentApproval]);
+  });
 
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
@@ -84,10 +95,12 @@ export function ApprovalActionForm({
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div>
             <DialogTitle className="text-xl font-semibold">
-              {selectedAction === 'approve' ? 'Approve Request' : 'Reject Request'}
+              {selectedAction === "approve"
+                ? "Approve Request"
+                : "Reject Request"}
             </DialogTitle>
             <DialogDescription className="text-muted-foreground mt-1 text-sm">
-              {selectedAction === 'approve' 
+              {selectedAction === "approve"
                 ? "Approve this expense/allowance request."
                 : "Reject this request with a reason."}
             </DialogDescription>
@@ -151,7 +164,7 @@ export function ApprovalActionForm({
             </div>
 
             {/* Rejection Reason - only show when action is reject */}
-            {selectedAction === 'reject' && (
+            {selectedAction === "reject" && (
               <div className="space-y-2">
                 <Label htmlFor="rejectionReason">Rejection Reason *</Label>
                 <Controller
@@ -186,7 +199,9 @@ export function ApprovalActionForm({
             loading={loading}
             form="approval-action-form"
           >
-            {selectedAction === 'approve' ? 'Approve Request' : 'Reject Request'}
+            {selectedAction === "approve"
+              ? "Approve Request"
+              : "Reject Request"}
           </CustomButton>
         </DialogFooter>
       </DialogContent>
@@ -220,15 +235,16 @@ export function WorkflowForm({
       name: currentWorkflow?.name ?? "",
       description: currentWorkflow?.description ?? "",
       type: currentWorkflow?.type ?? "expense",
-      steps: currentWorkflow?.steps.map(step => ({
-        order: step.order,
-        approverType: step.approverType,
-        approverId: step.approverId,
-        roleId: step.roleId,
-        minAmount: step.minAmount,
-        maxAmount: step.maxAmount,
-        isRequired: step.isRequired,
-      })) ?? [],
+      steps:
+        currentWorkflow?.steps.map((step) => ({
+          order: step.order,
+          approverType: step.approverType,
+          approverId: step.approverId,
+          roleId: step.roleId,
+          minAmount: step.minAmount,
+          maxAmount: step.maxAmount,
+          isRequired: step.isRequired,
+        })) ?? [],
       isActive: currentWorkflow?.isActive ?? true,
     },
   });
@@ -259,7 +275,7 @@ export function WorkflowForm({
         isActive: true,
       });
     }
-  }, [loading, isEdit, resetOnSubmitSuccess]);
+  });
 
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
@@ -365,7 +381,10 @@ export function WorkflowForm({
                 name="isActive"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={(value) => field.onChange(value === 'true')} value={field.value.toString()}>
+                  <Select
+                    onValueChange={(value) => field.onChange(value === "true")}
+                    value={field.value.toString()}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -390,11 +409,7 @@ export function WorkflowForm({
           <DialogClose asChild>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <CustomButton
-            type="submit"
-            loading={loading}
-            form="workflow-form"
-          >
+          <CustomButton type="submit" loading={loading} form="workflow-form">
             {isEdit ? "Update Workflow" : "Create Workflow"}
           </CustomButton>
         </DialogFooter>

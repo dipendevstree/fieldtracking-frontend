@@ -6,7 +6,7 @@ import LimitsControls from './components/LimitsControls'
 import { LimitsControlsActionModal } from './components/action-form-modal'
 
 const LimitsControlsPage = () => {
-  const [pagination, setPagination] = useState({
+  const [_pagination, _setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
   })

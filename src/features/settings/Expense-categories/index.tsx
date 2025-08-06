@@ -2,16 +2,16 @@ import { useState } from 'react'
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from '@/data/app.data'
 import { cn } from '@/lib/utils'
 import { Main } from '@/components/layout/main'
-import TablePageLayout from '@/components/layout/table-page-layout'
-import { EnhancedError } from '@/types'
-import ExpenseCategoryTable from './components/table'
+// import TablePageLayout from '@/components/layout/table-page-layout'
+// import { EnhancedError } from '@/types'
+// import ExpenseCategoryTable from './components/table'
 // import { useGetExpenseCategoriesData } from './services/expense-categories.hook'
 // import { useExpenseCategoriesStore } from './store/expense-categories.store'
-import { ErrorPage } from '@/components/shared/custom-error'
+// import { ErrorPage } from '@/components/shared/custom-error'
 import ExpenseCategories from './components/ExpenseCategories'
 
 const ExpenseCategoriesPage = () => {
-  const [pagination, setPagination] = useState({
+  const [_pagination, _setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
   })
@@ -38,13 +38,13 @@ const ExpenseCategoriesPage = () => {
   //   )
   // }
 
-  const handleAddExpenseCategory = () => {
-    // setOpen('add-category')
-  }
+  // const handleAddExpenseCategory = () => {
+  //   // setOpen('add-category')
+  // }
 
-  const onPaginationChange = (page: number, pageSize: number) => {
-    setPagination((prev) => ({ ...prev, page, limit: pageSize }))
-  }
+  // const onPaginationChange = (page: number, pageSize: number) => {
+  //   setPagination((prev) => ({ ...prev, page, limit: pageSize }))
+  // }
 
   return (
     <Main className={cn('flex flex-col gap-2 p-4')}>

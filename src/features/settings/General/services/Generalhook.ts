@@ -1,7 +1,4 @@
-import API from '@/config/api/api'
 import useFetchData from '@/hooks/use-fetch-data'
-import usePostData from '@/hooks/use-post-data'
-import useDeleteData from '@/hooks/use-delete-data'
 import usePatchData from '@/hooks/use-patch-data'
 import { GeneralSettings, CompanyInfo, SystemPreferences } from '../type/type'
 

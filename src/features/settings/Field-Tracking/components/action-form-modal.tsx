@@ -103,7 +103,11 @@ export function FieldTrackingActionModal() {
         ruleName: values.ruleName.trim(),
         ruleType: values.ruleType,
         isEnabled: values.isEnabled,
-        conditions: values.conditions,
+        conditions: values.conditions.map(condition => ({
+          field: condition.field,
+          operator: condition.operator,
+          value: condition.value ?? ''
+        })),
         actions: values.actions,
       }
       
@@ -130,7 +134,11 @@ export function FieldTrackingActionModal() {
         ruleName: values.ruleName.trim(),
         ruleType: values.ruleType,
         isEnabled: values.isEnabled,
-        conditions: values.conditions,
+        conditions: values.conditions.map(condition => ({
+          field: condition.field,
+          operator: condition.operator,
+          value: condition.value ?? ''
+        })),
         actions: values.actions,
       }
       

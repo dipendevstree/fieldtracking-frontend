@@ -20,7 +20,7 @@ interface FieldTrackingTableProps {
 const FieldTrackingTable = ({
   trackingRules,
   geofenceZones,
-  totalCount,
+  totalCount: _totalCount,
   loading,
   paginationCallbacks,
   currentPage,

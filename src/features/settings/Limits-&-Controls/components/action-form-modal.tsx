@@ -331,7 +331,7 @@ export function LimitsControlsActionModal() {
         key='edit-expiry-settings'
         open={open === 'edit-expiry-settings'}
         loading={isUpdateExpirySettingsLoading}
-        currentSettings={currentExpirySettings}
+        currentSettings={currentExpirySettings || undefined}
         onSubmit={handleUpdateExpenseExpirySettings}
         onOpenChange={(value) => {
           if (!value) closeModal()

@@ -1,16 +1,15 @@
 import { useEffect } from 'react'
-import { DeleteModal } from '@/components/shared/common-delete-modal'
+
 import {
   useUpdateGeneralSettings,
   useUpdateCompanyInfo,
   useUpdateSystemPreferences,
   GeneralSettingsPayload,
-  CompanyInfoPayload,
-  SystemPreferencesPayload
+  CompanyInfoPayload
 } from '../services/Generalhook'
 import { useGeneralSettingsStore } from '../store/customer-type.store'
 import { GeneralSettingsActionForm, CompanyInfoActionForm } from './action-form'
-import { TGeneralSettingsFormSchema, TCompanyInfoFormSchema, TSystemPreferencesFormSchema } from '../data/schema'
+import { TGeneralSettingsFormSchema, TCompanyInfoFormSchema } from '../data/schema'
 import { toast } from 'sonner'
 
 export function GeneralSettingsActionModal() {
@@ -21,7 +20,7 @@ export function GeneralSettingsActionModal() {
     setCurrentSettings,
     currentCompanyInfo,
     setCurrentCompanyInfo,
-    currentPreferences,
+    currentPreferences: _currentPreferences,
     setCurrentPreferences
   } = useGeneralSettingsStore()
 
@@ -43,8 +42,6 @@ export function GeneralSettingsActionModal() {
 
   // System Preferences hooks
   const {
-    mutate: updateSystemPreferences,
-    isPending: isUpdatePreferencesLoading,
     isSuccess: isUpdatePreferencesSuccess,
     isError: isUpdatePreferencesError,
   } = useUpdateSystemPreferences()
@@ -130,22 +127,7 @@ export function GeneralSettingsActionModal() {
   }
 
   // System Preferences handlers
-  const handleUpdateSystemPreferences = (values: TSystemPreferencesFormSchema) => {
-    try {
-      const payload: SystemPreferencesPayload = {
-        defaultCurrency: values.defaultCurrency,
-        dateFormat: values.dateFormat,
-        distanceUnit: values.distanceUnit,
-        language: values.language,
-        theme: values.theme,
-      }
-      
-      updateSystemPreferences(payload)
-    } catch (error) {
-      console.error('Error updating system preferences:', error)
-      toast.error('Failed to update system preferences')
-    }
-  }
+
 
   return (
     <>
@@ -154,7 +136,7 @@ export function GeneralSettingsActionModal() {
         key='edit-settings'
         open={open === 'edit-settings'}
         loading={isUpdateSettingsLoading}
-        currentSettings={currentSettings}
+        currentSettings={currentSettings || undefined}
         onSubmit={handleUpdateGeneralSettings}
         onOpenChange={(value) => {
           if (!value) closeModal()
@@ -167,7 +149,7 @@ export function GeneralSettingsActionModal() {
         key='edit-company'
         open={open === 'edit-company'}
         loading={isUpdateCompanyLoading}
-        currentCompanyInfo={currentCompanyInfo}
+        currentCompanyInfo={currentCompanyInfo || undefined}
         onSubmit={handleUpdateCompanyInfo}
         onOpenChange={(value) => {
           if (!value) closeModal()

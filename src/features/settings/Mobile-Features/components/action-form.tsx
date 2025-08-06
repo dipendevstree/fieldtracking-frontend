@@ -1,39 +1,45 @@
-import { Controller, useForm } from 'react-hook-form'
-import { DialogClose, DialogDescription } from '@radix-ui/react-dialog'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { AlertCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Controller, useForm } from "react-hook-form";
+import { DialogClose, DialogDescription } from "@radix-ui/react-dialog";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Form } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import CustomButton from '@/components/shared/custom-button'
-import { 
-  mobileFeaturesConfigFormSchema, 
+} from "@/components/ui/dialog";
+import { Form } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import CustomButton from "@/components/shared/custom-button";
+import {
+  mobileFeaturesConfigFormSchema,
   mobilePermissionFormSchema,
-  mobileFeatureSettingsFormSchema,
+  // mobileFeatureSettingsFormSchema,
   TMobileFeaturesConfigFormSchema,
   TMobilePermissionFormSchema,
-  TMobileFeatureSettingsFormSchema 
-} from '../data/schema'
-import { MobileFeaturesConfig, MobilePermission, MobileFeatureSettings } from '../type/type'
+  // TMobileFeatureSettingsFormSchema
+} from "../data/schema";
+import { MobileFeaturesConfig, MobilePermission } from "../type/type";
 
 // Mobile Features Configuration Action Form
 interface MobileFeaturesConfigFormProps {
-  currentConfig?: Partial<MobileFeaturesConfig>
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  loading?: boolean
-  onSubmit: (values: TMobileFeaturesConfigFormSchema) => void
+  currentConfig?: Partial<MobileFeaturesConfig>;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  loading?: boolean;
+  onSubmit: (values: TMobileFeaturesConfigFormSchema) => void;
 }
 
 export function MobileFeaturesConfigActionForm({
@@ -43,59 +49,70 @@ export function MobileFeaturesConfigActionForm({
   onSubmit: onSubmitValues,
   loading,
 }: MobileFeaturesConfigFormProps) {
-  const isEdit = !!currentConfig
+  const isEdit = !!currentConfig;
 
   const form = useForm<TMobileFeaturesConfigFormSchema>({
     resolver: zodResolver(mobileFeaturesConfigFormSchema),
     defaultValues: {
       scheduleAndReports: {
-        allowScheduleViewing: currentConfig?.scheduleAndReports?.allowScheduleViewing ?? true,
-        allowVisitSummaryAccess: currentConfig?.scheduleAndReports?.allowVisitSummaryAccess ?? true,
-        allowExpenseReportAccess: currentConfig?.scheduleAndReports?.allowExpenseReportAccess ?? true,
+        allowScheduleViewing:
+          currentConfig?.scheduleAndReports?.allowScheduleViewing ?? true,
+        allowVisitSummaryAccess:
+          currentConfig?.scheduleAndReports?.allowVisitSummaryAccess ?? true,
+        allowExpenseReportAccess:
+          currentConfig?.scheduleAndReports?.allowExpenseReportAccess ?? true,
       },
       cameraAndPhoto: {
-        enableSelfieCheckin: currentConfig?.cameraAndPhoto?.enableSelfieCheckin ?? true,
-        allowPhotoCapture: currentConfig?.cameraAndPhoto?.allowPhotoCapture ?? true,
-        allowReceiptPhotos: currentConfig?.cameraAndPhoto?.allowReceiptPhotos ?? true,
-        photoQuality: currentConfig?.cameraAndPhoto?.photoQuality ?? 'medium',
-        maxPhotosPerVisit: currentConfig?.cameraAndPhoto?.maxPhotosPerVisit ?? 5,
+        enableSelfieCheckin:
+          currentConfig?.cameraAndPhoto?.enableSelfieCheckin ?? true,
+        allowPhotoCapture:
+          currentConfig?.cameraAndPhoto?.allowPhotoCapture ?? true,
+        allowReceiptPhotos:
+          currentConfig?.cameraAndPhoto?.allowReceiptPhotos ?? true,
+        photoQuality: currentConfig?.cameraAndPhoto?.photoQuality ?? "medium",
+        maxPhotosPerVisit:
+          currentConfig?.cameraAndPhoto?.maxPhotosPerVisit ?? 5,
       },
       offlineCapabilities: {
-        enableOfflineMode: currentConfig?.offlineCapabilities?.enableOfflineMode ?? true,
-        autoSyncWhenOnline: currentConfig?.offlineCapabilities?.autoSyncWhenOnline ?? true,
+        enableOfflineMode:
+          currentConfig?.offlineCapabilities?.enableOfflineMode ?? true,
+        autoSyncWhenOnline:
+          currentConfig?.offlineCapabilities?.autoSyncWhenOnline ?? true,
         syncFrequency: currentConfig?.offlineCapabilities?.syncFrequency ?? 15,
       },
     },
-  })
+  });
 
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors },
-  } = form
+  } = form;
 
   const onSubmit = (values: TMobileFeaturesConfigFormSchema) => {
-    onSubmitValues(values)
-  }
+    onSubmitValues(values);
+  };
 
   const handleDialogChange = (state: boolean) => {
-    if (!state) reset()
-    onOpenChange(state)
-  }
+    if (!state) reset();
+    onOpenChange(state);
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
-      <DialogContent className='max-h-[80vh] !max-w-2xl overflow-y-auto'>
-        <DialogHeader className='flex flex-row items-center justify-between space-y-0 pb-4'>
+      <DialogContent className="max-h-[80vh] !max-w-2xl overflow-y-auto">
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div>
-            <DialogTitle className='text-xl font-semibold'>
-              {isEdit ? 'Edit Mobile Features Configuration' : 'Configure Mobile Features'}
-            </DialogTitle>
-            <DialogDescription className='text-muted-foreground mt-1 text-sm'>
+            <DialogTitle className="text-xl font-semibold">
               {isEdit
-                ? 'Update mobile app features configuration.'
-                : 'Configure mobile app features and permissions.'}
+                ? "Edit Mobile Features Configuration"
+                : "Configure Mobile Features"}
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground mt-1 text-sm">
+              {isEdit
+                ? "Update mobile app features configuration."
+                : "Configure mobile app features and permissions."}
             </DialogDescription>
           </div>
           <DialogClose asChild></DialogClose>
@@ -103,19 +120,23 @@ export function MobileFeaturesConfigActionForm({
 
         <Form {...form}>
           <form
-            id='mobile-features-config-form'
+            id="mobile-features-config-form"
             onSubmit={handleSubmit(onSubmit)}
-            className='space-y-6'
+            className="space-y-6"
           >
             {/* Schedule & Reports Section */}
             <div className="space-y-4">
               <h4 className="text-lg font-medium">Schedule & Reports Access</h4>
-              
+
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="allowScheduleViewing">Allow Reps to View Their Schedule</Label>
-                    <p className="text-sm text-muted-foreground">Enable schedule viewing in mobile app</p>
+                    <Label htmlFor="allowScheduleViewing">
+                      Allow Reps to View Their Schedule
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Enable schedule viewing in mobile app
+                    </p>
                   </div>
                   <Controller
                     name="scheduleAndReports.allowScheduleViewing"
@@ -131,8 +152,12 @@ export function MobileFeaturesConfigActionForm({
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="allowVisitSummaryAccess">Allow Visit Summary Access</Label>
-                    <p className="text-sm text-muted-foreground">Enable viewing of visit history and summaries</p>
+                    <Label htmlFor="allowVisitSummaryAccess">
+                      Allow Visit Summary Access
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Enable viewing of visit history and summaries
+                    </p>
                   </div>
                   <Controller
                     name="scheduleAndReports.allowVisitSummaryAccess"
@@ -148,8 +173,12 @@ export function MobileFeaturesConfigActionForm({
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="allowExpenseReportAccess">Allow Expense Report Access</Label>
-                    <p className="text-sm text-muted-foreground">Enable viewing and submitting expense reports</p>
+                    <Label htmlFor="allowExpenseReportAccess">
+                      Allow Expense Report Access
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Enable viewing and submitting expense reports
+                    </p>
                   </div>
                   <Controller
                     name="scheduleAndReports.allowExpenseReportAccess"
@@ -168,12 +197,16 @@ export function MobileFeaturesConfigActionForm({
             {/* Camera & Photo Section */}
             <div className="space-y-4">
               <h4 className="text-lg font-medium">Camera & Photo Features</h4>
-              
+
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="enableSelfieCheckin">Enable Selfie Check-in</Label>
-                    <p className="text-sm text-muted-foreground">Require selfie photos during check-in</p>
+                    <Label htmlFor="enableSelfieCheckin">
+                      Enable Selfie Check-in
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Require selfie photos during check-in
+                    </p>
                   </div>
                   <Controller
                     name="cameraAndPhoto.enableSelfieCheckin"
@@ -189,8 +222,12 @@ export function MobileFeaturesConfigActionForm({
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="allowPhotoCapture">Allow Photo Capture</Label>
-                    <p className="text-sm text-muted-foreground">Enable taking photos during visits</p>
+                    <Label htmlFor="allowPhotoCapture">
+                      Allow Photo Capture
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Enable taking photos during visits
+                    </p>
                   </div>
                   <Controller
                     name="cameraAndPhoto.allowPhotoCapture"
@@ -206,8 +243,12 @@ export function MobileFeaturesConfigActionForm({
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="allowReceiptPhotos">Receipt Photo Capture</Label>
-                    <p className="text-sm text-muted-foreground">Enable receipt photography for expenses</p>
+                    <Label htmlFor="allowReceiptPhotos">
+                      Receipt Photo Capture
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Enable receipt photography for expenses
+                    </p>
                   </div>
                   <Controller
                     name="cameraAndPhoto.allowReceiptPhotos"
@@ -229,28 +270,39 @@ export function MobileFeaturesConfigActionForm({
                     name="cameraAndPhoto.photoQuality"
                     control={control}
                     render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select photo quality" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="low">Low (Faster upload)</SelectItem>
-                          <SelectItem value="medium">Medium (Balanced)</SelectItem>
-                          <SelectItem value="high">High (Best quality)</SelectItem>
+                          <SelectItem value="low">
+                            Low (Faster upload)
+                          </SelectItem>
+                          <SelectItem value="medium">
+                            Medium (Balanced)
+                          </SelectItem>
+                          <SelectItem value="high">
+                            High (Best quality)
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                     )}
                   />
                   {errors.cameraAndPhoto?.photoQuality && (
-                    <p className='flex items-center gap-1 text-xs text-red-500'>
-                      <AlertCircle className='h-3 w-3' />
+                    <p className="flex items-center gap-1 text-xs text-red-500">
+                      <AlertCircle className="h-3 w-3" />
                       {errors.cameraAndPhoto.photoQuality.message}
                     </p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="maxPhotosPerVisit">Max Photos per Visit</Label>
+                  <Label htmlFor="maxPhotosPerVisit">
+                    Max Photos per Visit
+                  </Label>
                   <Controller
                     name="cameraAndPhoto.maxPhotosPerVisit"
                     control={control}
@@ -260,13 +312,13 @@ export function MobileFeaturesConfigActionForm({
                         id="maxPhotosPerVisit"
                         type="number"
                         placeholder="Enter max photos"
-                        value={field.value || ''}
+                        value={field.value || ""}
                       />
                     )}
                   />
                   {errors.cameraAndPhoto?.maxPhotosPerVisit && (
-                    <p className='flex items-center gap-1 text-xs text-red-500'>
-                      <AlertCircle className='h-3 w-3' />
+                    <p className="flex items-center gap-1 text-xs text-red-500">
+                      <AlertCircle className="h-3 w-3" />
                       {errors.cameraAndPhoto.maxPhotosPerVisit.message}
                     </p>
                   )}
@@ -277,12 +329,16 @@ export function MobileFeaturesConfigActionForm({
             {/* Offline Capabilities Section */}
             <div className="space-y-4">
               <h4 className="text-lg font-medium">Offline Capabilities</h4>
-              
+
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="enableOfflineMode">Enable Offline Mode</Label>
-                    <p className="text-sm text-muted-foreground">Allow app to work without internet connection</p>
+                    <Label htmlFor="enableOfflineMode">
+                      Enable Offline Mode
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Allow app to work without internet connection
+                    </p>
                   </div>
                   <Controller
                     name="offlineCapabilities.enableOfflineMode"
@@ -298,7 +354,9 @@ export function MobileFeaturesConfigActionForm({
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="autoSyncWhenOnline">Auto-sync When Online</Label>
+                    <Label htmlFor="autoSyncWhenOnline">
+                      Auto-sync When Online
+                    </Label>
                     <p className="text-sm text-muted-foreground">
                       Automatically sync data when connection is restored
                     </p>
@@ -327,13 +385,13 @@ export function MobileFeaturesConfigActionForm({
                       id="syncFrequency"
                       type="number"
                       placeholder="Enter sync frequency"
-                      value={field.value || ''}
+                      value={field.value || ""}
                     />
                   )}
                 />
                 {errors.offlineCapabilities?.syncFrequency && (
-                  <p className='flex items-center gap-1 text-xs text-red-500'>
-                    <AlertCircle className='h-3 w-3' />
+                  <p className="flex items-center gap-1 text-xs text-red-500">
+                    <AlertCircle className="h-3 w-3" />
                     {errors.offlineCapabilities.syncFrequency.message}
                   </p>
                 )}
@@ -341,27 +399,31 @@ export function MobileFeaturesConfigActionForm({
             </div>
           </form>
         </Form>
-        
-        <DialogFooter className='flex gap-2 pt-4'>
+
+        <DialogFooter className="flex gap-2 pt-4">
           <DialogClose asChild>
-            <Button variant='outline'>Cancel</Button>
+            <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <CustomButton type='submit' loading={loading} form='mobile-features-config-form'>
-            {isEdit ? 'Update Configuration' : 'Save Configuration'}
+          <CustomButton
+            type="submit"
+            loading={loading}
+            form="mobile-features-config-form"
+          >
+            {isEdit ? "Update Configuration" : "Save Configuration"}
           </CustomButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 // Mobile Permission Action Form
 interface MobilePermissionFormProps {
-  currentPermission?: Partial<MobilePermission>
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  loading?: boolean
-  onSubmit: (values: TMobilePermissionFormSchema) => void
+  currentPermission?: Partial<MobilePermission>;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  loading?: boolean;
+  onSubmit: (values: TMobilePermissionFormSchema) => void;
 }
 
 export function MobilePermissionActionForm({
@@ -371,45 +433,45 @@ export function MobilePermissionActionForm({
   onSubmit: onSubmitValues,
   loading,
 }: MobilePermissionFormProps) {
-  const isEdit = !!currentPermission
+  const isEdit = !!currentPermission;
 
   const form = useForm<TMobilePermissionFormSchema>({
     resolver: zodResolver(mobilePermissionFormSchema),
     defaultValues: {
-      permissionName: currentPermission?.permissionName ?? '',
+      permissionName: currentPermission?.permissionName ?? "",
       isEnabled: currentPermission?.isEnabled ?? true,
-      description: currentPermission?.description ?? '',
+      description: currentPermission?.description ?? "",
     },
-  })
+  });
 
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors },
-  } = form
+  } = form;
 
   const onSubmit = (values: TMobilePermissionFormSchema) => {
-    onSubmitValues(values)
-  }
+    onSubmitValues(values);
+  };
 
   const handleDialogChange = (state: boolean) => {
-    if (!state) reset()
-    onOpenChange(state)
-  }
+    if (!state) reset();
+    onOpenChange(state);
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
-      <DialogContent className='max-h-[80vh] !max-w-md overflow-y-auto'>
-        <DialogHeader className='flex flex-row items-center justify-between space-y-0 pb-4'>
+      <DialogContent className="max-h-[80vh] !max-w-md overflow-y-auto">
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div>
-            <DialogTitle className='text-xl font-semibold'>
-              {isEdit ? 'Edit Mobile Permission' : 'Add Mobile Permission'}
+            <DialogTitle className="text-xl font-semibold">
+              {isEdit ? "Edit Mobile Permission" : "Add Mobile Permission"}
             </DialogTitle>
-            <DialogDescription className='text-muted-foreground mt-1 text-sm'>
+            <DialogDescription className="text-muted-foreground mt-1 text-sm">
               {isEdit
-                ? 'Update mobile app permission.'
-                : 'Create a new mobile app permission.'}
+                ? "Update mobile app permission."
+                : "Create a new mobile app permission."}
             </DialogDescription>
           </div>
           <DialogClose asChild></DialogClose>
@@ -417,56 +479,56 @@ export function MobilePermissionActionForm({
 
         <Form {...form}>
           <form
-            id='mobile-permission-form'
+            id="mobile-permission-form"
             onSubmit={handleSubmit(onSubmit)}
-            className='space-y-6'
+            className="space-y-6"
           >
             {/* Permission Name Field */}
-            <div className='space-y-2'>
-              <Label htmlFor='permissionName'>Permission Name *</Label>
+            <div className="space-y-2">
+              <Label htmlFor="permissionName">Permission Name *</Label>
               <Controller
-                name='permissionName'
+                name="permissionName"
                 control={control}
                 render={({ field }) => (
                   <Input
                     {...field}
-                    id='permissionName'
-                    placeholder='Enter permission name'
-                    value={field.value || ''}
+                    id="permissionName"
+                    placeholder="Enter permission name"
+                    value={field.value || ""}
                   />
                 )}
               />
               {errors.permissionName && (
-                <p className='flex items-center gap-1 text-xs text-red-500'>
-                  <AlertCircle className='h-3 w-3' />
+                <p className="flex items-center gap-1 text-xs text-red-500">
+                  <AlertCircle className="h-3 w-3" />
                   {errors.permissionName.message}
                 </p>
               )}
             </div>
 
             {/* Description Field */}
-            <div className='space-y-2'>
-              <Label htmlFor='description'>Description</Label>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
               <Controller
-                name='description'
+                name="description"
                 control={control}
                 render={({ field }) => (
                   <Textarea
                     {...field}
-                    id='description'
-                    placeholder='Enter description'
-                    value={field.value || ''}
+                    id="description"
+                    placeholder="Enter description"
+                    value={field.value || ""}
                   />
                 )}
               />
             </div>
 
             {/* Is Enabled Field */}
-            <div className='space-y-2'>
-              <div className='flex items-center justify-between'>
-                <Label htmlFor='isEnabled'>Enabled</Label>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="isEnabled">Enabled</Label>
                 <Controller
-                  name='isEnabled'
+                  name="isEnabled"
                   control={control}
                   render={({ field }) => (
                     <Switch
@@ -480,15 +542,19 @@ export function MobilePermissionActionForm({
           </form>
         </Form>
 
-        <DialogFooter className='flex gap-2 pt-4'>
+        <DialogFooter className="flex gap-2 pt-4">
           <DialogClose asChild>
-            <Button variant='outline'>Cancel</Button>
+            <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <CustomButton type='submit' loading={loading} form='mobile-permission-form'>
-            {isEdit ? 'Update Permission' : 'Create Permission'}
+          <CustomButton
+            type="submit"
+            loading={loading}
+            form="mobile-permission-form"
+          >
+            {isEdit ? "Update Permission" : "Create Permission"}
           </CustomButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

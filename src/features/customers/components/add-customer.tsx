@@ -30,7 +30,7 @@ import {
   useGetIndustry,
   useUpdateCustomer,
 } from "../services/Customers.hook";
-import { useGetAllCustomerType } from "@/features/customer-type/services/CustomerTypehook";
+import { useGetAllCustomerType } from "@/features/customer-type/services/CustomerType.hook";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { useGetAllRolesForDropdown } from "@/features/UserManagement/services/Roles.hook";
 import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
@@ -156,8 +156,6 @@ export default function AddCustomerPage({
     control,
     name: "contacts",
   });
-
-  console.log("ereroeroeoreor", errors);
 
   const { allCustomerType = [] } = useGetAllCustomerType({
     page: 1,
