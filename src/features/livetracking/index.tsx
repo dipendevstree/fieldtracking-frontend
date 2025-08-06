@@ -19,6 +19,7 @@ import {
 import { GoogleMap } from "@react-google-maps/api";
 import { useSearch } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { socket } from "@/socket/socket";
 
 // Assuming you have a Button component
 const AHMEDABAD_CENTER = { lat: 23.0225, lng: 72.5714 };
@@ -152,8 +153,16 @@ export default function Livetracking() {
   };
 
   useEffect(() => {
+    window.addEventListener("popstate", handlePopState);
     updateMapCenterFromUserList(enhancedUserList);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
   }, []);
+
+  useEffect(() => {
+    setSelectedUserId(userId);
+  }, [userId]);
 
   // const handleBackToList = () => {
   //   if (socket) {
@@ -168,9 +177,23 @@ export default function Livetracking() {
   //   window.history.pushState({}, "", `?${newParams}`);
   // };
 
-  useEffect(() => {
-    setSelectedUserId(userId);
-  }, [userId]);
+  const handlePopState = () => {
+    const params = new URLSearchParams(window.location.search);
+    const userIdFromUrl = params.get("userId");
+
+    if (!userIdFromUrl) {
+      // If userId was removed (i.e. back to list view)
+      if (socket) {
+        socket.emit("untrack_user", { userId });
+      }
+      setSelectedUserId("");
+      setPath([]);
+      setCurrentPosition(null);
+    } else {
+      // If userId is present in URL, update selectedUserId
+      setSelectedUserId(userIdFromUrl);
+    }
+  };
 
   const filters: FilterConfig[] = [
     {
