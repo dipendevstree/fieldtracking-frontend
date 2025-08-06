@@ -110,6 +110,7 @@ const API = {
     analytics: 'visit/analytics',
     getVisitByID: 'visit',
     delete: 'visit/delete',
+    dailyExpenses:"expenses/list"
   },
   customer: {
     customerList: 'customer/list',

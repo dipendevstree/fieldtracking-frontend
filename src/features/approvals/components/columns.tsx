@@ -1,96 +1,93 @@
-import { ColumnDef } from '@tanstack/react-table'
-import { CustomDataTableColumnHeader } from '@/components/shared/custom-table-header-column'
-import { DataTableRowActions } from './daily-expense-table-action-button'
+import { ColumnDef } from "@tanstack/react-table";
+import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
+import { DataTableRowActions } from "./daily-expense-table-action-button";
+import StatusBadge from "@/components/shared/common-status-badge";
 
 export const columns: ColumnDef<any>[] = [
   {
-    accessorKey: 'salesRep',
+    accessorKey: "salesRep",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Sales Rep' />
+      <CustomDataTableColumnHeader column={column} title="Sales Rep" />
     ),
     cell: ({ row }) => {
-      const user = row.original.salesRepresentativeUser
-      const firstName = user?.firstName || ''
-      const lastName = user?.lastName || ''
+      const user = row.original.salesRepresentativeUser;
+      const firstName = user?.firstName || "";
+      const lastName = user?.lastName || "";
       const fullName =
-        firstName || lastName ? `${firstName} ${lastName}`.trim() : '-'
+        firstName || lastName ? `${firstName} ${lastName}`.trim() : "-";
 
       return (
-        <div className='flex items-center gap-2'>
-          <span className='text-sm font-medium'>{fullName}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">{fullName}</span>
         </div>
-      )
+      );
     },
     enableHiding: false,
+    enableSorting: false,
   },
   {
-    accessorKey: 'date',
+    accessorKey: "createdDate",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Date' />
+      <CustomDataTableColumnHeader column={column} title="Date" />
     ),
     cell: ({ row }) => {
-      const date = row.original.date || ''
+      const date = row.original.createdDate || "";
       const formattedDate = date
-        ? new Date(date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit',
+        ? new Date(date).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
           })
-        : '-'
-      return (
-        <div className='text-muted-foreground text-sm'>{formattedDate}</div>
-      )
+        : "-";
+      return <div className=" text-sm">{formattedDate}</div>;
     },
+    enableSorting: false,
   },
   {
-    accessorKey: 'amount',
+    accessorKey: "totalAmount",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Amount' />
+      <CustomDataTableColumnHeader column={column} title="Amount" />
     ),
-    cell: ({ row }) => {
-      const amount = row.original.amount || 0
-      const formattedAmount = `$${amount.toFixed(2)}`
-      return <div className='text-sm font-medium'>{formattedAmount}</div>
-    },
+    enableSorting: false,
   },
   {
-    accessorKey: 'description',
+    accessorKey: "expenseType",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Description' />
+      <CustomDataTableColumnHeader column={column} title="Expense Type" />
     ),
+    enableSorting: false,
     cell: ({ row }) => {
-      const description = row.original.description || ''
-      return <div className='text-muted-foreground text-sm'>{description}</div>
-    },
-  },
-  {
-    accessorKey: 'status',
-    header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Status' />
-    ),
-    cell: ({ row }) => {
-      const status = row.original.status || ''
-      const statusColor =
-        status === 'complete' ? 'text-green-600' : 'text-red-600'
-      const statusBg = status === 'complete' ? 'bg-green-100' : 'bg-red-100'
+      const value = row.getValue("expenseType");
 
-      return (
-        <div
-          className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${statusColor} ${statusBg}`}
-        >
-          <span
-            className={`mr-1 h-2 w-2 rounded-full ${status === 'complete' ? 'bg-green-500' : 'bg-red-500'}`}
-          ></span>
-          {status === 'complete' ? 'Complete' : 'Pending'}
-        </div>
-      )
+      const formatExpenseType = (type: string): string => {
+        const map: Record<string, string> = {
+          travel: "Travel Allowance",
+          daily: "Daily Allowance",
+        };
+
+        return map[type.toLowerCase()] || type;
+      };
+
+      return formatExpenseType(String(value));
     },
   },
   {
-    id: 'actions',
+    accessorKey: "status",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Action' />
+      <CustomDataTableColumnHeader column={column} title="Status" />
+    ),
+    cell: ({ row }) => {
+      const status = row.original.status || "";
+
+      return <StatusBadge status={status} />;
+    },
+    enableSorting: false,
+  },
+  {
+    id: "actions",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Action" />
     ),
     cell: ({ row }) => <DataTableRowActions row={row} />,
   },
-]
+];
