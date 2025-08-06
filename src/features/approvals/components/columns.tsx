@@ -2,6 +2,10 @@ import { ColumnDef } from "@tanstack/react-table";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import { DataTableRowActions } from "./daily-expense-table-action-button";
 import StatusBadge from "@/components/shared/common-status-badge";
+import {
+  formatExpenseSubType,
+  formatExpenseType,
+} from "@/utils/commonFormatters";
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -58,19 +62,21 @@ export const columns: ColumnDef<any>[] = [
     enableSorting: false,
     cell: ({ row }) => {
       const value = row.getValue("expenseType");
-
-      const formatExpenseType = (type: string): string => {
-        const map: Record<string, string> = {
-          travel: "Travel Allowance",
-          daily: "Daily Allowance",
-        };
-
-        return map[type.toLowerCase()] || type;
-      };
-
       return formatExpenseType(String(value));
     },
   },
+  {
+    accessorKey: "expenseSubType",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Expense Sub Type" />
+    ),
+    enableSorting: false,
+    cell: ({ row }) => {
+      const value = row.getValue("expenseSubType");
+      return formatExpenseSubType(String(value));
+    },
+  },
+
   {
     accessorKey: "status",
     header: ({ column }) => (

@@ -9,27 +9,27 @@ interface StatusBadgeProps {
 
 const statusColors: Record<string, { text: string; bg: string; dot: string }> =
   {
-    complete: {
-      text: "text-green-600",
-      bg: "bg-green-100",
-      dot: "bg-green-500",
-    },
     pending: {
       text: "text-red-600",
       bg: "bg-red-100",
       dot: "bg-red-500",
     },
-    in_progress: {
+    partially_approved: {
       text: "text-yellow-600",
       bg: "bg-yellow-100",
       dot: "bg-yellow-500",
     },
     approved: {
+      text: "text-green-600",
+      bg: "bg-green-100",
+      dot: "bg-green-500",
+    },
+    complete: {
       text: "text-blue-600",
       bg: "bg-blue-100",
       dot: "bg-blue-500",
     },
-    // fallback will handle unknown statuses
+    // fallback color handled in component
   };
 
 function formatStatusTitle(status: string): string {

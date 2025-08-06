@@ -4,7 +4,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import debounce from "lodash.debounce";
-import { CalendarIcon, Clock, Edit, Eye, Trash } from "lucide-react";
+import { CalendarIcon, Clock, Edit, Eye, Trash2 } from "lucide-react";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import {
   AlertDialog,
@@ -413,6 +413,7 @@ export default function CalendarView() {
                       action="viewOwn"
                     >
                       <Button
+                        className="h-8 w-8 p-0"
                         variant="outline"
                         size="sm"
                         aria-label={`View details for visit ${visit.id}`}
@@ -426,6 +427,7 @@ export default function CalendarView() {
                     >
                       <Button
                         variant="outline"
+                        className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
                         size="sm"
                         onClick={() =>
                           navigate({
@@ -442,12 +444,13 @@ export default function CalendarView() {
                       action="delete"
                     >
                       <Button
+                        className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
                         variant="outline"
                         size="sm"
                         onClick={() => setVisitToDelete(visit)}
                         aria-label={`Delete visit ${visit.id}`}
                       >
-                        <Trash className="h-3 w-3" />
+                        <Trash2 className="h-3 w-3" />
                       </Button>
                     </PermissionGate>
                   </div>

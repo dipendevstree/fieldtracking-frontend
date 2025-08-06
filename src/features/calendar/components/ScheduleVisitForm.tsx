@@ -587,7 +587,9 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                           )}
                           {fields.length > 1 && !isEditMode && (
                             <Button
+                              variant={"outline"}
                               type="button"
+                              className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
                               size="sm"
                               onClick={() => remove(index)}
                             >

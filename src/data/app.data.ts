@@ -39,3 +39,10 @@ export enum EXPENSE_STATUS {
   PARTIALLY_APPROVED = "partially_approved",
   REJECT = "reject",
 }
+
+export enum EXPENSE_SUB_TYPE {
+  TRAVEL_LUMP_SUM = "travel_lump_sum",
+  TRAVEL_ROUTE = "travel_route",
+  DAILY_LOCAL = "daily_local",
+  DAILY_OUTSTATION = "daily_outstation",
+}

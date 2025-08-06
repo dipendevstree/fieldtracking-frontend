@@ -3,6 +3,7 @@ import {
   DEFAULT_PAGE_NUMBER,
   DEFAULT_PAGE_SIZE,
   EXPENSE_STATUS,
+  EXPENSE_SUB_TYPE,
   EXPENSE_TYPE,
 } from "@/data/app.data";
 import { useSelectOptions } from "@/hooks/use-select-option";
@@ -36,6 +37,7 @@ export default function DailyExpenses() {
     salesRepresentativeUserId: "",
     expenseType: "",
     status: "",
+    expenseSubType: "",
   });
 
   const {
@@ -93,6 +95,13 @@ export default function DailyExpenses() {
     })
   );
 
+  const expanseSubTypeOptions = Object.entries(EXPENSE_SUB_TYPE).map(
+    ([key, value]) => ({
+      label: formatDropDownLabel(key),
+      value,
+    })
+  );
+
   const filters: FilterConfig[] = [
     {
       key: "date-range",
@@ -123,9 +132,17 @@ export default function DailyExpenses() {
       key: "status",
       type: "select",
       onChange: (value) => handleFilterChange("status", String(value)),
-      placeholder: "Select priority",
+      placeholder: "Select Status",
       value: pagination.status,
       options: expanseStatusOptions,
+    },
+    {
+      key: "expenseSubType",
+      type: "select",
+      onChange: (value) => handleFilterChange("expenseSubType", String(value)),
+      placeholder: "Select Expanse Sub Type",
+      value: pagination.expenseSubType,
+      options: expanseSubTypeOptions,
     },
   ];
 
