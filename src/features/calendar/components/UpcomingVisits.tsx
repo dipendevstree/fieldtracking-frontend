@@ -17,6 +17,7 @@ import {
 } from "../services/calendar-view.hook";
 import { FormData } from "./CalendarView";
 import UpcomingVisitsTable from "./upcoming-visits-table";
+import { formatDropDownLabel } from "@/utils/commonFunction";
 
 export default function UpcomingVisits() {
   const [pagination, setPagination] = useState({
@@ -97,7 +98,7 @@ export default function UpcomingVisits() {
   }));
 
   const priorityOptions = Object.entries(Priority).map(([key, value]) => ({
-    label: key,
+    label: formatDropDownLabel(key),
     value,
   }));
 

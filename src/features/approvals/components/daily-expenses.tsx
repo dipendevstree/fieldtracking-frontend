@@ -1,5 +1,10 @@
 import { useState } from "react";
-import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
+import {
+  DEFAULT_PAGE_NUMBER,
+  DEFAULT_PAGE_SIZE,
+  EXPENSE_STATUS,
+  EXPENSE_TYPE,
+} from "@/data/app.data";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { FilterConfig } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
@@ -8,6 +13,7 @@ import { useGetAllDailyExpanses } from "../services/calendar-view.hook";
 import { useGetUsers } from "@/features/livetracking/services/live-tracking-services";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
+import { formatDropDownLabel } from "@/utils/commonFunction";
 
 export default function DailyExpenses() {
   const initialDateRange: DateRange = {
@@ -28,6 +34,8 @@ export default function DailyExpenses() {
       ? format(initialDateRange.to, "yyyy-MM-dd")
       : "",
     salesRepresentativeUserId: "",
+    expenseType: "",
+    status: "",
   });
 
   const {
@@ -50,11 +58,11 @@ export default function DailyExpenses() {
     }));
   };
 
-  const onSalesChange = (value: string) => {
+  const handleFilterChange = (key: string, value: string) => {
     setPagination((prev) => ({
       ...prev,
       page: 1,
-      salesRepresentativeUserId: value,
+      [key]: value,
     }));
   };
 
@@ -71,6 +79,20 @@ export default function DailyExpenses() {
     valueKey: "id",
   }).map((option) => ({ ...option, value: String(option.value) }));
 
+  const expanseTypeOptions = Object.entries(EXPENSE_TYPE).map(
+    ([key, value]) => ({
+      label: formatDropDownLabel(key),
+      value,
+    })
+  );
+
+  const expanseStatusOptions = Object.entries(EXPENSE_STATUS).map(
+    ([key, value]) => ({
+      label: formatDropDownLabel(key),
+      value,
+    })
+  );
+
   const filters: FilterConfig[] = [
     {
       key: "date-range",
@@ -80,13 +102,30 @@ export default function DailyExpenses() {
       onDateRangeChange: handleDateRangeChange,
     },
     {
-      key: "salesRep",
+      key: "salesRepresentativeUserId",
       type: "searchable-select",
-      onChange: (value) => onSalesChange(String(value)),
+      onChange: (value) =>
+        handleFilterChange("salesRepresentativeUserId", String(value)),
       placeholder: "Select salesRep",
       value: pagination.salesRepresentativeUserId,
       options: usersOptions,
-      onCancelPress: () => onSalesChange(""),
+      onCancelPress: () => handleFilterChange("salesRepresentativeUserId", ""),
+    },
+    {
+      key: "expenseType",
+      type: "select",
+      onChange: (value) => handleFilterChange("expenseType", String(value)),
+      placeholder: "Select Type",
+      value: pagination.expenseType,
+      options: expanseTypeOptions,
+    },
+    {
+      key: "status",
+      type: "select",
+      onChange: (value) => handleFilterChange("status", String(value)),
+      placeholder: "Select priority",
+      value: pagination.status,
+      options: expanseStatusOptions,
     },
   ];
 
