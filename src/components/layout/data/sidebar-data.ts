@@ -1,4 +1,13 @@
-import { AppWindow, Building2, Calendar, ChartColumn, Home, MapPin, Shield, ShieldUser } from "lucide-react";
+import {
+  AppWindow,
+  Building2,
+  Calendar,
+  ChartColumn,
+  Home,
+  MapPin,
+  Shield,
+  ShieldUser,
+} from "lucide-react";
 import { type SidebarData } from "../types";
 
 export const sidebarData: SidebarData = {
@@ -10,7 +19,7 @@ export const sidebarData: SidebarData = {
   },
   teams: [
     {
-      name: "FieldTrack Pro",
+      name: "FieldFieldTrack360",
       logo: Building2,
       plan: "Enterprise",
     },
@@ -32,18 +41,18 @@ export const sidebarData: SidebarData = {
           menuKey: "live_tracking",
         },
         {
-          title: 'Customers',
-           // url: '/customers',
+          title: "Customers",
+          // url: '/customers',
           icon: Building2,
           items: [
             {
-              title: 'Customer Directory',
-              url: '/customers',
+              title: "Customer Directory",
+              url: "/customers",
             },
-            
+
             {
-              title: 'Add Customer',
-              url: '/customers/add-customer',
+              title: "Add Customer",
+              url: "/customers/add-customer",
             },
             // {
             //   title: 'Customer Analytics',
@@ -54,12 +63,12 @@ export const sidebarData: SidebarData = {
             //   url: '/customers/imports',
             // },
             {
-              title: 'Customer Type',
-              url: '/customer-type',
-            }
+              title: "Customer Type",
+              url: "/customer-type",
+            },
           ],
         },
-      
+
         {
           title: "User Management",
           icon: ShieldUser,
@@ -167,7 +176,7 @@ export const SUPER_ADMIN_SIDEBAR_DATA: SidebarData = {
   },
   teams: [
     {
-      name: "FieldTrack Pro",
+      name: "FieldFieldTrack360",
       logo: Building2,
       plan: "Enterprise",
     },

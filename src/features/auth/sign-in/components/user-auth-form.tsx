@@ -17,6 +17,7 @@ import { PasswordInput } from "@/components/password-input";
 import CustomButton from "@/components/shared/custom-button";
 import { useAdminLogin } from "../services/sign-in-services";
 import { formSchema, TFormSchema } from "./schema";
+import { useRouter } from "@tanstack/react-router";
 
 type UserAuthFormProps = Readonly<HTMLAttributes<HTMLFormElement>>;
 
@@ -27,6 +28,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   };
   const { mutate: loginMutate, isPending: isLoading } =
     useAdminLogin(onSuccess);
+  const { navigate } = useRouter();
   const form = useForm<TFormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -78,6 +80,15 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             </FormItem>
           )}
         />
+        <div
+          onClick={() => {
+            navigate({ to: "/forgot-password" });
+          }}
+        >
+          <span className="text-sm hover:underline cursor-pointer flex justify-end text-muted-foreground">
+            Forgot password?
+          </span>
+        </div>
         <CustomButton
           type="submit"
           variant="primary"
