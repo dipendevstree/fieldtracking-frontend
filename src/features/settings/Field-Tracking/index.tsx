@@ -2,16 +2,12 @@ import { useState } from 'react'
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from '@/data/app.data'
 import { cn } from '@/lib/utils'
 import { Main } from '@/components/layout/main'
-import TablePageLayout from '@/components/layout/table-page-layout'
-import { EnhancedError } from '@/types'
-import FieldTrackingTable from './components/table'
 // import { useGetFieldTrackingData } from './services/field-tracking.hook'
 // import { useFieldTrackingStore } from './store/field-tracking.store'
-import { ErrorPage } from '@/components/shared/custom-error'
 import FieldTracking from './components/FieldTracking'
 
 const FieldTrackingPage = () => {
-  const [pagination, setPagination] = useState({
+  const [_pagination, _setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
   })
@@ -38,17 +34,8 @@ const FieldTrackingPage = () => {
   //   )
   // }
 
-  const handleAddTrackingRule = () => {
-    // setOpen('add-rule')
-  }
+ 
 
-  const handleAddGeofenceZone = () => {
-    // setOpen('add-zone')
-  }
-
-  const onPaginationChange = (page: number, pageSize: number) => {
-    setPagination((prev) => ({ ...prev, page, limit: pageSize }))
-  }
 
   return (
     <Main className={cn('flex flex-col gap-2 p-4')}>

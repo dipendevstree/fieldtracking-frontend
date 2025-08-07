@@ -112,6 +112,7 @@ const API = {
   customer: {
     customerList: "customer/list",
   },
+  
   drivers: {
     list: "driver/list",
     create: "driver/add-driver",
@@ -119,6 +120,12 @@ const API = {
     delete: "driver/delete",
     details: "driver/driver-documents",
   },
+  // approvals: {
+  //   list: "approvals/list",
+  //   action: "approvals/action",
+  //   stats: "approvals/stats",
+  //   workflows: "approval-workflows",
+  // },
 };
 
 Object.freeze(API);

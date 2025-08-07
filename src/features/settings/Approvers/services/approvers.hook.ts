@@ -5,7 +5,7 @@ import useDeleteData from '@/hooks/use-delete-data'
 import usePatchData from '@/hooks/use-patch-data'
 import { ApprovalHierarchy, CategoryApprover, ApprovalSettings } from '../type/type'
 
-const APPROVERS_QUERY = 'approvers/list'
+const APPROVERS_QUERY = ''
 
 export interface IListParams {
   sort?: string
@@ -32,18 +32,6 @@ export interface ApprovalHierarchyResponse {
 export const useCreateApprovalHierarchy = (onSuccess?: () => void) => {
   return usePostData<ApprovalHierarchyResponse, ApprovalHierarchyPayload>({
     url: 'approvers/hierarchy/create',
-    refetchQueries: [APPROVERS_QUERY],
-    onSuccess: () => {
-      if (onSuccess) {
-        onSuccess()
-      }
-    },
-  })
-}
-
-export const useUpdateApprovalHierarchy = (id: string, onSuccess?: () => void) => {
-  return usePatchData<ApprovalHierarchyResponse, ApprovalHierarchyPayload>({
-    url: `approvers/hierarchy/update/${id}`,
     refetchQueries: [APPROVERS_QUERY],
     onSuccess: () => {
       if (onSuccess) {
@@ -143,23 +131,23 @@ export interface ApproversListResponse {
   totalCount: number
 }
 
-// export const useGetApproversData = (
-//   params: IListParams,
-//   options?: { enabled?: boolean }
-// ) => {
-//   const query = useFetchData<ApproversListResponse>({
-//     url: APPROVERS_QUERY,
-//     params,
-//     enabled: options?.enabled ?? true,
-//   })
+export const useGetApproversData = (
+  params: IListParams,
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<ApproversListResponse>({
+    url: APPROVERS_QUERY,
+    params,
+    enabled: options?.enabled ?? true,
+  })
 
-//   return {
-//     ...query,
-//     approvalHierarchy: query.data?.hierarchy ?? [],
-//     categoryApprovers: query.data?.categoryApprovers ?? [],
-//     approvalSettings: query.data?.settings ?? null,
-//     totalCount: query.data?.totalCount ?? 0,
-//     isLoading: query.isLoading,
-//     error: query.error,
-//   }
-// } 
+  return {
+    ...query,
+    approvalHierarchy: query.data?.hierarchy ?? [],
+    categoryApprovers: query.data?.categoryApprovers ?? [],
+    approvalSettings: query.data?.settings ?? null,
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  }
+}

@@ -1,39 +1,49 @@
-import { Controller, useForm } from 'react-hook-form'
-import { DialogClose, DialogDescription } from '@radix-ui/react-dialog'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { AlertCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Controller, useForm } from "react-hook-form";
+import { DialogClose, DialogDescription } from "@radix-ui/react-dialog";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Form } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import CustomButton from '@/components/shared/custom-button'
-import { 
-  notificationConfigFormSchema, 
+} from "@/components/ui/dialog";
+import { Form } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+// import { Textarea } from '@/components/ui/textarea'
+import CustomButton from "@/components/shared/custom-button";
+import {
+  notificationConfigFormSchema,
   notificationRuleFormSchema,
-  notificationTemplateFormSchema,
+  // notificationTemplateFormSchema,
   TNotificationConfigFormSchema,
   TNotificationRuleFormSchema,
-  TNotificationTemplateFormSchema 
-} from '../data/schema'
-import { NotificationConfig, NotificationRule, NotificationTemplate } from '../type/type'
+  // TNotificationTemplateFormSchema
+} from "../data/schema";
+import {
+  NotificationConfig,
+  NotificationRule,
+  //  NotificationTemplate
+} from "../type/type";
 
 // Notification Configuration Action Form
 interface NotificationConfigFormProps {
-  currentConfig?: Partial<NotificationConfig>
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  loading?: boolean
-  onSubmit: (values: TNotificationConfigFormSchema) => void
+  currentConfig?: Partial<NotificationConfig>;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  loading?: boolean;
+  onSubmit: (values: TNotificationConfigFormSchema) => void;
 }
 
 export function NotificationConfigActionForm({
@@ -43,59 +53,71 @@ export function NotificationConfigActionForm({
   onSubmit: onSubmitValues,
   loading,
 }: NotificationConfigFormProps) {
-  const isEdit = !!currentConfig
+  const isEdit = !!currentConfig;
 
   const form = useForm<TNotificationConfigFormSchema>({
     resolver: zodResolver(notificationConfigFormSchema),
     defaultValues: {
       expenseNotifications: {
-        warnForExpiry: currentConfig?.expenseNotifications?.warnForExpiry ?? true,
-        unsubmittedReminders: currentConfig?.expenseNotifications?.unsubmittedReminders ?? true,
-        reminderFrequency: currentConfig?.expenseNotifications?.reminderFrequency ?? 'weekly',
-        reminderTime: currentConfig?.expenseNotifications?.reminderTime ?? '09:00',
+        warnForExpiry:
+          currentConfig?.expenseNotifications?.warnForExpiry ?? true,
+        unsubmittedReminders:
+          currentConfig?.expenseNotifications?.unsubmittedReminders ?? true,
+        reminderFrequency:
+          currentConfig?.expenseNotifications?.reminderFrequency ?? "weekly",
+        reminderTime:
+          currentConfig?.expenseNotifications?.reminderTime ?? "09:00",
       },
       fieldActivityAlerts: {
-        geofenceAlerts: currentConfig?.fieldActivityAlerts?.geofenceAlerts ?? true,
-        inactivityAlerts: currentConfig?.fieldActivityAlerts?.inactivityAlerts ?? true,
-        checkinAlerts: currentConfig?.fieldActivityAlerts?.checkinAlerts ?? false,
+        geofenceAlerts:
+          currentConfig?.fieldActivityAlerts?.geofenceAlerts ?? true,
+        inactivityAlerts:
+          currentConfig?.fieldActivityAlerts?.inactivityAlerts ?? true,
+        checkinAlerts:
+          currentConfig?.fieldActivityAlerts?.checkinAlerts ?? false,
         breakAlerts: currentConfig?.fieldActivityAlerts?.breakAlerts ?? true,
       },
       emailNotifications: {
-        sendVisitNotesEmail: currentConfig?.emailNotifications?.sendVisitNotesEmail ?? true,
-        notificationEmail: currentConfig?.emailNotifications?.notificationEmail ?? '',
-        emailFrequency: currentConfig?.emailNotifications?.emailFrequency ?? 'daily',
+        sendVisitNotesEmail:
+          currentConfig?.emailNotifications?.sendVisitNotesEmail ?? true,
+        notificationEmail:
+          currentConfig?.emailNotifications?.notificationEmail ?? "",
+        emailFrequency:
+          currentConfig?.emailNotifications?.emailFrequency ?? "daily",
       },
     },
-  })
+  });
 
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors },
-  } = form
+  } = form;
 
   const onSubmit = (values: TNotificationConfigFormSchema) => {
-    onSubmitValues(values)
-  }
+    onSubmitValues(values);
+  };
 
   const handleDialogChange = (state: boolean) => {
-    if (!state) reset()
-    onOpenChange(state)
-  }
+    if (!state) reset();
+    onOpenChange(state);
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
-      <DialogContent className='max-h-[80vh] !max-w-2xl overflow-y-auto'>
-        <DialogHeader className='flex flex-row items-center justify-between space-y-0 pb-4'>
+      <DialogContent className="max-h-[80vh] !max-w-2xl overflow-y-auto">
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div>
-            <DialogTitle className='text-xl font-semibold'>
-              {isEdit ? 'Edit Notification Configuration' : 'Configure Notifications'}
-            </DialogTitle>
-            <DialogDescription className='text-muted-foreground mt-1 text-sm'>
+            <DialogTitle className="text-xl font-semibold">
               {isEdit
-                ? 'Update notification configuration settings.'
-                : 'Configure alerts, reminders, and notification preferences.'}
+                ? "Edit Notification Configuration"
+                : "Configure Notifications"}
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground mt-1 text-sm">
+              {isEdit
+                ? "Update notification configuration settings."
+                : "Configure alerts, reminders, and notification preferences."}
             </DialogDescription>
           </div>
           <DialogClose asChild></DialogClose>
@@ -103,19 +125,23 @@ export function NotificationConfigActionForm({
 
         <Form {...form}>
           <form
-            id='notification-config-form'
+            id="notification-config-form"
             onSubmit={handleSubmit(onSubmit)}
-            className='space-y-6'
+            className="space-y-6"
           >
             {/* Expense Notifications Section */}
             <div className="space-y-4">
               <h4 className="text-lg font-medium">Expense Notifications</h4>
-              
+
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="warnForExpiry">Warn for Expenses Nearing Expiry</Label>
-                    <p className="text-sm text-muted-foreground">Send alerts when expenses are close to expiry</p>
+                    <Label htmlFor="warnForExpiry">
+                      Warn for Expenses Nearing Expiry
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Send alerts when expenses are close to expiry
+                    </p>
                   </div>
                   <Controller
                     name="expenseNotifications.warnForExpiry"
@@ -131,8 +157,12 @@ export function NotificationConfigActionForm({
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="unsubmittedReminders">Unsubmitted Expense Reminders</Label>
-                    <p className="text-sm text-muted-foreground">Remind users about pending expense submissions</p>
+                    <Label htmlFor="unsubmittedReminders">
+                      Unsubmitted Expense Reminders
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Remind users about pending expense submissions
+                    </p>
                   </div>
                   <Controller
                     name="expenseNotifications.unsubmittedReminders"
@@ -154,7 +184,10 @@ export function NotificationConfigActionForm({
                     name="expenseNotifications.reminderFrequency"
                     control={control}
                     render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select frequency" />
                         </SelectTrigger>
@@ -167,8 +200,8 @@ export function NotificationConfigActionForm({
                     )}
                   />
                   {errors.expenseNotifications?.reminderFrequency && (
-                    <p className='flex items-center gap-1 text-xs text-red-500'>
-                      <AlertCircle className='h-3 w-3' />
+                    <p className="flex items-center gap-1 text-xs text-red-500">
+                      <AlertCircle className="h-3 w-3" />
                       {errors.expenseNotifications.reminderFrequency.message}
                     </p>
                   )}
@@ -185,13 +218,13 @@ export function NotificationConfigActionForm({
                         id="reminderTime"
                         type="time"
                         placeholder="Enter reminder time"
-                        value={field.value || ''}
+                        value={field.value || ""}
                       />
                     )}
                   />
                   {errors.expenseNotifications?.reminderTime && (
-                    <p className='flex items-center gap-1 text-xs text-red-500'>
-                      <AlertCircle className='h-3 w-3' />
+                    <p className="flex items-center gap-1 text-xs text-red-500">
+                      <AlertCircle className="h-3 w-3" />
                       {errors.expenseNotifications.reminderTime.message}
                     </p>
                   )}
@@ -202,12 +235,16 @@ export function NotificationConfigActionForm({
             {/* Field Activity Alerts Section */}
             <div className="space-y-4">
               <h4 className="text-lg font-medium">Field Activity Alerts</h4>
-              
+
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="geofenceAlerts">Geofencing Breach Alerts</Label>
-                    <p className="text-sm text-muted-foreground">Alert when reps enter/exit designated areas</p>
+                    <Label htmlFor="geofenceAlerts">
+                      Geofencing Breach Alerts
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Alert when reps enter/exit designated areas
+                    </p>
                   </div>
                   <Controller
                     name="fieldActivityAlerts.geofenceAlerts"
@@ -223,8 +260,12 @@ export function NotificationConfigActionForm({
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="inactivityAlerts">Long Inactivity Alerts</Label>
-                    <p className="text-sm text-muted-foreground">Alert for extended periods of inactivity</p>
+                    <Label htmlFor="inactivityAlerts">
+                      Long Inactivity Alerts
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Alert for extended periods of inactivity
+                    </p>
                   </div>
                   <Controller
                     name="fieldActivityAlerts.inactivityAlerts"
@@ -240,8 +281,12 @@ export function NotificationConfigActionForm({
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="checkinAlerts">Check-in/Check-out Alerts</Label>
-                    <p className="text-sm text-muted-foreground">Notify when reps check in or out</p>
+                    <Label htmlFor="checkinAlerts">
+                      Check-in/Check-out Alerts
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Notify when reps check in or out
+                    </p>
                   </div>
                   <Controller
                     name="fieldActivityAlerts.checkinAlerts"
@@ -258,7 +303,9 @@ export function NotificationConfigActionForm({
                 <div className="flex items-center justify-between">
                   <div>
                     <Label htmlFor="breakAlerts">Long Break Alerts</Label>
-                    <p className="text-sm text-muted-foreground">Alert for extended break periods</p>
+                    <p className="text-sm text-muted-foreground">
+                      Alert for extended break periods
+                    </p>
                   </div>
                   <Controller
                     name="fieldActivityAlerts.breakAlerts"
@@ -277,12 +324,16 @@ export function NotificationConfigActionForm({
             {/* Email Notifications Section */}
             <div className="space-y-4">
               <h4 className="text-lg font-medium">Email Notifications</h4>
-              
+
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <Label htmlFor="sendVisitNotesEmail">Send Visit Notes via Email</Label>
-                    <p className="text-sm text-muted-foreground">Email visit summaries and notes</p>
+                    <Label htmlFor="sendVisitNotesEmail">
+                      Send Visit Notes via Email
+                    </Label>
+                    <p className="text-sm text-muted-foreground">
+                      Email visit summaries and notes
+                    </p>
                   </div>
                   <Controller
                     name="emailNotifications.sendVisitNotesEmail"
@@ -299,7 +350,9 @@ export function NotificationConfigActionForm({
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="notificationEmail">Notification Email Address</Label>
+                  <Label htmlFor="notificationEmail">
+                    Notification Email Address
+                  </Label>
                   <Controller
                     name="emailNotifications.notificationEmail"
                     control={control}
@@ -309,13 +362,13 @@ export function NotificationConfigActionForm({
                         id="notificationEmail"
                         type="email"
                         placeholder="Enter email address"
-                        value={field.value || ''}
+                        value={field.value || ""}
                       />
                     )}
                   />
                   {errors.emailNotifications?.notificationEmail && (
-                    <p className='flex items-center gap-1 text-xs text-red-500'>
-                      <AlertCircle className='h-3 w-3' />
+                    <p className="flex items-center gap-1 text-xs text-red-500">
+                      <AlertCircle className="h-3 w-3" />
                       {errors.emailNotifications.notificationEmail.message}
                     </p>
                   )}
@@ -327,7 +380,10 @@ export function NotificationConfigActionForm({
                     name="emailNotifications.emailFrequency"
                     control={control}
                     render={({ field }) => (
-                      <Select value={field.value} onValueChange={field.onChange}>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
                         <SelectTrigger>
                           <SelectValue placeholder="Select frequency" />
                         </SelectTrigger>
@@ -340,8 +396,8 @@ export function NotificationConfigActionForm({
                     )}
                   />
                   {errors.emailNotifications?.emailFrequency && (
-                    <p className='flex items-center gap-1 text-xs text-red-500'>
-                      <AlertCircle className='h-3 w-3' />
+                    <p className="flex items-center gap-1 text-xs text-red-500">
+                      <AlertCircle className="h-3 w-3" />
                       {errors.emailNotifications.emailFrequency.message}
                     </p>
                   )}
@@ -350,27 +406,31 @@ export function NotificationConfigActionForm({
             </div>
           </form>
         </Form>
-        
-        <DialogFooter className='flex gap-2 pt-4'>
+
+        <DialogFooter className="flex gap-2 pt-4">
           <DialogClose asChild>
-            <Button variant='outline'>Cancel</Button>
+            <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <CustomButton type='submit' loading={loading} form='notification-config-form'>
-            {isEdit ? 'Update Configuration' : 'Save Configuration'}
+          <CustomButton
+            type="submit"
+            loading={loading}
+            form="notification-config-form"
+          >
+            {isEdit ? "Update Configuration" : "Save Configuration"}
           </CustomButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 // Notification Rule Action Form
 interface NotificationRuleFormProps {
-  currentRule?: Partial<NotificationRule>
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  loading?: boolean
-  onSubmit: (values: TNotificationRuleFormSchema) => void
+  currentRule?: Partial<NotificationRule>;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  loading?: boolean;
+  onSubmit: (values: TNotificationRuleFormSchema) => void;
 }
 
 export function NotificationRuleActionForm({
@@ -380,47 +440,47 @@ export function NotificationRuleActionForm({
   onSubmit: onSubmitValues,
   loading,
 }: NotificationRuleFormProps) {
-  const isEdit = !!currentRule
+  const isEdit = !!currentRule;
 
   const form = useForm<TNotificationRuleFormSchema>({
     resolver: zodResolver(notificationRuleFormSchema),
     defaultValues: {
-      ruleName: currentRule?.ruleName ?? '',
-      ruleType: currentRule?.ruleType ?? 'expense',
+      ruleName: currentRule?.ruleName ?? "",
+      ruleType: currentRule?.ruleType ?? "expense",
       isEnabled: currentRule?.isEnabled ?? true,
       conditions: currentRule?.conditions ?? {},
       actions: currentRule?.actions ?? {},
     },
-  })
+  });
 
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors },
-  } = form
+  } = form;
 
   const onSubmit = (values: TNotificationRuleFormSchema) => {
-    onSubmitValues(values)
-  }
+    onSubmitValues(values);
+  };
 
   const handleDialogChange = (state: boolean) => {
-    if (!state) reset()
-    onOpenChange(state)
-  }
+    if (!state) reset();
+    onOpenChange(state);
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
-      <DialogContent className='max-h-[80vh] !max-w-md overflow-y-auto'>
-        <DialogHeader className='flex flex-row items-center justify-between space-y-0 pb-4'>
+      <DialogContent className="max-h-[80vh] !max-w-md overflow-y-auto">
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div>
-            <DialogTitle className='text-xl font-semibold'>
-              {isEdit ? 'Edit Notification Rule' : 'Add Notification Rule'}
+            <DialogTitle className="text-xl font-semibold">
+              {isEdit ? "Edit Notification Rule" : "Add Notification Rule"}
             </DialogTitle>
-            <DialogDescription className='text-muted-foreground mt-1 text-sm'>
+            <DialogDescription className="text-muted-foreground mt-1 text-sm">
               {isEdit
-                ? 'Update notification rule.'
-                : 'Create a new notification rule.'}
+                ? "Update notification rule."
+                : "Create a new notification rule."}
             </DialogDescription>
           </div>
           <DialogClose asChild></DialogClose>
@@ -428,67 +488,67 @@ export function NotificationRuleActionForm({
 
         <Form {...form}>
           <form
-            id='notification-rule-form'
+            id="notification-rule-form"
             onSubmit={handleSubmit(onSubmit)}
-            className='space-y-6'
+            className="space-y-6"
           >
             {/* Rule Name Field */}
-            <div className='space-y-2'>
-              <Label htmlFor='ruleName'>Rule Name *</Label>
+            <div className="space-y-2">
+              <Label htmlFor="ruleName">Rule Name *</Label>
               <Controller
-                name='ruleName'
+                name="ruleName"
                 control={control}
                 render={({ field }) => (
                   <Input
                     {...field}
-                    id='ruleName'
-                    placeholder='Enter rule name'
-                    value={field.value || ''}
+                    id="ruleName"
+                    placeholder="Enter rule name"
+                    value={field.value || ""}
                   />
                 )}
               />
               {errors.ruleName && (
-                <p className='flex items-center gap-1 text-xs text-red-500'>
-                  <AlertCircle className='h-3 w-3' />
+                <p className="flex items-center gap-1 text-xs text-red-500">
+                  <AlertCircle className="h-3 w-3" />
                   {errors.ruleName.message}
                 </p>
               )}
             </div>
 
             {/* Rule Type Field */}
-            <div className='space-y-2'>
-              <Label htmlFor='ruleType'>Rule Type *</Label>
+            <div className="space-y-2">
+              <Label htmlFor="ruleType">Rule Type *</Label>
               <Controller
-                name='ruleType'
+                name="ruleType"
                 control={control}
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
                     <SelectTrigger>
-                      <SelectValue placeholder='Select rule type' />
+                      <SelectValue placeholder="Select rule type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value='expense'>Expense</SelectItem>
-                      <SelectItem value='field'>Field</SelectItem>
-                      <SelectItem value='email'>Email</SelectItem>
-                      <SelectItem value='system'>System</SelectItem>
+                      <SelectItem value="expense">Expense</SelectItem>
+                      <SelectItem value="field">Field</SelectItem>
+                      <SelectItem value="email">Email</SelectItem>
+                      <SelectItem value="system">System</SelectItem>
                     </SelectContent>
                   </Select>
                 )}
               />
               {errors.ruleType && (
-                <p className='flex items-center gap-1 text-xs text-red-500'>
-                  <AlertCircle className='h-3 w-3' />
+                <p className="flex items-center gap-1 text-xs text-red-500">
+                  <AlertCircle className="h-3 w-3" />
                   {errors.ruleType.message}
                 </p>
               )}
             </div>
 
             {/* Is Enabled Field */}
-            <div className='space-y-2'>
-              <div className='flex items-center justify-between'>
-                <Label htmlFor='isEnabled'>Enabled</Label>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="isEnabled">Enabled</Label>
                 <Controller
-                  name='isEnabled'
+                  name="isEnabled"
                   control={control}
                   render={({ field }) => (
                     <Switch
@@ -501,16 +561,20 @@ export function NotificationRuleActionForm({
             </div>
           </form>
         </Form>
-        
-        <DialogFooter className='flex gap-2 pt-4'>
+
+        <DialogFooter className="flex gap-2 pt-4">
           <DialogClose asChild>
-            <Button variant='outline'>Cancel</Button>
+            <Button variant="outline">Cancel</Button>
           </DialogClose>
-          <CustomButton type='submit' loading={loading} form='notification-rule-form'>
-            {isEdit ? 'Update Rule' : 'Create Rule'}
+          <CustomButton
+            type="submit"
+            loading={loading}
+            form="notification-rule-form"
+          >
+            {isEdit ? "Update Rule" : "Create Rule"}
           </CustomButton>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

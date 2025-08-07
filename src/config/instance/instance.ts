@@ -8,9 +8,8 @@ import { StorageEnum } from '@/types'
 import { useAuthStore } from '@/stores/use-auth-store'
 import { setItem } from '@/utils/storage'
 
-export const BASE_URL = 'https://fieldtracking-api.devstree.in/api/v1/'
+export const BASE_URL = 'https://fieldtrack360-api.devstree.in/api/v1/'
 // export const BASE_URL = 'http://localhost:4001/api/v1'
-
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: 50000,

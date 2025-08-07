@@ -154,7 +154,7 @@ export const sidebarData: SidebarData = {
       items: [
         {
           title: "Settings",
-          url: "/settings",
+          url: "/setting",
           icon: Settings,
           menuKey: "settings",
         },

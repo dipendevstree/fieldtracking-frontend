@@ -2,15 +2,11 @@ import { useState } from 'react'
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from '@/data/app.data'
 import { cn } from '@/lib/utils'
 import { Main } from '@/components/layout/main'
-import { EnhancedError } from '@/types'
-import { useGetLimitsControlsData } from './services/LImits&Controlshook'
-import { useLimitsControlsStore } from './store/limits-&-controls.store'
-import { ErrorPage } from '@/components/shared/custom-error'
 import LimitsControls from './components/LimitsControls'
 import { LimitsControlsActionModal } from './components/action-form-modal'
 
 const LimitsControlsPage = () => {
-  const [pagination, setPagination] = useState({
+  const [_pagination, _setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
   })

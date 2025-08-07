@@ -32,26 +32,26 @@ interface ApproversStoreState {
 }
 
 // Create the Zustand store
-// export const useApproversStore = create<ApproversStoreState>((set) => ({
-//   // Dialog state
-//   open: null,
-//   setOpen: (open) => set({ open }),
+export const useApproversStore = create<ApproversStoreState>((set) => ({
+  // Dialog state
+  open: null,
+  setOpen: (open) => set({ open }),
   
-//   // Current row data
-//   currentHierarchy: null,
-//   setCurrentHierarchy: (hierarchy) => set({ currentHierarchy: hierarchy }),
+  // Current row data
+  currentHierarchy: null,
+  setCurrentHierarchy: (hierarchy) => set({ currentHierarchy: hierarchy }),
   
-//   currentCategory: null,
-//   setCurrentCategory: (category) => set({ currentCategory: category }),
+  currentCategory: null,
+  setCurrentCategory: (category) => set({ currentCategory: category }),
   
-//   // Settings
-//   approvalSettings: null,
-//   setApprovalSettings: (settings) => set({ approvalSettings: settings }),
+  // Settings
+  approvalSettings: null,
+  setApprovalSettings: (settings) => set({ approvalSettings: settings }),
   
-//   // Data lists
-//   approvalHierarchy: [],
-//   setApprovalHierarchy: (hierarchy) => set({ approvalHierarchy: hierarchy }),
+  // Data lists
+  approvalHierarchy: [],
+  setApprovalHierarchy: (hierarchy) => set({ approvalHierarchy: hierarchy }),
   
-//   categoryApprovers: [],
-//   setCategoryApprovers: (approvers) => set({ categoryApprovers: approvers }),
-// })) 
+  categoryApprovers: [],
+  setCategoryApprovers: (approvers) => set({ categoryApprovers: approvers }),
+}))

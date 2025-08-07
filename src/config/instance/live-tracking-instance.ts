@@ -9,7 +9,7 @@ import { StorageEnum } from "@/types";
 import { setItem } from "@/utils/storage";
 
 export const LIVE_BASE_URL =
-  "https://userfieldtracking-api.devstree.in/api/v1/";
+  "https://userfieldtrack360-api.devstree.in/api/v1/";
 
 const liveTrackingInstance = axios.create({
   baseURL: LIVE_BASE_URL,

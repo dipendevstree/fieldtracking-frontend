@@ -1,0 +1,164 @@
+// import API from '@/config/api/api'
+import useFetchData from "@/hooks/use-fetch-data";
+import usePostData from "@/hooks/use-post-data";
+// import useDeleteData from '@/hooks/use-delete-data'
+// import usePatchData from '@/hooks/use-patch-data'
+import { DashboardStats, SalesRep, RecentActivity } from "../type/type";
+
+const OVERVIEW_QUERY = "/api/overview/stats";
+const SALES_REPS_QUERY = "/api/overview/sales-reps";
+const ACTIVITIES_QUERY = "/api/overview/activities";
+
+export interface IListParams {
+  sort?: string;
+  limit: number;
+  page: number;
+  status?: string;
+  roleId?: string;
+  territoryId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  searchFor?: string;
+  timeRange?: "today" | "week" | "month" | "quarter";
+  [key: string]: unknown;
+}
+
+// Dashboard Overview Stats
+export const useGetDashboardStats = (
+  params: IListParams,
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<DashboardStats>({
+    url: OVERVIEW_QUERY,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    data: query.data,
+    stats: query.data,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
+// Sales Representatives
+export interface SalesRepsListResponse {
+  list: SalesRep[];
+  totalCount: number;
+}
+
+export const useGetAllSalesReps = (
+  params: IListParams,
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<SalesRepsListResponse>({
+    url: SALES_REPS_QUERY,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    data: query.data?.list,
+    allSalesReps: query.data?.list ?? [],
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
+// Recent Activities
+export interface ActivitiesListResponse {
+  list: RecentActivity[];
+  totalCount: number;
+}
+
+export const useGetRecentActivities = (
+  params: IListParams,
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<ActivitiesListResponse>({
+    url: ACTIVITIES_QUERY,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    data: query.data?.list,
+    activities: query.data?.list ?? [],
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
+// Get User Performance
+export const useGetUserPerformance = (
+  userId: string,
+  options?: { enabled?: boolean }
+) => {
+  return useFetchData<{
+    salesRep: SalesRep;
+    performance: {
+      totalVisits: number;
+      totalRevenue: number;
+      conversionRate: number;
+      averageSessionDuration: number;
+      topCustomers: string[];
+    };
+  }>({
+    url: `/api/overview/performance/${userId}`,
+    enabled: options?.enabled ?? true,
+  });
+};
+
+// Update User Status
+export interface UpdateUserStatusPayload {
+  userId: string;
+  status: "active" | "idle" | "offline" | "on_break";
+  activityStatus: "working" | "traveling" | "at_customer" | "break" | "offline";
+  location?: {
+    lat: number;
+    lng: number;
+    accuracy?: number;
+  };
+}
+
+export const useUpdateUserStatus = (onSuccess?: () => void) => {
+  return usePostData<{ message: string }, UpdateUserStatusPayload>({
+    url: "/api/overview/update-status",
+    refetchQueries: [SALES_REPS_QUERY],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};
+
+// Export Dashboard Report
+export interface ExportReportPayload {
+  timeRange: "today" | "week" | "month" | "quarter";
+  format: "pdf" | "excel" | "csv";
+  filters?: {
+    status?: string;
+    roleId?: string;
+    territoryId?: string;
+    dateFrom?: string;
+    dateTo?: string;
+  };
+}
+
+export const useExportDashboardReport = (onSuccess?: () => void) => {
+  return usePostData<{ downloadUrl: string }, ExportReportPayload>({
+    url: "/api/overview/export-report",
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};
