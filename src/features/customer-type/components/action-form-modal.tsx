@@ -5,7 +5,7 @@ import {
   useUpdateCustomerType,
   useDeleteCustomerType,
   CustomerTypePayload,
-} from "../services/CustomerTypehook";
+} from "../services/CustomerType.hook";
 import { useCustomerTypeStore } from "../store/customer-type.store";
 import { CustomerTypeActionForm } from "./action-form";
 import { TFormSchema } from "../data/schema";

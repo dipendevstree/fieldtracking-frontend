@@ -1,66 +1,118 @@
-import { Outlet } from '@tanstack/react-router'
-import {
-  IconPalette,
-  IconTool,
-  // IconBrowserCheck,
-  // IconNotification,
-  // IconPalette,
-  // IconTool,
-  IconUser,
-} from '@tabler/icons-react'
-import { Separator } from '@/components/ui/separator'
-import { Main } from '@/components/layout/main'
-import SectionTitle from '@/components/shared/page-section-title'
-import SidebarNav from './components/sidebar-nav'
+import { useState } from "react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { Main } from "@/components/layout/main"
+import { cn } from "@/lib/utils"
 
-export default function Settings() {
+// Import the actual page components
+import ExpenseCategoriesPage from '../settings/Expense-categories'
+import LimitsControlsPage from '../settings/Limits-&-Controls'
+import ApproversPage from '../settings/Approvers'
+import FieldTrackingPage from '../settings/Field-Tracking'
+import NotificationsPage from '../settings/notifications'
+import MobileFeaturesPage from '../settings/Mobile-Features'
+import GeneralSettingsPage from '../settings/General'
+
+// Define valid tab values with proper typing
+export type SettingsTabValue =
+  | '/settings'
+  | '/settings/expense-categories'
+  | '/settings/limits-controls'
+  | '/settings/approvers'
+  | '/settings/field-tracking'
+  | '/settings/notifications'
+  | '/settings/mobile-features'
+  | '/settings/general'
+
+// Tab configuration for better maintainability
+const SETTINGS_TABS = [
+  {
+    value: '/settings/ExpenseCategories',
+    label: 'Expense Categories',
+    component: ExpenseCategoriesPage
+  },
+  {
+    value: '/settings/LimitsControls',
+    label: 'Limits & Controls',
+    component: LimitsControlsPage
+  },
+  {
+    value: '/settings/Approvers',
+    label: 'Approvers',
+    component: ApproversPage
+  },
+  {
+    value: '/settings/field-tracking',
+    label: 'Field Tracking',
+    component: FieldTrackingPage
+  },
+  {
+    value: '/settings/Notifications',
+    label: 'Notifications',
+    component: NotificationsPage
+  },
+  {
+    value: '/settings/MobileFeatures',
+    label: 'Mobile Features',
+    component: MobileFeaturesPage
+  },
+  {
+    value: '/settings/GeneralSettings',
+    label: 'General',
+    component: GeneralSettingsPage
+  }
+] as const
+
+export default function SettingsPage() {
+  // Initialize with first tab as default (similar to calendar pattern)
+  const [activeTab, setActiveTab] = useState<SettingsTabValue>('/settings/expense-categories')
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as SettingsTabValue)
+  }
+
+  const handleExportSettings = () => {
+    // TODO: Implement settings export functionality
+  }
+
   return (
-    <>
-      <Main fixed className=' '>
-        <div className='space-y-0.5 rounded-xl p-4 shadow'>
-          <SectionTitle title='Settings' />
-          <p className='text-muted-foreground'>
-            Manage your account settings and set e-mail preferences.
-          </p>
+    <Main className={cn('flex flex-col gap-2 p-4')}>
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight">
+          Settings & Configuration
+        </h2>
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" onClick={handleExportSettings}>
+            Export Settings
+          </Button>
+          {/* <Button onClick={handleSaveAllChanges}>
+            Save All Changes
+          </Button> */}
         </div>
-        <Separator className='my-4 lg:my-6' />
-        <div className='flex flex-1 flex-col space-y-2 overflow-hidden rounded-xl p-4 shadow md:space-y-2 lg:flex-row lg:space-y-0 lg:space-x-12'>
-          <aside className='top-0 lg:sticky lg:w-1/5'>
-            <SidebarNav items={sidebarNavItems} />
-          </aside>
-          <div className='flex w-full overflow-y-hidden p-1'>
-            <Outlet />
-          </div>
-        </div>
-      </Main>
-    </>
+      </div>
+
+      <Tabs
+        value={activeTab}
+        onValueChange={handleTabChange}
+        className="mt-4 space-y-5"
+      >
+        <TabsList className="grid w-full grid-cols-7">
+          {SETTINGS_TABS.map((tab) => (
+            <TabsTrigger key={tab.value} value={tab.value}>
+              {tab.label}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+
+        {SETTINGS_TABS.map((tab) => {
+          const Component = tab.component
+          return (
+            <TabsContent key={tab.value} value={tab.value} className="space-y-4">
+              <Component />
+            </TabsContent>
+          )
+        })}
+      </Tabs>
+    </Main>
   )
 }
-
-const sidebarNavItems = [
-  {
-    title: 'Profile',
-    icon: <IconUser size={18} />,
-    href: '/settings',
-  },
-  {
-    title: 'Update Password',
-    icon: <IconTool size={18} />,
-    href: '/settings/reset-password',
-  },
-  {
-    title: 'Appearance',
-    icon: <IconPalette size={18} />,
-    href: '/settings/appearance',
-  },
-  // {
-  //   title: 'Notifications',
-  //   icon: <IconNotification size={18} />,
-  //   href: '/settings/notifications',
-  // },
-  // {
-  //   title: 'Display',
-  //   icon: <IconBrowserCheck size={18} />,
-  //   href: '/settings/display',
-  // },
-]

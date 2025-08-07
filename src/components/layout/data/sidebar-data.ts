@@ -7,7 +7,11 @@ import {
   MapPin,
   Shield,
   ShieldUser,
+  Settings,
+  Bell,
+  FileText
 } from "lucide-react";
+
 import { type SidebarData } from "../types";
 
 export const sidebarData: SidebarData = {
@@ -44,6 +48,7 @@ export const sidebarData: SidebarData = {
           title: "Customers",
           // url: '/customers',
           icon: Building2,
+          menuKey: "customers",
           items: [
             {
               title: "Customer Directory",
@@ -54,14 +59,6 @@ export const sidebarData: SidebarData = {
               title: "Add Customer",
               url: "/customers/add-customer",
             },
-            // {
-            //   title: 'Customer Analytics',
-            //   url: '/customers/analytics',
-            // },
-            // {
-            //   title: 'Import History',
-            //   url: '/customers/imports',
-            // },
             {
               title: "Customer Type",
               url: "/customer-type",
@@ -161,6 +158,29 @@ export const sidebarData: SidebarData = {
               menuKey: "all_reports",
             },
           ],
+        }, 
+      ],
+    },
+    {
+      title: "Quick Access",
+      items: [
+        {
+          title: "Settings",
+          url: "/setting",
+          icon: Settings,
+          menuKey: "settings",
+        },
+        {
+          title: "Notifications",
+          url: "/settings/notifications",
+          icon: Bell,
+          menuKey: "notifications",
+        },
+        {
+          title: "Documentation",
+          url: "/settings",
+          icon: FileText,
+          menuKey: "documentation",
         },
       ],
     },
@@ -191,6 +211,7 @@ export const SUPER_ADMIN_SIDEBAR_DATA: SidebarData = {
           icon: Home,
           menuKey: "dashboard",
         },
+
         {
           title: "Super Admin",
           icon: Shield,
@@ -362,9 +383,15 @@ export const ROUTE_PERMISSIONS: Record<
     requiredRoles: ["admin"],
     requireAll: false,
   },
+ 
   "/calendar/upcoming-visit/": {
     requiredPermissions: ["calendar.read"],
     requiredRoles: ["admin"],
     requireAll: false,
   },
-};
+  "/documentation": {
+    requiredPermissions: ["documentation.read"],
+    requiredRoles: ["admin"],
+    requireAll: false,
+  },
+};  

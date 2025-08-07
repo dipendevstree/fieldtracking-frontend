@@ -54,7 +54,7 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 export default function ProfileForm() {
   const { user } = useAuthStore();
 
-
+console.log("user11111111")
   // Default values based on user data from useAuthStore
   const defaultValues: Partial<ProfileFormValues> = {
     name: user?.name || '',
@@ -83,6 +83,8 @@ export default function ProfileForm() {
   };
 
   return (
+
+    
     <Card className='w-full max-w-md'>
 
       <CardContent className='space-y-4'>
@@ -238,5 +240,7 @@ export default function ProfileForm() {
         </Form>
       </CardContent>
     </Card>
+
+    
   );
 }
