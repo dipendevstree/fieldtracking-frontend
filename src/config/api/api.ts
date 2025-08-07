@@ -1,16 +1,16 @@
 const API = {
   auth: {
-    login: 'auth/admin/login',
-    sendOtp: 'auth/sendOtp',
-    adminLogin: 'auth/adminLogin',
-    superAdminLogin: 'auth/superAdminlogin',
-    getUserByToken: 'auth/getUserByToken',
-    signup: 'auth/signup',
-    getDepartment: 'department/list',
-    organizationTypes: 'organizationType/list',
-    setPassword: 'auth/changePassword',
-    forgotPassword: 'auth/forgot-password',
-    resetPassword: 'auth/reset-password',
+    login: "auth/admin/login",
+    sendOtp: "auth/sendOtp",
+    adminLogin: "auth/adminLogin",
+    superAdminLogin: "auth/superAdminlogin",
+    getUserByToken: "auth/getUserByToken",
+    signup: "auth/signup",
+    getDepartment: "department/list",
+    organizationTypes: "organizationType/list",
+    setPassword: "auth/changePassword",
+    forgotPassword: "auth/forgot-password",
+    resetPassword: "auth/reset-password",
   },
   category: {
     list: "expensesCategory/list",
@@ -104,19 +104,22 @@ const API = {
     delete: "userTerritory/delete",
   },
   calendar: {
-    visitList: 'visit/list',
-    create: 'visit/create',
-    update: 'visit/patch',
-    analytics: 'visit/analytics',
-    getVisitByID: 'visit',
-    delete: 'visit/delete',
-    dailyExpenses:"expenses/list",
+    visitList: "visit/list",
+    create: "visit/create",
+    update: "visit/patch",
+    analytics: "visit/analytics",
+    getVisitByID: "visit",
+    delete: "visit/delete",
     visitFeedBack: "visit/visitFeedBack",
+  },
+  dailyExpenses: {
+    list: "expenses/list",
+    getById: "expenses",
   },
   customer: {
     customerList: "customer/list",
   },
-  
+
   drivers: {
     list: "driver/list",
     create: "driver/add-driver",

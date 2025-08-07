@@ -119,22 +119,3 @@ export const useDeleteVisits = (id: string, onSuccess?: () => void) => {
   })
 }
 
-
-export const useGetAllDailyExpanses = (
-  params: IListParams,
-  options?: { enabled?: boolean }
-) => {
-  const query = useFetchData<any>({
-    url: API.calendar.dailyExpenses,
-    params,
-    enabled: options?.enabled ?? true,
-  })
-  return {
-    ...query,
-    data: query.data?.list,
-    allVisit: query.data?.list ?? [],
-    totalCount: query.data?.totalCount ?? 0,
-    isLoading: query.isLoading,
-    error: query.error,
-  }
-}

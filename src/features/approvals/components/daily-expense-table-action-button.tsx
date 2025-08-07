@@ -1,90 +1,74 @@
-import { useNavigate } from '@tanstack/react-router'
-import { IconEdit, IconTrash } from '@tabler/icons-react'
-import { PermissionGate } from '@/permissions/components/PermissionGate'
-import { EyeIcon } from 'lucide-react'
-import { DeleteModal } from '@/components/shared/common-delete-modal'
-import Button from '@/components/shared/custom-button'
-import CustomTooltip from '@/components/shared/custom-tooltip'
-import { useDeleteVisits } from '../services/calendar-view.hook'
-import { userUpcomingVisitStoreState } from '../store/upcoming-visits.store'
+import { useNavigate } from "@tanstack/react-router";
+import { IconTrash } from "@tabler/icons-react";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
+import { BookCheckIcon } from "lucide-react";
+import { DeleteModal } from "@/components/shared/common-delete-modal";
+import Button from "@/components/shared/custom-button";
+import CustomTooltip from "@/components/shared/custom-tooltip";
+import { useDeleteVisits } from "../services/calendar-view.hook";
+import { userUpcomingVisitStoreState } from "../store/upcoming-visits.store";
 
 type RowProps = {
   row: {
     original: {
-      visitId: string
-      purpose?: string
-      [key: string]: any
-    }
-  }
-}
+      visitId: string;
+      purpose?: string;
+      [key: string]: any;
+    };
+  };
+};
 
 export function DataTableRowActions({ row }: RowProps) {
   const { open, setOpen, currentRow, setCurrentRow } =
-    userUpcomingVisitStoreState()
-  const navigate = useNavigate()
+    userUpcomingVisitStoreState();
+  const navigate = useNavigate();
 
   const closeModal = () => {
-    setOpen(null)
-    setTimeout(() => setCurrentRow(null), 300)
-  }
+    setOpen(null);
+    setTimeout(() => setCurrentRow(null), 300);
+  };
 
   const { mutate: deleteDailyExpense } = useDeleteVisits(
     row.original.visitId,
     closeModal
-  )
-
-  const handleEdit = () => {
-    setCurrentRow(row.original)
-    navigate({ to: `/calendar/schedule-visit/${row.original.visitId}` })
-  }
+  );
 
   const handleView = () => {
-    setCurrentRow(row.original)
-    console.log('row.original', row.original)
+    setCurrentRow(row.original);
+    console.log("row.original", row.original);
     navigate({
       to: `daily-expense-details/${row.original.id}`,
       params: { id: row.original.id },
-    })
-  }
+    });
+  };
 
   const handleDelete = () => {
-    setCurrentRow(row.original)
-    setOpen('delete')
-  }
+    setCurrentRow(row.original);
+    setOpen("delete");
+  };
 
   const handleDeleteDailyExpense = () => {
     if (currentRow?.visitId) {
-      deleteDailyExpense()
+      deleteDailyExpense();
     } else {
-      closeModal()
+      closeModal();
     }
-  }
+  };
 
   return (
-    <div className='flex items-center space-x-2'>
-      <PermissionGate requiredPermission='upcoming_visits' action='edit'>
-        <CustomTooltip title='Edit'>
-          <Button
-            variant='ghost'
-            className='h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700'
-            onClick={handleEdit}
-          >
-            <IconEdit size={16} />
+    <div className="flex items-center space-x-2">
+      <PermissionGate requiredPermission="daily_expense" action="viewGlobal">
+        <CustomTooltip title="view">
+          <Button variant="ghost" className="h-8 w-8 p-0" onClick={handleView}>
+            <BookCheckIcon size={16} />
           </Button>
         </CustomTooltip>
       </PermissionGate>
-      <PermissionGate requiredPermission='daily_expense' action='viewGlobal'>
-        <CustomTooltip title='view'>
-          <Button variant='ghost' className='h-8 w-8 p-0' onClick={handleView}>
-            <EyeIcon size={16} />
-          </Button>
-        </CustomTooltip>
-      </PermissionGate>
-      <PermissionGate requiredPermission='daily_expense' action='delete'>
-        <CustomTooltip title='Delete'>
+      <PermissionGate requiredPermission="daily_expense" action="delete">
+        <CustomTooltip title="Delete">
           <Button
-            variant='ghost'
-            className='h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700'
+            variant="ghost"
+            className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
             onClick={handleDelete}
           >
             <IconTrash size={16} />
@@ -94,18 +78,18 @@ export function DataTableRowActions({ row }: RowProps) {
 
       {currentRow && (
         <DeleteModal
-          key='delete-daily-expense'
-          open={open === 'delete'}
+          key="delete-daily-expense"
+          open={open === "delete"}
           currentRow={currentRow ?? {}}
-          itemName='Daily Expense'
-          itemIdentifier={'purpose' as keyof typeof currentRow}
+          itemName="Daily Expense"
+          itemIdentifier={"purpose" as keyof typeof currentRow}
           onDelete={handleDeleteDailyExpense}
           onOpenChange={(value) => {
-            if (!value) closeModal()
-            else setOpen('delete')
+            if (!value) closeModal();
+            else setOpen("delete");
           }}
         />
       )}
     </div>
-  )
+  );
 }
