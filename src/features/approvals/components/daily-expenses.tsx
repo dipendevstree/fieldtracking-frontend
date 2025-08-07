@@ -42,6 +42,7 @@ export default function DailyExpenses() {
     expenseType: "",
     status: "",
     expenseSubType: "",
+    sort:"desc"
   });
 
   const {

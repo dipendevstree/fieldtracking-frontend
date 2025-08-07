@@ -21,10 +21,11 @@ import { formSchema, TFormSchema } from './schema'
 type UserAuthFormProps = Readonly<HTMLAttributes<HTMLFormElement>>
 
 export function SuperAdminAuthForm({ className, ...props }: UserAuthFormProps) {
-  const { login } = useAuthStore()
+  const { login,setIsPasswordChanged } = useAuthStore()
   const { navigate } = useRouter()
   const onSuccess = (data: any) => {
     login(data)
+    setIsPasswordChanged(true) // Reset password changed state
     navigate({ to: '/' })
   }
   const { mutate: loginMutate, isPending: isLoading } = useLogin(onSuccess)
