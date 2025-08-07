@@ -40,7 +40,7 @@ export function CustomerTypeActionModal() {
       (isUpdateSuccess && !isUpdateError) ||
       (isDeleteSuccess && !isDeleteError)
     ) {
-      setOpen(null);
+      closeModal();
     }
   }, [
     isCreateSuccess,
@@ -49,7 +49,6 @@ export function CustomerTypeActionModal() {
     isUpdateError,
     isDeleteSuccess,
     isDeleteError,
-    setOpen,
   ]);
 
   const closeModal = () => {
@@ -58,43 +57,58 @@ export function CustomerTypeActionModal() {
   };
 
   const handleCreateCustomerType = (values: TFormSchema) => {
-    const payload: CustomerTypePayload = {
-      typeName: values.typeName.trim(),
-    };
+    try {
+      const payload: CustomerTypePayload = {
+        typeName: values.typeName.trim(),
+      };
 
-    if (!payload.typeName) {
-      toast.error("Customer Type name is required");
-      return;
+      if (!payload.typeName) {
+        toast.error("Customer Type name is required");
+        return;
+      }
+
+      createCustomerType(payload);
+    } catch (error) {
+      console.error("Error creating customer type:", error);
+      toast.error("Failed to create customer type");
     }
-
-    createCustomerType(payload);
   };
 
   const handleUpdateCustomerType = (values: TFormSchema) => {
-    if (!currentRow?.customerTypeId) {
-      toast.error("Customer Type ID is missing");
-      return;
+    try {
+      if (!currentRow?.customerTypeId) {
+        toast.error("Customer Type ID is missing");
+        return;
+      }
+
+      const payload: CustomerTypePayload = {
+        typeName: values.typeName.trim(),
+      };
+
+      if (!payload.typeName) {
+        toast.error("Customer Type name is required");
+        return;
+      }
+
+      updateCustomerType(payload);
+    } catch (error) {
+      console.error("Error updating customer type:", error);
+      toast.error("Failed to update customer type");
     }
-
-    const payload: CustomerTypePayload = {
-      typeName: values.typeName.trim(),
-    };
-
-    if (!payload.typeName) {
-      toast.error("Customer Type name is required");
-      return;
-    }
-
-    updateCustomerType(payload);
   };
 
   const handleDeleteCustomerType = () => {
-    if (!currentRow?.customerTypeId) {
-      toast.error("Customer Type ID is missing");
-      return;
-    }
+    try {
+      if (!currentRow?.customerTypeId) {
+        toast.error("Customer Type ID is missing");
+        return;
+      }
 
-    deleteCustomerType();
+      deleteCustomerType();
+    } catch (error) {
+      console.error("Error deleting customer type:", error);
+      toast.error("Failed to delete customer type");
+    }
   };
 
   return (
@@ -131,7 +145,7 @@ export function CustomerTypeActionModal() {
             key="delete-customer-type"
             open={open === "delete"}
             currentRow={currentRow}
-            itemIdentifier={"customerTypeId" as keyof typeof currentRow}
+            itemIdentifier={"typeName" as keyof typeof currentRow}
             itemName="Customer Type"
             onDelete={handleDeleteCustomerType}
             onOpenChange={(value) => {

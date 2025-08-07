@@ -1,9 +1,9 @@
-import { HTMLAttributes } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from '@tanstack/react-router'
-import { useAuthStore } from '@/stores/use-auth-store'
-import { cn } from '@/lib/utils'
+import { HTMLAttributes } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import { useAuthStore } from "@/stores/use-auth-store";
+import { cn } from "@/lib/utils";
 import {
   Form,
   FormControl,
@@ -11,50 +11,51 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { PasswordInput } from '@/components/password-input'
-import CustomButton from '@/components/shared/custom-button'
-import { useAdminLogin } from '../services/sign-in-services'
-import { formSchema, TFormSchema } from './schema'
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/password-input";
+import CustomButton from "@/components/shared/custom-button";
+import { useAdminLogin } from "../services/sign-in-services";
+import { formSchema, TFormSchema } from "./schema";
+import { useRouter } from "@tanstack/react-router";
 
-type UserAuthFormProps = Readonly<HTMLAttributes<HTMLFormElement>>
+type UserAuthFormProps = Readonly<HTMLAttributes<HTMLFormElement>>;
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
-  const { login } = useAuthStore()
-  const { navigate } = useRouter()
+  const { login } = useAuthStore();
   const onSuccess = (data: any) => {
-    login(data)
-    navigate({ to: '/' })
-  }
-  const { mutate: loginMutate, isPending: isLoading } = useAdminLogin(onSuccess)
+    login(data);
+  };
+  const { mutate: loginMutate, isPending: isLoading } =
+    useAdminLogin(onSuccess);
+  const { navigate } = useRouter();
   const form = useForm<TFormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: '',
-      password: '',
+      email: "",
+      password: "",
     },
-  })
+  });
 
   function onSubmit(data: TFormSchema) {
-    loginMutate(data)
+    loginMutate(data);
   }
 
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className={cn('grid gap-3', className)}
+        className={cn("grid gap-3", className)}
         {...props}
       >
         <FormField
           control={form.control}
-          name='email'
+          name="email"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder='name@example.com' {...field} />
+                <Input placeholder="name@example.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -62,12 +63,12 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         />
         <FormField
           control={form.control}
-          name='password'
+          name="password"
           render={({ field }) => (
-            <FormItem className='relative'>
+            <FormItem className="relative">
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <PasswordInput placeholder='********' {...field} />
+                <PasswordInput placeholder="********" {...field} />
               </FormControl>
               <FormMessage />
               {/* <Link
@@ -79,12 +80,21 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             </FormItem>
           )}
         />
+        <div
+          onClick={() => {
+            navigate({ to: "/forgot-password" });
+          }}
+        >
+          <span className="text-sm hover:underline cursor-pointer flex justify-end text-muted-foreground">
+            Forgot password?
+          </span>
+        </div>
         <CustomButton
-          type='submit'
-          variant='primary'
-          size='md'
+          type="submit"
+          variant="primary"
+          size="md"
           loading={isLoading}
-          className='mt-2 w-full'
+          className="mt-2 w-full"
           disabled={isLoading}
         >
           Login
@@ -111,5 +121,5 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
         </div> */}
       </form>
     </Form>
-  )
+  );
 }

@@ -40,6 +40,7 @@ export const useGetOrganizationTypes = () => {
   }
 }
 
+
 export const useSingUp = (onSuccess?: () => void) => {
   return usePostData({
     url: API.auth.signup,

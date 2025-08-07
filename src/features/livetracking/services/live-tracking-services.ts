@@ -136,3 +136,19 @@ export const useInfiniteUsers = (baseParams: any) => {
     },
   });
 };
+
+export const useGetUsers = (params: any = {}) => {
+  const query = useFetchData<any>({
+    url: API.users.list,
+    params,
+  });
+
+  return {
+    ...query,
+    data: query.data,
+    listData: query.data?.list ?? [],
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};

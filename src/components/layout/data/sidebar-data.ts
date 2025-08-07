@@ -1,4 +1,17 @@
-import { Building2, Home, MapPin, Settings, Shield, Bell, FileText  } from "lucide-react";
+import {
+  AppWindow,
+  Building2,
+  Calendar,
+  ChartColumn,
+  Home,
+  MapPin,
+  Shield,
+  ShieldUser,
+  Settings,
+  Bell,
+  FileText,
+} from "lucide-react";
+
 import { type SidebarData } from "../types";
 
 export const sidebarData: SidebarData = {
@@ -10,7 +23,7 @@ export const sidebarData: SidebarData = {
   },
   teams: [
     {
-      name: "FieldTrack Pro",
+      name: "FieldFieldTrack360",
       logo: Building2,
       plan: "Enterprise",
     },
@@ -32,31 +45,32 @@ export const sidebarData: SidebarData = {
           menuKey: "live_tracking",
         },
         {
-          title: 'Customers',
+          title: "Customers",
           icon: Building2,
           menuKey: "customers",
           items: [
             {
-              title: 'Customer Directory',
-              url: '/customers',
+              title: "Customer Directory",
+              url: "/customers",
               menuKey: "customer_directory",
             },
+
             {
-              title: 'Add Customer',
-              url: '/customers/add-customer',
+              title: "Add Customer",
+              url: "/customers/add-customer",
               menuKey: "add_customer",
             },
             {
-              title: 'Customer Type',
-              url: '/customer-type',
+              title: "Customer Type",
+              url: "/customer-type",
               menuKey: "customer_type",
-            }
+            },
           ],
         },
-      
+
         {
           title: "User Management",
-          icon: Shield,
+          icon: ShieldUser,
           menuKey: "User_Management",
           items: [
             {
@@ -78,7 +92,7 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "Calendar",
-          icon: Shield,
+          icon: Calendar,
           menuKey: "calendar",
           items: [
             {
@@ -110,7 +124,7 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "Approvals",
-          icon: Shield,
+          icon: AppWindow,
           menuKey: "approvals",
           items: [
             {
@@ -137,7 +151,7 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "Reports",
-          icon: Shield,
+          icon: ChartColumn,
           menuKey: "reports",
           items: [
             {
@@ -146,7 +160,7 @@ export const sidebarData: SidebarData = {
               menuKey: "all_reports",
             },
           ],
-        }, 
+        },
       ],
     },
     {
@@ -184,7 +198,7 @@ export const SUPER_ADMIN_SIDEBAR_DATA: SidebarData = {
   },
   teams: [
     {
-      name: "FieldTrack Pro",
+      name: "FieldFieldTrack360",
       logo: Building2,
       plan: "Enterprise",
     },
@@ -371,7 +385,7 @@ export const ROUTE_PERMISSIONS: Record<
     requiredRoles: ["admin"],
     requireAll: false,
   },
- 
+
   "/calendar/upcoming-visit/": {
     requiredPermissions: ["calendar.read"],
     requiredRoles: ["admin"],
@@ -382,4 +396,4 @@ export const ROUTE_PERMISSIONS: Record<
     requiredRoles: ["admin"],
     requireAll: false,
   },
-};  
+};

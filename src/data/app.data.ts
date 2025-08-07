@@ -26,3 +26,23 @@ export enum Priority {
   MEDIUM = "Medium",
   HIGH = "High",
 }
+
+export enum EXPENSE_TYPE {
+  DAILY = "daily",
+  TRAVEL = "travel",
+}
+
+export enum EXPENSE_STATUS {
+  DRAFT = "draft",
+  PENDING = "pending",
+  APPROVED = "approved",
+  PARTIALLY_APPROVED = "partially_approved",
+  REJECT = "reject",
+}
+
+export enum EXPENSE_SUB_TYPE {
+  TRAVEL_LUMP_SUM = "travel_lump_sum",
+  TRAVEL_ROUTE = "travel_route",
+  DAILY_LOCAL = "daily_local",
+  DAILY_OUTSTATION = "daily_outstation",
+}

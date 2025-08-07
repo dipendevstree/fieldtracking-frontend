@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { DEFAULT_PAGE_NUMBER } from "@/data/app.data";
-import debounce from "lodash.debounce";
+import { useEffect, useRef, useState } from "react";
+import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
+
 import { cn } from "@/lib/utils";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,9 +12,13 @@ import { useGetAllTerritoriesForDropdown } from "../userterritory/services/user-
 import UserTrackingTimeline from "./user-livetracting-info";
 import UserPolylineMap from "./components/UserPolylineMap";
 import UserListMap from "./components/UserListMap";
-import { useInfiniteUsers } from "./services/live-tracking-services";
+import {
+  useGetUsers,
+  userDetailsById,
+} from "./services/live-tracking-services";
 import { GoogleMap } from "@react-google-maps/api";
-import { useInView } from "react-intersection-observer";
+import { useSearch } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
 import { socket } from "@/socket/socket";
 
 // Assuming you have a Button component
@@ -30,7 +34,7 @@ const containerStyle = {
 export default function Livetracking() {
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
-    limit: 15,
+    limit: DEFAULT_PAGE_SIZE,
     startDate: new Date().toISOString().split("T")[0],
     endDate: new Date().toISOString().split("T")[0],
     searchFor: "",
@@ -38,6 +42,8 @@ export default function Livetracking() {
     territoryId: "",
     includeLatLong: true,
   });
+
+  const { userId }: any = useSearch({ from: "/_authenticated/livetracking/" });
 
   const [currentPosition, setCurrentPosition] = useState<{
     lat: number;
@@ -50,10 +56,8 @@ export default function Livetracking() {
   } | null>(null);
   const mapRef = useRef<google.maps.Map | null>(null);
 
-  const { ref: loadMoreRef, inView } = useInView({ threshold: 0 });
-  // Get userId from query
-  const params = new URLSearchParams(window.location.search);
-  const userId = params.get("userId");
+  const { data, isLoading, totalCount } = useGetUsers(pagination);
+
   const [selectedUserId, setSelectedUserId] = useState(userId);
   const { data: allRoles } = useGetAllRolesForDropdown();
   const roles = useSelectOptions({
@@ -62,24 +66,33 @@ export default function Livetracking() {
     valueKey: "roleId",
   });
 
-  // Check if any filter is selected
+  const { listData: userListDropDownData = [] } = useGetUsers();
+
+  const userListDropDownList = userListDropDownData?.map((user: any) => ({
+    ...user,
+    fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+  }));
+
+  const usersOptions = useSelectOptions<any>({
+    listData: userListDropDownList,
+    labelKey: "fullName",
+    valueKey: "id",
+  }).map((option) => ({ ...option, value: String(option.value) }));
+
   const hasFiltersSelected =
     pagination.roleId || pagination.territoryId || pagination.searchFor;
+  const { user } = userDetailsById(userId);
 
-  // Only call useGetUsers when filters are selected
-  // const { listData: userList = [], isLoading } = useGetUsers(pagination);
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useInfiniteUsers(pagination);
+  const enhanceUser = (user: any) => ({
+    ...user,
+    fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+    latLong: user.latLongDetails
+      ? { lat: user.latLongDetails.lat, lng: user.latLongDetails.long }
+      : null,
+  });
+  const enhancedSingleUser = user ? enhanceUser(user) : null;
 
-  const enhancedUserList = (data?.pages ?? [])
-    .flatMap((page: any) => page.list ?? [])
-    .map((user: any) => ({
-      ...user,
-      fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
-      latLong: user.latLongDetails
-        ? { lat: user.latLongDetails.lat, lng: user.latLongDetails.long }
-        : null,
-    }));
+  const enhancedUserList = (data?.list ?? []).map(enhanceUser);
 
   const { data: territoriesList } = useGetAllTerritoriesForDropdown();
   const territories = useSelectOptions<any>({
@@ -88,30 +101,12 @@ export default function Livetracking() {
     valueKey: "id",
   });
 
-  useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  const handleGlobalSearchChange = useCallback(
-    debounce((value: string | undefined) => {
-      setPagination((prev) => ({
-        ...prev,
-        searchFor: value ?? "",
-        page: DEFAULT_PAGE_NUMBER,
-      }));
-      setSelectedUserId(""); // reset selected user
-    }, 500),
-    []
-  );
-
   const handleChangeTerritory = (value: string | undefined) => {
     setPagination((prev) => ({
       ...prev,
       territoryId: value ?? "",
-      roleId: "", // reset role
-      searchFor: "", // reset search
+      roleId: "",
+      searchFor: "",
       page: DEFAULT_PAGE_NUMBER,
     }));
   };
@@ -120,14 +115,13 @@ export default function Livetracking() {
     setPagination((prev) => ({
       ...prev,
       roleId: value ?? "",
-      searchFor: "", // reset search only
+      searchFor: "",
       page: DEFAULT_PAGE_NUMBER,
     }));
   };
 
   const handleUserClick = (userId: string) => {
     setSelectedUserId(userId);
-    // Update URL to reflect selected user
     const newParams = new URLSearchParams(window.location.search);
     newParams.set("userId", userId);
     window.history.pushState({}, "", `?${newParams}`);
@@ -152,27 +146,53 @@ export default function Livetracking() {
         prev.lat === firstValidCoord.lat &&
         prev.lng === firstValidCoord.lng
       ) {
-        return prev; // No need to update
+        return prev;
       }
       return firstValidCoord;
     });
   };
 
   useEffect(() => {
+    window.addEventListener("popstate", handlePopState);
     updateMapCenterFromUserList(enhancedUserList);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
   }, []);
 
-  const handleBackToList = () => {
-    if (socket) {
-      socket.emit("untrack_user", { userId });
+  useEffect(() => {
+    setSelectedUserId(userId);
+  }, [userId]);
+
+  // const handleBackToList = () => {
+  //   if (socket) {
+  //     socket.emit("untrack_user", { userId });
+  //   }
+  //   setSelectedUserId("");
+  //   setPath([]);
+  //   setCurrentPosition(null);
+  //   updateMapCenterFromUserList(enhancedUserList);
+  //   const newParams = new URLSearchParams(window.location.search);
+  //   newParams.delete("userId");
+  //   window.history.pushState({}, "", `?${newParams}`);
+  // };
+
+  const handlePopState = () => {
+    const params = new URLSearchParams(window.location.search);
+    const userIdFromUrl = params.get("userId");
+
+    if (!userIdFromUrl) {
+      // If userId was removed (i.e. back to list view)
+      if (socket) {
+        socket.emit("untrack_user", { userId });
+      }
+      setSelectedUserId("");
+      setPath([]);
+      setCurrentPosition(null);
+    } else {
+      // If userId is present in URL, update selectedUserId
+      setSelectedUserId(userIdFromUrl);
     }
-    setSelectedUserId("");
-    setPath([]);
-    setCurrentPosition(null);
-    updateMapCenterFromUserList(enhancedUserList);
-    const newParams = new URLSearchParams(window.location.search);
-    newParams.delete("userId");
-    window.history.pushState({}, "", `?${newParams}`);
   };
 
   const filters: FilterConfig[] = [
@@ -193,11 +213,16 @@ export default function Livetracking() {
       options: roles as Option[],
     },
     {
-      key: "search",
-      type: "search",
-      onChange: handleGlobalSearchChange,
-      placeholder: "Search Users...",
-      value: pagination.searchFor,
+      type: "searchable-select",
+      key: "userSelect",
+      placeholder: "Select User",
+      value: selectedUserId,
+      options: usersOptions,
+      onChange: (value) => {
+        if (value) {
+          handleUserClick(value);
+        }
+      },
     },
   ];
 
@@ -216,15 +241,26 @@ export default function Livetracking() {
     (u: any) => u.id === selectedUserId
   );
 
+  const handleNextPage = () => {
+    if (pagination.page * pagination.limit < totalCount) {
+      setPagination((prev) => ({
+        ...prev,
+        page: prev.page + 1,
+      }));
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (pagination.page > 1) {
+      setPagination((prev) => ({
+        ...prev,
+        page: prev.page - 1,
+      }));
+    }
+  };
+
   return (
-    <Main className={cn("flex flex-col gap-4 p-4")}>
-      <div className="flex flex-col gap-2">
-        <h2 className="text-2xl font-bold tracking-tight">Live Tracking</h2>
-        <p className="text-muted-foreground">
-          Track real-time activity and manage admin approvals.
-        </p>
-      </div>
-      {/* Filters */}
+    <Main className={cn("flex flex-col p-4")}>
       <GlobalFilterSection
         key="calendar-view-filters"
         filters={filters}
@@ -243,10 +279,9 @@ export default function Livetracking() {
         }}
       />
 
-      {/* Show loading state */}
       {isLoading && (
         <Card>
-          <CardContent className="flex items-center justify-center p-8">
+          <CardContent className="flex items-center justify-center p-4">
             <div className="text-center">
               <div className="text-muted-foreground text-lg font-medium">
                 Loading users...
@@ -255,112 +290,113 @@ export default function Livetracking() {
           </CardContent>
         </Card>
       )}
-      {/* Show user list or timeline and map when filters are selected and data exists */}
       {!isLoading && enhancedUserList.length > 0 && (
         <Card>
           <CardContent className="flex gap-4 p-0">
-            {/* Sidebar with Users or Timeline */}
-            <div
-              className="w-100 space-y-2 overflow-y-auto p-2"
-              style={{ height: "60vh" }}
-            >
-              {selectedUserId && selectedUser ? (
-                <>
-                  <UserTrackingTimeline
-                    userId={selectedUserId}
-                    setPath={setPath}
-                    setCurrentPosition={setCurrentPosition}
-                    setMapCenter={setMapCenter}
-                    onBack={handleBackToList}
-                  />
-                </>
+            <div className="w-100 space-y-2 overflow-y-auto p-2">
+              {selectedUserId && (selectedUser || enhancedSingleUser) ? (
+                <UserTrackingTimeline
+                  key={selectedUserId}
+                  userId={selectedUserId}
+                  setPath={setPath}
+                  setCurrentPosition={setCurrentPosition}
+                  setMapCenter={setMapCenter}
+                />
               ) : (
-                <div>
-                  {enhancedUserList.map((user: any, index: number) => {
-                    const isLast = index === enhancedUserList.length - 1;
-                    return (
+                <>
+                  <div style={{ maxHeight: "60vh", overflow: "auto" }}>
+                    {enhancedUserList.map((user: any) => (
                       <Card
                         key={user.id}
                         className={`cursor-pointer p-2 transition-all hover:shadow-md mb-2`}
                         onClick={() => handleUserClick(user.id)}
                       >
-                        <div ref={isLast ? loadMoreRef : undefined}>
-                          <CardContent className="flex items-center gap-2 p-0">
-                            <img
-                              src={
-                                user.avatar ||
-                                `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                  user.fullName
-                                )}`
-                              }
-                              alt={user.fullName}
-                              className="h-10 w-10 rounded-full object-cover"
-                            />
-                            <div className="flex-1">
-                              <div className="font-medium">{user.fullName}</div>
-                              <div className="text-xs text-gray-500">
-                                {user.phoneNumber || "No Role"}
-                              </div>
+                        <CardContent className="flex items-center gap-2 p-0">
+                          <img
+                            src={
+                              user.avatar ||
+                              `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                user.fullName
+                              )}`
+                            }
+                            alt={user.fullName}
+                            className="h-10 w-10 rounded-full object-cover"
+                          />
+                          <div className="flex-1">
+                            <div className="font-medium">{user.fullName}</div>
+                            <div className="text-xs text-gray-500">
+                              {user.phoneNumber || "No Role"}
                             </div>
-                            <span
-                              className={`rounded-full px-2 py-0.5 text-xs ${
-                                user.status === "verified"
-                                  ? "bg-green-100 text-green-600"
-                                  : "bg-red-100 text-red-600"
-                              }`}
-                            >
-                              {user.status === "verified"
-                                ? "Active"
-                                : "Offline"}
-                            </span>
-                          </CardContent>
-                        </div>
+                          </div>
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-xs ${
+                              user.isOnline
+                                ? "bg-green-100 text-green-600"
+                                : "bg-red-100 text-red-600"
+                            }`}
+                          >
+                            {user.isOnline ? "Active" : "Offline"}
+                          </span>
+                        </CardContent>
                       </Card>
-                    );
-                  })}
-                  {isFetchingNextPage && (
-                    <div className="flex justify-center py-4 text-sm text-muted-foreground">
-                      Loading more...
-                    </div>
-                  )}
-                </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-end p-2 gap-2">
+                    <Button
+                      onClick={handlePreviousPage}
+                      disabled={pagination.page === 1}
+                      variant={"outline"}
+                      className="w-[50%]"
+                    >
+                      Prev
+                    </Button>
+                    <Button
+                      className="w-[50%]"
+                      variant={"outline"}
+                      onClick={handleNextPage}
+                      disabled={
+                        pagination.page * pagination.limit >= totalCount
+                      }
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </>
               )}
             </div>
 
-            {/* Map View */}
             <div className="flex-1 pr-4">
               {mapCenter && (
-                <>
-                  <GoogleMap
-                    mapContainerStyle={containerStyle}
-                    center={mapCenter}
-                    zoom={17}
-                    onLoad={(map) => {
-                      mapRef.current = map;
-                    }}
-                  >
-                    {selectedUserId !== "" ? (
-                      <UserPolylineMap
-                        path={path}
-                        currentPosition={currentPosition}
-                        selectedUser={selectedUser}
-                        mapRef={mapRef}
-                      />
-                    ) : (
-                      <UserListMap
-                        enhancedUserList={enhancedUserList}
-                        mapRef={mapRef}
-                        onMarkerClick={handleUserClick}
-                      />
-                    )}
-                  </GoogleMap>
-                </>
+                <GoogleMap
+                  key={selectedUserId}
+                  mapContainerStyle={containerStyle}
+                  center={mapCenter}
+                  zoom={17}
+                  onLoad={(map) => {
+                    mapRef.current = map;
+                  }}
+                >
+                  {selectedUserId !== undefined && selectedUserId !== "" ? (
+                    <UserPolylineMap
+                      key={selectedUserId}
+                      path={path}
+                      currentPosition={currentPosition}
+                      selectedUser={selectedUser || enhancedSingleUser}
+                      mapRef={mapRef}
+                    />
+                  ) : (
+                    <UserListMap
+                      enhancedUserList={enhancedUserList}
+                      mapRef={mapRef}
+                      onMarkerClick={handleUserClick}
+                    />
+                  )}
+                </GoogleMap>
               )}
             </div>
           </CardContent>
         </Card>
       )}
-      {/* Show message when filters are selected but no data found */}
       {hasFiltersSelected && !isLoading && enhancedUserList.length === 0 && (
         <Card>
           <CardContent className="flex items-center justify-center p-8">

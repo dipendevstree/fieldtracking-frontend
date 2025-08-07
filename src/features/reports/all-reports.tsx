@@ -65,6 +65,7 @@ const AllReports: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <DateRangeFilter
             dateRange={filters.dateRange}
+            label="Select Date Range"
             setDateRange={(range) => handleFilterChange({ dateRange: range })}
           />
 

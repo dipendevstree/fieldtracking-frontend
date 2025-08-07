@@ -43,6 +43,7 @@ interface DataTableProps {
   readonly loading?: boolean
   readonly currentPage?: number
   readonly paginationCallbacks?: PaginationCallbacks
+  readonly defaultPageSize?: number
 }
 
 export function CustomDataTable({
@@ -52,6 +53,7 @@ export function CustomDataTable({
   loading,
   paginationCallbacks,
   currentPage,
+  defaultPageSize
 }: DataTableProps) {
   const [rowSelection, setRowSelection] = useState({})
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
@@ -154,6 +156,7 @@ export function CustomDataTable({
       </div>
       <GlobalPagination
         currentPage={currentPage}
+        defaultPageSize={defaultPageSize}
         table={table}
         buttonSize='md'
         callbacks={paginationCallbacks}

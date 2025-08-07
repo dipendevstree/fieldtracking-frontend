@@ -3,8 +3,16 @@ import { Select } from "./shared/custom-select";
 import { SimpleDatePicker } from "./ui/datepicker";
 import { Input } from "./ui/input";
 import { useDebounce } from "./use-debauce";
+import { SearchableSelect } from "./ui/SearchableSelect";
+import { DateRange } from "react-day-picker";
+import { DateRangeFilter } from "@/features/reports/components/DateRangeFilter";
 
-type FilterType = "select" | "search" | "date";
+type FilterType =
+  | "select"
+  | "search"
+  | "date"
+  | "searchable-select"
+  | "date-range";
 
 export interface FilterConfig {
   type: FilterType;
@@ -13,13 +21,18 @@ export interface FilterConfig {
   value?: string;
   options?: Option[];
   onChange?: (value: string | undefined) => void;
-  onCancelPress?: any;
+  onCancelPress?: () => void;
+  dateRangeValue?: DateRange;
+  onDateRangeChange?: (value: DateRange | undefined) => void;
+  dataRangeClassName?: string;
+  searchableSelectClassName?: string;
 }
 
 interface DataTableToolbarProps {
   filters?: FilterConfig[];
   className?: string;
   searchValue?: string;
+  onCancelPress?: () => void;
 }
 
 export interface Option {
@@ -27,16 +40,9 @@ export interface Option {
   value: string;
 }
 
-interface DataTableToolbarProps {
-  filters?: FilterConfig[];
-  className?: string;
-  onCancelPress?: any;
-}
-
 export function DataTableToolbarCompact({
   filters = [],
   className = "",
-  onCancelPress,
 }: Readonly<DataTableToolbarProps>) {
   const searchFilter = filters.find((f) => f.type === "search");
   const [search, setSearch] = useState(searchFilter?.value ?? "");
@@ -73,10 +79,29 @@ export function DataTableToolbarCompact({
                 value={filter.value}
                 placeholder={filter.placeholder}
                 onValueChange={filter.onChange ?? (() => {})}
-                onCancelPress={onCancelPress}
+                onCancelPress={filter.onCancelPress}
               />
             );
           }
+
+          if (filter.type === "searchable-select") {
+            return (
+              <div
+                className={`${filter.searchableSelectClassName ?? "w-full max-w-md"}`}
+              >
+                <SearchableSelect
+                  key={filter.key}
+                  options={filter.options ?? []}
+                  value={filter.value}
+                  placeholder={filter.placeholder}
+                  onChange={filter.onChange ?? (() => {})}
+                  disabled={false}
+                  onCancelPress={filter.onCancelPress}
+                />
+              </div>
+            );
+          }
+
           if (filter.type === "date") {
             return (
               <SimpleDatePicker
@@ -86,6 +111,21 @@ export function DataTableToolbarCompact({
               />
             );
           }
+
+          if (filter.type === "date-range") {
+            return (
+              <div
+                className={`${filter.dataRangeClassName ?? "w-full max-w-md"}`}
+              >
+                <DateRangeFilter
+                  key={filter.key}
+                  dateRange={filter.dateRangeValue}
+                  setDateRange={filter.onDateRangeChange ?? (() => {})}
+                />
+              </div>
+            );
+          }
+
           return null;
         })}
       </div>

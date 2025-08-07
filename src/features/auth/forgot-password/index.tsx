@@ -1,4 +1,4 @@
-import { Link } from '@tanstack/react-router'
+import { Link } from "@tanstack/react-router";
 import {
   Card,
   CardContent,
@@ -6,16 +6,16 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
-import AuthLayout from '../auth-layout'
-import { ForgotPasswordForm } from './components/forgot-password-form'
+} from "@/components/ui/card";
+import AuthLayout from "../auth-layout";
+import { ForgotPasswordForm } from "./components/forgot-password-form";
 
 export default function ForgotPassword() {
   return (
     <AuthLayout>
-      <Card className='gap-4'>
+      <Card className="gap-4">
         <CardHeader>
-          <CardTitle className='text-lg tracking-tight'>
+          <CardTitle className="text-lg tracking-tight">
             Forgot Password
           </CardTitle>
           <CardDescription>
@@ -27,18 +27,18 @@ export default function ForgotPassword() {
           <ForgotPasswordForm />
         </CardContent>
         <CardFooter>
-          <p className='text-muted-foreground px-8 text-center text-sm'>
-            Don't have an account?{' '}
+          <p className="text-muted-foreground text-center text-sm">
+            Do you have an account?{" "}
             <Link
-              to='/sign-in'
-              className='hover:text-primary underline underline-offset-4'
+              to="/sign-in"
+              className="hover:text-primary underline underline-offset-4"
             >
-              Sign up
+              Sign in
             </Link>
             .
           </p>
         </CardFooter>
       </Card>
     </AuthLayout>
-  )
+  );
 }

@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { MapPin, Loader2, ArrowLeft } from "lucide-react";
+import { MapPin, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { socket } from "../../socket/socket";
 
@@ -14,6 +14,8 @@ import GlobalFilterSection from "@/components/global-table-filter-section";
 import { FilterConfig } from "@/components/global-filter-section";
 import { getHaversineDistance } from "./data/commonFunction";
 import moment from "moment-timezone";
+import { getFormattedAddress } from "@/utils/commonFunction";
+import { useGetAllVisit } from "../calendar/services/calendar-view.hook";
 
 interface UserTrackingTimelineProps {
   userId: any;
@@ -22,7 +24,7 @@ interface UserTrackingTimelineProps {
     React.SetStateAction<{ lat: number; lng: number } | null>
   >;
   setMapCenter: (center: { lat: number; lng: number }) => void;
-  onBack: () => void;
+  onBack?: () => void;
 }
 
 const UserTrackingTimeline = ({
@@ -30,15 +32,25 @@ const UserTrackingTimeline = ({
   setPath,
   setCurrentPosition,
   setMapCenter,
-  onBack,
+  // onBack,
 }: UserTrackingTimelineProps) => {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0]
   );
   const [totalDistance, setTotalDistance] = useState(0);
+  const [nearestAddress, setNearestAddress] = useState<string | null>(
+    "No location info available"
+  );
 
   // Destructure isLoading state from custom hooks
   const { user, isLoading: isUserLoading } = userDetailsById(userId ?? "");
+  const { data: visits } = useGetAllVisit({
+    startDate: new Date().toISOString().split("T")[0],
+    endDate: new Date().toISOString().split("T")[0],
+    status: "completed",
+    salesRepresentativeUserId: userId ?? "",
+  });
+
   const { userSession, isLoading: isSessionLoading } = getWorkDaySession(
     userId ?? "",
     selectedDate
@@ -72,6 +84,22 @@ const UserTrackingTimeline = ({
       value: selectedDate,
     },
   ];
+  const fetchAddress = async () => {
+    if (trackingData && trackingData.length > 0) {
+      const lastPoint = trackingData[0];
+      const lat = parseFloat(lastPoint.lat);
+      const lng = parseFloat(lastPoint.long);
+
+      const address = await getFormattedAddress(lat, lng);
+      setNearestAddress(address || "No location info available");
+    } else {
+      setNearestAddress("No location info available");
+    }
+  };
+  // Fetch address for the last tracking data point
+  useEffect(() => {
+    fetchAddress();
+  }, [trackingData]);
 
   useEffect(() => {
     if (isFetched) {
@@ -178,30 +206,37 @@ const UserTrackingTimeline = ({
 
     return sessions.flatMap((session, index) => {
       const timeline: any[] = [];
-
       // Punch In
       timeline.push({
         id: session.workDaySessionId + "_in",
         type: "punch_in",
         title: "Punch In",
-        location: "Location not provided",
+        location: session.dayStartAddress ?? "Location not provided",
         time: format(new Date(session.startTime), "hh:mm a"),
         color: "bg-teal-500",
       });
 
       // Tasks (if any)
-      if (session.tasks && session.tasks.length > 0) {
-        session.tasks.forEach((task: any) => {
-          timeline.push({
-            id: task.id,
-            type: "task",
-            title: `Task - ${task.title}`,
-            description: task.description,
-            time: task.startTime
-              ? format(new Date(task.startTime), "hh:mm a")
-              : undefined,
-            color: "bg-gray-400",
-          });
+      if (visits && visits.length > 0) {
+        visits.forEach((task: any) => {
+          const visitTime = new Date(task.visitCheckOutTime);
+          const sessionStart = new Date(session.startTime);
+          const sessionEnd = session.endTime
+            ? new Date(session.endTime)
+            : new Date();
+          if (visitTime >= sessionStart && visitTime <= sessionEnd) {
+            timeline.push({
+              id: task.visitId,
+              type: "task",
+              title: `Visit - ${task.purpose}`,
+              description: task?.customer?.companyName,
+              location: task?.checkoutAddress,
+              time: task.visitCheckOutTime
+                ? format(new Date(task.visitCheckOutTime), "hh:mm a")
+                : undefined,
+              color: "bg-gray-400",
+            });
+          }
         });
       }
 
@@ -229,7 +264,7 @@ const UserTrackingTimeline = ({
           id: session.workDaySessionId + "_out",
           type: "punch_out",
           title: "Punch Out",
-          location: "Location not provided",
+          location: session.dayEndAddress ?? "Location not provided",
           time: format(new Date(session.endTime), "hh:mm a"),
           color: "bg-red-500",
         });
@@ -241,14 +276,13 @@ const UserTrackingTimeline = ({
           type: "separator",
         });
       }
-
       return timeline;
     });
   };
 
   const timelineData = useMemo(
     () => formatTimelineData((userSession?.sessions ?? []).slice().reverse()),
-    [userSession?.sessions]
+    [userSession?.sessions, visits]
   );
 
   // Loading state UI
@@ -262,7 +296,7 @@ const UserTrackingTimeline = ({
 
   return (
     <div className="bg-gray-50 p-4 rounded-[4px]">
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <button
           onClick={onBack}
           className="text-sm text-teal-600 hover:underline flex items-center gap-1"
@@ -270,7 +304,7 @@ const UserTrackingTimeline = ({
           <ArrowLeft className="h-4 w-4" />
           Back to list
         </button>
-      </div>
+      </div> */}
       <div className="[&_*]:overflow-visible [&_*]:max-w-full [&_*]:w-full">
         <GlobalFilterSection
           key={"calendar-view-filters"}
@@ -280,7 +314,7 @@ const UserTrackingTimeline = ({
       </div>
 
       {/* Stats Cards */}
-      <div className="py-6">
+      <div className="py-4">
         <div className="grid grid-cols-3 gap-3">
           <div className="rounded-lg border border-gray-200 bg-white p-4 text-center shadow-sm">
             <div className="mb-2 text-xs text-gray-500">Total Visit</div>
@@ -346,7 +380,10 @@ const UserTrackingTimeline = ({
         </div>
 
         <div className="border-b border-gray-100 p-4">
-          <div className="relative pl-2">
+          <div
+            className="relative pl-2 "
+            style={{ maxHeight: "30vh", overflow: "auto" }}
+          >
             {/* Handle Empty State for Timeline */}
             {timelineData.length > 0 ? (
               timelineData.map((item, index) => {
@@ -420,8 +457,7 @@ const UserTrackingTimeline = ({
           <div className="flex items-start gap-2">
             <MapPin className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400" />
             <div className="text-sm leading-relaxed text-gray-600">
-              {userSession?.nearestLocation?.address ??
-                "No location info available"}
+              {nearestAddress ?? "No location info available"}
             </div>
           </div>
         </div>

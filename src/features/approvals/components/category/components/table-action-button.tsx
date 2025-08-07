@@ -36,7 +36,7 @@ export function DataTableRowActions({ row }: any) {
           <Button
             variant="ghost"
             onClick={() => handleDelete(row)}
-            className="h-8 w-8 p-0 text-red-600 hover:bg-green-50 hover:text-red-700"
+            className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
           >
             <IconTrash size={16} />
           </Button>
