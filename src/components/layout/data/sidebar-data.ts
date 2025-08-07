@@ -9,7 +9,7 @@ import {
   ShieldUser,
   Settings,
   Bell,
-  FileText
+  FileText,
 } from "lucide-react";
 
 import { type SidebarData } from "../types";
@@ -46,22 +46,24 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "Customers",
-          // url: '/customers',
           icon: Building2,
           menuKey: "customers",
           items: [
             {
               title: "Customer Directory",
               url: "/customers",
+              menuKey: "customer_directory",
             },
 
             {
               title: "Add Customer",
               url: "/customers/add-customer",
+              menuKey: "add_customer",
             },
             {
               title: "Customer Type",
               url: "/customer-type",
+              menuKey: "customer_type",
             },
           ],
         },
@@ -158,7 +160,7 @@ export const sidebarData: SidebarData = {
               menuKey: "all_reports",
             },
           ],
-        }, 
+        },
       ],
     },
     {
@@ -383,7 +385,7 @@ export const ROUTE_PERMISSIONS: Record<
     requiredRoles: ["admin"],
     requireAll: false,
   },
- 
+
   "/calendar/upcoming-visit/": {
     requiredPermissions: ["calendar.read"],
     requiredRoles: ["admin"],
@@ -394,4 +396,4 @@ export const ROUTE_PERMISSIONS: Record<
     requiredRoles: ["admin"],
     requireAll: false,
   },
-};  
+};
