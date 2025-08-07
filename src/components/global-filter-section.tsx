@@ -24,6 +24,8 @@ export interface FilterConfig {
   onCancelPress?: () => void;
   dateRangeValue?: DateRange;
   onDateRangeChange?: (value: DateRange | undefined) => void;
+  dataRangeClassName?: string;
+  searchableSelectClassName?: string;
 }
 
 interface DataTableToolbarProps {
@@ -84,7 +86,9 @@ export function DataTableToolbarCompact({
 
           if (filter.type === "searchable-select") {
             return (
-              <div className="w-full max-w-md">
+              <div
+                className={`${filter.searchableSelectClassName ?? "w-full max-w-md"}`}
+              >
                 <SearchableSelect
                   key={filter.key}
                   options={filter.options ?? []}
@@ -110,7 +114,9 @@ export function DataTableToolbarCompact({
 
           if (filter.type === "date-range") {
             return (
-              <div className="w-full max-w-md">
+              <div
+                className={`${filter.dataRangeClassName ?? "w-full max-w-md"}`}
+              >
                 <DateRangeFilter
                   key={filter.key}
                   dateRange={filter.dateRangeValue}

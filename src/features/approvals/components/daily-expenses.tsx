@@ -15,6 +15,10 @@ import { useGetUsers } from "@/features/livetracking/services/live-tracking-serv
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 import { formatDropDownLabel } from "@/utils/commonFunction";
+import {
+  formatExpenseSubType,
+  formatExpenseType,
+} from "@/utils/commonFormatters";
 
 export default function DailyExpenses() {
   const initialDateRange: DateRange = {
@@ -83,7 +87,7 @@ export default function DailyExpenses() {
 
   const expanseTypeOptions = Object.entries(EXPENSE_TYPE).map(
     ([key, value]) => ({
-      label: formatDropDownLabel(key),
+      label: formatExpenseType(key),
       value,
     })
   );
@@ -97,7 +101,7 @@ export default function DailyExpenses() {
 
   const expanseSubTypeOptions = Object.entries(EXPENSE_SUB_TYPE).map(
     ([key, value]) => ({
-      label: formatDropDownLabel(key),
+      label: formatExpenseSubType(key),
       value,
     })
   );
@@ -109,16 +113,18 @@ export default function DailyExpenses() {
       placeholder: "Filter by date",
       dateRangeValue: dateRange,
       onDateRangeChange: handleDateRangeChange,
+      dataRangeClassName: "w-full max-w-xs",
     },
     {
       key: "salesRepresentativeUserId",
       type: "searchable-select",
       onChange: (value) =>
         handleFilterChange("salesRepresentativeUserId", String(value)),
-      placeholder: "Select salesRep",
+      placeholder: "Select Sales Rep",
       value: pagination.salesRepresentativeUserId,
       options: usersOptions,
       onCancelPress: () => handleFilterChange("salesRepresentativeUserId", ""),
+      searchableSelectClassName: "w-full max-w-[180px]",
     },
     {
       key: "expenseType",
@@ -140,7 +146,7 @@ export default function DailyExpenses() {
       key: "expenseSubType",
       type: "select",
       onChange: (value) => handleFilterChange("expenseSubType", String(value)),
-      placeholder: "Select Expanse Sub Type",
+      placeholder: "Select Sub Type",
       value: pagination.expenseSubType,
       options: expanseSubTypeOptions,
     },

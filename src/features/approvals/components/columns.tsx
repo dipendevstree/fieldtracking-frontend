@@ -57,7 +57,7 @@ export const columns: ColumnDef<any>[] = [
   {
     accessorKey: "expenseType",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title="Expense Type" />
+      <CustomDataTableColumnHeader column={column} title="Type" />
     ),
     enableSorting: false,
     cell: ({ row }) => {
@@ -68,7 +68,7 @@ export const columns: ColumnDef<any>[] = [
   {
     accessorKey: "expenseSubType",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title="Expense Sub Type" />
+      <CustomDataTableColumnHeader column={column} title="Sub Type" />
     ),
     enableSorting: false,
     cell: ({ row }) => {
