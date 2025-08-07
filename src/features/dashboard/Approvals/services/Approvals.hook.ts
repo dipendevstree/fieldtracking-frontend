@@ -1,12 +1,12 @@
-import API from "@/config/api/api";
+// import API from "@/config/api/api";
 import useFetchData from "@/hooks/use-fetch-data";
 import usePostData from "@/hooks/use-post-data";
 import useDeleteData from "@/hooks/use-delete-data";
 import usePatchData from "@/hooks/use-patch-data";
 import { Approval, ApprovalWorkflow, ApprovalStats } from "../type/type";
 
-const APPROVALS_QUERY = API.approvals?.list || '/api/approvals'
-const APPROVAL_WORKFLOWS_QUERY = API.approvals?.workflows || '/api/approval-workflows'
+const APPROVALS_QUERY = "/api/approvals";
+const APPROVAL_WORKFLOWS_QUERY = "/api/approval-workflows";
 
 export interface IListParams {
   sort?: string;
@@ -59,7 +59,7 @@ export interface ApprovalWorkflowResponse {
 // Approval Actions
 export const useApproveRejectApproval = (onSuccess?: () => void) => {
   return usePostData<ApprovalResponse, ApprovalActionPayload>({
-    url: API.approvals?.action || "/api/approvals/action",
+    url: "/api/approvals/action",
     refetchQueries: [APPROVALS_QUERY],
     onSuccess: () => {
       if (onSuccess) {
@@ -100,7 +100,7 @@ export const useGetAllApprovals = (
 // Get Approval Stats
 export const useGetApprovalStats = (options?: { enabled?: boolean }) => {
   return useFetchData<ApprovalStats>({
-    url: API.approvals?.stats || "/api/approvals/stats",
+    url: "/api/approvals/stats",
     enabled: options?.enabled ?? true,
   });
 };
@@ -108,7 +108,7 @@ export const useGetApprovalStats = (options?: { enabled?: boolean }) => {
 // Workflow Management
 export const useCreateApprovalWorkflow = (onSuccess?: () => void) => {
   return usePostData<ApprovalWorkflowResponse, ApprovalWorkflowPayload>({
-    url: API.approvals?.workflows || "/api/approval-workflows",
+    url: "/api/approval-workflows",
     refetchQueries: [APPROVAL_WORKFLOWS_QUERY],
     onSuccess: () => {
       if (onSuccess) {
@@ -123,7 +123,7 @@ export const useUpdateApprovalWorkflow = (
   onSuccess?: () => void
 ) => {
   return usePatchData<ApprovalWorkflowResponse, ApprovalWorkflowPayload>({
-    url: `${API.approvals?.workflows || "/api/approval-workflows"}/${id}`,
+    url: `/api/approval-workflows/${id}`,
     refetchQueries: [APPROVAL_WORKFLOWS_QUERY],
     onSuccess: () => {
       if (onSuccess) {
@@ -138,7 +138,7 @@ export const useDeleteApprovalWorkflow = (
   onSuccess?: () => void
 ) => {
   return useDeleteData({
-    url: `${API.approvals?.workflows || "/api/approval-workflows"}/${id}`,
+    url: `/api/approval-workflows/${id}`,
     refetchQueries: [APPROVAL_WORKFLOWS_QUERY],
     onSuccess: () => {
       if (onSuccess) {
