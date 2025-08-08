@@ -1,4 +1,6 @@
-export function formatExpenseType(type: string): string {
+export function formatExpenseType(type?: string): string {
+  if (!type) return "Unknown";
+
   const map: Record<string, string> = {
     travel: "Travel Allowance",
     daily: "Daily Allowance",
@@ -7,7 +9,9 @@ export function formatExpenseType(type: string): string {
   return map[type.toLowerCase()] || type;
 }
 
-export function formatExpenseSubType(type: string): string {
+export function formatExpenseSubType(type?: string): string {
+  if (!type) return "Unknown";
+
   const map: Record<string, string> = {
     travel_lump_sum: "Lump Sum Entry",
     travel_route: "Route-wise Details",
