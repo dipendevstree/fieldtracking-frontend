@@ -2,7 +2,13 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Trash2 } from "lucide-react";
 
 // Placeholder data
@@ -51,12 +57,14 @@ export default function Approvers() {
   };
   const handleUserChange = (levelIdx: number, value: string) => {
     setLevels(
-      levels.map((lvl, i) =>
-        i === levelIdx ? { ...lvl, user: value } : lvl
-      )
+      levels.map((lvl, i) => (i === levelIdx ? { ...lvl, user: value } : lvl))
     );
   };
-  const handleExpenseTypeChange = (levelIdx: number, typeIdx: number, value: string) => {
+  const handleExpenseTypeChange = (
+    levelIdx: number,
+    typeIdx: number,
+    value: string
+  ) => {
     setLevels(
       levels.map((lvl, i) =>
         i === levelIdx
@@ -93,7 +101,10 @@ export default function Approvers() {
     setLevels(
       levels.map((lvl, i) =>
         i === levelIdx
-          ? { ...lvl, expenseTypes: [...lvl.expenseTypes, getDefaultExpenseType()] }
+          ? {
+              ...lvl,
+              expenseTypes: [...lvl.expenseTypes, getDefaultExpenseType()],
+            }
           : lvl
       )
     );
@@ -102,7 +113,10 @@ export default function Approvers() {
     setLevels(
       levels.map((lvl, i) =>
         i === levelIdx
-          ? { ...lvl, expenseTypes: lvl.expenseTypes.filter((_, j) => j !== typeIdx) }
+          ? {
+              ...lvl,
+              expenseTypes: lvl.expenseTypes.filter((_, j) => j !== typeIdx),
+            }
           : lvl
       )
     );
@@ -120,14 +134,6 @@ export default function Approvers() {
 
   return (
     <div className="p-8 bg-white min-h-screen">
-      {/* Page Title and Description */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-1">Expense Approvers Configuration</h1>
-        <p className="text-muted-foreground text-sm">
-          Configure approval hierarchy and default approvers for different scenarios
-        </p>
-      </div>
-
       {/* Top Row: Selectors and Add Level Button */}
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
         <div className="flex flex-col md:flex-row gap-8 w-full">
@@ -139,7 +145,9 @@ export default function Approvers() {
               </SelectTrigger>
               <SelectContent>
                 {departments.map((d) => (
-                  <SelectItem key={d.value} value={d.value}>{d.label}</SelectItem>
+                  <SelectItem key={d.value} value={d.value}>
+                    {d.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -152,14 +160,20 @@ export default function Approvers() {
               </SelectTrigger>
               <SelectContent>
                 {users.map((u) => (
-                  <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+                  <SelectItem key={u.value} value={u.value}>
+                    {u.label}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
         </div>
         <div className="flex justify-end w-full md:w-auto">
-          <Button variant="default" className="bg-primary text-white px-4 py-2 rounded" onClick={handleAddLevel}>
+          <Button
+            variant="default"
+            className="bg-primary text-white px-4 py-2 rounded"
+            onClick={handleAddLevel}
+          >
             + Add New Level
           </Button>
         </div>
@@ -196,7 +210,9 @@ export default function Approvers() {
                 </SelectTrigger>
                 <SelectContent>
                   {users.map((u) => (
-                    <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+                    <SelectItem key={u.value} value={u.value}>
+                      {u.label}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -212,14 +228,18 @@ export default function Approvers() {
                 <Label className="mb-1 block">Expense Type</Label>
                 <Select
                   value={et.type}
-                  onValueChange={(val) => handleExpenseTypeChange(levelIdx, typeIdx, val)}
+                  onValueChange={(val) =>
+                    handleExpenseTypeChange(levelIdx, typeIdx, val)
+                  }
                 >
                   <SelectTrigger className="w-full bg-white border border-gray-200 shadow-none">
                     <SelectValue placeholder="Select expense type" />
                   </SelectTrigger>
                   <SelectContent>
                     {expenseTypes.map((e) => (
-                      <SelectItem key={e.value} value={e.value}>{e.label}</SelectItem>
+                      <SelectItem key={e.value} value={e.value}>
+                        {e.label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -229,7 +249,14 @@ export default function Approvers() {
                 <Input
                   type="number"
                   value={et.minAmount}
-                  onChange={(e) => handleAmountChange(levelIdx, typeIdx, "minAmount", e.target.value)}
+                  onChange={(e) =>
+                    handleAmountChange(
+                      levelIdx,
+                      typeIdx,
+                      "minAmount",
+                      e.target.value
+                    )
+                  }
                   placeholder="$0"
                   className="bg-white border border-gray-200 shadow-none"
                 />
@@ -239,7 +266,14 @@ export default function Approvers() {
                 <Input
                   type="number"
                   value={et.maxAmount}
-                  onChange={(e) => handleAmountChange(levelIdx, typeIdx, "maxAmount", e.target.value)}
+                  onChange={(e) =>
+                    handleAmountChange(
+                      levelIdx,
+                      typeIdx,
+                      "maxAmount",
+                      e.target.value
+                    )
+                  }
                   placeholder="$0"
                   className="bg-white border border-gray-200 shadow-none"
                 />
@@ -276,7 +310,11 @@ export default function Approvers() {
         <Button variant="outline" className="px-4 py-2" onClick={handleCancel}>
           Cancel
         </Button>
-        <Button variant="default" className="bg-primary text-white px-4 py-2" onClick={handleSave}>
+        <Button
+          variant="default"
+          className="bg-primary text-white px-4 py-2"
+          onClick={handleSave}
+        >
           Save
         </Button>
       </div>
