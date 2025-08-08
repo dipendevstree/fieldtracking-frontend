@@ -5,7 +5,8 @@ import debounce from 'lodash.debounce'
 import { useSelectOptions } from '@/hooks/use-select-option'
 import { FilterConfig } from '@/components/global-filter-section'
 import GlobalFilterSection from '@/components/global-table-filter-section'
-import MonthlyExpenseTable from './monthly-expense-table'
+import MonthlyExpenseTable from './components/monthly-expense-table'
+
 
 // Updated mock data for monthly expense summary based on the image
 const mockMonthlyExpenses = [

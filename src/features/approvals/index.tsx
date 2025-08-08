@@ -3,9 +3,11 @@ import { useRouter } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Main } from "@/components/layout/main";
-import DailyExpenses from "./components/daily-expenses";
-import MonthlyExpenses from "./components/monthly-expenses";
+
+
 import CategoryExpanses from "./components/category/expenses-category";
+import DailyExpenses from "./components/daily-expanse/daily-expenses";
+import MonthlyExpenses from "./components/monthly-expanse/monthly-expenses";
 
 // Components for each tab
 // import DailyExpenses from './components/DailyExpenses'

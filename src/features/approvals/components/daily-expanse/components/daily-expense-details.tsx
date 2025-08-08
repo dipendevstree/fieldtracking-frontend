@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Main } from "@/components/layout/main";
 import StatusBadge from "@/components/shared/common-status-badge";
-import { useDailyExpansesById } from "../services/daily-expanses.hook";
+import { useDailyExpansesById } from "../../../services/daily-expanses.hook";
 import {
   formatDateRange,
   getFullName,
@@ -20,8 +20,9 @@ import {
   formatExpenseType,
 } from "@/utils/commonFormatters";
 import { Separator } from "@/components/ui/separator";
-import { ExpenseDetailsSideCard } from "./ExpenseDetailsSideCard";
+
 import { Detail } from "@/components/ui/detail";
+import { ExpenseDetailsSideCard } from "./ExpenseDetailsSideCard";
 
 export default function DailyExpenseDetails() {
   const params = useParams({ strict: false });

@@ -9,7 +9,11 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import StatusBadge from "@/components/shared/common-status-badge";
 import { Detail } from "@/components/ui/detail";
-import { Props, TravelLumpSum, TravelRoute } from "../type/type";
+import {
+  TravelLumpSum,
+  Props,
+  TravelRoute,
+} from "@/features/approvals/type/type";
 
 export function ExpenseDetailsSideCard({
   expenseSubType,

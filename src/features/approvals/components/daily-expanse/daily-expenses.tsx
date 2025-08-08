@@ -9,7 +9,7 @@ import {
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { FilterConfig } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
-import DailyExpenseTable from "./daily-expense-table";
+import DailyExpenseTable from "./components/daily-expense-table";
 import { useGetUsers } from "@/features/livetracking/services/live-tracking-services";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
@@ -18,7 +18,8 @@ import {
   formatExpenseSubType,
   formatExpenseType,
 } from "@/utils/commonFormatters";
-import { useGetAllDailyExpanses } from "../services/daily-expanses.hook";
+import { useGetAllDailyExpanses } from "@/features/approvals/services/daily-expanses.hook";
+
 
 export default function DailyExpenses() {
   const initialDateRange: DateRange = {
