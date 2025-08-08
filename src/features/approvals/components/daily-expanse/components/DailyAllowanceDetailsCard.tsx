@@ -19,7 +19,7 @@ export function DailyAllowanceDetailsCard({
   return (
     <ScrollArea className="h-[calc(100vh-12rem)] pr-4 space-y-4">
       {dailyAllowances.map((allowance, i) => (
-        <Card key={allowance.dailyAllowanceId} className="border shadow-sm">
+        <Card key={allowance.dailyAllowanceId} className="border shadow-sm mb-4">
           <CardHeader>
             <CardTitle className="flex items-center justify-between text-base">
               {expenseSubType === "daily_outstation"
@@ -36,7 +36,7 @@ export function DailyAllowanceDetailsCard({
                 receiptUrls: [sampleReceipt, sampleReceipt],
               };
               return (
-                <div key={detail.id} className="border p-4 rounded-md mb-2">
+                <div key={detail.id} className="border p-4 rounded-md mb-4">
                   <div className="grid grid-cols-2 gap-4">
                     <Detail
                       label="Date"
