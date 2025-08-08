@@ -17,49 +17,60 @@ const departments = [
   { label: "Finance Team", value: "finance" },
   { label: "IT Department", value: "it" },
 ];
+
 const users = [
   { label: "Ronald Richards", value: "ronald" },
   { label: "Kathryn Murphy", value: "kathryn" },
   { label: "Jane Cooper", value: "jane" },
 ];
+
 const expenseTypes = [
   { label: "Travel", value: "travel" },
   { label: "Entertainment", value: "entertainment" },
   { label: "Training", value: "training" },
 ];
 
+const tiers = [
+  { label: "Low", value: "low" },
+  { label: "Medium", value: "medium" },
+  { label: "High", value: "high" },
+];
+
 function getDefaultExpenseType() {
-  return { type: "travel", minAmount: "1000", maxAmount: "10000" };
+  return {
+    type: "travel",
+    tier: "medium",
+    minAmount: "1000",
+    maxAmount: "10000",
+  };
 }
 
 function getDefaultLevel() {
   return {
     user: "kathryn",
-    expenseTypes: [getDefaultExpenseType(), getDefaultExpenseType()],
+    expenseTypes: [getDefaultExpenseType()],
   };
 }
 
 export default function Approvers() {
   const [defaultApprover, setDefaultApprover] = useState("hr");
   const [selectedUser, setSelectedUser] = useState("ronald");
-  const [levels, setLevels] = useState([
-    getDefaultLevel(),
-    getDefaultLevel(),
-    getDefaultLevel(),
-  ]);
+  const [levels, setLevels] = useState([getDefaultLevel()]);
 
-  // Handlers
   const handleAddLevel = () => {
     setLevels([...levels, getDefaultLevel()]);
   };
+
   const handleRemoveLevel = (idx: number) => {
     setLevels(levels.filter((_, i) => i !== idx));
   };
+
   const handleUserChange = (levelIdx: number, value: string) => {
     setLevels(
       levels.map((lvl, i) => (i === levelIdx ? { ...lvl, user: value } : lvl))
     );
   };
+
   const handleExpenseTypeChange = (
     levelIdx: number,
     typeIdx: number,
@@ -78,6 +89,26 @@ export default function Approvers() {
       )
     );
   };
+
+  const handleTierChange = (
+    levelIdx: number,
+    typeIdx: number,
+    value: string
+  ) => {
+    setLevels(
+      levels.map((lvl, i) =>
+        i === levelIdx
+          ? {
+              ...lvl,
+              expenseTypes: lvl.expenseTypes.map((et, j) =>
+                j === typeIdx ? { ...et, tier: value } : et
+              ),
+            }
+          : lvl
+      )
+    );
+  };
+
   const handleAmountChange = (
     levelIdx: number,
     typeIdx: number,
@@ -97,6 +128,7 @@ export default function Approvers() {
       )
     );
   };
+
   const handleAddExpenseType = (levelIdx: number) => {
     setLevels(
       levels.map((lvl, i) =>
@@ -109,6 +141,7 @@ export default function Approvers() {
       )
     );
   };
+
   const handleRemoveExpenseType = (levelIdx: number, typeIdx: number) => {
     setLevels(
       levels.map((lvl, i) =>
@@ -122,19 +155,17 @@ export default function Approvers() {
     );
   };
 
-  // Save/Cancel handlers (stub)
   const handleSave = () => {
-    // TODO: Implement save logic
     alert("Saved! (stub)");
   };
+
   const handleCancel = () => {
-    // TODO: Implement cancel logic
     alert("Cancelled! (stub)");
   };
 
   return (
     <div className="p-8 bg-white min-h-screen">
-      {/* Top Row: Selectors and Add Level Button */}
+      {/* Top Selectors */}
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
         <div className="flex flex-col md:flex-row gap-8 w-full">
           <div className="flex flex-col gap-1 w-full md:w-64">
@@ -183,9 +214,8 @@ export default function Approvers() {
       {levels.map((level, levelIdx) => (
         <div
           key={levelIdx}
-          className="border border-dashed border-gray-200 rounded-xl p-6 mb-6 bg-gray-50 relative group transition-shadow"
+          className="border border-dashed border-gray-200 rounded-xl p-6 mb-6 bg-gray-50 relative group"
         >
-          {/* Remove Level Button */}
           {levels.length > 1 && (
             <Button
               variant="ghost"
@@ -218,7 +248,8 @@ export default function Approvers() {
               </Select>
             </div>
           </div>
-          {/* Expense Types */}
+
+          {/* Expense Types + Tier */}
           {level.expenseTypes.map((et, typeIdx) => (
             <div
               key={typeIdx}
@@ -244,6 +275,28 @@ export default function Approvers() {
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="flex-1 min-w-[120px]">
+                <Label className="mb-1 block">Select Tier</Label>
+                <Select
+                  value={et.tier}
+                  onValueChange={(val) =>
+                    handleTierChange(levelIdx, typeIdx, val)
+                  }
+                >
+                  <SelectTrigger className="w-full bg-white border border-gray-200 shadow-none">
+                    <SelectValue placeholder="Select tier" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tiers.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>
+                        {t.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="flex-1 min-w-[120px]">
                 <Label className="mb-1 block">Minimum amount</Label>
                 <Input
