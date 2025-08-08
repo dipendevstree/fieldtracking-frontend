@@ -7,6 +7,7 @@ import {
   formatExpenseType,
 } from "@/utils/commonFormatters";
 import { DataTableRowActions } from "./daily-expense-table-action-button";
+import { formatDateRange } from "@/utils/commonFunction";
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -35,16 +36,11 @@ export const columns: ColumnDef<any>[] = [
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Date" />
     ),
-    cell: ({ row }) => {
-      const date = row.original.createdDate || "";
-      const formattedDate = date
-        ? new Date(date).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          })
-        : "-";
-      return <div className=" text-sm">{formattedDate}</div>;
+    cell: ({ row }:any) => {
+      console.log("row", row);
+      
+     
+      return <div className=" text-sm">{formatDateRange(row.original.startDate,row.original.endDate)}</div>;
     },
     enableSorting: false,
   },
