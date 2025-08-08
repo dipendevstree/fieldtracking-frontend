@@ -20,7 +20,6 @@ import {
 } from "@/utils/commonFormatters";
 import { useGetAllDailyExpanses } from "@/features/approvals/services/daily-expanses.hook";
 
-
 export default function DailyExpenses() {
   const initialDateRange: DateRange = {
     from: new Date(),
