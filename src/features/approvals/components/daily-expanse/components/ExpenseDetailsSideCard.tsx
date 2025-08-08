@@ -1,6 +1,5 @@
 import { format } from "date-fns";
 import sampleReceipt from "@/assets/a320e87c6acd18eb34ccbfefbcddc062644af66a.png";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -9,18 +8,22 @@ import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import StatusBadge from "@/components/shared/common-status-badge";
 import { Detail } from "@/components/ui/detail";
-import { Props, TravelLumpSum, TravelRoute } from "../type/type";
+import {
+  TravelLumpSum,
+  TravelExpanseDetailsProps,
+  TravelRoute,
+} from "@/features/approvals/type/type";
 
 export function ExpenseDetailsSideCard({
   expenseSubType,
   travelLumpSums = [],
   travelRoutes = [],
-}: Props) {
+}: TravelExpanseDetailsProps) {
   const isLumpSum = expenseSubType === "travel_lump_sum";
   const entries = isLumpSum ? travelLumpSums : travelRoutes;
 
   return (
-    <ScrollArea className="h-[calc(100vh-8rem)] space-y-4 pr-4">
+    <ScrollArea className="h-[calc(100vh-12rem)] space-y-4 pr-4">
       {entries.map((item, idx) => (
         <Card key={idx} className="border shadow-sm mb-4">
           <CardHeader>
@@ -63,49 +66,38 @@ export function ExpenseDetailsSideCard({
 
             <Separator />
 
-            <ReceiptAndActions />
+            <div className="flex flex-col items-center space-y-4 pt-2">
+              <img
+                src={sampleReceipt || ""}
+                alt="Receipt"
+                className="h-auto w-40 rounded border"
+              />
+
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="outline">View Full Size</Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-4xl p-0">
+                  <img
+                    src={sampleReceipt || ""}
+                    alt="Full Receipt"
+                    className="h-auto w-full rounded"
+                  />
+                </DialogContent>
+              </Dialog>
+
+              <Textarea placeholder="Add Comment (Optional)" />
+
+              <div className="grid w-full grid-cols-2 gap-2">
+                <Button className="bg-green-600 text-white hover:bg-green-700">
+                  Approve Expense
+                </Button>
+                <Button variant="destructive">Reject Expense</Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
       ))}
     </ScrollArea>
-  );
-}
-
-function ReceiptAndActions() {
-  return (
-    <div className="flex flex-col items-center space-y-4 pt-2">
-      <img
-        src={sampleReceipt || ""}
-        alt="Receipt"
-        className="h-auto w-40 rounded border"
-      />
-
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button variant="outline">View Full Size</Button>
-        </DialogTrigger>
-        <DialogContent className="max-w-4xl p-0">
-          <img
-            src={sampleReceipt || ""}
-            alt="Full Receipt"
-            className="h-auto w-full rounded"
-          />
-        </DialogContent>
-      </Dialog>
-
-      <Textarea placeholder="Add Comment (Optional)" />
-
-      <div className="grid w-full grid-cols-2 gap-2">
-        <Button className="bg-green-600 text-white hover:bg-green-700">
-          Approve Expense
-        </Button>
-        <Button variant="destructive">Reject Expense</Button>
-      </div>
-
-      <div className="grid w-full grid-cols-2 gap-2">
-        <Button variant="outline">Forward to Next Level</Button>
-        <Button variant="outline">Request More Information</Button>
-      </div>
-    </div>
   );
 }

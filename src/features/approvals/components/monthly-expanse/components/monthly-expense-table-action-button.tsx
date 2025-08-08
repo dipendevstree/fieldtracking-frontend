@@ -4,8 +4,9 @@ import { PermissionGate } from '@/permissions/components/PermissionGate'
 import { DeleteModal } from '@/components/shared/common-delete-modal'
 import Button from '@/components/shared/custom-button'
 import CustomTooltip from '@/components/shared/custom-tooltip'
-import { useDeleteVisits } from '../services/calendar-view.hook'
-import { userUpcomingVisitStoreState } from '../store/upcoming-visits.store'
+import { userUpcomingVisitStoreState } from '@/features/calendar/store/upcoming-visits.store'
+import { useDeleteVisits } from '@/features/calendar/services/calendar-view.hook'
+
 
 type RowProps = {
   row: {

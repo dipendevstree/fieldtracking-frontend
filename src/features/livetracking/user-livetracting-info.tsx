@@ -139,7 +139,7 @@ const UserTrackingTimeline = ({
         });
       }
     }
-  }, [selectedDate, isFetched]); // Dependencies are complete
+  }, [selectedDate, isFetched,trackingData.length]); // Dependencies are complete
 
   // MODIFIED: Socket effect now efficiently updates the distance.
   useEffect(() => {

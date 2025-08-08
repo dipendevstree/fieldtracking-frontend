@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { Main } from "@/components/layout/main";
 import StatusBadge from "@/components/shared/common-status-badge";
-import { useDailyExpansesById } from "../services/daily-expanses.hook";
+
 import {
   formatDateRange,
   getFullName,
@@ -22,6 +22,9 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { ExpenseDetailsSideCard } from "./ExpenseDetailsSideCard";
 import { Detail } from "@/components/ui/detail";
+import { useDailyExpansesById } from "@/features/approvals/services/daily-expanses.hook";
+import { DailyAllowanceDetailsCard } from "./DailyAllowanceDetailsCard";
+
 
 export default function DailyExpenseDetails() {
   const params = useParams({ strict: false });
@@ -86,12 +89,20 @@ export default function DailyExpenseDetails() {
             <Separator />
           </CardContent>
         </Card>
-
-        <ExpenseDetailsSideCard
-          expenseSubType={dailyExpanse?.expenseSubType}
-          travelLumpSums={dailyExpanse?.travelLumpSums}
-          travelRoutes={dailyExpanse?.travelRoutes}
-        />
+        <Card className="pl-4">
+          {dailyExpanse?.expenseType === "daily" ? (
+            <DailyAllowanceDetailsCard
+              expenseSubType={dailyExpanse?.expenseSubType}
+              dailyAllowances={dailyExpanse?.dailyAllowances}
+            />
+          ) : (
+            <ExpenseDetailsSideCard
+              expenseSubType={dailyExpanse?.expenseSubType}
+              travelLumpSums={dailyExpanse?.travelLumpSums}
+              travelRoutes={dailyExpanse?.travelRoutes}
+            />
+          )}
+        </Card>
       </div>
     </Main>
   );
