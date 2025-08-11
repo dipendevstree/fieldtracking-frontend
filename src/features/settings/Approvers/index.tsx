@@ -16,7 +16,7 @@ const ApproversPage = () => {
           </p>
         </div>
         {/* Settings Configuration */}
-        <div className="mb-8">
+        <div>
           <Approvers />
         </div>
       </div>
