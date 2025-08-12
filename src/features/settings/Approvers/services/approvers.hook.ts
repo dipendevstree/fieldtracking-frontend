@@ -252,3 +252,18 @@ export const useDeleteApprovalsLevel = (onSuccess?: () => void) => {
     },
   });
 };
+
+export const useUpdateOrganization = (
+  organizationID: string,
+  onSuccess?: (data: any) => void
+) => {
+  return usePatchData({
+    url: `${API.organizations.update}/${organizationID}`,
+    refetchQueries: [API.approvals.list],
+    onSuccess: (data) => {
+      if (onSuccess) {
+        onSuccess(data);
+      }
+    },
+  });
+};

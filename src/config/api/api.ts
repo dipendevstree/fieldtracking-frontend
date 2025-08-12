@@ -132,6 +132,7 @@ const API = {
     create: "expenseApprovalLevel/create",
     update: "expenseApprovalLevel/patch",
     delete: "expenseApprovalLevel/multi-delete",
+    organizationCreate: "organization/patch",
   },
 };
 
