@@ -1,209 +1,286 @@
-import { useState } from "react";
+import { useEffect } from "react";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { AlertCircle, Loader2, Trash2 } from "lucide-react";
+import { EXPENSE_TYPE, TIER } from "@/data/app.data";
+import { formatExpenseType } from "@/utils/commonFormatters";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Trash2 } from "lucide-react";
+  useCreateApprovalsLevel,
+  useDeleteApprovalsLevel,
+  useGetAllApprovalsLevel,
+  useGetAllRolesForDropdownList,
+  useGetUsersDropDownList,
+  useUpdateApprovalsLevel,
+} from "../services/approvers.hook";
+import { useSelectOptions } from "@/hooks/use-select-option";
+import { formSchema, FormValues } from "../data/approvalLevelSchema";
+import { Card } from "@/components/ui/card";
 
-// Placeholder data
-const departments = [
-  { label: "HR Department", value: "hr" },
-  { label: "Finance Team", value: "finance" },
-  { label: "IT Department", value: "it" },
-];
-
-const users = [
-  { label: "Ronald Richards", value: "ronald" },
-  { label: "Kathryn Murphy", value: "kathryn" },
-  { label: "Jane Cooper", value: "jane" },
-];
-
-const expenseTypes = [
-  { label: "Travel", value: "travel" },
-  { label: "Entertainment", value: "entertainment" },
-  { label: "Training", value: "training" },
-];
-
-const tiers = [
-  { label: "Low", value: "low" },
-  { label: "Medium", value: "medium" },
-  { label: "High", value: "high" },
-];
-
-function getDefaultExpenseType() {
-  return {
-    type: "travel",
-    tier: "medium",
-    minAmount: "1000",
-    maxAmount: "10000",
-  };
-}
-
-function getDefaultLevel() {
-  return {
-    user: "kathryn",
-    expenseTypes: [getDefaultExpenseType()],
-  };
-}
-
+// ----------- Main Approvers Component -------------
 export default function Approvers() {
-  const [defaultApprover, setDefaultApprover] = useState("hr");
-  const [selectedUser, setSelectedUser] = useState("ronald");
-  const [levels, setLevels] = useState([getDefaultLevel()]);
+  const { data: allApprovalsLevelList = {}, isLoading } =
+    useGetAllApprovalsLevel();
 
-  const handleAddLevel = () => {
-    setLevels([...levels, getDefaultLevel()]);
-  };
+  const { mutate: createApprovalLevel, isPending: isCreating } =
+    useCreateApprovalsLevel();
+  const { mutate: updateApprovalLevel, isPending: isUpdating } =
+    useUpdateApprovalsLevel();
+  const { mutate: deleteApprovalLevel, isPending: isDeleting } =
+    useDeleteApprovalsLevel();
+  const isProcessing = isCreating || isUpdating || isDeleting;
 
-  const handleRemoveLevel = (idx: number) => {
-    setLevels(levels.filter((_, i) => i !== idx));
-  };
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { isDirty, errors },
+  } = useForm<FormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      defaultApprover: "",
+      selectedUser: "",
+      levels: [
+        {
+          user: "",
+          expenseTypes: [
+            {
+              type: EXPENSE_TYPE.DAILY,
+              tier: TIER.TIER_1,
+              minAmount: "0",
+              maxAmount: "0",
+            },
+          ],
+        },
+      ],
+    },
+  });
 
-  const handleUserChange = (levelIdx: number, value: string) => {
-    setLevels(
-      levels.map((lvl, i) => (i === levelIdx ? { ...lvl, user: value } : lvl))
+  const { allRoles: allRolesList } = useGetAllRolesForDropdownList();
+
+  const roleId = watch("defaultApprover");
+
+  const { listData: userListDropDownDataforLevel = [] } =
+    useGetUsersDropDownList({
+      roleId,
+      enabled: true,
+    });
+
+  const { listData: userListDropDownForExpenseTypes = [] } =
+    useGetUsersDropDownList();
+
+  const {
+    fields: levelFields,
+    append: addLevel,
+    remove: removeLevel,
+  } = useFieldArray({ control, name: "levels" });
+
+  const userListDropDownListForLevels = userListDropDownDataforLevel?.map(
+    (user: any) => ({
+      ...user,
+      fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+    })
+  );
+
+  const userListDropDownListForExpenseTypes =
+    userListDropDownForExpenseTypes?.map((user: any) => ({
+      ...user,
+      fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+    }));
+
+  const rolesOptions = useSelectOptions({
+    listData: allRolesList,
+    labelKey: "roleName",
+    valueKey: "roleId",
+  });
+
+  const usersOptionsForLevels = useSelectOptions<any>({
+    listData: userListDropDownListForLevels,
+    labelKey: "fullName",
+    valueKey: "id",
+  }).map((option) => ({ ...option, value: String(option.value) }));
+
+  const usersOptionsForExpanseTypes = useSelectOptions<any>({
+    listData: userListDropDownListForExpenseTypes,
+    labelKey: "fullName",
+    valueKey: "id",
+  }).map((option) => ({ ...option, value: String(option.value) }));
+
+  const tierOptions = Object.entries(TIER).map(([key, value]) => ({
+    label: key.replace("TIER_", "Tier "),
+    value,
+  }));
+
+  const expanseTypeOptions = Object.entries(EXPENSE_TYPE).map(
+    ([key, value]) => ({
+      label: formatExpenseType(key),
+      value,
+    })
+  );
+
+  // ----------- Prefill Data from API -------------
+  useEffect(() => {
+    if (
+      !isLoading &&
+      allApprovalsLevelList &&
+      Object.keys(allApprovalsLevelList).length
+    ) {
+      const prefilledLevels = Object.entries(allApprovalsLevelList).map(
+        ([userId, records]) => {
+          const expenseTypes = (Array.isArray(records) ? records : []).map(
+            (rec) => ({
+              expensesLevelId: rec.id,
+              type: rec.expenseType,
+              tier: rec.tierkey,
+              minAmount: String(rec.minAmount),
+              maxAmount: String(rec.maxAmount),
+            })
+          );
+          return {
+            user: userId,
+            expenseTypes,
+          };
+        }
+      );
+
+      reset({
+        defaultApprover: "",
+        selectedUser: "",
+        levels: prefilledLevels,
+      });
+    }
+  }, [allApprovalsLevelList, isLoading, reset]);
+
+  // ----------- Submit Handler -------------
+  const onSubmit = (values: FormValues) => {
+    const allPayloads: any[] = [];
+    const deleteIds: string[] = [];
+
+    const originalRecordsMap = Object.values(allApprovalsLevelList || {})
+      .flat()
+      .reduce((acc: Record<string, any>, rec: any) => {
+        acc[rec.id] = rec;
+        return acc;
+      }, {});
+
+    values.levels.forEach((lvl, lvlIdx) => {
+      lvl.expenseTypes.forEach((et) => {
+        if (!et.expensesLevelId) {
+          // ✅ New record
+          allPayloads.push({
+            expenseType: et.type,
+            level: lvlIdx + 1,
+            userId: lvl.user,
+            tierkey: et.tier,
+            minAmount: Number(et.minAmount),
+            maxAmount: Number(et.maxAmount),
+          });
+        } else {
+          // 🛠 Check if it's actually changed
+          const original = originalRecordsMap[et.expensesLevelId];
+          const isChanged =
+            original.expenseType !== et.type ||
+            original.tierkey !== et.tier ||
+            Number(original.minAmount) !== Number(et.minAmount) ||
+            Number(original.maxAmount) !== Number(et.maxAmount) ||
+            String(original.userId) !== String(lvl.user);
+
+          if (isChanged) {
+            allPayloads.push({
+              expensesLevelId: et.expensesLevelId,
+              expenseType: et.type,
+              level: lvlIdx + 1,
+              userId: lvl.user,
+              tierkey: et.tier,
+              minAmount: Number(et.minAmount),
+              maxAmount: Number(et.maxAmount),
+            });
+          }
+        }
+      });
+    });
+
+    const originalIds = Object.values(allApprovalsLevelList || {})
+      .flat()
+      .map((rec: any) => rec.id);
+    const currentIds = values.levels.flatMap((lvl) =>
+      lvl.expenseTypes
+        .filter((et) => et.expensesLevelId)
+        .map((et) => et.expensesLevelId!)
     );
-  };
+    deleteIds.push(...originalIds.filter((id) => !currentIds.includes(id)));
 
-  const handleExpenseTypeChange = (
-    levelIdx: number,
-    typeIdx: number,
-    value: string
-  ) => {
-    setLevels(
-      levels.map((lvl, i) =>
-        i === levelIdx
-          ? {
-              ...lvl,
-              expenseTypes: lvl.expenseTypes.map((et, j) =>
-                j === typeIdx ? { ...et, type: value } : et
-              ),
-            }
-          : lvl
-      )
-    );
-  };
+    const createList = allPayloads.filter((p) => !p.expensesLevelId);
+    const updateList = allPayloads.filter((p) => p.expensesLevelId);
 
-  const handleTierChange = (
-    levelIdx: number,
-    typeIdx: number,
-    value: string
-  ) => {
-    setLevels(
-      levels.map((lvl, i) =>
-        i === levelIdx
-          ? {
-              ...lvl,
-              expenseTypes: lvl.expenseTypes.map((et, j) =>
-                j === typeIdx ? { ...et, tier: value } : et
-              ),
-            }
-          : lvl
-      )
-    );
-  };
-
-  const handleAmountChange = (
-    levelIdx: number,
-    typeIdx: number,
-    field: "minAmount" | "maxAmount",
-    value: string
-  ) => {
-    setLevels(
-      levels.map((lvl, i) =>
-        i === levelIdx
-          ? {
-              ...lvl,
-              expenseTypes: lvl.expenseTypes.map((et, j) =>
-                j === typeIdx ? { ...et, [field]: value } : et
-              ),
-            }
-          : lvl
-      )
-    );
-  };
-
-  const handleAddExpenseType = (levelIdx: number) => {
-    setLevels(
-      levels.map((lvl, i) =>
-        i === levelIdx
-          ? {
-              ...lvl,
-              expenseTypes: [...lvl.expenseTypes, getDefaultExpenseType()],
-            }
-          : lvl
-      )
-    );
-  };
-
-  const handleRemoveExpenseType = (levelIdx: number, typeIdx: number) => {
-    setLevels(
-      levels.map((lvl, i) =>
-        i === levelIdx
-          ? {
-              ...lvl,
-              expenseTypes: lvl.expenseTypes.filter((_, j) => j !== typeIdx),
-            }
-          : lvl
-      )
-    );
-  };
-
-  const handleSave = () => {
-    alert("Saved! (stub)");
-  };
-
-  const handleCancel = () => {
-    alert("Cancelled! (stub)");
+    if (createList.length)
+      createApprovalLevel({ expenseApprovalLevels: createList });
+    if (updateList.length)
+      updateApprovalLevel({ expenseApprovalLevels: updateList });
+    if (deleteIds.length) deleteApprovalLevel({ ids: deleteIds });
   };
 
   return (
-    <div className="p-8 bg-white min-h-screen">
+    <form onSubmit={handleSubmit(onSubmit)}>
       {/* Top Selectors */}
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
-        <div className="flex flex-col md:flex-row gap-8 w-full">
-          <div className="flex flex-col gap-1 w-full md:w-64">
+        <div className="flex flex-col md:flex-row gap-4 w-full">
+          <div className="flex flex-col gap-2 w-full md:w-64">
             <Label>Default First Approver</Label>
-            <Select value={defaultApprover} onValueChange={setDefaultApprover}>
-              <SelectTrigger className="w-full bg-white border border-gray-200 shadow-none">
-                <SelectValue placeholder="Select department" />
-              </SelectTrigger>
-              <SelectContent>
-                {departments.map((d) => (
-                  <SelectItem key={d.value} value={d.value}>
-                    {d.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Controller
+              control={control}
+              name="defaultApprover"
+              render={({ field }) => (
+                <SearchableSelect
+                  options={rolesOptions as any}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onCancelPress={() => field.onChange("")}
+                  placeholder="Select department"
+                />
+              )}
+            />
           </div>
-          <div className="flex flex-col gap-1 w-full md:w-64">
+          <div className="flex flex-col gap-2 w-full md:w-64">
             <Label>Select user</Label>
-            <Select value={selectedUser} onValueChange={setSelectedUser}>
-              <SelectTrigger className="w-full bg-white border border-gray-200 shadow-none">
-                <SelectValue placeholder="Select user" />
-              </SelectTrigger>
-              <SelectContent>
-                {users.map((u) => (
-                  <SelectItem key={u.value} value={u.value}>
-                    {u.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Controller
+              control={control}
+              name="selectedUser"
+              render={({ field }) => (
+                <SearchableSelect
+                  options={usersOptionsForLevels}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onCancelPress={() => field.onChange("")}
+                  placeholder="Select user"
+                  disabled={!roleId}
+                />
+              )}
+            />
           </div>
         </div>
         <div className="flex justify-end w-full md:w-auto">
           <Button
             variant="default"
-            className="bg-primary text-white px-4 py-2 rounded"
-            onClick={handleAddLevel}
+            className="bg-primary text-white"
+            type="button"
+            onClick={() =>
+              addLevel({
+                user: "",
+                expenseTypes: [
+                  {
+                    type: EXPENSE_TYPE.DAILY,
+                    tier: TIER.TIER_1,
+                    minAmount: "0",
+                    maxAmount: "0",
+                  },
+                ],
+              })
+            }
           >
             + Add New Level
           </Button>
@@ -211,166 +288,209 @@ export default function Approvers() {
       </div>
 
       {/* Levels */}
-      {levels.map((level, levelIdx) => (
-        <div
-          key={levelIdx}
-          className="border border-dashed border-gray-200 rounded-xl p-6 mb-6 bg-gray-50 relative group"
-        >
-          {levels.length > 1 && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-4 right-4 opacity-70 hover:opacity-100"
-              onClick={() => handleRemoveLevel(levelIdx)}
-              tabIndex={-1}
-            >
-              <Trash2 className="w-5 h-5" />
-            </Button>
-          )}
-          <div className="font-semibold mb-4 text-lg">Level {levelIdx + 1}</div>
-          <div className="flex flex-col md:flex-row gap-8 mb-2">
-            <div className="flex-1 min-w-[180px]">
-              <Label className="mb-1 block">Select User</Label>
-              <Select
-                value={level.user}
-                onValueChange={(val) => handleUserChange(levelIdx, val)}
-              >
-                <SelectTrigger className="w-full bg-white border border-gray-200 shadow-none">
-                  <SelectValue placeholder="Select user" />
-                </SelectTrigger>
-                <SelectContent>
-                  {users.map((u) => (
-                    <SelectItem key={u.value} value={u.value}>
-                      {u.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Expense Types + Tier */}
-          {level.expenseTypes.map((et, typeIdx) => (
-            <div
-              key={typeIdx}
-              className="flex flex-col md:flex-row md:items-end gap-4 mb-2"
-            >
-              <div className="flex-1 min-w-[180px]">
-                <Label className="mb-1 block">Expense Type</Label>
-                <Select
-                  value={et.type}
-                  onValueChange={(val) =>
-                    handleExpenseTypeChange(levelIdx, typeIdx, val)
-                  }
-                >
-                  <SelectTrigger className="w-full bg-white border border-gray-200 shadow-none">
-                    <SelectValue placeholder="Select expense type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {expenseTypes.map((e) => (
-                      <SelectItem key={e.value} value={e.value}>
-                        {e.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex-1 min-w-[120px]">
-                <Label className="mb-1 block">Select Tier</Label>
-                <Select
-                  value={et.tier}
-                  onValueChange={(val) =>
-                    handleTierChange(levelIdx, typeIdx, val)
-                  }
-                >
-                  <SelectTrigger className="w-full bg-white border border-gray-200 shadow-none">
-                    <SelectValue placeholder="Select tier" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {tiers.map((t) => (
-                      <SelectItem key={t.value} value={t.value}>
-                        {t.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex-1 min-w-[120px]">
-                <Label className="mb-1 block">Minimum amount</Label>
-                <Input
-                  type="number"
-                  value={et.minAmount}
-                  onChange={(e) =>
-                    handleAmountChange(
-                      levelIdx,
-                      typeIdx,
-                      "minAmount",
-                      e.target.value
-                    )
-                  }
-                  placeholder="$0"
-                  className="bg-white border border-gray-200 shadow-none"
-                />
-              </div>
-              <div className="flex-1 min-w-[120px]">
-                <Label className="mb-1 block">Maximum amount</Label>
-                <Input
-                  type="number"
-                  value={et.maxAmount}
-                  onChange={(e) =>
-                    handleAmountChange(
-                      levelIdx,
-                      typeIdx,
-                      "maxAmount",
-                      e.target.value
-                    )
-                  }
-                  placeholder="$0"
-                  className="bg-white border border-gray-200 shadow-none"
-                />
-              </div>
-              <div className="flex items-center h-10 mt-2 md:mt-0">
-                {level.expenseTypes.length > 1 && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="opacity-70 hover:opacity-100"
-                    onClick={() => handleRemoveExpenseType(levelIdx, typeIdx)}
-                    tabIndex={-1}
-                  >
-                    <Trash2 className="w-5 h-5" />
-                  </Button>
-                )}
-              </div>
-            </div>
-          ))}
-          <div className="flex items-center mb-2">
-            <Button
-              variant="link"
-              size="sm"
-              className="p-0 h-auto text-primary"
-              onClick={() => handleAddExpenseType(levelIdx)}
-            >
-              + Expense Type
-            </Button>
-          </div>
-        </div>
+      {levelFields.map((level, levelIdx) => (
+        <Level
+          key={level.id}
+          control={control}
+          levelIdx={levelIdx}
+          removeLevel={removeLevel}
+          levelFieldsLength={levelFields.length}
+          usersOptions={usersOptionsForExpanseTypes}
+          expanseTypeOptions={expanseTypeOptions}
+          tierOptions={tierOptions}
+          errors={errors}
+        />
       ))}
-      {/* Save/Cancel Buttons */}
+
+      {/* Actions */}
       <div className="flex justify-end gap-2 mt-8">
-        <Button variant="outline" className="px-4 py-2" onClick={handleCancel}>
+        <Button variant="outline" type="button">
           Cancel
         </Button>
         <Button
           variant="default"
-          className="bg-primary text-white px-4 py-2"
-          onClick={handleSave}
+          className="bg-primary text-white flex items-center gap-2"
+          type="submit"
+          disabled={!isDirty || isProcessing}
         >
-          Save
+          {isProcessing && <Loader2 className="w-4 h-4 animate-spin" />}
+          {isProcessing ? "Processing..." : "Save"}
         </Button>
       </div>
-    </div>
+    </form>
+  );
+}
+
+// ----------- Level Component -------------
+function Level({
+  control,
+  levelIdx,
+  removeLevel,
+  levelFieldsLength,
+  usersOptions,
+  expanseTypeOptions,
+  tierOptions,
+  errors,
+}: {
+  control: any;
+  levelIdx: number;
+  removeLevel: (index: number) => void;
+  levelFieldsLength: number;
+  usersOptions: { label: string; value: string }[];
+  expanseTypeOptions: { label: string; value: string }[];
+  tierOptions: { label: string; value: string }[];
+  errors: any;
+}) {
+  const {
+    fields: expenseTypeFields,
+    append,
+    remove,
+  } = useFieldArray({
+    control,
+    name: `levels.${levelIdx}.expenseTypes` as const,
+  });
+
+  // Get all assigned users from form state
+  const assignedUserIds = (control._formValues?.levels || [])
+    .map((l: any) => l.user)
+    .filter(Boolean);
+
+  // Current row's user ID
+  const currentUserId = control._formValues?.levels?.[levelIdx]?.user;
+
+  // Filter: hide all assigned users except current one
+  const filteredUsersOptions = usersOptions.filter(
+    (u) => !assignedUserIds.includes(u.value) || u.value === currentUserId
+  );
+
+  return (
+    <Card className="px-6 mb-4 gap-4 relative">
+      {levelFieldsLength > 1 && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-4 right-4"
+          type="button"
+          onClick={() => removeLevel(levelIdx)}
+        >
+          <Trash2 className="w-5 h-5" />
+        </Button>
+      )}
+      <div className="font-semibold text-lg">Level {levelIdx + 1}</div>
+      <div className="flex flex-col md:flex-row gap-4">
+        <div className="flex-1 flex flex-col gap-2">
+          <Label>
+            Select User<span className="text-red-500">*</span>
+          </Label>
+          <Controller
+            control={control}
+            name={`levels.${levelIdx}.user`}
+            render={({ field }) => (
+              <SearchableSelect
+                options={filteredUsersOptions}
+                value={field.value}
+                onChange={field.onChange}
+                // onCancelPress={() => field.onChange("")}
+                placeholder="Select user"
+              />
+            )}
+          />
+          <FieldError error={errors.levels?.[levelIdx]?.user} />
+        </div>
+      </div>
+
+      {/* Expense Types */}
+      {expenseTypeFields.map((et, typeIdx) => (
+        <div
+          key={et.id}
+          className="flex flex-col md:flex-row md:items-end gap-4 mb-2"
+        >
+          <div className="flex-1 flex flex-col gap-2">
+            <Label>Expense Type</Label>
+            <Controller
+              control={control}
+              name={`levels.${levelIdx}.expenseTypes.${typeIdx}.type`}
+              render={({ field }) => (
+                <SearchableSelect
+                  options={expanseTypeOptions}
+                  value={field.value}
+                  onChange={field.onChange}
+                  // onCancelPress={() => field.onChange("")}
+                  placeholder="Select expense type"
+                />
+              )}
+            />
+          </div>
+          <div className="flex-1 flex flex-col gap-2">
+            <Label>Tier</Label>
+            <Controller
+              control={control}
+              name={`levels.${levelIdx}.expenseTypes.${typeIdx}.tier`}
+              render={({ field }) => (
+                <SearchableSelect
+                  options={tierOptions}
+                  value={field.value}
+                  onChange={field.onChange}
+                  // onCancelPress={() => field.onChange("")}
+                  placeholder="Select tier"
+                />
+              )}
+            />
+          </div>
+          <div className="flex-1 flex flex-col gap-2">
+            <Label>Min Amount</Label>
+            <Controller
+              control={control}
+              name={`levels.${levelIdx}.expenseTypes.${typeIdx}.minAmount`}
+              render={({ field }) => <Input type="number" {...field} />}
+            />
+          </div>
+          <div className="flex-1 flex flex-col gap-2">
+            <Label>Max Amount</Label>
+            <Controller
+              control={control}
+              name={`levels.${levelIdx}.expenseTypes.${typeIdx}.maxAmount`}
+              render={({ field }) => <Input type="number" {...field} />}
+            />
+          </div>
+          <div className="flex items-center h-10 mt-2 md:mt-0">
+            {expenseTypeFields.length > 1 && (
+              <Button
+                variant="ghost"
+                size="icon"
+                type="button"
+                onClick={() => remove(typeIdx)}
+              >
+                <Trash2 className="w-5 h-5" />
+              </Button>
+            )}
+          </div>
+        </div>
+      ))}
+
+      <Button
+        type="button"
+        onClick={() =>
+          append({
+            type: EXPENSE_TYPE.DAILY,
+            tier: TIER.TIER_1,
+            minAmount: "0",
+            maxAmount: "0",
+          })
+        }
+      >
+        + Add Expense Type
+      </Button>
+    </Card>
+  );
+}
+
+function FieldError({ error }: { error?: { message?: string } }) {
+  if (!error?.message) return null;
+  return (
+    <p className="flex items-center gap-1 text-xs text-red-500">
+      <AlertCircle className="h-3 w-3" />
+      {error?.message}
+    </p>
   );
 }
