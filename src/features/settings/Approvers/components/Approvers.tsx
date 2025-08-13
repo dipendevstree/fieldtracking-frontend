@@ -212,15 +212,30 @@ export default function Approvers() {
     const updateList = allPayloads.filter((p) => p.expensesLevelId);
 
     // 🆕 Call Create Organisation before anything else
-    updateOrganization({
-      defaultExpensesApprovalUserId: values.selectedUser,
-      defaultExpensesApprovalRoleId: values.defaultApprover,
-    });
+    updateOrganization(
+      {
+        defaultExpensesApprovalUserId: values.selectedUser,
+        defaultExpensesApprovalRoleId: values.defaultApprover,
+      },
+      {
+        onSuccess: () => {
+          reset(values); // reset form so isDirty = false after save
+        },
+      }
+    );
 
-    if (createList.length)
-      createApprovalLevel({ expenseApprovalLevels: createList });
-    if (updateList.length)
-      updateApprovalLevel({ expenseApprovalLevels: updateList });
+    if (createList.length) {
+      createApprovalLevel(
+        { expenseApprovalLevels: createList },
+        { onSuccess: () => reset(values) }
+      );
+    }
+    if (updateList.length) {
+      updateApprovalLevel(
+        { expenseApprovalLevels: updateList },
+        { onSuccess: () => reset(values) }
+      );
+    }
   };
 
   // ---- NEW: Show loader while fetching initial data ----
