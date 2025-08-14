@@ -8,7 +8,7 @@ import {
 } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-interface DeleteDataOptions<TData, TVariables> {
+interface DeleteDataOptions<TData, TVariables = void> {
   url: string;
   refetchQueries?: string[];
   onSuccess?: (data: TData) => void;
@@ -16,7 +16,7 @@ interface DeleteDataOptions<TData, TVariables> {
   mutationOptions?: UseMutationOptions<TData, Error, TVariables>;
 }
 
-const useDeleteData = <TData = unknown, TVariables = unknown>({
+const useDeleteData = <TData = unknown, TVariables = void>({
   url,
   refetchQueries = [],
   mutationOptions,
@@ -26,7 +26,7 @@ const useDeleteData = <TData = unknown, TVariables = unknown>({
   const queryClient = useQueryClient();
 
   return useMutation<TData, Error, TVariables>({
-    mutationFn: async (variables: TVariables): Promise<TData> => {
+    mutationFn: async (variables?: TVariables): Promise<TData> => {
       const response = await instance.delete({
         url,
         data: variables,
