@@ -71,6 +71,8 @@ export interface LoginUser {
   readonly access_token: string;
   role: any;
   readonly permissions: readonly PermissionGroup[];
+  organizationID:string;
+  organization:any,
 }
 
 // Complete login response

@@ -127,12 +127,13 @@ const API = {
     delete: "driver/delete",
     details: "driver/driver-documents",
   },
-  // approvals: {
-  //   list: "approvals/list",
-  //   action: "approvals/action",
-  //   stats: "approvals/stats",
-  //   workflows: "approval-workflows",
-  // },
+  approvals: {
+    list: "expenseApprovalLevel/list",
+    create: "expenseApprovalLevel/create",
+    update: "expenseApprovalLevel/patch",
+    delete: "expenseApprovalLevel/multi-delete",
+    organizationCreate: "organization/patch",
+  },
 };
 
 Object.freeze(API);

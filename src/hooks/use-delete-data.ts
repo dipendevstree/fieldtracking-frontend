@@ -8,26 +8,29 @@ import {
 } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-interface DeleteDataOptions<TData> {
+interface DeleteDataOptions<TData, TVariables = void> {
   url: string;
   refetchQueries?: string[];
   onSuccess?: (data: TData) => void;
   onError?: (error: EnhancedError) => void;
-  mutationOptions?: UseMutationOptions<TData, Error, void>;
+  mutationOptions?: UseMutationOptions<TData, Error, TVariables>;
 }
 
-const useDeleteData = <TData = unknown>({
+const useDeleteData = <TData = unknown, TVariables = void>({
   url,
   refetchQueries = [],
   mutationOptions,
   onSuccess,
   onError,
-}: DeleteDataOptions<TData>) => {
+}: DeleteDataOptions<TData, TVariables>) => {
   const queryClient = useQueryClient();
 
-  return useMutation<TData, Error, void>({
-    mutationFn: async (): Promise<TData> => {
-      const response = await instance.delete({ url });
+  return useMutation<TData, Error, TVariables>({
+    mutationFn: async (variables?: TVariables): Promise<TData> => {
+      const response = await instance.delete({
+        url,
+        data: variables,
+      });
 
       if (response?.statusCode === 200) {
         toast.success(response.message || "Deleted successfully", {
