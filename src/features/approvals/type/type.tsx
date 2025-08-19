@@ -14,6 +14,7 @@ export interface Category {
 }
 
 export type TravelLumpSum = {
+  travelLumpSumId: string;
   date: string;
   amount: number;
   approvedAmount: number;
@@ -22,6 +23,7 @@ export type TravelLumpSum = {
 };
 
 export type TravelRoute = {
+  travelRouteId: string;
   date: string;
   fromLocation: string;
   toLocation: string;
@@ -36,8 +38,14 @@ export type TravelExpanseDetailsProps = {
   expenseSubType: string;
   travelLumpSums?: TravelLumpSum[];
   travelRoutes?: TravelRoute[];
+  isApprovalLevel?: boolean;
+  dailyExpanse: any;
+  onExpenseReviewAndApproval: (payload: {
+    parentId: string;
+    status: "approved" | "reviewed" | "rejected";
+    comment: string;
+  }) => void;
 };
-
 
 export type DailyAllowance = {
   dailyAllowanceId: string;
@@ -59,7 +67,6 @@ export type DailyAllowance = {
   modifiedDate: string;
   dailyAllowancesDetails: DailyAllowanceDetail[];
 };
-
 
 export type DailyAllowanceDetail = {
   id: string;
@@ -85,7 +92,6 @@ export type DailyAllowanceDetail = {
   receiptUrls: string[];
 };
 
-
 export type ExpensesCategory = {
   expensesCategoryId: string;
   categoryName: string;
@@ -101,4 +107,3 @@ export type DailyAllowanseDetailsProps = {
   dailyAllowances?: DailyAllowance[];
   expenseSubType?: string;
 };
-
