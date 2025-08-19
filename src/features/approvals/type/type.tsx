@@ -106,4 +106,12 @@ export type ExpensesCategory = {
 export type DailyAllowanseDetailsProps = {
   dailyAllowances?: DailyAllowance[];
   expenseSubType?: string;
+  isApprovalLevel?: boolean;
+  dailyExpanse: any;
+  onExpenseReviewAndApproval: (payload: {
+    dailyAllowanceId:string;
+    dailyAllowanceDetailsId: string;
+    status: "approved" | "reviewed" | "rejected";
+    comment: string;
+  }) => void;
 };

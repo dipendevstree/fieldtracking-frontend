@@ -61,6 +61,28 @@ export default function DailyExpenseDetails() {
     expenseReviewAndApproval(payload);
   };
 
+  const handleDailyAllowanseReviewAndApproval = ({
+    dailyAllowanceId,
+    dailyAllowanceDetailsId,
+    status,
+    comment,
+  }: {
+    dailyAllowanceId: string;
+    dailyAllowanceDetailsId: string;
+    status: "approved" | "reviewed" | "rejected";
+    comment: string;
+  }) => {
+    const payload = {
+      expenseId: id,
+      status,
+      comment,
+      isApprovalLevel,
+      dailyAllowanceId,
+      dailyAllowanceDetailsId,
+    };
+    expenseReviewAndApproval(payload);
+  };
+
   const getUserLevelLabel = useMemo(
     () => (review: any) => {
       if (dailyExpanse?.defaultApprovalUser?.id === review.reviewerUserId) {
@@ -136,7 +158,7 @@ export default function DailyExpenseDetails() {
 
             <div>
               <p className="font-medium text-sm mb-2">Review and Approval</p>
-              <ScrollArea className="h-[calc(100vh-24rem)] pr-2">
+              <ScrollArea className="h-[calc(100vh-32rem)] pr-4">
                 {dailyExpanse?.expenseReviewAndApproval?.length ? (
                   dailyExpanse.expenseReviewAndApproval.map((data: any) => (
                     <Card
@@ -184,6 +206,9 @@ export default function DailyExpenseDetails() {
             <DailyAllowanceDetailsCard
               expenseSubType={dailyExpanse?.expenseSubType}
               dailyAllowances={dailyExpanse?.dailyAllowances}
+              isApprovalLevel={isApprovalLevel}
+              dailyExpanse={dailyExpanse}
+              onExpenseReviewAndApproval={handleDailyAllowanseReviewAndApproval}
             />
           ) : (
             <ExpenseDetailsSideCard

@@ -6,7 +6,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import StatusBadge from "@/components/shared/common-status-badge";
 import { Detail } from "@/components/ui/detail";
 import { useState, useEffect } from "react";
 import { useAuthStore } from "@/stores/use-auth-store";
@@ -128,7 +127,7 @@ export function ExpenseDetailsSideCard({
             <CardHeader>
               <CardTitle className="flex items-center justify-between text-base">
                 {isLumpSum ? "Lump Sum Travel" : `Travel Route ${idx + 1}`}
-                <StatusBadge status={item.status} />
+                {/* <StatusBadge status={item.status} /> */}
               </CardTitle>
             </CardHeader>
             <Separator />
