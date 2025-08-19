@@ -27,12 +27,15 @@ import {
   useDailyExpansesById,
   useExpenseReviewAndApproval,
 } from "@/features/approvals/services/daily-expanses.hook";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 export default function DailyExpenseDetails() {
   const { id } = useParams({ strict: false });
-  const { dailyExpanse } = useDailyExpansesById(id || "");
-  const { mutate: expenseReviewAndApproval } = useExpenseReviewAndApproval();
+  const { dailyExpanse, refetch: refetchExpanseDetails } = useDailyExpansesById(
+    id || ""
+  );
+  const { mutate: expenseReviewAndApproval, isSuccess } =
+    useExpenseReviewAndApproval();
 
   const user = dailyExpanse?.salesRepresentativeUser;
   const isApprovalLevel = dailyExpanse?.isApprovalLevel;
@@ -70,6 +73,12 @@ export default function DailyExpenseDetails() {
     },
     [dailyExpanse]
   );
+
+  useEffect(() => {
+    if (isSuccess) {
+      refetchExpanseDetails();
+    }
+  }, [isSuccess, refetchExpanseDetails]);
 
   return (
     <Main>
