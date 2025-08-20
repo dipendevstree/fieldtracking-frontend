@@ -1,23 +1,23 @@
-// import API from "@/config/api/api";
+import API from "@/config/api/api";
 import useFetchData from "@/hooks/use-fetch-data";
 import usePostData from "@/hooks/use-post-data";
 import useDeleteData from "@/hooks/use-delete-data";
 import usePatchData from "@/hooks/use-patch-data";
 import { Approval, ApprovalWorkflow, ApprovalStats } from "../type/type";
 
-const APPROVALS_QUERY = "/api/approvals";
-const APPROVAL_WORKFLOWS_QUERY = "/api/approval-workflows";
+const APPROVALS_QUERY = API.approvals?.list || "/api/approvals";
+const APPROVAL_WORKFLOWS_QUERY = API.approvals?.workflows || "/api/approval-workflows";
 
 export interface IListParams {
   sort?: string;
   limit: number;
   page: number;
-  status?: string;
-  type?: string;
-  priority?: string;
-  dateFrom?: string;
-  dateTo?: string;
+  startDate?: string;
+  endDate?: string;
   employeeId?: string;
+  approvalType?: string;
+  status?: string;
+  priority?: string;
   [key: string]: unknown;
 }
 
@@ -59,12 +59,15 @@ export interface ApprovalWorkflowResponse {
 // Approval Actions
 export const useApproveRejectApproval = (onSuccess?: () => void) => {
   return usePostData<ApprovalResponse, ApprovalActionPayload>({
-    url: "/api/approvals/action",
+    url: API.approvals?.action || "/api/approvals/action",
     refetchQueries: [APPROVALS_QUERY],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
       }
+    },
+    onError: (error) => {
+      console.error('Error processing approval action:', error);
     },
   });
 };
@@ -100,7 +103,7 @@ export const useGetAllApprovals = (
 // Get Approval Stats
 export const useGetApprovalStats = (options?: { enabled?: boolean }) => {
   return useFetchData<ApprovalStats>({
-    url: "/api/approvals/stats",
+    url: API.approvals?.stats || "/api/approvals/stats",
     enabled: options?.enabled ?? true,
   });
 };
@@ -108,12 +111,15 @@ export const useGetApprovalStats = (options?: { enabled?: boolean }) => {
 // Workflow Management
 export const useCreateApprovalWorkflow = (onSuccess?: () => void) => {
   return usePostData<ApprovalWorkflowResponse, ApprovalWorkflowPayload>({
-    url: "/api/approval-workflows",
+    url: APPROVAL_WORKFLOWS_QUERY,
     refetchQueries: [APPROVAL_WORKFLOWS_QUERY],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
       }
+    },
+    onError: (error) => {
+      console.error('Error creating approval workflow:', error);
     },
   });
 };
@@ -123,12 +129,15 @@ export const useUpdateApprovalWorkflow = (
   onSuccess?: () => void
 ) => {
   return usePatchData<ApprovalWorkflowResponse, ApprovalWorkflowPayload>({
-    url: `/api/approval-workflows/${id}`,
+    url: `${APPROVAL_WORKFLOWS_QUERY}/${id}`,
     refetchQueries: [APPROVAL_WORKFLOWS_QUERY],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
       }
+    },
+    onError: (error) => {
+      console.error('Error updating approval workflow:', error);
     },
   });
 };
@@ -138,12 +147,15 @@ export const useDeleteApprovalWorkflow = (
   onSuccess?: () => void
 ) => {
   return useDeleteData({
-    url: `/api/approval-workflows/${id}`,
+    url: `${APPROVAL_WORKFLOWS_QUERY}/${id}`,
     refetchQueries: [APPROVAL_WORKFLOWS_QUERY],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
       }
+    },
+    onError: (error) => {
+      console.error('Error deleting approval workflow:', error);
     },
   });
 };

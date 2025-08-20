@@ -13,7 +13,7 @@ import { ThemeSelector } from "../theme-selector";
 
 export function AuthenticatedLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+}: Readonly<{ children?: React.ReactNode }>) {
   const { user, isLoading, isPasswordChanged } = useAuthStore();
   const { sidebarOpen } = useAppStore();
 

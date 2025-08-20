@@ -1,6 +1,7 @@
 import { ColumnDef } from '@tanstack/react-table'
 import { CustomDataTableColumnHeader } from '@/components/shared/custom-table-header-column'
 import { DataTableRowActions } from './table-action-button'
+import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
 
 interface Customer {
   CustomerName: string
@@ -53,7 +54,25 @@ export const getColumns = ({ onEdit }: GetColumnsProps): ColumnDef<Customer>[] =
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title='Location' />
     ),
-    cell: ({ row }) => <div>{row.original.streetAddress ?? '-'}</div>,
+    cell: ({ row }) => {
+      const address = row.original.streetAddress ?? '-';
+      if (address === '-') return <div>-</div>;
+      
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div 
+              className="max-w-[200px] truncate cursor-help"
+            >
+              {address}
+            </div>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="max-w-[300px] text-sm">{address}</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    },
   },
   {
     accessorKey: 'industry.industryName',

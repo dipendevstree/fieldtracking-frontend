@@ -1,120 +1,92 @@
 import { ColumnDef } from '@tanstack/react-table'
 import { CustomDataTableColumnHeader } from '@/components/shared/custom-table-header-column'
-import { DataTableRowActions } from './table-action-button'
-import { Badge } from '@/components/ui/badge'
-import { Approval } from '../type/type'
+import StatusBadge from '@/components/shared/common-status-badge'
+import {
+  formatExpenseSubType,
+  formatExpenseType,
+} from '@/utils/commonFormatters'
 
-export const columns: ColumnDef<Approval>[] = [
+export const columns: ColumnDef<any>[] = [
   {
-    accessorKey: 'type',
+    accessorKey: "salesRep",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Type' />
+      <CustomDataTableColumnHeader column={column} title="Sales Rep" />
     ),
     cell: ({ row }) => {
-      const type = row.original.type || ''
-      return <div className='text-sm font-medium capitalize'>{type}</div>
+      const user = row.original.salesRepresentativeUser;
+      const firstName = user?.firstName || "";
+      const lastName = user?.lastName || "";
+      const fullName =
+        firstName || lastName ? `${firstName} ${lastName}`.trim() : "-";
+
+      return (
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium">{fullName}</span>
+        </div>
+      );
     },
     enableHiding: false,
+    enableSorting: false,
   },
   {
-    accessorKey: 'employeeName',
+    accessorKey: "createdDate",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Employee' />
+      <CustomDataTableColumnHeader column={column} title="Date" />
     ),
     cell: ({ row }) => {
-      const employeeName = row.original.employeeName || ''
-      return <div className='text-sm font-medium'>{employeeName}</div>
-    },
-  },
-  {
-    accessorKey: 'amount',
-    header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Amount' />
-    ),
-    cell: ({ row }) => {
-      const amount = row.original.amount || 0
-      const currency = row.original.currency || 'USD'
-      return (
-        <div className='text-sm font-medium'>
-          {currency} {amount.toFixed(2)}
-        </div>
-      )
-    },
-  },
-  {
-    accessorKey: 'status',
-    header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Status' />
-    ),
-    cell: ({ row }) => {
-      const status = row.original.status || 'pending'
-      const getStatusVariant = (status: string) => {
-        switch (status) {
-          case 'approved':
-            return 'default'
-          case 'rejected':
-            return 'destructive'
-          case 'under_review':
-            return 'secondary'
-          default:
-            return 'outline'
-        }
-      }
-      return (
-        <Badge variant={getStatusVariant(status)} className='capitalize'>
-          {status.replace('_', ' ')}
-        </Badge>
-      )
-    },
-  },
-  {
-    accessorKey: 'priority',
-    header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Priority' />
-    ),
-    cell: ({ row }) => {
-      const priority = row.original.priority || 'medium'
-      const getPriorityVariant = (priority: string) => {
-        switch (priority) {
-          case 'high':
-            return 'destructive'
-          case 'medium':
-            return 'secondary'
-          default:
-            return 'outline'
-        }
-      }
-      return (
-        <Badge variant={getPriorityVariant(priority)} className='capitalize'>
-          {priority}
-        </Badge>
-      )
-    },
-  },
-  {
-    accessorKey: 'submittedDate',
-    header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Submitted Date' />
-    ),
-    cell: ({ row }) => {
-      const submittedDate = row.original.submittedDate
-      const formattedDate = submittedDate
-        ? new Date(submittedDate).toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric',
+      const date = row.original.createdDate || "";
+      const formattedDate = date
+        ? new Date(date).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
           })
-        : '-'
-      return (
-        <div className='text-muted-foreground text-sm'>{formattedDate}</div>
-      )
+        : "-";
+      return <div className=" text-sm">{formattedDate}</div>;
+    },
+    enableSorting: false,
+  },
+  {
+    accessorKey: "totalAmount",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Amount" />
+    ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: "expenseType",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Type" />
+    ),
+    enableSorting: false,
+    cell: ({ row }) => {
+      const value = row.getValue("expenseType");
+      return formatExpenseType(String(value));
     },
   },
   {
-    id: 'actions',
+    accessorKey: "expenseSubType",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Actions' />
+      <CustomDataTableColumnHeader column={column} title="Sub Type" />
     ),
-    cell: ({ row }) => <DataTableRowActions row={row} />,
+    enableSorting: false,
+    cell: ({ row }) => {
+      const value = row.getValue("expenseSubType");
+      return formatExpenseSubType(String(value));
+    },
   },
-]
+
+  {
+    accessorKey: "status",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Status" />
+    ),
+    cell: ({ row }) => {
+      const status = row.original.status || "";
+
+      return <StatusBadge status={status} />;
+    },
+    enableSorting: false,
+  },
+ 
+];

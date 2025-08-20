@@ -1,50 +1,51 @@
 import { useNavigate } from '@tanstack/react-router'
 import { IconEdit, IconTrash } from '@tabler/icons-react'
 import { PermissionGate } from '@/permissions/components/PermissionGate'
-import { EyeIcon } from 'lucide-react'
 import { DeleteModal } from '@/components/shared/common-delete-modal'
 import Button from '@/components/shared/custom-button'
 import CustomTooltip from '@/components/shared/custom-tooltip'
-import { useApprovalsStore } from '../store/approvals.store'
+import { userUpcomingVisitStoreState } from '@/features/calendar/store/upcoming-visits.store'
+import { useDeleteVisits } from '@/features/calendar/services/calendar-view.hook'
+
 
 type RowProps = {
   row: {
-    original: any
+    original: {
+      visitId: string
+      purpose?: string
+      [key: string]: any
+    }
   }
 }
 
 export function DataTableRowActions({ row }: RowProps) {
-  const { open, setOpen, currentApproval, setCurrentApproval } = useApprovalsStore()
+  const { open, setOpen, currentRow, setCurrentRow } =
+    userUpcomingVisitStoreState()
   const navigate = useNavigate()
 
   const closeModal = () => {
     setOpen(null)
-    setTimeout(() => setCurrentApproval(null), 300)
+    setTimeout(() => setCurrentRow(null), 300)
   }
+
+  const { mutate: deleteUpcomingVisits } = useDeleteVisits(
+    row.original.visitId,
+    closeModal
+  )
 
   const handleEdit = () => {
-    setCurrentApproval(row.original)
-    navigate({ to: `/calendar/schedule-visit/${row.original.id}` })
-  }
-
-  const handleView = () => {
-    setCurrentApproval(row.original)
-    console.log('row.original', row.original)
-    navigate({
-      to: `daily-expense-details/${row.original.id}`,
-      params: { id: row.original.id },
-    })
+    setCurrentRow(row.original)
+    navigate({ to: `/calendar/schedule-visit/${row.original.visitId}` })
   }
 
   const handleDelete = () => {
-    setCurrentApproval(row.original)
+    setCurrentRow(row.original)
     setOpen('delete')
   }
 
-  const handleDeleteDailyExpense = () => {
-    if (currentApproval?.id) {
-      // Add delete functionality here
-      console.log('Deleting expense:', currentApproval.id)
+  const handleDeleteUpcomingVisits = () => {
+    if (currentRow?.visitId) {
+      deleteUpcomingVisits()
     } else {
       closeModal()
     }
@@ -63,14 +64,8 @@ export function DataTableRowActions({ row }: RowProps) {
           </Button>
         </CustomTooltip>
       </PermissionGate>
-      <PermissionGate requiredPermission='daily_expense' action='viewGlobal'>
-        <CustomTooltip title='view'>
-          <Button variant='ghost' className='h-8 w-8 p-0' onClick={handleView}>
-            <EyeIcon size={16} />
-          </Button>
-        </CustomTooltip>
-      </PermissionGate>
-      <PermissionGate requiredPermission='daily_expense' action='delete'>
+
+      <PermissionGate requiredPermission='upcoming_visits' action='delete'>
         <CustomTooltip title='Delete'>
           <Button
             variant='ghost'
@@ -82,14 +77,14 @@ export function DataTableRowActions({ row }: RowProps) {
         </CustomTooltip>
       </PermissionGate>
 
-      {currentApproval && (
+      {currentRow && (
         <DeleteModal
-          key='delete-daily-expense'
+          key='delete-upcoming'
           open={open === 'delete'}
-          currentRow={currentApproval ?? {}}
-          itemName='Daily Expense'
-          itemIdentifier={'purpose' as keyof typeof currentApproval}
-          onDelete={handleDeleteDailyExpense}
+          currentRow={currentRow ?? {}}
+          itemName='Upcoming Visit'
+          itemIdentifier={'purpose' as keyof typeof currentRow}
+          onDelete={handleDeleteUpcomingVisits}
           onOpenChange={(value) => {
             if (!value) closeModal()
             else setOpen('delete')

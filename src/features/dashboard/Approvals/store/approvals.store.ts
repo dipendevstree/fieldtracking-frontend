@@ -1,15 +1,15 @@
 import { create } from 'zustand'
-import { Approval, ApprovalWorkflow } from '../type/type'
+import { ApprovalWorkflow } from '../type/type'
 
 // Define the dialog types
-type DialogType = 'approve' | 'reject' | 'view' | 'workflow' | null
+type DialogType = 'approve' | 'reject' | 'view' | 'workflow' | 'delete' | null
 
 // Define the store interface
 interface ApprovalsStoreState {
   open: DialogType
   setOpen: (open: DialogType) => void
-  currentApproval: Approval | null
-  setCurrentApproval: (approval: Approval | null) => void
+  currentApproval: any | null
+  setCurrentApproval: (approval: any | null) => void
   currentWorkflow: ApprovalWorkflow | null
   setCurrentWorkflow: (workflow: ApprovalWorkflow | null) => void
   selectedApprovals: string[]

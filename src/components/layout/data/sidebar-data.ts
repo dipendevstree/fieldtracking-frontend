@@ -142,11 +142,6 @@ export const sidebarData: SidebarData = {
               url: "/",
               menuKey: "reports_analytics",
             },
-            {
-              title: "Category Expenses",
-              url: "/approvals/expense-category",
-              menuKey: "expense_category",
-            },
           ],
         },
         {
