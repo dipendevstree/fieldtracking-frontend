@@ -61,7 +61,18 @@ export function DailyAllowanceDetailsCard({
     );
 
   const isButtonDisabled = (id: string) => {
+    if (dailyExpanse?.status === "draft") return true;
     if (dailyExpanse?.getThisUserLevel === "defult") return false;
+
+    // Check if any level has rejected this specific allowance detail
+    const isRejectedByAnyLevel = dailyExpanse?.expenseReviewAndApproval.some(
+      (review: any) =>
+        review.status === "rejected" && review.dailyAllowanceDetailsId === id
+    );
+
+    if (isRejectedByAnyLevel) {
+      return true;
+    }
 
     const defaultApproval = dailyExpanse?.expenseReviewAndApproval.find(
       (b: any) =>

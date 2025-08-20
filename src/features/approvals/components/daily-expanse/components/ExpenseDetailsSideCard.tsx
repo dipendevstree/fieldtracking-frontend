@@ -72,6 +72,7 @@ export function ExpenseDetailsSideCard({
     );
 
   const isButtonDisabled = (id: string) => {
+    if (dailyExpanse?.status === "draft") return true;
     if (dailyExpanse?.getThisUserLevel === "defult") return false;
 
     // Check if any level has rejected this specific item
