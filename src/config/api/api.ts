@@ -115,6 +115,8 @@ const API = {
   dailyExpenses: {
     list: "expenses/list",
     getById: "expenses",
+    expenseReviewAndApproval: "expenseReviewAndApproval/create",
+    expenseReviewAndApprovalUpdate: "expenseReviewAndApproval/patch",
   },
   customer: {
     customerList: "customer/list",

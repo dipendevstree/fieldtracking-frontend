@@ -61,15 +61,6 @@ const AllUsers = () => {
 
   return (
     <Main className={cn("flex flex-col gap-2 p-4")}>
-      <div className="mt-2 flex items-center justify-between space-y-2">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">User Management</h2>
-          <p className="text-muted-foreground">
-            Manage user accounts, sales reps, and access permissions
-          </p>
-        </div>
-      </div>
-
       {/* Statistics Cards */}
       {/* <div className='mt-2 grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
         <Card>
@@ -124,31 +115,30 @@ const AllUsers = () => {
       </div> */}
 
       {/* User Directory Section */}
-      <div className="mt-6">
-        {/* <div className='mb-4'>
+
+      {/* <div className='mb-4'>
           <h3 className='text-xl font-semibold'>User Directory</h3>
           <p className='text-muted-foreground text-sm'>
             Manage user accounts, sales reps, and access permissions
           </p>
         </div> */}
 
-        <TablePageLayout
-          title="All Users"
-          description="Manage user accounts and permissions"
-          onAddButtonClick={handleAddUser}
-          addButtonText="Add User"
-          modulePermission="all_users"
-          moduleAction="add"
-        >
-          <AllUsersTable
-            data={allUsers}
-            totalCount={totalCount}
-            loading={isLoading}
-            currentPage={pagination.page}
-            paginationCallbacks={{ onPaginationChange }}
-          />
-        </TablePageLayout>
-      </div>
+      <TablePageLayout
+        title="All Users"
+        description="Manage user accounts and permissions"
+        onAddButtonClick={handleAddUser}
+        addButtonText="Add User"
+        modulePermission="all_users"
+        moduleAction="add"
+      >
+        <AllUsersTable
+          data={allUsers}
+          totalCount={totalCount}
+          loading={isLoading}
+          currentPage={pagination.page}
+          paginationCallbacks={{ onPaginationChange }}
+        />
+      </TablePageLayout>
 
       {open && <UsersActionModal key={"users-action-modal"} />}
     </Main>

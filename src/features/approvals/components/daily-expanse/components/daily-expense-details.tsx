@@ -9,7 +9,9 @@ import {
 } from "@/components/ui/card";
 import { Main } from "@/components/layout/main";
 import StatusBadge from "@/components/shared/common-status-badge";
-
+import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Detail } from "@/components/ui/detail";
 import {
   formatDateRange,
   getFullName,
@@ -19,19 +21,86 @@ import {
   formatExpenseSubType,
   formatExpenseType,
 } from "@/utils/commonFormatters";
-import { Separator } from "@/components/ui/separator";
 import { ExpenseDetailsSideCard } from "./ExpenseDetailsSideCard";
-import { Detail } from "@/components/ui/detail";
-import { useDailyExpansesById } from "@/features/approvals/services/daily-expanses.hook";
 import { DailyAllowanceDetailsCard } from "./DailyAllowanceDetailsCard";
-
+import {
+  useDailyExpansesById,
+  useExpenseReviewAndApproval,
+} from "@/features/approvals/services/daily-expanses.hook";
+import { useEffect, useMemo } from "react";
 
 export default function DailyExpenseDetails() {
-  const params = useParams({ strict: false });
-  const id = params.id;
+  const { id } = useParams({ strict: false });
+  const { dailyExpanse, refetch: refetchExpanseDetails } = useDailyExpansesById(
+    id || ""
+  );
+  const { mutate: expenseReviewAndApproval, isSuccess } =
+    useExpenseReviewAndApproval();
 
-  const { dailyExpanse } = useDailyExpansesById(id || "");
   const user = dailyExpanse?.salesRepresentativeUser;
+  const isApprovalLevel = dailyExpanse?.isApprovalLevel;
+
+  const handleExpenseReviewAndApproval = ({
+    parentId,
+    status,
+    comment,
+  }: {
+    parentId: string;
+    status: "approved" | "reviewed" | "rejected";
+    comment: string;
+  }) => {
+    const payload = {
+      expenseId: id,
+      status,
+      comment,
+      isApprovalLevel,
+      ...(dailyExpanse?.expenseSubType === "travel_lump_sum"
+        ? { travelLumpSumId: parentId }
+        : { travelRouteId: parentId }),
+    };
+    expenseReviewAndApproval(payload);
+  };
+
+  const handleDailyAllowanseReviewAndApproval = ({
+    dailyAllowanceId,
+    dailyAllowanceDetailsId,
+    status,
+    comment,
+  }: {
+    dailyAllowanceId: string;
+    dailyAllowanceDetailsId: string;
+    status: "approved" | "reviewed" | "rejected";
+    comment: string;
+  }) => {
+    const payload = {
+      expenseId: id,
+      status,
+      comment,
+      isApprovalLevel,
+      dailyAllowanceId,
+      dailyAllowanceDetailsId,
+    };
+    expenseReviewAndApproval(payload);
+  };
+
+  const getUserLevelLabel = useMemo(
+    () => (review: any) => {
+      if (dailyExpanse?.defaultApprovalUser?.id === review.reviewerUserId) {
+        return "Default User";
+      }
+      const level = dailyExpanse?.expensesLevels?.find(
+        (h: any) => h.userId === review.reviewerUserId
+      )?.level;
+      return level ? `Level ${level}` : "Level";
+    },
+    [dailyExpanse]
+  );
+
+  useEffect(() => {
+    if (isSuccess) {
+      refetchExpanseDetails();
+    }
+  }, [isSuccess, refetchExpanseDetails]);
 
   return (
     <Main>
@@ -46,24 +115,22 @@ export default function DailyExpenseDetails() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex justify-between items-center">
-              <div className="flex items-center">
+              <div className="flex items-center gap-2">
                 <Avatar>
-                  <AvatarImage src={user?.avatarUrl || ""} />
+                  <AvatarImage src={user?.avatarUrl || ""} alt="User avatar" />
                   <AvatarFallback>
                     {getUserInitials(user?.firstName, user?.lastName)}
                   </AvatarFallback>
                 </Avatar>
-                <p className="font-medium pl-2">
+                <p className="font-medium">
                   {getFullName(user?.firstName, user?.lastName)}
                 </p>
               </div>
-              <div>
-                {dailyExpanse?.status && (
-                  <StatusBadge status={dailyExpanse.status} />
-                )}
-              </div>
+              <StatusBadge status={dailyExpanse?.status} />
             </div>
+
             <Separator />
+
             <div className="grid grid-cols-2 gap-4 text-sm">
               <Detail
                 label="Date"
@@ -86,20 +153,71 @@ export default function DailyExpenseDetails() {
               />
               <Detail label="Notes" value={dailyExpanse?.notes || "-"} />
             </div>
+
             <Separator />
+
+            <div>
+              <p className="font-medium text-sm mb-2">Review and Approval</p>
+              <ScrollArea className="h-[calc(100vh-32rem)] pr-4">
+                {dailyExpanse?.expenseReviewAndApproval?.length ? (
+                  dailyExpanse.expenseReviewAndApproval.map((data: any) => (
+                    <Card
+                      key={data.id}
+                      className="p-4 shadow-sm border text-sm mb-3"
+                    >
+                      <div className="grid grid-cols-2 gap-2">
+                        <Detail
+                          label="Name"
+                          value={getFullName(
+                            data.reviewer?.firstName,
+                            data.reviewer?.lastName
+                          )}
+                        />
+                        <Detail
+                          label="Created At"
+                          value={
+                            data?.createdDate
+                              ? formatDateRange(data.createdDate)
+                              : "-"
+                          }
+                        />
+                        <Detail label="Level" value={getUserLevelLabel(data)} />
+                        <Detail label="Comment" value={data?.comment || "-"} />
+                        <Detail
+                          label="Status"
+                          value={<StatusBadge status={data?.status} />}
+                        />
+                      </div>
+                    </Card>
+                  ))
+                ) : (
+                  <p className="text-muted-foreground text-sm">
+                    No Review and Approval
+                  </p>
+                )}
+              </ScrollArea>
+            </div>
           </CardContent>
         </Card>
+
+        {/* Side Cards */}
         <Card className="pl-4">
           {dailyExpanse?.expenseType === "daily" ? (
             <DailyAllowanceDetailsCard
               expenseSubType={dailyExpanse?.expenseSubType}
               dailyAllowances={dailyExpanse?.dailyAllowances}
+              isApprovalLevel={isApprovalLevel}
+              dailyExpanse={dailyExpanse}
+              onExpenseReviewAndApproval={handleDailyAllowanseReviewAndApproval}
             />
           ) : (
             <ExpenseDetailsSideCard
               expenseSubType={dailyExpanse?.expenseSubType}
               travelLumpSums={dailyExpanse?.travelLumpSums}
               travelRoutes={dailyExpanse?.travelRoutes}
+              isApprovalLevel={isApprovalLevel}
+              dailyExpanse={dailyExpanse}
+              onExpenseReviewAndApproval={handleExpenseReviewAndApproval}
             />
           )}
         </Card>

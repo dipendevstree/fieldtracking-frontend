@@ -43,6 +43,7 @@ export default function DailyExpenses() {
     status: "",
     expenseSubType: "",
     sort: "desc",
+    isWebAdminSide: true,
   });
 
   const {
