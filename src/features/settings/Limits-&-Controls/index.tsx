@@ -1,49 +1,58 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from '@/data/app.data'
 import { cn } from '@/lib/utils'
 import { Main } from '@/components/layout/main'
 import LimitsControls from './components/LimitsControls'
 import { LimitsControlsActionModal } from './components/action-form-modal'
+import { useGetLimitsControlsData } from './services/LImits&Controlshook'
+import { useLimitsControlsStore } from './store/limits-&-controls.store'
+import debounce from 'lodash.debounce'
 
 const LimitsControlsPage = () => {
-  const [_pagination, _setPagination] = useState({
+  const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
+    searchFor: '',
   })
 
-  // Limits Controls data
-  // const {
-  //   expenseLimits = [],
-  //   locationAdjustments = [],
-  //   expirySettings,
-  //   totalCount = 0,
-  //   isLoading,
-  //   error,
-  // } = useGetLimitsControlsData(pagination)
+  const { expenseLimits: mockExpenseLimits, locationAdjustments: mockLocationAdjustments } = useLimitsControlsStore()
+  const {
+    expenseLimits = [],
+    locationAdjustments = [],
+    totalCount = 0,
+    error,
+  } = useGetLimitsControlsData(pagination)
 
-  // const { setOpen, setCurrentLimit, setCurrentAdjustment, setCurrentExpirySettings } = useLimitsControlsStore()
+  const displayExpenseLimits = expenseLimits.length > 0 ? expenseLimits : mockExpenseLimits
+  const displayLocationAdjustments = locationAdjustments.length > 0 ? locationAdjustments : mockLocationAdjustments
+  const displayTotalCount = totalCount > 0 ? totalCount : mockExpenseLimits.length
+  const debouncedSearch = useCallback(
+    debounce((searchTerm: string) => {
+      setPagination(prev => ({
+        ...prev,
+        searchFor: searchTerm,
+        page: 1,
+      }))
+    }, 800),
+    []
+  )
 
-  // if (error) {
-  //   const errorResponse = (error as EnhancedError)?.response?.data
-  //   return (
-  //     <ErrorPage
-  //       errorCode={errorResponse?.statusCode}
-  //       message={errorResponse?.message}
-  //     />
-  //   )
-  // }
+  // Handle search change
+  const handleSearchChange = useCallback((searchTerm: string) => {
+    debouncedSearch(searchTerm)
+  }, [debouncedSearch])
 
-  const handleAddExpenseLimit = () => {
-      // setOpen('add-limit')
-  }
+  // Handle pagination change
+  const handlePaginationChange = useCallback((page: number, pageSize: number) => {
+    setPagination(prev => ({
+      ...prev,
+      page,
+      limit: pageSize,
+    }))
+  }, [])
 
-  const handleAddLocationAdjustment = () => {
-    // setOpen('add-adjustment')
-  }
-
-  const handleEditExpirySettings = () => {
-    // setCurrentExpirySettings(expirySettings)
-    // setOpen('edit-expiry-settings')
+  if (error) {
+    console.warn('API Error (using mock data):', error)
   }
 
   return (
@@ -58,35 +67,16 @@ const LimitsControlsPage = () => {
           </p>
         </div>
 
-        {/* Settings Configuration */}
-        <div className="mb-8">
-          <LimitsControls />
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-4">
-          <button
-            onClick={handleAddExpenseLimit}
-            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90"
-            // disabled={isLoading}
-          >
-            Add Expense Limit
-          </button>
-          <button
-            onClick={handleAddLocationAdjustment}
-            className="px-4 py-2 bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/90"
-            // disabled={isLoading}
-          >
-            Add Location Adjustment
-          </button>
-          <button
-            onClick={handleEditExpirySettings}
-            className="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/90"
-            // disabled={isLoading}
-          >
-            Edit Expiry Settings
-          </button>
-        </div>
+        <LimitsControls
+          expenseLimits={displayExpenseLimits}
+          locationAdjustments={displayLocationAdjustments}
+          totalCount={displayTotalCount}
+          paginationCallbacks={{
+            onPaginationChange: handlePaginationChange,
+          }}
+          currentPage={pagination.page}
+          onSearchChange={handleSearchChange}
+        />
       </div>
 
       <LimitsControlsActionModal key={'limits-controls-action-modal'} />
