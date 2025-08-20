@@ -74,6 +74,20 @@ export function ExpenseDetailsSideCard({
   const isButtonDisabled = (id: string) => {
     if (dailyExpanse?.getThisUserLevel === "defult") return false;
 
+    // Check if any level has rejected this specific item
+    const isRejectedByAnyLevel = dailyExpanse?.expenseReviewAndApproval.some(
+      (review: any) =>
+        review.status === "rejected" &&
+        (isLumpSum
+          ? review.travelLumpSumId === id
+          : review.travelRouteId === id)
+    );
+
+    // If any level has rejected, disable the button
+    if (isRejectedByAnyLevel) {
+      return true;
+    }
+
     const defaultApproval = dailyExpanse?.expenseReviewAndApproval.find(
       (b: any) =>
         b.reviewerUserId === dailyExpanse?.defaultApprovalUser?.id &&
