@@ -20,6 +20,7 @@ import { Route as authWatingforapprovalRouteImport } from './routes/(auth)/watin
 import { Route as authSuperadminSignInRouteImport } from './routes/(auth)/superadmin-sign-in'
 import { Route as authSignupRouteImport } from './routes/(auth)/signup'
 import { Route as authSignInRouteImport } from './routes/(auth)/sign-in'
+import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-password'
 import { Route as authOtpRouteImport } from './routes/(auth)/otp'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
 import { Route as authFeedbackFormRouteImport } from './routes/(auth)/feedback-form'
@@ -140,6 +141,11 @@ const authSignupRoute = authSignupRouteImport.update({
 const authSignInRoute = authSignInRouteImport.update({
   id: '/(auth)/sign-in',
   path: '/sign-in',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const authResetPasswordRoute = authResetPasswordRouteImport.update({
+  id: '/(auth)/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const authOtpRoute = authOtpRouteImport.update({
@@ -547,6 +553,7 @@ export interface FileRoutesByFullPath {
   '/feedback-form': typeof authFeedbackFormRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
+  '/reset-password': typeof authResetPasswordRoute
   '/sign-in': typeof authSignInRoute
   '/signup': typeof authSignupRoute
   '/superadmin-sign-in': typeof authSuperadminSignInRoute
@@ -624,6 +631,7 @@ export interface FileRoutesByTo {
   '/feedback-form': typeof authFeedbackFormRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
+  '/reset-password': typeof authResetPasswordRoute
   '/sign-in': typeof authSignInRoute
   '/signup': typeof authSignupRoute
   '/superadmin-sign-in': typeof authSuperadminSignInRoute
@@ -705,6 +713,7 @@ export interface FileRoutesById {
   '/(auth)/feedback-form': typeof authFeedbackFormRoute
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
   '/(auth)/otp': typeof authOtpRoute
+  '/(auth)/reset-password': typeof authResetPasswordRoute
   '/(auth)/sign-in': typeof authSignInRoute
   '/(auth)/signup': typeof authSignupRoute
   '/(auth)/superadmin-sign-in': typeof authSuperadminSignInRoute
@@ -786,6 +795,7 @@ export interface FileRouteTypes {
     | '/feedback-form'
     | '/forgot-password'
     | '/otp'
+    | '/reset-password'
     | '/sign-in'
     | '/signup'
     | '/superadmin-sign-in'
@@ -863,6 +873,7 @@ export interface FileRouteTypes {
     | '/feedback-form'
     | '/forgot-password'
     | '/otp'
+    | '/reset-password'
     | '/sign-in'
     | '/signup'
     | '/superadmin-sign-in'
@@ -943,6 +954,7 @@ export interface FileRouteTypes {
     | '/(auth)/feedback-form'
     | '/(auth)/forgot-password'
     | '/(auth)/otp'
+    | '/(auth)/reset-password'
     | '/(auth)/sign-in'
     | '/(auth)/signup'
     | '/(auth)/superadmin-sign-in'
@@ -1022,6 +1034,7 @@ export interface RootRouteChildren {
   authFeedbackFormRoute: typeof authFeedbackFormRoute
   authForgotPasswordRoute: typeof authForgotPasswordRoute
   authOtpRoute: typeof authOtpRoute
+  authResetPasswordRoute: typeof authResetPasswordRoute
   authSignInRoute: typeof authSignInRoute
   authSignupRoute: typeof authSignupRoute
   authSuperadminSignInRoute: typeof authSuperadminSignInRoute
@@ -1110,6 +1123,13 @@ declare module '@tanstack/react-router' {
       path: '/sign-in'
       fullPath: '/sign-in'
       preLoaderRoute: typeof authSignInRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth)/reset-password': {
+      id: '/(auth)/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof authResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/(auth)/otp': {
@@ -1788,6 +1808,7 @@ const rootRouteChildren: RootRouteChildren = {
   authFeedbackFormRoute: authFeedbackFormRoute,
   authForgotPasswordRoute: authForgotPasswordRoute,
   authOtpRoute: authOtpRoute,
+  authResetPasswordRoute: authResetPasswordRoute,
   authSignInRoute: authSignInRoute,
   authSignupRoute: authSignupRoute,
   authSuperadminSignInRoute: authSuperadminSignInRoute,

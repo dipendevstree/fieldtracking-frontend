@@ -18,6 +18,14 @@ const API = {
     delete: "expensesCategory/delete",
     update: "expensesCategory/patch",
   },
+  expenseCategories: {
+    list: "expenseCategory/list",
+    create: "expenseCategory/create",
+    update: "expenseCategory/patch",
+    delete: "expenseCategory/delete",
+    perDiemSettings: "expenseCategory/per-diem-settings/update",
+    settings: "expenseCategory/settings/update",
+  },
   liveTracking: {
     list: "liveTracking/list",
     user: "users",
@@ -90,11 +98,19 @@ const API = {
     list: "role/list",
     create: "role/create",
     update: "role/patch",
-    delete: "roles/delete",
+    delete: "role/delete",
     details: "roles/details",
     permissions: "permission/list",
     getAllPermissions: "role",
     organizationMenulist: "organizationMenu/list",
+  },
+  overview: {
+    stats: "overview/stats",
+    salesReps: "overview/sales-reps",
+    activities: "overview/activities",
+    performance: "overview/performance",
+    updateStatus: "overview/update-status",
+    exportReport: "overview/export-report",
   },
 
   territories: {
@@ -130,6 +146,10 @@ const API = {
     details: "driver/driver-documents",
   },
   approvals: {
+    lists: "approvals/list",
+    action: "approvals/action",
+    stats: "approvals/stats",
+    workflows: "approval-workflows",
     list: "expenseApprovalLevel/list",
     create: "expenseApprovalLevel/create",
     update: "expenseApprovalLevel/patch",

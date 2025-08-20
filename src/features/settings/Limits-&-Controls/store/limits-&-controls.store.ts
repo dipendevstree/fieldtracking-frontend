@@ -6,6 +6,77 @@ type DialogType = 'add-limit' | 'edit-limit' | 'delete-limit' |
                   'add-adjustment' | 'edit-adjustment' | 'delete-adjustment' | 
                   'edit-expiry-settings' | null
 
+// Mock data for development
+const mockExpenseLimits: ExpenseLimit[] = [
+  {
+    limitId: '1',
+    designation: 'Junior Sales Rep',
+    dailyLimit: 50,
+    monthlyLimit: 1000,
+    travelLimit: 0.45,
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+  {
+    limitId: '2',
+    designation: 'Senior Sales Rep',
+    dailyLimit: 75,
+    monthlyLimit: 1500,
+    travelLimit: 0.50,
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+  {
+    limitId: '3',
+    designation: 'Sales Manager',
+    dailyLimit: 100,
+    monthlyLimit: 2500,
+    travelLimit: 0.60,
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+]
+
+const mockLocationAdjustments: LocationAdjustment[] = [
+  {
+    adjustmentId: '1',
+    locationType: 'metropolitan',
+    adjustmentPercentage: 15,
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+  {
+    adjustmentId: '2',
+    locationType: 'suburban',
+    adjustmentPercentage: 5,
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+  {
+    adjustmentId: '3',
+    locationType: 'rural',
+    adjustmentPercentage: -10,
+    isActive: true,
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
+]
+
+const mockExpirySettings: ExpenseExpirySettings = {
+  settingsId: '1',
+  submissionDeadline: 30,
+  warningPeriod: 7,
+  autoRejectAfterExpiry: true,
+  allowLateSubmissions: false,
+  createdAt: '2024-01-01T00:00:00Z',
+  updatedAt: '2024-01-01T00:00:00Z',
+}
+
 // Define the store interface
 interface LimitsControlsStoreState {
   // Dialog state
@@ -53,14 +124,14 @@ export const useLimitsControlsStore = create<LimitsControlsStoreState>((set) => 
   currentExpirySettings: null,
   setCurrentExpirySettings: (settings) => set({ currentExpirySettings: settings }),
   
-  // Data lists
-  expenseLimits: [],
+  // Data lists - Initialize with mock data
+  expenseLimits: mockExpenseLimits,
   setExpenseLimits: (limits) => set({ expenseLimits: limits }),
   
-  locationAdjustments: [],
+  locationAdjustments: mockLocationAdjustments,
   setLocationAdjustments: (adjustments) => set({ locationAdjustments: adjustments }),
   
-  expirySettings: null,
+  expirySettings: mockExpirySettings,
   setExpirySettings: (settings) => set({ expirySettings: settings }),
   
   // Configuration

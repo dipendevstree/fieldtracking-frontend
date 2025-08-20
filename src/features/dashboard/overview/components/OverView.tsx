@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
+import { ColumnDef } from '@tanstack/react-table';
 import {
   Card,
   CardContent,
@@ -6,35 +7,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Users,
   MapPin,
-  MoreHorizontal,
   Search,
-  Eye,
-  MessageSquare,
-  Phone,
 } from "lucide-react";
 import { SalesRep, DashboardKPI } from "../type/type";
 import { useGetCustomers } from "@/features/customers/services/Customers.hook";
 import { useGetAllVisit } from "@/features/calendar/services/calendar-view.hook";
+import { useGetIndustry } from "@/features/customers/services/Customers.hook";
 import {
   Select,
   SelectContent,
@@ -42,6 +25,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import debounce from "lodash.debounce";
+import { CustomDataTable } from "@/components/shared/custom-data-table";
+
 
 interface OverviewProps {
   salesReps: SalesRep[];
@@ -95,61 +81,217 @@ const mockData = {
   ],
 };
 
-export default function Overview({ salesReps: _salesReps, kpis }: OverviewProps) {
-  const [scheduleSearchTerm, setScheduleSearchTerm] = useState("");
-  const [customerSearchTerm, setCustomerSearchTerm] = useState("");
-  const [scheduleStatusFilter, setScheduleStatusFilter] =
-    useState("All Status");
-  const [customerIndustryFilter, setCustomerIndustryFilter] =
-    useState("All Industries");
+export default function Overview({ salesReps: _salesReps }: OverviewProps) {
+  // Pagination state for Today's Schedule with proper API params
+  const [schedulePagination, setSchedulePagination] = useState({
+    page: 1,
+    limit: 5,
+    startDate: new Date().toISOString().split("T")[0],
+    endDate: new Date().toISOString().split("T")[0],
+    searchFor: "",
+    sort: "desc",
+    status: "",
+  });
 
-  // Get customer data from API
-  const { Customer: customers = [], isLoading: customersLoading } =
-    useGetCustomers({
-      page: 1,
-      limit: 10,
-      search: customerSearchTerm,
-      sort: "desc",
-    });
+  // Pagination state for Customer List
+  const [customerPagination, setCustomerPagination] = useState({
+    page: 1,
+    limit: 5,
+    searchFor: "",
+    sort: "desc",
+    industryId: "",
+    customerTypeId: "",
+  });
 
-  // Get schedule/visit data from API
-  const { allVisit: scheduleData = [], isLoading: scheduleLoading } =
-    useGetAllVisit({
-      page: 1,
-      limit: 10,
-      sort: "desc",
-    });
+  // Get customer data from API with proper parameters
+  const { 
+    data: customersResponse = { list: [], totalCount: 0 }, 
+    isLoading: customersLoading, 
+    totalCount: customerTotalCount = 0 
+  } = useGetCustomers(customerPagination);
 
+  // Extract customers list from response
+  const customers = customersResponse?.list || [];
 
+  // Get schedule/visit data from API with proper parameters
+  const { data: scheduleData = [], isLoading: scheduleLoading, totalCount: scheduleTotalCount = 0 } =
+    useGetAllVisit(schedulePagination);
 
-  // Filter schedule data
-  const filteredSchedule = scheduleData.filter(
-    (visit: any) =>
-      visit.salesRepresentativeName
-        ?.toLowerCase()
-        .includes(scheduleSearchTerm.toLowerCase()) ||
-      visit.customerName
-        ?.toLowerCase()
-        .includes(scheduleSearchTerm.toLowerCase()) ||
-      visit.purpose?.toLowerCase().includes(scheduleSearchTerm.toLowerCase()) ||
-      visit.streetAddress
-        ?.toLowerCase()
-        .includes(scheduleSearchTerm.toLowerCase())
+  // Utility function to truncate location text
+  const truncateLocation = (location: string, maxLength: number = 50) => {
+    if (!location) return "N/A";
+    if (location.length <= maxLength) return location;
+    return location.substring(0, maxLength) + "...";
+  };
+
+  // Debounced search for schedule
+  const debouncedScheduleSearch = useCallback(
+    debounce((value: string) => {
+      setSchedulePagination(prev => ({
+        ...prev,
+        searchFor: value,
+        page: 1 // Reset to first page when searching
+      }));
+    }, 800),
+    []
   );
 
-  // Filter customers
-  const filteredCustomers = customers.filter(
-    (customer) =>
-      customer.CustomerName?.toLowerCase().includes(
-        customerSearchTerm.toLowerCase()
-      ) ||
-      customer.adminData?.firstName
-        ?.toLowerCase()
-        .includes(customerSearchTerm.toLowerCase()) ||
-      customer.adminData?.email
-        ?.toLowerCase()
-        .includes(customerSearchTerm.toLowerCase())
+  const handleScheduleSearchChange = useCallback((value: string) => {
+    debouncedScheduleSearch(value);
+  }, [debouncedScheduleSearch]);
+
+  // Status filter handler
+  const handleStatusFilterChange = (value: string) => {
+    setSchedulePagination(prev => ({
+      ...prev,
+      status: value === "All Status" ? "" : value.toLowerCase(),
+      page: 1 // Reset to first page when filtering
+    }));
+  };
+
+  // Debounced search for customers
+  const debouncedCustomerSearch = useCallback(
+    debounce((value: string) => {
+      setCustomerPagination(prev => ({
+        ...prev,
+        searchFor: value,
+        page: 1 // Reset to first page when searching
+      }));
+    }, 800),
+    []
   );
+
+  const handleCustomerSearchChange = useCallback((value: string) => {
+    debouncedCustomerSearch(value);
+  }, [debouncedCustomerSearch]);
+
+  // Industry filter handler
+  const handleIndustryFilterChange = (value: string) => {
+    const selectedIndustry = industryList.find(industry => industry.industryName === value);
+    setCustomerPagination(prev => ({
+      ...prev,
+      industryId: value === "All Industries" ? "" : selectedIndustry?.industryId || "",
+      page: 1 // Reset to first page when filtering
+    }));
+  };
+
+  // Map schedule data to proper format (API handles filtering)
+  const mappedScheduleData = scheduleData.map((visit: any) => ({
+    ...visit,
+    salesRepName: visit.salesRepresentativeUser ? 
+      `${visit.salesRepresentativeUser.firstName || ""} ${visit.salesRepresentativeUser.lastName || ""}`.trim() || "Unassigned"
+      : visit.salesRepresentativeName || "Unassigned",
+    customerName: visit.customer?.companyName || visit.customerName || "N/A",
+    formattedDateTime: visit.date && visit.time ? 
+      `${new Date(visit.date).toLocaleDateString()} ${visit.time}` : "N/A",
+    displayStatus: visit.status ? 
+      visit.status.charAt(0).toUpperCase() + visit.status.slice(1) : "Scheduled",
+    displayPriority: visit.priority || "Medium",
+    location: visit.streetAddress || visit.location || "N/A"
+  }));
+
+  // Get industry data for filter
+  const { data: industryList = [] } = useGetIndustry();
+
+  // Get current industry filter display value
+  const getCurrentIndustryFilterValue = () => {
+    if (!customerPagination.industryId) return "All Industries";
+    const selectedIndustry = industryList.find(industry => industry.industryId === customerPagination.industryId);
+    return selectedIndustry?.industryName || "All Industries";
+  };
+
+  // Define column types for schedule data
+  const scheduleColumns: ColumnDef<unknown>[] = [
+    {
+      accessorKey: 'salesRepName',
+      header: 'Sales Rep',
+      cell: ({ row }) => (
+        <div className="font-medium">{(row.original as any).salesRepName}</div>
+      ),
+    },
+    {
+      accessorKey: 'customerName',
+      header: 'Customer',
+      cell: ({ row }) => <div>{(row.original as any).customerName}</div>,
+    },
+    {
+      accessorKey: 'formattedDateTime',
+      header: 'Date & Time',
+      cell: ({ row }) => <div>{(row.original as any).formattedDateTime}</div>,
+    },
+    {
+      accessorKey: 'purpose',
+      header: 'Purpose',
+      cell: ({ row }) => <div>{(row.original as any).purpose || "N/A"}</div>,
+    },
+    {
+      accessorKey: 'location',
+      header: 'Location',
+      cell: ({ row }) => (
+        <div title={(row.original as any).location}>
+          {truncateLocation((row.original as any).location)}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'displayStatus',
+      header: 'Status',
+      cell: ({ row }) => (
+        <Badge
+          variant={
+            (row.original as any).displayStatus.toLowerCase() === "completed" ? "default" : "secondary"
+          }
+        >
+          {(row.original as any).displayStatus}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: 'displayPriority',
+      header: 'Priority',
+      cell: ({ row }) => (
+        <Badge variant="outline">
+          {(row.original as any).displayPriority}
+        </Badge>
+      ),
+    },
+  ];
+
+  // Define column types for customer data
+  const customerColumns: ColumnDef<unknown>[] = [
+    {
+      accessorKey: 'companyName',
+      header: 'Company Name',
+      cell: ({ row }) => (
+        <div className="font-medium">
+          {(row.original as any).companyName || (row.original as any).CustomerName || "N/A"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'customerType.typeName',
+      header: 'Customer Type',
+      cell: ({ row }) => (
+        <div>{(row.original as any).customerType?.typeName || "N/A"}</div>
+      ),
+    },
+    {
+      accessorKey: 'streetAddress',
+      header: 'Location',
+      cell: ({ row }) => (
+        <div title={(row.original as any).streetAddress || (row.original as any).adminName || "N/A"}>
+          {truncateLocation((row.original as any).streetAddress || (row.original as any).adminName || "N/A")}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'industry.industryName',
+      header: 'Industry',
+      cell: ({ row }) => (
+        <div>{(row.original as any).industry?.industryName || "N/A"}</div>
+      ),
+    },
+  ];
 
   return (
     <div className="space-y-4">
@@ -162,12 +304,12 @@ export default function Overview({ salesReps: _salesReps, kpis }: OverviewProps)
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          {/* <CardContent>
             <div className="text-2xl font-bold">{kpis.totalSalesReps}</div>
             <p className="text-xs text-muted-foreground">
               {kpis.activeInField} active in field
             </p>
-          </CardContent>
+          </CardContent> */}
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -176,13 +318,13 @@ export default function Overview({ salesReps: _salesReps, kpis }: OverviewProps)
             </CardTitle>
             <MapPin className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          <CardContent>
+          {/* <CardContent>
             <div className="text-2xl font-bold">{kpis.activeInField}</div>
             <p className="text-xs text-muted-foreground">
               {Math.round((kpis.activeInField / kpis.totalSalesReps) * 100)}% of
               total team
             </p>
-          </CardContent>
+          </CardContent> */}
         </Card>
       </div>
 
@@ -201,14 +343,14 @@ export default function Overview({ salesReps: _salesReps, kpis }: OverviewProps)
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search..."
-                  value={scheduleSearchTerm}
-                  onChange={(e) => setScheduleSearchTerm(e.target.value)}
+                  onChange={(e) => handleScheduleSearchChange(e.target.value)}
                   className="pl-8 w-[300px]"
                 />
               </div>
               <Select
-                value={scheduleStatusFilter}
-                onValueChange={setScheduleStatusFilter}
+                value={schedulePagination.status ? 
+                  schedulePagination.status.charAt(0).toUpperCase() + schedulePagination.status.slice(1) : "All Status"}
+                onValueChange={handleStatusFilterChange}
               >
                 <SelectTrigger className="w-[140px]">
                   <SelectValue />
@@ -216,7 +358,6 @@ export default function Overview({ salesReps: _salesReps, kpis }: OverviewProps)
                 <SelectContent>
                   <SelectItem value="All Status">All Status</SelectItem>
                   <SelectItem value="Scheduled">Scheduled</SelectItem>
-                  <SelectItem value="In Progress">In Progress</SelectItem>
                   <SelectItem value="Completed">Completed</SelectItem>
                   <SelectItem value="Pending">Pending</SelectItem>
                 </SelectContent>
@@ -225,82 +366,23 @@ export default function Overview({ salesReps: _salesReps, kpis }: OverviewProps)
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Assigned Rep</TableHead>
-                <TableHead>Customer</TableHead>
-                <TableHead>Purpose</TableHead>
-                <TableHead>Date & Time</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {scheduleLoading ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
-                    Loading schedule data...
-                  </TableCell>
-                </TableRow>
-              ) : filteredSchedule.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
-                    No scheduled items found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredSchedule.map((visit: any) => (
-                  <TableRow key={visit.visitId}>
-                    <TableCell className="font-medium">
-                      {visit.salesRepresentativeName || "Unassigned"}
-                    </TableCell>
-                    <TableCell>{visit.customerName || "N/A"}</TableCell>
-                    <TableCell>{visit.purpose || "N/A"}</TableCell>
-                    <TableCell>
-                      {visit.date && visit.time
-                        ? `${visit.date} ${visit.time}`
-                        : "N/A"}
-                    </TableCell>
-                    <TableCell>{visit.streetAddress || "N/A"}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={
-                          visit.status === "completed" ? "default" : "secondary"
-                        }
-                      >
-                        {visit.status || "Scheduled"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <MessageSquare className="mr-2 h-4 w-4" />
-                            Send Message
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Phone className="mr-2 h-4 w-4" />
-                            Call Contact
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+          <CustomDataTable
+            data={mappedScheduleData}
+            columns={scheduleColumns}
+            totalCount={scheduleTotalCount}
+            currentPage={schedulePagination.page}
+            paginationCallbacks={{
+              onPaginationChange: (page: number, pageSize: number) => {
+                setSchedulePagination(prev => ({
+                  ...prev,
+                  page,
+                  limit: pageSize
+                }));
+              }
+            }}
+            loading={scheduleLoading}
+            key="schedule-table"
+          />
         </CardContent>
       </Card>
 
@@ -319,106 +401,48 @@ export default function Overview({ salesReps: _salesReps, kpis }: OverviewProps)
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search..."
-                  value={customerSearchTerm}
-                  onChange={(e) => setCustomerSearchTerm(e.target.value)}
+                  value={customerPagination.searchFor}
+                  onChange={(e) => handleCustomerSearchChange(e.target.value)}
                   className="pl-8 w-[300px]"
                 />
               </div>
               <Select
-                value={customerIndustryFilter}
-                onValueChange={setCustomerIndustryFilter}
+                value={getCurrentIndustryFilterValue()}
+                onValueChange={handleIndustryFilterChange}
               >
                 <SelectTrigger className="w-[140px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="All Industries">All Industries</SelectItem>
-                  <SelectItem value="Technology">Technology</SelectItem>
-                  <SelectItem value="Healthcare">Healthcare</SelectItem>
-                  <SelectItem value="Finance">Finance</SelectItem>
-                  <SelectItem value="Retail">Retail</SelectItem>
+                  {industryList.map((industry) => (
+                    <SelectItem key={industry.industryId} value={industry.industryName}>
+                      {industry.industryName}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Assigned Rep</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead>Contact Person</TableHead>
-                <TableHead>Number</TableHead>
-                <TableHead>Email id</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {customersLoading ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
-                    Loading customers...
-                  </TableCell>
-                </TableRow>
-              ) : filteredCustomers.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
-                    No customers found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filteredCustomers.map((customer) => (
-                  <TableRow key={customer.customerId}>
-                    <TableCell className="font-medium">
-                      {customer.adminData?.firstName || "Unassigned"}
-                    </TableCell>
-                    <TableCell>{customer.CustomerName}</TableCell>
-                    <TableCell>
-                      {customer.adminData?.firstName || "N/A"}
-                    </TableCell>
-                    <TableCell>
-                      {customer.adminData?.phoneNumber || "N/A"}
-                    </TableCell>
-                    <TableCell>{customer.adminData?.email || "N/A"}</TableCell>
-                    <TableCell>{customer.adminName || "N/A"}</TableCell>
-                    <TableCell>
-                      <Badge
-                        variant={customer.isActive ? "default" : "secondary"}
-                      >
-                        {customer.isActive ? "Complete" : "Pending"}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <MessageSquare className="mr-2 h-4 w-4" />
-                            Send Message
-                          </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Phone className="mr-2 h-4 w-4" />
-                            Call Contact
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+          <CustomDataTable
+            data={customers}
+            columns={customerColumns}
+            totalCount={customerTotalCount}
+            currentPage={customerPagination.page}
+            paginationCallbacks={{
+              onPaginationChange: (page: number, pageSize: number) => {
+                setCustomerPagination(prev => ({
+                  ...prev,
+                  page,
+                  limit: pageSize
+                }));
+              }
+            }}
+            loading={customersLoading}
+            key="customer-table"
+          />
         </CardContent>
       </Card>
 

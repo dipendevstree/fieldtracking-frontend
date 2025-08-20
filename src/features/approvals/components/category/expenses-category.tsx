@@ -7,7 +7,6 @@ import TablePageLayout from "@/components/layout/table-page-layout";
 import { ErrorPage } from "@/components/shared/custom-error";
 import { useCategoryStore } from "../../store/expenses-category.store";
 import { ErrorResponse } from "@/features/merchants/types";
-
 import { CategoryActionModal } from "./components/actionFormModal";
 import CategoryTable from "./components/category-table";
 import { useGetAllCategories } from "../../services/category.action.hook";

@@ -20,14 +20,17 @@ import { Route as authWatingforapprovalRouteImport } from './routes/(auth)/watin
 import { Route as authSuperadminSignInRouteImport } from './routes/(auth)/superadmin-sign-in'
 import { Route as authSignupRouteImport } from './routes/(auth)/signup'
 import { Route as authSignInRouteImport } from './routes/(auth)/sign-in'
+import { Route as authResetPasswordRouteImport } from './routes/(auth)/reset-password'
 import { Route as authOtpRouteImport } from './routes/(auth)/otp'
 import { Route as authForgotPasswordRouteImport } from './routes/(auth)/forgot-password'
+import { Route as authFeedbackFormRouteImport } from './routes/(auth)/feedback-form'
 import { Route as AuthenticatedSettingsRouteRouteImport } from './routes/_authenticated/settings/route'
 import { Route as AuthenticatedManagementsRouteRouteImport } from './routes/_authenticated/managements/route'
 import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authenticated/users/index'
 import { Route as AuthenticatedUserTerritoryIndexRouteImport } from './routes/_authenticated/user-territory/index'
 import { Route as AuthenticatedUserManagementIndexRouteImport } from './routes/_authenticated/user-management/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
+import { Route as AuthenticatedSettingIndexRouteImport } from './routes/_authenticated/setting/index'
 import { Route as AuthenticatedReportsIndexRouteImport } from './routes/_authenticated/reports/index'
 import { Route as AuthenticatedProductsIndexRouteImport } from './routes/_authenticated/products/index'
 import { Route as AuthenticatedOrganizationsIndexRouteImport } from './routes/_authenticated/organizations/index'
@@ -46,7 +49,12 @@ import { Route as AuthenticatedApprovalsIndexRouteImport } from './routes/_authe
 import { Route as AuthenticatedUserManagementRolesRouteImport } from './routes/_authenticated/user-management/roles'
 import { Route as AuthenticatedUserManagementAddRolesPermissionRouteImport } from './routes/_authenticated/user-management/add-roles-permission'
 import { Route as AuthenticatedSettingsResetPasswordRouteImport } from './routes/_authenticated/settings/reset-password'
+import { Route as AuthenticatedSettingsNotifictionsRouteImport } from './routes/_authenticated/settings/notifictions'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings/notifications'
+import { Route as AuthenticatedSettingsMobileFeaturesRouteImport } from './routes/_authenticated/settings/mobile-features'
+import { Route as AuthenticatedSettingsLimitsChar38ControlsRouteImport } from './routes/_authenticated/settings/limits-&-controls'
+import { Route as AuthenticatedSettingsGeneralRouteImport } from './routes/_authenticated/settings/general'
+import { Route as AuthenticatedSettingsFieldTrackingRouteImport } from './routes/_authenticated/settings/field-tracking'
 import { Route as AuthenticatedSettingsDisplayRouteImport } from './routes/_authenticated/settings/display'
 import { Route as AuthenticatedSettingsAppearanceRouteImport } from './routes/_authenticated/settings/appearance'
 import { Route as AuthenticatedSettingsAccountRouteImport } from './routes/_authenticated/settings/account'
@@ -61,6 +69,7 @@ import { Route as AuthenticatedManagementsCategoriesRouteImport } from './routes
 import { Route as AuthenticatedDriversTrackingRouteImport } from './routes/_authenticated/drivers/tracking'
 import { Route as AuthenticatedDriversPaymentsRouteImport } from './routes/_authenticated/drivers/payments'
 import { Route as AuthenticatedDriversOrdersRouteImport } from './routes/_authenticated/drivers/orders'
+import { Route as AuthenticatedDashboardDashLiveTrackingRouteImport } from './routes/_authenticated/dashboard/dash-live-tracking'
 import { Route as AuthenticatedCustomersAddCustomerRouteImport } from './routes/_authenticated/customers/add-customer'
 import { Route as AuthenticatedCalendarVisitReportRouteImport } from './routes/_authenticated/calendar/visit-report'
 import { Route as AuthenticatedCalendarUpcomingVisitRouteImport } from './routes/_authenticated/calendar/upcoming-visit'
@@ -135,6 +144,11 @@ const authSignInRoute = authSignInRouteImport.update({
   path: '/sign-in',
   getParentRoute: () => rootRouteImport,
 } as any)
+const authResetPasswordRoute = authResetPasswordRouteImport.update({
+  id: '/(auth)/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const authOtpRoute = authOtpRouteImport.update({
   id: '/(auth)/otp',
   path: '/otp',
@@ -143,6 +157,11 @@ const authOtpRoute = authOtpRouteImport.update({
 const authForgotPasswordRoute = authForgotPasswordRouteImport.update({
   id: '/(auth)/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const authFeedbackFormRoute = authFeedbackFormRouteImport.update({
+  id: '/(auth)/feedback-form',
+  path: '/feedback-form',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedSettingsRouteRoute =
@@ -179,6 +198,12 @@ const AuthenticatedSettingsIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
+const AuthenticatedSettingIndexRoute =
+  AuthenticatedSettingIndexRouteImport.update({
+    id: '/setting/',
+    path: '/setting/',
+    getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedReportsIndexRoute =
   AuthenticatedReportsIndexRouteImport.update({
@@ -288,10 +313,40 @@ const AuthenticatedSettingsResetPasswordRoute =
     path: '/reset-password',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
+const AuthenticatedSettingsNotifictionsRoute =
+  AuthenticatedSettingsNotifictionsRouteImport.update({
+    id: '/notifictions',
+    path: '/notifictions',
+    getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
 const AuthenticatedSettingsNotificationsRoute =
   AuthenticatedSettingsNotificationsRouteImport.update({
     id: '/notifications',
     path: '/notifications',
+    getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
+const AuthenticatedSettingsMobileFeaturesRoute =
+  AuthenticatedSettingsMobileFeaturesRouteImport.update({
+    id: '/mobile-features',
+    path: '/mobile-features',
+    getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
+const AuthenticatedSettingsLimitsChar38ControlsRoute =
+  AuthenticatedSettingsLimitsChar38ControlsRouteImport.update({
+    id: '/limits-&-controls',
+    path: '/limits-&-controls',
+    getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
+const AuthenticatedSettingsGeneralRoute =
+  AuthenticatedSettingsGeneralRouteImport.update({
+    id: '/general',
+    path: '/general',
+    getParentRoute: () => AuthenticatedSettingsRouteRoute,
+  } as any)
+const AuthenticatedSettingsFieldTrackingRoute =
+  AuthenticatedSettingsFieldTrackingRouteImport.update({
+    id: '/field-tracking',
+    path: '/field-tracking',
     getParentRoute: () => AuthenticatedSettingsRouteRoute,
   } as any)
 const AuthenticatedSettingsDisplayRoute =
@@ -376,6 +431,12 @@ const AuthenticatedDriversOrdersRoute =
   AuthenticatedDriversOrdersRouteImport.update({
     id: '/drivers/orders',
     path: '/drivers/orders',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDashboardDashLiveTrackingRoute =
+  AuthenticatedDashboardDashLiveTrackingRouteImport.update({
+    id: '/dashboard/dash-live-tracking',
+    path: '/dashboard/dash-live-tracking',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCustomersAddCustomerRoute =
@@ -496,8 +557,10 @@ const AuthenticatedApprovalsDailyExpenseDetailsIdRoute =
 export interface FileRoutesByFullPath {
   '/managements': typeof AuthenticatedManagementsRouteRouteWithChildren
   '/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
+  '/feedback-form': typeof authFeedbackFormRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
+  '/reset-password': typeof authResetPasswordRoute
   '/sign-in': typeof authSignInRoute
   '/signup': typeof authSignupRoute
   '/superadmin-sign-in': typeof authSuperadminSignInRoute
@@ -520,6 +583,7 @@ export interface FileRoutesByFullPath {
   '/calendar/upcoming-visit': typeof AuthenticatedCalendarUpcomingVisitRoute
   '/calendar/visit-report': typeof AuthenticatedCalendarVisitReportRoute
   '/customers/add-customer': typeof AuthenticatedCustomersAddCustomerRoute
+  '/dashboard/dash-live-tracking': typeof AuthenticatedDashboardDashLiveTrackingRoute
   '/drivers/orders': typeof AuthenticatedDriversOrdersRoute
   '/drivers/payments': typeof AuthenticatedDriversPaymentsRoute
   '/drivers/tracking': typeof AuthenticatedDriversTrackingRoute
@@ -534,7 +598,12 @@ export interface FileRoutesByFullPath {
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
+  '/settings/field-tracking': typeof AuthenticatedSettingsFieldTrackingRoute
+  '/settings/general': typeof AuthenticatedSettingsGeneralRoute
+  '/settings/limits-&-controls': typeof AuthenticatedSettingsLimitsChar38ControlsRoute
+  '/settings/mobile-features': typeof AuthenticatedSettingsMobileFeaturesRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/settings/notifictions': typeof AuthenticatedSettingsNotifictionsRoute
   '/settings/reset-password': typeof AuthenticatedSettingsResetPasswordRoute
   '/user-management/add-roles-permission': typeof AuthenticatedUserManagementAddRolesPermissionRoute
   '/user-management/roles': typeof AuthenticatedUserManagementRolesRoute
@@ -553,6 +622,7 @@ export interface FileRoutesByFullPath {
   '/organizations': typeof AuthenticatedOrganizationsIndexRoute
   '/products': typeof AuthenticatedProductsIndexRoute
   '/reports': typeof AuthenticatedReportsIndexRoute
+  '/setting': typeof AuthenticatedSettingIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/user-management': typeof AuthenticatedUserManagementIndexRoute
   '/user-territory': typeof AuthenticatedUserTerritoryIndexRoute
@@ -566,8 +636,10 @@ export interface FileRoutesByFullPath {
   '/user-territory/view-territorywise-user/$territoyId': typeof AuthenticatedUserTerritoryViewTerritorywiseUserTerritoyIdRoute
 }
 export interface FileRoutesByTo {
+  '/feedback-form': typeof authFeedbackFormRoute
   '/forgot-password': typeof authForgotPasswordRoute
   '/otp': typeof authOtpRoute
+  '/reset-password': typeof authResetPasswordRoute
   '/sign-in': typeof authSignInRoute
   '/signup': typeof authSignupRoute
   '/superadmin-sign-in': typeof authSuperadminSignInRoute
@@ -590,6 +662,7 @@ export interface FileRoutesByTo {
   '/calendar/upcoming-visit': typeof AuthenticatedCalendarUpcomingVisitRoute
   '/calendar/visit-report': typeof AuthenticatedCalendarVisitReportRoute
   '/customers/add-customer': typeof AuthenticatedCustomersAddCustomerRoute
+  '/dashboard/dash-live-tracking': typeof AuthenticatedDashboardDashLiveTrackingRoute
   '/drivers/orders': typeof AuthenticatedDriversOrdersRoute
   '/drivers/payments': typeof AuthenticatedDriversPaymentsRoute
   '/drivers/tracking': typeof AuthenticatedDriversTrackingRoute
@@ -604,7 +677,12 @@ export interface FileRoutesByTo {
   '/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/settings/display': typeof AuthenticatedSettingsDisplayRoute
+  '/settings/field-tracking': typeof AuthenticatedSettingsFieldTrackingRoute
+  '/settings/general': typeof AuthenticatedSettingsGeneralRoute
+  '/settings/limits-&-controls': typeof AuthenticatedSettingsLimitsChar38ControlsRoute
+  '/settings/mobile-features': typeof AuthenticatedSettingsMobileFeaturesRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/settings/notifictions': typeof AuthenticatedSettingsNotifictionsRoute
   '/settings/reset-password': typeof AuthenticatedSettingsResetPasswordRoute
   '/user-management/add-roles-permission': typeof AuthenticatedUserManagementAddRolesPermissionRoute
   '/user-management/roles': typeof AuthenticatedUserManagementRolesRoute
@@ -623,6 +701,7 @@ export interface FileRoutesByTo {
   '/organizations': typeof AuthenticatedOrganizationsIndexRoute
   '/products': typeof AuthenticatedProductsIndexRoute
   '/reports': typeof AuthenticatedReportsIndexRoute
+  '/setting': typeof AuthenticatedSettingIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/user-management': typeof AuthenticatedUserManagementIndexRoute
   '/user-territory': typeof AuthenticatedUserTerritoryIndexRoute
@@ -640,8 +719,10 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_authenticated/managements': typeof AuthenticatedManagementsRouteRouteWithChildren
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteRouteWithChildren
+  '/(auth)/feedback-form': typeof authFeedbackFormRoute
   '/(auth)/forgot-password': typeof authForgotPasswordRoute
   '/(auth)/otp': typeof authOtpRoute
+  '/(auth)/reset-password': typeof authResetPasswordRoute
   '/(auth)/sign-in': typeof authSignInRoute
   '/(auth)/signup': typeof authSignupRoute
   '/(auth)/superadmin-sign-in': typeof authSuperadminSignInRoute
@@ -664,6 +745,7 @@ export interface FileRoutesById {
   '/_authenticated/calendar/upcoming-visit': typeof AuthenticatedCalendarUpcomingVisitRoute
   '/_authenticated/calendar/visit-report': typeof AuthenticatedCalendarVisitReportRoute
   '/_authenticated/customers/add-customer': typeof AuthenticatedCustomersAddCustomerRoute
+  '/_authenticated/dashboard/dash-live-tracking': typeof AuthenticatedDashboardDashLiveTrackingRoute
   '/_authenticated/drivers/orders': typeof AuthenticatedDriversOrdersRoute
   '/_authenticated/drivers/payments': typeof AuthenticatedDriversPaymentsRoute
   '/_authenticated/drivers/tracking': typeof AuthenticatedDriversTrackingRoute
@@ -678,7 +760,12 @@ export interface FileRoutesById {
   '/_authenticated/settings/account': typeof AuthenticatedSettingsAccountRoute
   '/_authenticated/settings/appearance': typeof AuthenticatedSettingsAppearanceRoute
   '/_authenticated/settings/display': typeof AuthenticatedSettingsDisplayRoute
+  '/_authenticated/settings/field-tracking': typeof AuthenticatedSettingsFieldTrackingRoute
+  '/_authenticated/settings/general': typeof AuthenticatedSettingsGeneralRoute
+  '/_authenticated/settings/limits-&-controls': typeof AuthenticatedSettingsLimitsChar38ControlsRoute
+  '/_authenticated/settings/mobile-features': typeof AuthenticatedSettingsMobileFeaturesRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/_authenticated/settings/notifictions': typeof AuthenticatedSettingsNotifictionsRoute
   '/_authenticated/settings/reset-password': typeof AuthenticatedSettingsResetPasswordRoute
   '/_authenticated/user-management/add-roles-permission': typeof AuthenticatedUserManagementAddRolesPermissionRoute
   '/_authenticated/user-management/roles': typeof AuthenticatedUserManagementRolesRoute
@@ -697,6 +784,7 @@ export interface FileRoutesById {
   '/_authenticated/organizations/': typeof AuthenticatedOrganizationsIndexRoute
   '/_authenticated/products/': typeof AuthenticatedProductsIndexRoute
   '/_authenticated/reports/': typeof AuthenticatedReportsIndexRoute
+  '/_authenticated/setting/': typeof AuthenticatedSettingIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/user-management/': typeof AuthenticatedUserManagementIndexRoute
   '/_authenticated/user-territory/': typeof AuthenticatedUserTerritoryIndexRoute
@@ -714,8 +802,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/managements'
     | '/settings'
+    | '/feedback-form'
     | '/forgot-password'
     | '/otp'
+    | '/reset-password'
     | '/sign-in'
     | '/signup'
     | '/superadmin-sign-in'
@@ -738,6 +828,7 @@ export interface FileRouteTypes {
     | '/calendar/upcoming-visit'
     | '/calendar/visit-report'
     | '/customers/add-customer'
+    | '/dashboard/dash-live-tracking'
     | '/drivers/orders'
     | '/drivers/payments'
     | '/drivers/tracking'
@@ -752,7 +843,12 @@ export interface FileRouteTypes {
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
+    | '/settings/field-tracking'
+    | '/settings/general'
+    | '/settings/limits-&-controls'
+    | '/settings/mobile-features'
     | '/settings/notifications'
+    | '/settings/notifictions'
     | '/settings/reset-password'
     | '/user-management/add-roles-permission'
     | '/user-management/roles'
@@ -771,6 +867,7 @@ export interface FileRouteTypes {
     | '/organizations'
     | '/products'
     | '/reports'
+    | '/setting'
     | '/settings/'
     | '/user-management'
     | '/user-territory'
@@ -784,8 +881,10 @@ export interface FileRouteTypes {
     | '/user-territory/view-territorywise-user/$territoyId'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/feedback-form'
     | '/forgot-password'
     | '/otp'
+    | '/reset-password'
     | '/sign-in'
     | '/signup'
     | '/superadmin-sign-in'
@@ -808,6 +907,7 @@ export interface FileRouteTypes {
     | '/calendar/upcoming-visit'
     | '/calendar/visit-report'
     | '/customers/add-customer'
+    | '/dashboard/dash-live-tracking'
     | '/drivers/orders'
     | '/drivers/payments'
     | '/drivers/tracking'
@@ -822,7 +922,12 @@ export interface FileRouteTypes {
     | '/settings/account'
     | '/settings/appearance'
     | '/settings/display'
+    | '/settings/field-tracking'
+    | '/settings/general'
+    | '/settings/limits-&-controls'
+    | '/settings/mobile-features'
     | '/settings/notifications'
+    | '/settings/notifictions'
     | '/settings/reset-password'
     | '/user-management/add-roles-permission'
     | '/user-management/roles'
@@ -841,6 +946,7 @@ export interface FileRouteTypes {
     | '/organizations'
     | '/products'
     | '/reports'
+    | '/setting'
     | '/settings'
     | '/user-management'
     | '/user-territory'
@@ -857,8 +963,10 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/_authenticated/managements'
     | '/_authenticated/settings'
+    | '/(auth)/feedback-form'
     | '/(auth)/forgot-password'
     | '/(auth)/otp'
+    | '/(auth)/reset-password'
     | '/(auth)/sign-in'
     | '/(auth)/signup'
     | '/(auth)/superadmin-sign-in'
@@ -881,6 +989,7 @@ export interface FileRouteTypes {
     | '/_authenticated/calendar/upcoming-visit'
     | '/_authenticated/calendar/visit-report'
     | '/_authenticated/customers/add-customer'
+    | '/_authenticated/dashboard/dash-live-tracking'
     | '/_authenticated/drivers/orders'
     | '/_authenticated/drivers/payments'
     | '/_authenticated/drivers/tracking'
@@ -895,7 +1004,12 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/account'
     | '/_authenticated/settings/appearance'
     | '/_authenticated/settings/display'
+    | '/_authenticated/settings/field-tracking'
+    | '/_authenticated/settings/general'
+    | '/_authenticated/settings/limits-&-controls'
+    | '/_authenticated/settings/mobile-features'
     | '/_authenticated/settings/notifications'
+    | '/_authenticated/settings/notifictions'
     | '/_authenticated/settings/reset-password'
     | '/_authenticated/user-management/add-roles-permission'
     | '/_authenticated/user-management/roles'
@@ -914,6 +1028,7 @@ export interface FileRouteTypes {
     | '/_authenticated/organizations/'
     | '/_authenticated/products/'
     | '/_authenticated/reports/'
+    | '/_authenticated/setting/'
     | '/_authenticated/settings/'
     | '/_authenticated/user-management/'
     | '/_authenticated/user-territory/'
@@ -929,8 +1044,10 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  authFeedbackFormRoute: typeof authFeedbackFormRoute
   authForgotPasswordRoute: typeof authForgotPasswordRoute
   authOtpRoute: typeof authOtpRoute
+  authResetPasswordRoute: typeof authResetPasswordRoute
   authSignInRoute: typeof authSignInRoute
   authSignupRoute: typeof authSignupRoute
   authSuperadminSignInRoute: typeof authSuperadminSignInRoute
@@ -1021,6 +1138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof authSignInRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(auth)/reset-password': {
+      id: '/(auth)/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof authResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(auth)/otp': {
       id: '/(auth)/otp'
       path: '/otp'
@@ -1033,6 +1157,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof authForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth)/feedback-form': {
+      id: '/(auth)/feedback-form'
+      path: '/feedback-form'
+      fullPath: '/feedback-form'
+      preLoaderRoute: typeof authFeedbackFormRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/settings': {
@@ -1076,6 +1207,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/settings/'
       preLoaderRoute: typeof AuthenticatedSettingsIndexRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
+    '/_authenticated/setting/': {
+      id: '/_authenticated/setting/'
+      path: '/setting'
+      fullPath: '/setting'
+      preLoaderRoute: typeof AuthenticatedSettingIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/reports/': {
       id: '/_authenticated/reports/'
@@ -1203,11 +1341,46 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsResetPasswordRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
+    '/_authenticated/settings/notifictions': {
+      id: '/_authenticated/settings/notifictions'
+      path: '/notifictions'
+      fullPath: '/settings/notifictions'
+      preLoaderRoute: typeof AuthenticatedSettingsNotifictionsRouteImport
+      parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
     '/_authenticated/settings/notifications': {
       id: '/_authenticated/settings/notifications'
       path: '/notifications'
       fullPath: '/settings/notifications'
       preLoaderRoute: typeof AuthenticatedSettingsNotificationsRouteImport
+      parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
+    '/_authenticated/settings/mobile-features': {
+      id: '/_authenticated/settings/mobile-features'
+      path: '/mobile-features'
+      fullPath: '/settings/mobile-features'
+      preLoaderRoute: typeof AuthenticatedSettingsMobileFeaturesRouteImport
+      parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
+    '/_authenticated/settings/limits-&-controls': {
+      id: '/_authenticated/settings/limits-&-controls'
+      path: '/limits-&-controls'
+      fullPath: '/settings/limits-&-controls'
+      preLoaderRoute: typeof AuthenticatedSettingsLimitsChar38ControlsRouteImport
+      parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
+    '/_authenticated/settings/general': {
+      id: '/_authenticated/settings/general'
+      path: '/general'
+      fullPath: '/settings/general'
+      preLoaderRoute: typeof AuthenticatedSettingsGeneralRouteImport
+      parentRoute: typeof AuthenticatedSettingsRouteRoute
+    }
+    '/_authenticated/settings/field-tracking': {
+      id: '/_authenticated/settings/field-tracking'
+      path: '/field-tracking'
+      fullPath: '/settings/field-tracking'
+      preLoaderRoute: typeof AuthenticatedSettingsFieldTrackingRouteImport
       parentRoute: typeof AuthenticatedSettingsRouteRoute
     }
     '/_authenticated/settings/display': {
@@ -1306,6 +1479,13 @@ declare module '@tanstack/react-router' {
       path: '/drivers/orders'
       fullPath: '/drivers/orders'
       preLoaderRoute: typeof AuthenticatedDriversOrdersRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard/dash-live-tracking': {
+      id: '/_authenticated/dashboard/dash-live-tracking'
+      path: '/dashboard/dash-live-tracking'
+      fullPath: '/dashboard/dash-live-tracking'
+      preLoaderRoute: typeof AuthenticatedDashboardDashLiveTrackingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/customers/add-customer': {
@@ -1470,7 +1650,12 @@ interface AuthenticatedSettingsRouteRouteChildren {
   AuthenticatedSettingsAccountRoute: typeof AuthenticatedSettingsAccountRoute
   AuthenticatedSettingsAppearanceRoute: typeof AuthenticatedSettingsAppearanceRoute
   AuthenticatedSettingsDisplayRoute: typeof AuthenticatedSettingsDisplayRoute
+  AuthenticatedSettingsFieldTrackingRoute: typeof AuthenticatedSettingsFieldTrackingRoute
+  AuthenticatedSettingsGeneralRoute: typeof AuthenticatedSettingsGeneralRoute
+  AuthenticatedSettingsLimitsChar38ControlsRoute: typeof AuthenticatedSettingsLimitsChar38ControlsRoute
+  AuthenticatedSettingsMobileFeaturesRoute: typeof AuthenticatedSettingsMobileFeaturesRoute
   AuthenticatedSettingsNotificationsRoute: typeof AuthenticatedSettingsNotificationsRoute
+  AuthenticatedSettingsNotifictionsRoute: typeof AuthenticatedSettingsNotifictionsRoute
   AuthenticatedSettingsResetPasswordRoute: typeof AuthenticatedSettingsResetPasswordRoute
   AuthenticatedSettingsIndexRoute: typeof AuthenticatedSettingsIndexRoute
 }
@@ -1483,8 +1668,17 @@ const AuthenticatedSettingsRouteRouteChildren: AuthenticatedSettingsRouteRouteCh
     AuthenticatedSettingsAccountRoute: AuthenticatedSettingsAccountRoute,
     AuthenticatedSettingsAppearanceRoute: AuthenticatedSettingsAppearanceRoute,
     AuthenticatedSettingsDisplayRoute: AuthenticatedSettingsDisplayRoute,
+    AuthenticatedSettingsFieldTrackingRoute:
+      AuthenticatedSettingsFieldTrackingRoute,
+    AuthenticatedSettingsGeneralRoute: AuthenticatedSettingsGeneralRoute,
+    AuthenticatedSettingsLimitsChar38ControlsRoute:
+      AuthenticatedSettingsLimitsChar38ControlsRoute,
+    AuthenticatedSettingsMobileFeaturesRoute:
+      AuthenticatedSettingsMobileFeaturesRoute,
     AuthenticatedSettingsNotificationsRoute:
       AuthenticatedSettingsNotificationsRoute,
+    AuthenticatedSettingsNotifictionsRoute:
+      AuthenticatedSettingsNotifictionsRoute,
     AuthenticatedSettingsResetPasswordRoute:
       AuthenticatedSettingsResetPasswordRoute,
     AuthenticatedSettingsIndexRoute: AuthenticatedSettingsIndexRoute,
@@ -1526,6 +1720,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCalendarUpcomingVisitRoute: typeof AuthenticatedCalendarUpcomingVisitRoute
   AuthenticatedCalendarVisitReportRoute: typeof AuthenticatedCalendarVisitReportRoute
   AuthenticatedCustomersAddCustomerRoute: typeof AuthenticatedCustomersAddCustomerRoute
+  AuthenticatedDashboardDashLiveTrackingRoute: typeof AuthenticatedDashboardDashLiveTrackingRoute
   AuthenticatedDriversOrdersRoute: typeof AuthenticatedDriversOrdersRoute
   AuthenticatedDriversPaymentsRoute: typeof AuthenticatedDriversPaymentsRoute
   AuthenticatedDriversTrackingRoute: typeof AuthenticatedDriversTrackingRoute
@@ -1549,6 +1744,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedOrganizationsIndexRoute: typeof AuthenticatedOrganizationsIndexRoute
   AuthenticatedProductsIndexRoute: typeof AuthenticatedProductsIndexRoute
   AuthenticatedReportsIndexRoute: typeof AuthenticatedReportsIndexRoute
+  AuthenticatedSettingIndexRoute: typeof AuthenticatedSettingIndexRoute
   AuthenticatedUserManagementIndexRoute: typeof AuthenticatedUserManagementIndexRoute
   AuthenticatedUserTerritoryIndexRoute: typeof AuthenticatedUserTerritoryIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
@@ -1584,6 +1780,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCalendarVisitReportRoute: AuthenticatedCalendarVisitReportRoute,
   AuthenticatedCustomersAddCustomerRoute:
     AuthenticatedCustomersAddCustomerRoute,
+  AuthenticatedDashboardDashLiveTrackingRoute:
+    AuthenticatedDashboardDashLiveTrackingRoute,
   AuthenticatedDriversOrdersRoute: AuthenticatedDriversOrdersRoute,
   AuthenticatedDriversPaymentsRoute: AuthenticatedDriversPaymentsRoute,
   AuthenticatedDriversTrackingRoute: AuthenticatedDriversTrackingRoute,
@@ -1608,6 +1806,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedOrganizationsIndexRoute: AuthenticatedOrganizationsIndexRoute,
   AuthenticatedProductsIndexRoute: AuthenticatedProductsIndexRoute,
   AuthenticatedReportsIndexRoute: AuthenticatedReportsIndexRoute,
+  AuthenticatedSettingIndexRoute: AuthenticatedSettingIndexRoute,
   AuthenticatedUserManagementIndexRoute: AuthenticatedUserManagementIndexRoute,
   AuthenticatedUserTerritoryIndexRoute: AuthenticatedUserTerritoryIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,
@@ -1629,8 +1828,10 @@ const AuthenticatedRouteRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  authFeedbackFormRoute: authFeedbackFormRoute,
   authForgotPasswordRoute: authForgotPasswordRoute,
   authOtpRoute: authOtpRoute,
+  authResetPasswordRoute: authResetPasswordRoute,
   authSignInRoute: authSignInRoute,
   authSignupRoute: authSignupRoute,
   authSuperadminSignInRoute: authSuperadminSignInRoute,

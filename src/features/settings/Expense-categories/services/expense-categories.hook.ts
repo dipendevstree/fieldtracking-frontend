@@ -1,10 +1,11 @@
-import useFetchData from '@/hooks/use-fetch-data'
-import usePostData from '@/hooks/use-post-data'
+import API from '@/config/api/api'
 import useDeleteData from '@/hooks/use-delete-data'
+import useFetchData from '@/hooks/use-fetch-data'
 import usePatchData from '@/hooks/use-patch-data'
+import usePostData from '@/hooks/use-post-data'
 import { ExpenseCategory, PerDiemSettings, CategorySettings } from '../type/type'
 
-const EXPENSE_CATEGORIES_QUERY = 'expense-categories/list'
+const EXPENSE_CATEGORIES_QUERY = API.category.list
 
 export interface IListParams {
   sort?: string
@@ -16,12 +17,6 @@ export interface IListParams {
 // Expense Category
 export interface ExpenseCategoryPayload {
   categoryName: string
-  categoryType: 'mileage' | 'per-diem' | 'fixed-amount' | 'percentage' | 'custom'
-  defaultLimit: number
-  limitUnit: 'per-mile' | 'per-day' | 'per-meal' | 'per-trip' | 'fixed'
-  requiresReceipt: boolean
-  isActive: boolean
-  description?: string
 }
 
 export interface ExpenseCategoryResponse {
@@ -32,34 +27,43 @@ export interface ExpenseCategoryResponse {
 
 export const useCreateExpenseCategory = (onSuccess?: () => void) => {
   return usePostData<ExpenseCategoryResponse, ExpenseCategoryPayload>({
-    url: 'expense-categories/create',
+    url: API.category.create,
     refetchQueries: [EXPENSE_CATEGORIES_QUERY],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess()
       }
+    },
+    onError: (error) => {
+      console.error('Error creating expense category:', error)
     },
   })
 }
 
 export const useUpdateExpenseCategory = (id: string, onSuccess?: () => void) => {
   return usePatchData<ExpenseCategoryResponse, ExpenseCategoryPayload>({
-    url: `expense-categories/update/${id}`,
+    url: `${API.category.update}/${id}`,
     refetchQueries: [EXPENSE_CATEGORIES_QUERY],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess()
       }
     },
+    onError: (error) => {
+      console.error('Error updating expense category:', error)
+    },
   })
 }
 
 export const useDeleteExpenseCategory = (id: string, onSuccess?: () => void) => {
   return useDeleteData({
-    url: id ? `expense-categories/delete/${id}` : 'expense-categories/delete',
+    url: `${API.category.delete}/${id}`,
     refetchQueries: [EXPENSE_CATEGORIES_QUERY],
     onSuccess: () => {
       if (onSuccess && id) onSuccess()
+    },
+    onError: (error) => {
+      console.error('Error deleting expense category:', error)
     },
   })
 }
@@ -80,12 +84,15 @@ export interface PerDiemSettingsResponse {
 
 export const useUpdatePerDiemSettings = (onSuccess?: () => void) => {
   return usePatchData<PerDiemSettingsResponse, PerDiemSettingsPayload>({
-    url: 'expense-categories/per-diem-settings/update',
+    url: API.category.update,
     refetchQueries: [EXPENSE_CATEGORIES_QUERY],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess()
       }
+    },
+    onError: (error) => {
+      console.error('Error updating per diem settings:', error)
     },
   })
 }
@@ -108,19 +115,22 @@ export interface CategorySettingsResponse {
 
 export const useUpdateCategorySettings = (onSuccess?: () => void) => {
   return usePatchData<CategorySettingsResponse, CategorySettingsPayload>({
-    url: 'expense-categories/settings/update',
+    url: API.category.update,
     refetchQueries: [EXPENSE_CATEGORIES_QUERY],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess()
       }
     },
+    onError: (error) => {
+      console.error('Error updating category settings:', error)
+    },
   })
 }
 
 // Data fetching hooks
 export interface ExpenseCategoriesListResponse {
-  categories: ExpenseCategory[]
+  list: ExpenseCategory[]
   perDiemSettings: PerDiemSettings
   categorySettings: CategorySettings
   totalCount: number
@@ -138,7 +148,7 @@ export const useGetExpenseCategoriesData = (
 
   return {
     ...query,
-    expenseCategories: query.data?.categories ?? [],
+    expenseCategories: query.data?.list ?? [],
     perDiemSettings: query.data?.perDiemSettings ?? null,
     categorySettings: query.data?.categorySettings ?? null,
     totalCount: query.data?.totalCount ?? 0,
