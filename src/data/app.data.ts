@@ -47,22 +47,15 @@ export enum EXPENSE_SUB_TYPE {
   DAILY_OUTSTATION = "daily_outstation",
 }
 
-export enum APPROVAL_TYPE {
-  EXPENSE = "expense",
-  ALLOWANCE = "allowance",
-  TRAVEL = "travel",
-  OTHER = "other",
-}
-
-export enum APPROVAL_STATUS {
-  PENDING = "pending",
-  APPROVED = "approved",
-  REJECTED = "rejected",
-  UNDER_REVIEW = "under_review",
-}
-
-export enum APPROVAL_PRIORITY {
-  LOW = "low",
-  MEDIUM = "medium",
-  HIGH = "high",
+export enum TIER {
+  TIER_1 = "tier_1",
+  TIER_2 = "tier_2",
+  TIER_3 = "tier_3",
+  TIER_4 = "tier_4",
+  TIER_5 = "tier_5",
+  TIER_6 = "tier_6",
+  TIER_7 = "tier_7",
+  TIER_8 = "tier_8",
+  TIER_9 = "tier_9",
+  TIER_10 = "tier_10",
 }

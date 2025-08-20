@@ -29,16 +29,18 @@ export function DataTableRowActions({ row }: any) {
 
   return (
     <div className="flex items-center space-x-2">
-      <CustomTooltip title="Add Visit">
-        <Button
-          onClick={() => handleVisit(row)}
-          variant="outline"
-          className="h-8 w-8 p-0"
-        >
-          <IconCalendarPlus size={16} />
-        </Button>
-      </CustomTooltip>
-      <PermissionGate requiredPermission="all_user" action="edit">
+      <PermissionGate requiredPermission="all_users" action="add">
+        <CustomTooltip title="Add Visit">
+          <Button
+            onClick={() => handleVisit(row)}
+            variant="outline"
+            className="h-8 w-8 p-0"
+          >
+            <IconCalendarPlus size={16} />
+          </Button>
+        </CustomTooltip>
+      </PermissionGate>
+      <PermissionGate requiredPermission="all_users" action="edit">
         <CustomTooltip title="Edit">
           <Button
             variant="outline"
@@ -49,16 +51,17 @@ export function DataTableRowActions({ row }: any) {
           </Button>
         </CustomTooltip>
       </PermissionGate>
-
-      <CustomTooltip title="Delete">
-        <Button
-          variant="outline"
-          onClick={() => handleDelete(row)}
-          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-        >
-          <IconTrash size={16} />
-        </Button>
-      </CustomTooltip>
+      <PermissionGate requiredPermission="all_users" action="delete">
+        <CustomTooltip title="Delete">
+          <Button
+            variant="outline"
+            onClick={() => handleDelete(row)}
+            className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+          >
+            <IconTrash size={16} />
+          </Button>
+        </CustomTooltip>
+      </PermissionGate>
     </div>
   );
 }

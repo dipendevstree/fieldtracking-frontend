@@ -63,6 +63,7 @@ export interface PermissionGroup {
 
 // User data from login response
 export interface LoginUser {
+  id:string;
   readonly user_id: string;
   readonly name: string;
   readonly email: string;
@@ -71,6 +72,8 @@ export interface LoginUser {
   readonly access_token: string;
   role: any;
   readonly permissions: readonly PermissionGroup[];
+  organizationID:string;
+  organization:any,
 }
 
 // Complete login response

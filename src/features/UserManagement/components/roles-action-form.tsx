@@ -23,101 +23,35 @@ import {
   useOrganizationMenulist,
 } from "../services/Roles.hook";
 import { useRolesStore } from "../store/roles.store";
-import { toast } from "sonner";
-
-interface MenuItem {
-  organizationMenuId: string;
-  menuName: string;
-  menuKey: string;
-  parentId?: string | null;
-  isParent: boolean;
-  hasChildren?: boolean;
-  children?: MenuItem[];
-  level: number;
-}
-
-interface Permission {
-  permissionId: string;
-  roleId: string;
-  organizationId: string;
-  organizationMenuId: string;
-  viewOwn: boolean;
-  viewGlobal: boolean;
-  add: boolean;
-  edit: boolean;
-  delete: boolean;
-  createdDate: string;
-  modifiedDate: string;
-  deletedDate: string | null;
-  createdBy: string;
-  updatedBy: string | null;
-  organizationMenu: {
-    organizationMenuId: string;
-    menuName: string;
-    menuKey: string;
-    parentMenuId: string | null;
-    organizationId: string;
-    masterMenuId: string;
-    createdBy: string;
-    updatedBy: string | null;
-    isActive: boolean;
-    deletedDate: string | null;
-    createdDate: string;
-    modifiedDate: string;
-  };
-}
-
-interface OrganizationMenu {
-  organizationMenuId: string;
-  menuName: string;
-  menuKey: string;
-  parentMenuId: string | null;
-  organizationId: string;
-  masterMenuId: string;
-  createdBy: string;
-  updatedBy: string | null;
-  isActive: boolean;
-  deletedDate: string | null;
-  createdDate: string;
-  modifiedDate: string;
-}
-
-interface Props {
-  currentRow?: Partial<TRoleFormSchema>;
-  isEdit?: boolean;
-}
+import { MenuItem, OrganizationMenu, Permission, Props } from "../types";
 
 export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
   const navigate = useNavigate();
   const params = useParams({ strict: false });
   const { currentRow: storeCurrentRow, setCurrentRow } = useRolesStore();
 
-  // Ref to track if form has been initialized to prevent multiple initializations
   const formInitialized = useRef(false);
 
-  // Get roleId from URL params (for edit mode when page is refreshed)
   const roleIdFromUrl = params?.roleId;
   const isEdit =
     propIsEdit ?? !!(currentRow || storeCurrentRow || roleIdFromUrl);
 
-  // Determine which role data to use
   const roleData = currentRow || storeCurrentRow;
   const effectiveRoleId = roleData?.roleId || roleIdFromUrl;
 
-  // Get organization menu list
-  const { organizationMenus, isLoading: isMenusLoading } =
-    useOrganizationMenulist();
+  const {
+    organizationMenus,
+    isLoading: isMenusLoading,
+    isFetched,
+  } = useOrganizationMenulist();
 
-  // Get role data with permissions (only when editing)
   const { data: rolePermission, isLoading: isRoleLoading } =
     useGetRolesAndPermissionById(effectiveRoleId, {
       enabled: isEdit && !!effectiveRoleId,
     });
 
-  // Update store with fetched role data if we got it from URL
   useEffect(() => {
     if (rolePermission && !storeCurrentRow && roleIdFromUrl) {
-      console.log("Setting current row from API data");
       setCurrentRow({
         roleId: rolePermission.roleId,
         roleName: rolePermission.roleName,
@@ -128,7 +62,13 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
         permissionsCount: rolePermission.permissions?.length || 0,
       });
     }
-  }, [rolePermission, storeCurrentRow, roleIdFromUrl, setCurrentRow]);
+  }, [
+    rolePermission,
+    storeCurrentRow,
+    roleIdFromUrl,
+    setCurrentRow,
+    isFetched,
+  ]);
 
   const rolePermissions = rolePermission?.permissions || [];
 
@@ -146,7 +86,6 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
     isError: isUpdateError,
   } = useUpdateRole(effectiveRoleId || "");
 
-  // Navigate back on successful create or update
   useEffect(() => {
     if (
       (isCreateSuccess && !isCreateError) ||
@@ -156,7 +95,6 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
     }
   }, [isCreateSuccess, isCreateError, isUpdateSuccess, isUpdateError]);
 
-  // Process menu items into a hierarchical structure
   const processMenuItems = useMemo((): MenuItem[] => {
     if (!organizationMenus?.length) return [];
 
@@ -213,7 +151,6 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
     return processedMenus;
   }, [organizationMenus]);
 
-  // FIXED: Stable calculation of initial menu IDs using useMemo with proper dependencies
   const initialMenuIds = useMemo(() => {
     if (!processMenuItems.length) return [];
 
@@ -231,9 +168,8 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
         deleteValue: permission?.delete || false,
       };
     });
-  }, [processMenuItems, rolePermissions]); // Only depend on actual data, not form state
+  }, [processMenuItems, rolePermissions]);
 
-  // Initialize form with proper default values
   const form = useForm<TRoleFormSchema>({
     resolver: zodResolver(roleFormSchema),
     mode: "onChange",
@@ -249,187 +185,161 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
     formState: { errors },
     watch,
     setValue,
+    getValues,
   } = form;
 
-  // FIXED: Properly controlled form initialization with ref to prevent multiple calls
   useEffect(() => {
-    // Skip if already initialized or if we don't have the required data yet
     if (formInitialized.current || processMenuItems.length === 0) {
       return;
     }
 
-    // For edit mode: wait for role permission data
     if (isEdit && rolePermission && initialMenuIds.length > 0) {
-      console.log("Initializing form for edit mode:", {
-        roleName: rolePermission.roleName,
-        menuIdsLength: initialMenuIds.length,
-      });
-
       setValue("roleName", rolePermission.roleName);
       setValue("menuIds", initialMenuIds);
       formInitialized.current = true;
-    }
-    // For create mode: initialize with empty role name and default permissions
-    else if (!isEdit && initialMenuIds.length > 0) {
-      console.log("Initializing form for create mode");
+    } else if (!isEdit && initialMenuIds.length > 0) {
       setValue("roleName", "");
       setValue("menuIds", initialMenuIds);
       formInitialized.current = true;
     }
   }, [
     isEdit,
-    rolePermission?.roleName, // Only depend on the actual role name, not the entire object
-    rolePermission?.roleId, // Only depend on the role ID
+    rolePermission,
     processMenuItems.length,
-    initialMenuIds.length, // Only depend on the length, not the array itself
+    initialMenuIds,
     setValue,
   ]);
 
-  // FIXED: Reset form initialization flag when switching between edit/create modes
   useEffect(() => {
     formInitialized.current = false;
   }, [isEdit, effectiveRoleId]);
 
-  const menuIds: {
-    id: string;
-    permissionId?: string;
-    viewOwn?: boolean;
-    viewGlobal?: boolean;
-    add?: boolean;
-    edit?: boolean;
-    deleteValue?: boolean;
-  }[] = watch("menuIds") ?? [];
+  const menuIds: TRoleFormSchema["menuIds"] = watch("menuIds") ?? [];
 
-  // Calculate select all state
+  // selectAllState
   const selectAllState = useMemo(() => {
-    if (menuIds.length === 0) return { checked: false, indeterminate: false };
-
-    // Only consider non-parent-with-children menus for select all calculation
-    const relevantMenus = processMenuItems.filter(
+    const relevantMenuItems = processMenuItems.filter(
       (menu) => !(menu.isParent && menu.hasChildren)
     );
 
-    if (relevantMenus.length === 0)
+    if (relevantMenuItems.length === 0 || menuIds.length === 0) {
       return { checked: false, indeterminate: false };
+    }
 
     let checkedCount = 0;
-    let totalCount = relevantMenus.length;
+    const totalPossibleCheckboxes = relevantMenuItems.length * 5; // 5 permissions per item
 
-    relevantMenus.forEach((menu) => {
-      // Find the actual index in the full processMenuItems array
-      const actualIndex = processMenuItems.findIndex(
-        (m) => m.organizationMenuId === menu.organizationMenuId
-      );
-      const permissions = menuIds[actualIndex];
-
-      if (
-        permissions &&
-        (permissions.viewOwn ||
-          permissions.viewGlobal ||
-          permissions.add ||
-          permissions.edit ||
-          permissions.deleteValue)
-      ) {
-        checkedCount++;
+    relevantMenuItems.forEach((menu) => {
+      const permission = menuIds.find((m) => m.id === menu.organizationMenuId);
+      if (permission) {
+        if (permission.viewOwn) checkedCount++;
+        if (permission.viewGlobal) checkedCount++;
+        if (permission.add) checkedCount++;
+        if (permission.edit) checkedCount++;
+        if (permission.deleteValue) checkedCount++;
       }
     });
 
     if (checkedCount === 0) {
       return { checked: false, indeterminate: false };
-    } else if (checkedCount === totalCount) {
-      return { checked: true, indeterminate: false };
-    } else {
-      return { checked: false, indeterminate: true };
     }
+    if (checkedCount === totalPossibleCheckboxes) {
+      return { checked: true, indeterminate: false };
+    }
+    return { checked: false, indeterminate: true };
   }, [menuIds, processMenuItems]);
 
-  // Handle select all functionality
-  const handleSelectAll = (checked: boolean) => {
-    const updated = [...menuIds];
+  const handleSelectAll = (checked: boolean | "indeterminate") => {
+    // When an indeterminate checkbox is clicked, it becomes checked (true).
+    const newCheckedState = !!checked;
+    const currentMenuIds = getValues("menuIds");
 
-    processMenuItems.forEach((menu, index) => {
-      // Skip parent menus that have children (they don't have individual permissions)
-      if (menu.isParent && menu.hasChildren) return;
+    const updatedMenuIds = currentMenuIds?.map((menuItem) => {
+      const menuDefinition = processMenuItems.find(
+        (m) => m.organizationMenuId === menuItem.id
+      );
 
-      const item = { ...updated[index] };
-
-      if (checked) {
-        // Select all permissions
-        item.viewOwn = true;
-        item.viewGlobal = true;
-        item.add = true;
-        item.edit = true;
-        item.deleteValue = true;
-      } else {
-        // Unselect all permissions
-        item.viewOwn = false;
-        item.viewGlobal = false;
-        item.add = false;
-        item.edit = false;
-        item.deleteValue = false;
+      // If it's a non-actionable parent row (a header), return it unchanged.
+      if (menuDefinition?.isParent && menuDefinition?.hasChildren) {
+        return menuItem;
       }
 
-      updated[index] = item;
+      // Otherwise, update all its permissions to the new state.
+      return {
+        ...menuItem,
+        viewOwn: newCheckedState,
+        viewGlobal: newCheckedState,
+        add: newCheckedState,
+        edit: newCheckedState,
+        deleteValue: newCheckedState,
+      };
     });
 
-    setValue("menuIds", updated);
+    setValue("menuIds", updatedMenuIds, {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
   };
 
-  const onSubmit = (values: any) => {
-    const filteredMenuIds = values.menuIds
-      .filter(
-        (menu: any) =>
-          menu.add ||
-          menu.viewGlobal ||
-          menu.viewOwn ||
-          menu.edit ||
-          menu.deleteValue
-      )
-      .map((menu: any) => ({
-        id: menu.id,
-        permissionId: menu.permissionId || undefined,
-        add: menu.add,
-        viewGlobal: menu.viewGlobal,
-        viewOwn: menu.viewOwn,
-        edit: menu.edit,
-        deleteValue: menu.deleteValue,
-      }));
-
-    if (filteredMenuIds.length === 0) {
-      toast.error("At least one permission must be selected.", {
-        duration: 3000,
-      });
-      return;
-    }
+  const onSubmit = (values: TRoleFormSchema) => {
+    const payloadMenuIds = isEdit
+      ? values.menuIds?.map((menu) => ({
+          id: menu.id,
+          permissionId: menu.permissionId || undefined,
+          add: !!menu.add,
+          viewGlobal: !!menu.viewGlobal,
+          viewOwn: !!menu.viewOwn,
+          edit: !!menu.edit,
+          deleteValue: !!menu.deleteValue,
+        }))
+      : values.menuIds?.filter(
+          (menu) =>
+            menu.add ||
+            menu.viewGlobal ||
+            menu.viewOwn ||
+            menu.edit ||
+            menu.deleteValue
+        );
 
     const payload = {
-      roleName: values.roleName,
-      menuIds: filteredMenuIds,
+      ...values,
+      menuIds: payloadMenuIds,
     };
 
-    if (isEdit && effectiveRoleId) {
+    if (isEdit) {
       updateRole(payload);
     } else {
       createRole(payload);
-      console.log("payloacreated", payload);
     }
   };
 
   const handleCancel = () => {
     setCurrentRow(null);
-    formInitialized.current = false; // Reset initialization flag
+    formInitialized.current = false;
     navigate({ to: "/user-management/roles" });
   };
 
+  type PermissionKey =
+    | "viewOwn"
+    | "viewGlobal"
+    | "add"
+    | "edit"
+    | "deleteValue";
+
   const updatePermission = (
-    permissionIndex: number,
-    permissionType: any["menuIds"],
+    menuId: string,
+    permissionType: PermissionKey,
     value: boolean
   ) => {
-    const updated = [...menuIds];
-    const item = { ...updated[permissionIndex], [permissionType]: value };
+    const updatedMenuIds = [...menuIds];
+    const permissionIndex = updatedMenuIds.findIndex((m) => m.id === menuId);
+    if (permissionIndex === -1) return;
 
-    // Handle automatic viewOwn selection for add/edit/delete
+    const item = {
+      ...updatedMenuIds[permissionIndex],
+      [permissionType]: value,
+    };
+
     if (
       (permissionType === "add" ||
         permissionType === "edit" ||
@@ -439,122 +349,37 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
       item.viewOwn = true;
     }
 
-    // Handle automatic deselection when viewOwn is unchecked
     if (permissionType === "viewOwn" && !value) {
       item.add = false;
       item.edit = false;
       item.deleteValue = false;
     }
 
-    updated[permissionIndex] = item;
-
-    // NEW: Handle parent menu inclusion when child menu is selected
-    const currentMenu = processMenuItems[permissionIndex];
-
-    // If this is a child menu (has parentId) and any permission is being enabled
-    if (currentMenu.parentId && value) {
-      // Find the parent menu index
-      const parentIndex = processMenuItems.findIndex(
-        (menu) => menu.organizationMenuId === currentMenu.parentId
-      );
-
-      if (parentIndex !== -1) {
-        // Ensure parent menu has at least viewOwn permission
-        const parentItem = { ...updated[parentIndex] };
-        if (
-          !parentItem.viewOwn &&
-          !parentItem.viewGlobal &&
-          !parentItem.add &&
-          !parentItem.edit &&
-          !parentItem.deleteValue
-        ) {
-          parentItem.viewOwn = true;
-          updated[parentIndex] = parentItem;
-        }
-      }
-    }
-
-    // NEW: Handle parent menu deselection when all child menus are deselected
-    if (currentMenu.parentId && !value) {
-      // Check if this was the last permission being disabled for this child
-      const childStillHasPermissions =
-        item.viewOwn ||
-        item.viewGlobal ||
-        item.add ||
-        item.edit ||
-        item.deleteValue;
-
-      if (!childStillHasPermissions) {
-        // Find parent menu
-        const parentIndex = processMenuItems.findIndex(
-          (menu) => menu.organizationMenuId === currentMenu.parentId
-        );
-
-        if (parentIndex !== -1) {
-          // Check if any other children of this parent still have permissions
-          const siblingChildren = processMenuItems.filter(
-            (menu) =>
-              menu.parentId === currentMenu.parentId &&
-              menu.organizationMenuId !== currentMenu.organizationMenuId
-          );
-
-          const anyChildHasPermissions = siblingChildren.some((siblingMenu) => {
-            const siblingIndex = processMenuItems.findIndex(
-              (menu) =>
-                menu.organizationMenuId === siblingMenu.organizationMenuId
-            );
-            const siblingPermissions = updated[siblingIndex];
-            return (
-              siblingPermissions?.viewOwn ||
-              siblingPermissions?.viewGlobal ||
-              siblingPermissions?.add ||
-              siblingPermissions?.edit ||
-              siblingPermissions?.deleteValue
-            );
-          });
-
-          // If no children have permissions, remove parent permissions too
-          if (!anyChildHasPermissions) {
-            const parentItem = { ...updated[parentIndex] };
-            parentItem.viewOwn = false;
-            parentItem.viewGlobal = false;
-            parentItem.add = false;
-            parentItem.edit = false;
-            parentItem.deleteValue = false;
-            updated[parentIndex] = parentItem;
-          }
-        }
-      }
-    }
-
-    setValue("menuIds", updated);
+    updatedMenuIds[permissionIndex] = item;
+    setValue("menuIds", updatedMenuIds);
   };
-
-  // Define the allowed permission keys explicitly
-  type PermissionKey =
-    | "viewOwn"
-    | "viewGlobal"
-    | "add"
-    | "edit"
-    | "deleteValue";
 
   const renderPermissionCheckbox = (
     menu: MenuItem,
-    index: number,
     permissionType: PermissionKey
   ) => {
     if (menu.isParent && menu.hasChildren)
       return <div className="flex justify-center"></div>;
 
-    const isChecked = Boolean(menuIds[index]?.[permissionType]);
+    const permission = menuIds.find((m) => m.id === menu.organizationMenuId);
+    const isChecked = Boolean(permission?.[permissionType]);
 
     return (
       <div className="flex justify-center">
         <Checkbox
           checked={isChecked}
-          onCheckedChange={(checked) => {
-            updatePermission(index, permissionType, checked as boolean);
-          }}
+          onCheckedChange={(checked) =>
+            updatePermission(
+              menu.organizationMenuId,
+              permissionType,
+              Boolean(checked)
+            )
+          }
         />
       </div>
     );
@@ -648,7 +473,7 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
 
       <Card>
         <CardHeader>
-          <div className="flex justify-between items-center">
+          <div className="flex items-center justify-between">
             <div>
               <CardTitle>Permissions</CardTitle>
               <CardDescription>
@@ -656,14 +481,14 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
                 items.
               </CardDescription>
             </div>
-            <div className="flex gap-2 items-center">
+            <div className="flex items-center gap-2">
               <Checkbox
                 checked={selectAllState.checked}
-                // @ts-ignore - indeterminate is a valid prop for Checkbox
+                // @ts-ignore The 'indeterminate' prop is valid for shadcn/ui Checkbox
                 indeterminate={selectAllState.indeterminate}
                 onCheckedChange={handleSelectAll}
               />
-              <span className="font-medium text-sm">Select All</span>
+              <span className="text-sm font-medium">Select All</span>
             </div>
           </div>
         </CardHeader>
@@ -680,7 +505,7 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
               </div>
 
               {processMenuItems.length > 0 ? (
-                processMenuItems.map((menu, index) => (
+                processMenuItems.map((menu) => (
                   <div
                     key={menu.organizationMenuId}
                     className={`grid grid-cols-6 items-center gap-4 border-b p-3 ${
@@ -691,7 +516,7 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
                           : "bg-gray-50"
                     }`}
                   >
-                    <div className="min-w-0">
+                    <div className={`min-w-0 ${menu.level > 0 ? "pl-6" : ""}`}>
                       <span
                         className={`text-sm ${
                           menu.isParent && menu.hasChildren
@@ -701,15 +526,14 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
                               : "text-gray-700"
                         }`}
                       >
-                        {menu.level > 0}
                         {menu.menuName}
                       </span>
                     </div>
-                    {renderPermissionCheckbox(menu, index, "viewOwn")}
-                    {renderPermissionCheckbox(menu, index, "viewGlobal")}
-                    {renderPermissionCheckbox(menu, index, "add")}
-                    {renderPermissionCheckbox(menu, index, "edit")}
-                    {renderPermissionCheckbox(menu, index, "deleteValue")}
+                    {renderPermissionCheckbox(menu, "viewOwn")}
+                    {renderPermissionCheckbox(menu, "viewGlobal")}
+                    {renderPermissionCheckbox(menu, "add")}
+                    {renderPermissionCheckbox(menu, "edit")}
+                    {renderPermissionCheckbox(menu, "deleteValue")}
                   </div>
                 ))
               ) : (
@@ -721,13 +545,6 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
                   </p>
                 </div>
               )}
-            </div>
-
-            <div className="rounded bg-gray-50 p-3 text-sm text-gray-600">
-              <strong>Summary:</strong>{" "}
-              {processMenuItems.filter((m) => m.isParent).length} parent
-              menu(s), {processMenuItems.filter((m) => !m.isParent).length}{" "}
-              child menu(s)
             </div>
           </div>
         </CardContent>

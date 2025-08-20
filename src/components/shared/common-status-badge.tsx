@@ -41,6 +41,10 @@ function formatStatusTitle(status: string): string {
 }
 
 const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
+  if (!status) {
+    return "-";
+  }
+
   const normalizedStatus = status.toLowerCase();
   const color = statusColors[normalizedStatus] || {
     text: "text-gray-600",

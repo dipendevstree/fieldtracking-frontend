@@ -1,15 +1,7 @@
-import { useState } from "react";
-import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import { cn } from "@/lib/utils";
 import { Main } from "@/components/layout/main";
 import Approvers from "./components/Approvers";
-
 const ApproversPage = () => {
-  const [] = useState({
-    page: DEFAULT_PAGE_NUMBER,
-    limit: DEFAULT_PAGE_SIZE,
-  });
-
   return (
     <Main className={cn("flex flex-col gap-2 p-4")}>
       {/* Approvers Configuration Section */}
@@ -24,7 +16,7 @@ const ApproversPage = () => {
           </p>
         </div>
         {/* Settings Configuration */}
-        <div className="mb-8">
+        <div>
           <Approvers />
         </div>
       </div>

@@ -10,7 +10,7 @@ import { useSelectOptions } from "@/hooks/use-select-option";
 import { FilterConfig } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import ApprovalsTable from "./table";
-import { useGetAllDailyExpanses } from "../../../approvals/services/calendar-view.hook";
+import { useGetAllDailyExpanses } from "../../../approvals/services/daily-expanses.hook";
 import { useGetUsers } from "@/features/livetracking/services/live-tracking-services";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";

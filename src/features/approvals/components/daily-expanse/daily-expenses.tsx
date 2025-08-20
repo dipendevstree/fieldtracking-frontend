@@ -9,8 +9,7 @@ import {
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { FilterConfig } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
-import DailyExpenseTable from "./daily-expense-table";
-import { useGetAllDailyExpanses } from "../services/calendar-view.hook";
+import DailyExpenseTable from "./components/daily-expense-table";
 import { useGetUsers } from "@/features/livetracking/services/live-tracking-services";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
@@ -19,6 +18,7 @@ import {
   formatExpenseSubType,
   formatExpenseType,
 } from "@/utils/commonFormatters";
+import { useGetAllDailyExpanses } from "@/features/approvals/services/daily-expanses.hook";
 
 export default function DailyExpenses() {
   const initialDateRange: DateRange = {
@@ -42,7 +42,8 @@ export default function DailyExpenses() {
     expenseType: "",
     status: "",
     expenseSubType: "",
-    sort:"desc"
+    sort: "desc",
+    isWebAdminSide: true,
   });
 
   const {
@@ -128,20 +129,20 @@ export default function DailyExpenses() {
       searchableSelectClassName: "w-full max-w-[180px]",
     },
     {
-      key: "expenseType",
-      type: "select",
-      onChange: (value) => handleFilterChange("expenseType", String(value)),
-      placeholder: "Select Type",
-      value: pagination.expenseType,
-      options: expanseTypeOptions,
-    },
-    {
       key: "status",
       type: "select",
       onChange: (value) => handleFilterChange("status", String(value)),
       placeholder: "Select Status",
       value: pagination.status,
       options: expanseStatusOptions,
+    },
+    {
+      key: "expenseType",
+      type: "select",
+      onChange: (value) => handleFilterChange("expenseType", String(value)),
+      placeholder: "Select Type",
+      value: pagination.expenseType,
+      options: expanseTypeOptions,
     },
     {
       key: "expenseSubType",
