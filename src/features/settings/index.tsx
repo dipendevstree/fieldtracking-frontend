@@ -28,37 +28,37 @@ export type SettingsTabValue =
 // Tab configuration for better maintainability
 const SETTINGS_TABS = [
   {
-    value: '/settings/ExpenseCategories',
+    value: '/settings/expense-categories',
     label: 'Expense Categories',
     component: ExpenseCategoriesPage
   },
   {
-    value: '/settings/LimitsControls',
+    value: '/settings/limits-controls',
     label: 'Limits & Controls',
     component: LimitsControlsPage
   },
   {
-    value: '/settings/Approvers',
+    value: '/settings/approvers',
     label: 'Approvers',
     component: ApproversPage
   },
   {
-    value: '/settings/field-tracking',
+    value: '/settings/field-tracking/',
     label: 'Field Tracking',
     component: FieldTrackingPage
   },
   {
-    value: '/settings/Notifications',
+    value: '/settings/notifications',
     label: 'Notifications',
     component: NotificationsPage
   },
   {
-    value: '/settings/MobileFeatures',
+    value: '/settings/mobile-features',
     label: 'Mobile Features',
     component: MobileFeaturesPage
   },
   {
-    value: '/settings/GeneralSettings',
+    value: '/settings/general',
     label: 'General',
     component: GeneralSettingsPage
   }
