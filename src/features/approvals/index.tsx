@@ -39,16 +39,13 @@ export default function ExpenseApprovalsPage() {
         onValueChange={handleTabChange}
         className="mt-4 space-y-5"
       >
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="/approvals">Daily Expenses</TabsTrigger>
           <TabsTrigger value="/approvals/monthly-consolidated">
             Monthly Consolidated
           </TabsTrigger>
           <TabsTrigger value="/approvals/reports-analytics">
             Reports & Analytics
-          </TabsTrigger>
-          <TabsTrigger value="/approvals/expense-category">
-            Category Expenses
           </TabsTrigger>
         </TabsList>
 
