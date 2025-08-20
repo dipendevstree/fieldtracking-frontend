@@ -22,6 +22,7 @@ export function ExpenseDetailsSideCard({
   isApprovalLevel,
   dailyExpanse,
   onExpenseReviewAndApproval,
+  onUpdateExpanseDetails,
 }: TravelExpanseDetailsProps) {
   const isLumpSum = expenseSubType === "travel_lump_sum";
   const entries = isLumpSum ? travelLumpSums : travelRoutes;
@@ -124,8 +125,16 @@ export function ExpenseDetailsSideCard({
     });
   };
 
-  const handleUpdateReview = (item: any) => {
-    console.log("items", item);
+  const handleUpdateReview = (
+    id: string,
+    status: "approved" | "rejected" | "reviewed",
+    commentId: string
+  ) => {
+    onUpdateExpanseDetails({
+      id,
+      status: isApprovalLevel && status === "reviewed" ? "approved" : status,
+      comment: comments[commentId] ?? "",
+    });
   };
 
   return (
@@ -204,7 +213,9 @@ export function ExpenseDetailsSideCard({
                 {myReview ? (
                   <Button
                     className="bg-green-600 text-white hover:bg-green-700 w-full"
-                    onClick={() => handleUpdateReview(myReview)}
+                    onClick={() =>
+                      handleUpdateReview(myReview.id, "reviewed", id)
+                    }
                   >
                     Update Review
                   </Button>

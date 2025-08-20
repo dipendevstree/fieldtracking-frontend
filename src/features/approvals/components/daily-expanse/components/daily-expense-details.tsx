@@ -26,16 +26,22 @@ import { DailyAllowanceDetailsCard } from "./DailyAllowanceDetailsCard";
 import {
   useDailyExpansesById,
   useExpenseReviewAndApproval,
+  useExpenseReviewAndApprovalUpdate,
 } from "@/features/approvals/services/daily-expanses.hook";
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export default function DailyExpenseDetails() {
+  const [updateId, setUpdateId] = useState<string | null>(null);
   const { id } = useParams({ strict: false });
   const { dailyExpanse, refetch: refetchExpanseDetails } = useDailyExpansesById(
     id || ""
   );
+
   const { mutate: expenseReviewAndApproval, isSuccess } =
     useExpenseReviewAndApproval();
+
+  const { mutate: expenseReviewAndApprovalUpdate, isSuccess: isSuccessUpdate } =
+    useExpenseReviewAndApprovalUpdate(updateId ?? "");
 
   const user = dailyExpanse?.salesRepresentativeUser;
   const isApprovalLevel = dailyExpanse?.isApprovalLevel;
@@ -83,6 +89,24 @@ export default function DailyExpenseDetails() {
     expenseReviewAndApproval(payload);
   };
 
+  const handleUpdateExpanseDetails = ({
+    id,
+    status,
+    comment,
+  }: {
+    id: string;
+    status: "approved" | "reviewed" | "rejected";
+    comment: string;
+  }) => {
+    setUpdateId(id);
+    const payload = {
+      status,
+      comment,
+      isApprovalLevel,
+    };
+    expenseReviewAndApprovalUpdate(payload);
+  };
+
   const getUserLevelLabel = useMemo(
     () => (review: any) => {
       if (dailyExpanse?.defaultApprovalUser?.id === review.reviewerUserId) {
@@ -97,10 +121,10 @@ export default function DailyExpenseDetails() {
   );
 
   useEffect(() => {
-    if (isSuccess) {
+    if (isSuccess || isSuccessUpdate) {
       refetchExpanseDetails();
     }
-  }, [isSuccess, refetchExpanseDetails]);
+  }, [isSuccess, isSuccessUpdate, refetchExpanseDetails]);
 
   return (
     <Main>
@@ -209,6 +233,7 @@ export default function DailyExpenseDetails() {
               isApprovalLevel={isApprovalLevel}
               dailyExpanse={dailyExpanse}
               onExpenseReviewAndApproval={handleDailyAllowanseReviewAndApproval}
+              onUpdateExpanseDetails={handleUpdateExpanseDetails}
             />
           ) : (
             <ExpenseDetailsSideCard
@@ -218,6 +243,7 @@ export default function DailyExpenseDetails() {
               isApprovalLevel={isApprovalLevel}
               dailyExpanse={dailyExpanse}
               onExpenseReviewAndApproval={handleExpenseReviewAndApproval}
+              onUpdateExpanseDetails={handleUpdateExpanseDetails}
             />
           )}
         </Card>

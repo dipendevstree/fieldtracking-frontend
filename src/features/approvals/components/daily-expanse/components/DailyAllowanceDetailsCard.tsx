@@ -17,6 +17,7 @@ export function DailyAllowanceDetailsCard({
   isApprovalLevel,
   dailyExpanse,
   onExpenseReviewAndApproval,
+  onUpdateExpanseDetails,
 }: DailyAllowanseDetailsProps) {
   const { user: currentUser } = useAuthStore();
   const [comments, setComments] = useState<Record<string, string>>({});
@@ -110,8 +111,16 @@ export function DailyAllowanceDetailsCard({
     });
   };
 
-  const handleUpdateReview = (item: any) => {
-    console.log("update review", item);
+  const handleUpdateReview = (
+    id: string,
+    status: "approved" | "rejected" | "reviewed",
+    commentId: string
+  ) => {
+    onUpdateExpanseDetails({
+      id,
+      status,
+      comment: comments[commentId],
+    });
   };
 
   return (
@@ -200,7 +209,9 @@ export function DailyAllowanceDetailsCard({
                     {myReview ? (
                       <Button
                         className="bg-green-600 text-white hover:bg-green-700 w-full"
-                        onClick={() => handleUpdateReview(myReview)}
+                        onClick={() =>
+                          handleUpdateReview(myReview.id, "reviewed", detail.id)
+                        }
                       >
                         Update Review
                       </Button>
