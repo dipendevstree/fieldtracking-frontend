@@ -4,10 +4,7 @@ import usePostData from "@/hooks/use-post-data";
 // import useDeleteData from '@/hooks/use-delete-data'
 // import usePatchData from '@/hooks/use-patch-data'
 import { DashboardStats, SalesRep, RecentActivity } from "../type/type";
-
-const OVERVIEW_QUERY = "/api/overview/stats";
-const SALES_REPS_QUERY = "/api/overview/sales-reps";
-const ACTIVITIES_QUERY = "/api/overview/activities";
+import API from '@/config/api/api'
 
 export interface IListParams {
   sort?: string;
@@ -29,7 +26,7 @@ export const useGetDashboardStats = (
   options?: { enabled?: boolean }
 ) => {
   const query = useFetchData<DashboardStats>({
-    url: OVERVIEW_QUERY,
+    url: API.overview?.stats,
     params,
     enabled: options?.enabled ?? true,
   });
@@ -54,7 +51,7 @@ export const useGetAllSalesReps = (
   options?: { enabled?: boolean }
 ) => {
   const query = useFetchData<SalesRepsListResponse>({
-    url: SALES_REPS_QUERY,
+    url: API.overview?.salesReps,
     params,
     enabled: options?.enabled ?? true,
   });
@@ -80,7 +77,7 @@ export const useGetRecentActivities = (
   options?: { enabled?: boolean }
 ) => {
   const query = useFetchData<ActivitiesListResponse>({
-    url: ACTIVITIES_QUERY,
+    url: API.overview?.activities,
     params,
     enabled: options?.enabled ?? true,
   });
@@ -110,7 +107,7 @@ export const useGetUserPerformance = (
       topCustomers: string[];
     };
   }>({
-    url: `/api/overview/performance/${userId}`,
+    url: `${API.overview?.performance}/${userId}`,
     enabled: options?.enabled ?? true,
   });
 };
@@ -129,8 +126,8 @@ export interface UpdateUserStatusPayload {
 
 export const useUpdateUserStatus = (onSuccess?: () => void) => {
   return usePostData<{ message: string }, UpdateUserStatusPayload>({
-    url: "/api/overview/update-status",
-    refetchQueries: [SALES_REPS_QUERY],
+    url: API.overview?.updateStatus,
+    refetchQueries: [API.overview?.salesReps],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
@@ -154,7 +151,7 @@ export interface ExportReportPayload {
 
 export const useExportDashboardReport = (onSuccess?: () => void) => {
   return usePostData<{ downloadUrl: string }, ExportReportPayload>({
-    url: "/api/overview/export-report",
+    url: API.overview?.exportReport,
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();

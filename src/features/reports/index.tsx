@@ -4,6 +4,10 @@ import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Main } from "@/components/layout/main";
 import AllReports from "./all-reports";
+import CustomerReports from "./components/customer-reports";
+import FieldActivityReports from "./components/field-activity";
+import ReportHistory from "./components/report-history";
+import PerformanceDashboard from "./components/performance";
 
 export type ApprovalsTabValue =
   | "/reports"
@@ -52,16 +56,16 @@ export default function Reports() {
           <AllReports />
         </TabsContent>
         <TabsContent value="/reports/performance" className="space-y-4">
-          performance
+          <PerformanceDashboard />
         </TabsContent>
         <TabsContent value="/reports/field-activity" className="space-y-4">
-          field-activity
+          <FieldActivityReports />
         </TabsContent>
         <TabsContent value="/reports/customer-reports" className="space-y-4">
-          customer-reports
+          <CustomerReports />
         </TabsContent>
         <TabsContent value="/reports/report-history" className="space-y-4">
-          report-history
+          <ReportHistory />
         </TabsContent>
       </Tabs>
     </Main>

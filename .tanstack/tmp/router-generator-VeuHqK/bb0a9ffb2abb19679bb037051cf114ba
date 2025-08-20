@@ -1,11 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute(
-  '/_authenticated/settings/ExpenseCategories',
+  '/_authenticated/dashboard/dash-live-tracking',
 )({
   component: RouteComponent,
 })
 
 function RouteComponent() {
-  return <div>Hello "/_authenticated/settings/ExpenseCategories"!</div>
+  return <div>Hello "/_authenticated/dashboard/dash-live-tracking"!</div>
 }

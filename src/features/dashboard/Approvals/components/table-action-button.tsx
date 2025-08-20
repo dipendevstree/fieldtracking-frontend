@@ -1,93 +1,101 @@
-import { DotsHorizontalIcon } from '@radix-ui/react-icons'
-import { IconEye, IconCheck, IconX } from '@tabler/icons-react'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import CustomButton from '@/components/shared/custom-button'
+import { useNavigate } from '@tanstack/react-router'
+import { IconEdit, IconTrash } from '@tabler/icons-react'
+import { PermissionGate } from '@/permissions/components/PermissionGate'
+import { EyeIcon } from 'lucide-react'
+import { DeleteModal } from '@/components/shared/common-delete-modal'
+import Button from '@/components/shared/custom-button'
 import CustomTooltip from '@/components/shared/custom-tooltip'
 import { useApprovalsStore } from '../store/approvals.store'
-import { Approval } from '../type/type'
 
-interface DataTableRowActionsProps {
+type RowProps = {
   row: {
-    original: Approval
+    original: any
   }
 }
 
-export function DataTableRowActions({ row }: DataTableRowActionsProps) {
-  const { setOpen, setCurrentApproval } = useApprovalsStore()
+export function DataTableRowActions({ row }: RowProps) {
+  const { open, setOpen, currentApproval, setCurrentApproval } = useApprovalsStore()
+  const navigate = useNavigate()
+
+  const closeModal = () => {
+    setOpen(null)
+    setTimeout(() => setCurrentApproval(null), 300)
+  }
+
+  const handleEdit = () => {
+    setCurrentApproval(row.original)
+    navigate({ to: `/calendar/schedule-visit/${row.original.id}` })
+  }
 
   const handleView = () => {
-    if (!row.original) return
-    
     setCurrentApproval(row.original)
-    setOpen('view')
+    console.log('row.original', row.original)
+    navigate({
+      to: `daily-expense-details/${row.original.id}`,
+      params: { id: row.original.id },
+    })
   }
 
-  const handleApprove = () => {
-    if (!row.original) return
-    
+  const handleDelete = () => {
     setCurrentApproval(row.original)
-    setOpen('approve')
+    setOpen('delete')
   }
 
-  const handleReject = () => {
-    if (!row.original) return
-    
-    setCurrentApproval(row.original)
-    setOpen('reject')
+  const handleDeleteDailyExpense = () => {
+    if (currentApproval?.id) {
+      // Add delete functionality here
+      console.log('Deleting expense:', currentApproval.id)
+    } else {
+      closeModal()
+    }
   }
-
-  const isPending = row.original?.status === 'pending'
 
   return (
-    <DropdownMenu modal={false}>
-      <DropdownMenuTrigger asChild>
-        <CustomButton
-          variant='ghost'
-          className='data-[state=open]:bg-muted flex h-8 w-8 cursor-pointer p-0'
-        >
-          <CustomTooltip title='Actions'>
-            <div className="flex items-center justify-center">
-              <DotsHorizontalIcon className='h-4 w-4' />
-              <span className='sr-only'>Open menu</span>
-            </div>
-          </CustomTooltip>
-        </CustomButton>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align='end' className='w-[180px]'>
-        <DropdownMenuItem onClick={handleView}>
-          View Details
-          <DropdownMenuShortcut>
-            <IconEye size={16} />
-          </DropdownMenuShortcut>
-        </DropdownMenuItem>
+    <div className='flex items-center space-x-2'>
+      <PermissionGate requiredPermission='upcoming_visits' action='edit'>
+        <CustomTooltip title='Edit'>
+          <Button
+            variant='ghost'
+            className='h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700'
+            onClick={handleEdit}
+          >
+            <IconEdit size={16} />
+          </Button>
+        </CustomTooltip>
+      </PermissionGate>
+      <PermissionGate requiredPermission='daily_expense' action='viewGlobal'>
+        <CustomTooltip title='view'>
+          <Button variant='ghost' className='h-8 w-8 p-0' onClick={handleView}>
+            <EyeIcon size={16} />
+          </Button>
+        </CustomTooltip>
+      </PermissionGate>
+      <PermissionGate requiredPermission='daily_expense' action='delete'>
+        <CustomTooltip title='Delete'>
+          <Button
+            variant='ghost'
+            className='h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700'
+            onClick={handleDelete}
+          >
+            <IconTrash size={16} />
+          </Button>
+        </CustomTooltip>
+      </PermissionGate>
 
-        {isPending && (
-          <>
-            <DropdownMenuSeparator />
-            
-            <DropdownMenuItem onClick={handleApprove}>
-              Approve
-              <DropdownMenuShortcut>
-                <IconCheck size={16} />
-              </DropdownMenuShortcut>
-            </DropdownMenuItem>
-
-            <DropdownMenuItem onClick={handleReject}>
-              Reject
-              <DropdownMenuShortcut>
-                <IconX size={16} />
-              </DropdownMenuShortcut>
-            </DropdownMenuItem>
-          </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      {currentApproval && (
+        <DeleteModal
+          key='delete-daily-expense'
+          open={open === 'delete'}
+          currentRow={currentApproval ?? {}}
+          itemName='Daily Expense'
+          itemIdentifier={'purpose' as keyof typeof currentApproval}
+          onDelete={handleDeleteDailyExpense}
+          onOpenChange={(value) => {
+            if (!value) closeModal()
+            else setOpen('delete')
+          }}
+        />
+      )}
+    </div>
   )
 }

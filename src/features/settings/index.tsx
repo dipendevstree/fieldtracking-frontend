@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useRouter } from "@tanstack/react-router"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Main } from "@/components/layout/main"
@@ -63,9 +64,17 @@ const SETTINGS_TABS = [
   }
 ] as const
 
+// Configurable default tab - change this to set the default tab
+      const DEFAULT_SETTINGS_TAB: SettingsTabValue = '/settings/expense-categories'
+
 export default function SettingsPage() {
-  // Initialize with first tab as default (similar to calendar pattern)
-  const [activeTab, setActiveTab] = useState<SettingsTabValue>('/settings/expense-categories')
+  const { latestLocation } = useRouter()
+  const pathname = latestLocation.pathname
+  
+  // Initialize with URL-based default or fallback to configured default
+  const [activeTab, setActiveTab] = useState<SettingsTabValue>(
+    pathname.includes('/settings/') ? pathname as SettingsTabValue : DEFAULT_SETTINGS_TAB
+  )
 
   const handleTabChange = (value: string) => {
     setActiveTab(value as SettingsTabValue)

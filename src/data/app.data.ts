@@ -46,3 +46,23 @@ export enum EXPENSE_SUB_TYPE {
   DAILY_LOCAL = "daily_local",
   DAILY_OUTSTATION = "daily_outstation",
 }
+
+export enum APPROVAL_TYPE {
+  EXPENSE = "expense",
+  ALLOWANCE = "allowance",
+  TRAVEL = "travel",
+  OTHER = "other",
+}
+
+export enum APPROVAL_STATUS {
+  PENDING = "pending",
+  APPROVED = "approved",
+  REJECTED = "rejected",
+  UNDER_REVIEW = "under_review",
+}
+
+export enum APPROVAL_PRIORITY {
+  LOW = "low",
+  MEDIUM = "medium",
+  HIGH = "high",
+}

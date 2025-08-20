@@ -1,15 +1,12 @@
 import { useEffect } from 'react'
 import { DeleteModal } from '@/components/shared/common-delete-modal'
-import {
-  useCreateExpenseCategory,
-  useUpdateExpenseCategory,
-  useDeleteExpenseCategory,
-  ExpenseCategoryPayload
-} from '../services/expense-categories.hook'
 import { useExpenseCategoriesStore } from '../store/expense-categories.store'
 import { ExpenseCategoryActionForm } from './action-form'
-import { TExpenseCategoryFormSchema } from '../data/schema'
-import { toast } from 'sonner'
+import {
+  useCreateExpenseCategory,
+  useDeleteExpenseCategory,
+  useUpdateExpenseCategory,
+} from '../services/expense-categories.hook'
 
 export function ExpenseCategoryActionModal() {
   const { open, setOpen, currentCategory, setCurrentCategory } = useExpenseCategoriesStore()
@@ -28,92 +25,47 @@ export function ExpenseCategoryActionModal() {
     isError: isUpdateError,
   } = useUpdateExpenseCategory(currentCategory?.categoryId || '')
 
-  const {
-    mutate: deleteExpenseCategory,
-    isSuccess: isDeleteSuccess,
-    isError: isDeleteError,
-  } = useDeleteExpenseCategory(currentCategory?.categoryId || '')
-
-  // Auto-close on successful create/update/delete
+  // Auto-close on successful create/update
   useEffect(() => {
     if (
       (isCreateSuccess && !isCreateError) ||
-      (isUpdateSuccess && !isUpdateError) ||
-      (isDeleteSuccess && !isDeleteError)
+      (isUpdateSuccess && !isUpdateError)
     ) {
       closeModal()
     }
-  }, [isCreateSuccess, isCreateError, isUpdateSuccess, isUpdateError, isDeleteSuccess, isDeleteError])
+  }, [isCreateSuccess, isCreateError, isUpdateSuccess, isUpdateError])
 
   const closeModal = () => {
     setOpen(null)
     setTimeout(() => setCurrentCategory(null), 300)
   }
 
-  const handleCreateExpenseCategory = (values: TExpenseCategoryFormSchema) => {
-    try {
-      const payload: ExpenseCategoryPayload = {
-        categoryName: values.categoryName.trim(),
-        categoryType: values.categoryType,
-        defaultLimit: values.defaultLimit,
-        limitUnit: values.limitUnit,
-        requiresReceipt: values.requiresReceipt,
-        isActive: values.isActive,
-        description: values.description?.trim(),
-      }
-      
-      if (!payload.categoryName) {
-        toast.error('Category name is required')
-        return
-      }
-      
-      createExpenseCategory(payload)
-    } catch (error) {
-      console.error('Error creating expense category:', error)
-      toast.error('Failed to create expense category')
+  const handleCreateExpenseCategory = (values: any) => {
+    const payload = {
+      categoryName: values.categoryName.trim(),
     }
+    createExpenseCategory(payload)
   }
 
-  const handleUpdateExpenseCategory = (values: TExpenseCategoryFormSchema) => {
-    try {
-      if (!currentCategory?.categoryId) {
-        toast.error('Category ID is missing')
-        return
-      }
-      
-      const payload: ExpenseCategoryPayload = {
-        categoryName: values.categoryName.trim(),
-        categoryType: values.categoryType,
-        defaultLimit: values.defaultLimit,
-        limitUnit: values.limitUnit,
-        requiresReceipt: values.requiresReceipt,
-        isActive: values.isActive,
-        description: values.description?.trim(),
-      }
-      
-      if (!payload.categoryName) {
-        toast.error('Category name is required')
-        return
-      }
-      
-      updateExpenseCategory(payload)
-    } catch (error) {
-      console.error('Error updating expense category:', error)
-      toast.error('Failed to update expense category')
+  const handleUpdateExpenseCategory = (values: any) => {
+    const payload = {
+      categoryName: values.categoryName.trim(),
     }
+    updateExpenseCategory(payload)
   }
 
+  const { mutate: deleteExpenseCategory } = useDeleteExpenseCategory(
+    currentCategory?.categoryId || '',
+    () => {
+      closeModal()
+    }
+  )
+  
   const handleDeleteExpenseCategory = () => {
-    try {
-      if (!currentCategory?.categoryId) {
-        toast.error('Category ID is missing')
-        return
-      }
-      
+    if (currentCategory?.categoryId) {
       deleteExpenseCategory()
-    } catch (error) {
-      console.error('Error deleting expense category:', error)
-      toast.error('Failed to delete expense category')
+    } else {
+      closeModal()
     }
   }
 
@@ -150,7 +102,7 @@ export function ExpenseCategoryActionModal() {
             key='delete-expense-category'
             open={open === 'delete-category'}
             currentRow={currentCategory}
-            itemIdentifier={'categoryId' as keyof typeof currentCategory}
+            itemIdentifier={'categoryName' as keyof typeof currentCategory}
             itemName='Expense Category'
             onDelete={handleDeleteExpenseCategory}
             onOpenChange={(value) => {

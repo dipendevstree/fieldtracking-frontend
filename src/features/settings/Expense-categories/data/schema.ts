@@ -1,18 +1,8 @@
 import { z } from 'zod'
 
-// Schema for expense category
+// Schema for expense category - simplified to only include categoryName
 export const expenseCategoryFormSchema = z.object({
   categoryName: z.string().min(1, 'Category name is required'),
-  categoryType: z.enum(['mileage', 'per-diem', 'fixed-amount', 'percentage', 'custom'], {
-    required_error: 'Category type is required',
-  }),
-  defaultLimit: z.number().min(0, 'Default limit must be 0 or greater'),
-  limitUnit: z.enum(['per-mile', 'per-day', 'per-meal', 'per-trip', 'fixed'], {
-    required_error: 'Limit unit is required',
-  }),
-  requiresReceipt: z.boolean(),
-  isActive: z.boolean(),
-  description: z.string().optional(),
 })
 
 // Schema for per diem settings

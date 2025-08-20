@@ -1,155 +1,170 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { CheckCircle, AlertTriangle, Eye } from "lucide-react"
-import { Link } from "@tanstack/react-router"
-import { useApprovalsStore } from "../store/approvals.store"
-import { Approval } from "../type/type"
+import { useState } from "react";
+import {
+  DEFAULT_PAGE_NUMBER,
+  DEFAULT_PAGE_SIZE,
+  EXPENSE_STATUS,
+  EXPENSE_SUB_TYPE,
+  EXPENSE_TYPE,
+} from "@/data/app.data";
+import { useSelectOptions } from "@/hooks/use-select-option";
+import { FilterConfig } from "@/components/global-filter-section";
+import GlobalFilterSection from "@/components/global-table-filter-section";
+import ApprovalsTable from "./table";
+import { useGetAllDailyExpanses } from "../../../approvals/services/calendar-view.hook";
+import { useGetUsers } from "@/features/livetracking/services/live-tracking-services";
+import { DateRange } from "react-day-picker";
+import { format } from "date-fns";
+import { formatDropDownLabel } from "@/utils/commonFunction";
+import {
+  formatExpenseSubType,
+  formatExpenseType,
+} from "@/utils/commonFormatters";
 
-interface ApprovalsProps {
-  approvals: Approval[]
-  loading?: boolean
-}
+export default function Approvals() {
+  const initialDateRange: DateRange = {
+    from: new Date(),
+    to: new Date(),
+  };
 
-export default function Approvals({ approvals, loading }: ApprovalsProps) {
-  const { setOpen, setCurrentApproval } = useApprovalsStore()
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(
+    initialDateRange
+  );
+  const [pagination, setPagination] = useState({
+    page: DEFAULT_PAGE_NUMBER,
+    limit: DEFAULT_PAGE_SIZE,
+    startDate: initialDateRange.from
+      ? format(initialDateRange.from, "yyyy-MM-dd")
+      : "",
+    endDate: initialDateRange.to
+      ? format(initialDateRange.to, "yyyy-MM-dd")
+      : "",
+    salesRepresentativeUserId: "",
+    expenseType: "",
+    status: "",
+    expenseSubType: "",
+    sort:"desc"
+  });
 
-  const handleViewApproval = (approval: Approval) => {
-    setCurrentApproval(approval)
-    setOpen('view')
-  }
+  const {
+    data: dailyExpanses,
+    totalCount,
+    isPending,
+  } = useGetAllDailyExpanses(pagination);
 
-  const handleApprove = (approval: Approval) => {
-    setCurrentApproval(approval)
-    setOpen('approve')
-  }
+  const onPaginationChange = (page: number, pageSize: number) => {
+    setPagination((prev) => ({ ...prev, page, limit: pageSize }));
+  };
 
-  const handleReject = (approval: Approval) => {
-    setCurrentApproval(approval)
-    setOpen('reject')
-  }
+  const handleDateRangeChange = (newRange: DateRange | undefined) => {
+    setDateRange(newRange);
+    setPagination((prev) => ({
+      ...prev,
+      page: 1,
+      startDate: newRange?.from ? format(newRange.from, "yyyy-MM-dd") : "",
+      endDate: newRange?.to ? format(newRange.to, "yyyy-MM-dd") : "",
+    }));
+  };
 
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return 'default'
-      case 'rejected':
-        return 'destructive'
-      case 'under_review':
-        return 'secondary'
-      default:
-        return 'outline'
-    }
-  }
+  const handleFilterChange = (key: string, value: string) => {
+    setPagination((prev) => ({
+      ...prev,
+      page: 1,
+      [key]: value,
+    }));
+  };
 
-  const getPriorityVariant = (priority: string) => {
-    switch (priority) {
-      case 'high':
-        return 'destructive'
-      case 'medium':
-        return 'secondary'
-      default:
-        return 'outline'
-    }
-  }
+  const { listData: userListDropDownData = [] } = useGetUsers();
+
+  const userListDropDownList = userListDropDownData?.map((user: any) => ({
+    ...user,
+    fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+  }));
+
+  const usersOptions = useSelectOptions<any>({
+    listData: userListDropDownList,
+    labelKey: "fullName",
+    valueKey: "id",
+  }).map((option) => ({ ...option, value: String(option.value) }));
+
+  const expanseTypeOptions = Object.entries(EXPENSE_TYPE).map(
+    ([key, value]) => ({
+      label: formatExpenseType(key),
+      value,
+    })
+  );
+
+  const expanseStatusOptions = Object.entries(EXPENSE_STATUS).map(
+    ([key, value]) => ({
+      label: formatDropDownLabel(key),
+      value,
+    })
+  );
+
+  const expanseSubTypeOptions = Object.entries(EXPENSE_SUB_TYPE).map(
+    ([key, value]) => ({
+      label: formatExpenseSubType(key),
+      value,
+    })
+  );
+
+  const filters: FilterConfig[] = [
+    {
+      key: "date-range",
+      type: "date-range",
+      placeholder: "Filter by date",
+      dateRangeValue: dateRange,
+      onDateRangeChange: handleDateRangeChange,
+      dataRangeClassName: "w-full max-w-xs",
+    },
+    {
+      key: "salesRepresentativeUserId",
+      type: "searchable-select",
+      onChange: (value) =>
+        handleFilterChange("salesRepresentativeUserId", String(value)),
+      placeholder: "Select Sales Rep",
+      value: pagination.salesRepresentativeUserId,
+      options: usersOptions,
+      onCancelPress: () => handleFilterChange("salesRepresentativeUserId", ""),
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+    {
+      key: "expenseType",
+      type: "select",
+      onChange: (value) => handleFilterChange("expenseType", String(value)),
+      placeholder: "Select Type",
+      value: pagination.expenseType,
+      options: expanseTypeOptions,
+    },
+    {
+      key: "status",
+      type: "select",
+      onChange: (value) => handleFilterChange("status", String(value)),
+      placeholder: "Select Status",
+      value: pagination.status,
+      options: expanseStatusOptions,
+    },
+    {
+      key: "expenseSubType",
+      type: "select",
+      onChange: (value) => handleFilterChange("expenseSubType", String(value)),
+      placeholder: "Select Sub Type",
+      value: pagination.expenseSubType,
+      options: expanseSubTypeOptions,
+    },
+  ];
 
   return (
-    <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Pending Approvals</CardTitle>
-              <CardDescription>Review and approve expense claims and allowances</CardDescription>
-            </div>
-            <Button variant="outline" asChild>
-              <Link to="/approvals">
-                <CheckCircle className="h-4 w-4 mr-2" />
-                View All Approvals
-              </Link>
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Type</TableHead>
-                <TableHead>Employee</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Priority</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
-                    Loading approvals...
-                  </TableCell>
-                </TableRow>
-              ) : approvals.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center py-8">
-                    No pending approvals found
-                  </TableCell>
-                </TableRow>
-              ) : (
-                approvals.slice(0, 5).map((approval) => (
-                  <TableRow key={approval.approvalId}>
-                    <TableCell className="capitalize">{approval.type}</TableCell>
-                    <TableCell>{approval.employeeName}</TableCell>
-                    <TableCell>
-                      {approval.currency} {approval.amount.toFixed(2)}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getStatusVariant(approval.status)} className="capitalize">
-                        {approval.status.replace('_', ' ')}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getPriorityVariant(approval.priority)} className="capitalize">
-                        {approval.priority}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleViewApproval(approval)}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        {approval.status === 'pending' && (
-                          <>
-                            <Button
-                              size="sm"
-                              onClick={() => handleApprove(approval)}
-                              className="bg-green-600 hover:bg-green-700"
-                            >
-                              <CheckCircle className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="destructive" 
-                              onClick={() => handleReject(approval)}
-                            >
-                              <AlertTriangle className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-    </div>
-  )
+    <>
+      <GlobalFilterSection key={"calender-view-filters"} filters={filters} />
+
+      <ApprovalsTable
+        data={dailyExpanses}
+        totalCount={totalCount}
+        loading={isPending}
+        currentPage={pagination.page}
+        paginationCallbacks={{ onPaginationChange }}
+        defaultPageSize={pagination.limit}
+      />
+    </>
+  );
 }

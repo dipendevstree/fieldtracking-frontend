@@ -1,12 +1,6 @@
 export interface DashboardKPI {
   totalSalesReps: number;
-  activeInField: number;
-  totalRevenue: number;
-  monthlyGrowth: number;
-  totalCustomers: number;
-  totalVisits: number;
-  averageSessionDuration: number;
-  conversionRate: number;
+ 
 }
 
 export interface SalesRep {

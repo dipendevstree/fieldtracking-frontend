@@ -120,14 +120,6 @@ export default function Approvers() {
 
   return (
     <div className="p-8 bg-white min-h-screen">
-      {/* Page Title and Description */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold mb-1">Expense Approvers Configuration</h1>
-        <p className="text-muted-foreground text-sm">
-          Configure approval hierarchy and default approvers for different scenarios
-        </p>
-      </div>
-
       {/* Top Row: Selectors and Add Level Button */}
       <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
         <div className="flex flex-col md:flex-row gap-8 w-full">
