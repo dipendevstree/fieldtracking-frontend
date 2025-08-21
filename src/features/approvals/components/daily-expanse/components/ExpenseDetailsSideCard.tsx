@@ -211,15 +211,41 @@ export function ExpenseDetailsSideCard({
                   onChange={(e) => handleChangeComment(id, e.target.value)}
                 />
                 {myReview ? (
-                  <Button
-                    className="bg-green-600 text-white hover:bg-green-700 w-full"
-                    onClick={() =>
-                      handleUpdateReview(myReview.id, "reviewed", id)
-                    }
-                  >
-                    Update Review
-                  </Button>
+                  myReview.status === "rejected" ? (
+                    // If rejected, keep showing Review + Reject
+                    <div className="grid w-full grid-cols-2 gap-2">
+                      <Button
+                        className="bg-green-600 text-white hover:bg-green-700"
+                        disabled={isDisabled}
+                        onClick={() =>
+                          handleUpdateReview(myReview.id, "reviewed", id)
+                        }
+                      >
+                        Review Expense
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        disabled={isDisabled}
+                        onClick={() =>
+                          handleUpdateReview(myReview.id, "rejected", id)
+                        }
+                      >
+                        Reject Expense
+                      </Button>
+                    </div>
+                  ) : (
+                    // If reviewed/approved, only show Update
+                    <Button
+                      className="bg-green-600 text-white hover:bg-green-700 w-full"
+                      onClick={() =>
+                        handleUpdateReview(myReview.id, myReview.status, id)
+                      }
+                    >
+                      Update Review
+                    </Button>
+                  )
                 ) : (
+                  // Initial state: Review + Reject
                   <div className="grid w-full grid-cols-2 gap-2">
                     <Button
                       className="bg-green-600 text-white hover:bg-green-700"
