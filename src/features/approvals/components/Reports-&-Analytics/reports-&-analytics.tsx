@@ -1,7 +1,7 @@
-import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Download, FileText } from "lucide-react"
+
 // Mock data for daily expenses
 const dailyExpenses = [
   {
@@ -123,10 +123,6 @@ const monthlyConsolidated = [
 ]
 
 export default function ReportsAnalytics() {
-  const [selectedTab, setSelectedTab] = useState("daily")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [searchTerm, setSearchTerm] = useState("")
-
   const handleExportPDF = () => {
     console.log("Exporting to PDF")
     // Handle PDF export
@@ -137,24 +133,8 @@ export default function ReportsAnalytics() {
     // Handle Excel export
   }
 
-  const filteredDailyExpenses = dailyExpenses.filter((expense) => {
-    const matchesSearch =
-      expense.repName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      expense.description.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "all" || expense.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
-
-  const filteredMonthlyExpenses = monthlyConsolidated.filter((expense) => {
-    const matchesSearch = expense.repName.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "all" || expense.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
-
-  const totalConsolidatedAmount = monthlyConsolidated.reduce((sum, rep) => sum + rep.netTotal, 0)
-
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">Reports & Analytics</h2>
         <div className="flex items-center space-x-2">
@@ -179,20 +159,20 @@ export default function ReportsAnalytics() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-3">
-                <Button className="w-full justify-start" onClick={handleExportPDF}>
-                  <FileText className="h-4 w-4 mr-2" />
+                <Button className="w-full justify-start bg-white hover:bg-gray-50 text-gray-700 border border-gray-300" onClick={handleExportPDF}>
+                  <div className="w-6 h-6 bg-red-500 text-white text-xs font-bold rounded flex items-center justify-center mr-3">PDF</div>
                   Export Daily Expenses (PDF)
                 </Button>
-                <Button className="w-full justify-start" variant="outline" onClick={handleExportExcel}>
-                  <Download className="h-4 w-4 mr-2" />
+                <Button className="w-full justify-start bg-white hover:bg-gray-50 text-gray-700 border border-gray-300" variant="outline" onClick={handleExportExcel}>
+                  <div className="w-6 h-6 bg-green-500 text-white text-xs font-bold rounded flex items-center justify-center mr-3">XLS</div>
                   Export Daily Expenses (Excel)
                 </Button>
-                <Button className="w-full justify-start" onClick={handleExportPDF}>
-                  <FileText className="h-4 w-4 mr-2" />
+                <Button className="w-full justify-start bg-white hover:bg-gray-50 text-gray-700 border border-gray-300" onClick={handleExportPDF}>
+                  <div className="w-6 h-6 bg-red-500 text-white text-xs font-bold rounded flex items-center justify-center mr-3">PDF</div>
                   Export Monthly Consolidated (PDF)
                 </Button>
-                <Button className="w-full justify-start" variant="outline" onClick={handleExportExcel}>
-                  <Download className="h-4 w-4 mr-2" />
+                <Button className="w-full justify-start bg-white hover:bg-gray-50 text-gray-700 border border-gray-300" variant="outline" onClick={handleExportExcel}>
+                  <div className="w-6 h-6 bg-green-500 text-white text-xs font-bold rounded flex items-center justify-center mr-3">XLS</div>
                   Export Monthly Consolidated (Excel)
                 </Button>
               </div>

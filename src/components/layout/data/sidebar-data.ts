@@ -139,7 +139,7 @@ export const sidebarData: SidebarData = {
             },
             {
               title: "Reports & Analytics",
-              url: "/",
+              url: "/approvals/reports-analytics",
               menuKey: "reports_analytics",
             },
           ],

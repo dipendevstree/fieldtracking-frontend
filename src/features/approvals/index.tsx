@@ -49,18 +49,15 @@ export default function ExpenseApprovalsPage() {
         <TabsContent value="/approvals" className="space-y-4">
           <DailyExpenses />
         </TabsContent>
-        <TabsContent
-          value="/approvals/monthly-consolidated"
-          className="space-y-4"
-        >
+        <TabsContent value="/approvals/monthly-consolidated" className="space-y-4">
           <MonthlyExpenses />
-        </TabsContent>
-        <TabsContent value="/approvals/expense-category" className="space-y-4">
-          <CategoryExpanses />
         </TabsContent>
         <TabsContent value='/approvals/reports-analytics' className='space-y-4'>
           <ReportsAnalytics />
         </TabsContent> 
+        <TabsContent value="/approvals/expense-category" className="space-y-4">
+          <CategoryExpanses />
+        </TabsContent>
       </Tabs>
     </Main>
   );

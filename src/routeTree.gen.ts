@@ -78,6 +78,7 @@ import { Route as AuthenticatedCalendarAnalyticsRouteImport } from './routes/_au
 import { Route as AuthenticatedBuyersPartnershipsRouteImport } from './routes/_authenticated/buyers/partnerships'
 import { Route as AuthenticatedBuyersOrdersRouteImport } from './routes/_authenticated/buyers/orders'
 import { Route as AuthenticatedBuyersInsuranceRouteImport } from './routes/_authenticated/buyers/insurance'
+import { Route as AuthenticatedApprovalsReportsAnalyticsRouteImport } from './routes/_authenticated/approvals/reports-analytics'
 import { Route as AuthenticatedApprovalsMonthlyConsolidatedRouteImport } from './routes/_authenticated/approvals/monthly-consolidated'
 import { Route as AuthenticatedApprovalsExpenseCategoryRouteImport } from './routes/_authenticated/approvals/expense-category'
 import { Route as AuthenticatedFeedbackformFeedbackformRouteImport } from './routes/_authenticated/Feedbackform/Feedbackform'
@@ -486,6 +487,12 @@ const AuthenticatedBuyersInsuranceRoute =
     path: '/buyers/insurance',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedApprovalsReportsAnalyticsRoute =
+  AuthenticatedApprovalsReportsAnalyticsRouteImport.update({
+    id: '/approvals/reports-analytics',
+    path: '/approvals/reports-analytics',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedApprovalsMonthlyConsolidatedRoute =
   AuthenticatedApprovalsMonthlyConsolidatedRouteImport.update({
     id: '/approvals/monthly-consolidated',
@@ -567,6 +574,7 @@ export interface FileRoutesByFullPath {
   '/Feedbackform/Feedbackform': typeof AuthenticatedFeedbackformFeedbackformRoute
   '/approvals/expense-category': typeof AuthenticatedApprovalsExpenseCategoryRoute
   '/approvals/monthly-consolidated': typeof AuthenticatedApprovalsMonthlyConsolidatedRoute
+  '/approvals/reports-analytics': typeof AuthenticatedApprovalsReportsAnalyticsRoute
   '/buyers/insurance': typeof AuthenticatedBuyersInsuranceRoute
   '/buyers/orders': typeof AuthenticatedBuyersOrdersRoute
   '/buyers/partnerships': typeof AuthenticatedBuyersPartnershipsRoute
@@ -645,6 +653,7 @@ export interface FileRoutesByTo {
   '/Feedbackform/Feedbackform': typeof AuthenticatedFeedbackformFeedbackformRoute
   '/approvals/expense-category': typeof AuthenticatedApprovalsExpenseCategoryRoute
   '/approvals/monthly-consolidated': typeof AuthenticatedApprovalsMonthlyConsolidatedRoute
+  '/approvals/reports-analytics': typeof AuthenticatedApprovalsReportsAnalyticsRoute
   '/buyers/insurance': typeof AuthenticatedBuyersInsuranceRoute
   '/buyers/orders': typeof AuthenticatedBuyersOrdersRoute
   '/buyers/partnerships': typeof AuthenticatedBuyersPartnershipsRoute
@@ -727,6 +736,7 @@ export interface FileRoutesById {
   '/_authenticated/Feedbackform/Feedbackform': typeof AuthenticatedFeedbackformFeedbackformRoute
   '/_authenticated/approvals/expense-category': typeof AuthenticatedApprovalsExpenseCategoryRoute
   '/_authenticated/approvals/monthly-consolidated': typeof AuthenticatedApprovalsMonthlyConsolidatedRoute
+  '/_authenticated/approvals/reports-analytics': typeof AuthenticatedApprovalsReportsAnalyticsRoute
   '/_authenticated/buyers/insurance': typeof AuthenticatedBuyersInsuranceRoute
   '/_authenticated/buyers/orders': typeof AuthenticatedBuyersOrdersRoute
   '/_authenticated/buyers/partnerships': typeof AuthenticatedBuyersPartnershipsRoute
@@ -809,6 +819,7 @@ export interface FileRouteTypes {
     | '/Feedbackform/Feedbackform'
     | '/approvals/expense-category'
     | '/approvals/monthly-consolidated'
+    | '/approvals/reports-analytics'
     | '/buyers/insurance'
     | '/buyers/orders'
     | '/buyers/partnerships'
@@ -887,6 +898,7 @@ export interface FileRouteTypes {
     | '/Feedbackform/Feedbackform'
     | '/approvals/expense-category'
     | '/approvals/monthly-consolidated'
+    | '/approvals/reports-analytics'
     | '/buyers/insurance'
     | '/buyers/orders'
     | '/buyers/partnerships'
@@ -968,6 +980,7 @@ export interface FileRouteTypes {
     | '/_authenticated/Feedbackform/Feedbackform'
     | '/_authenticated/approvals/expense-category'
     | '/_authenticated/approvals/monthly-consolidated'
+    | '/_authenticated/approvals/reports-analytics'
     | '/_authenticated/buyers/insurance'
     | '/_authenticated/buyers/orders'
     | '/_authenticated/buyers/partnerships'
@@ -1531,6 +1544,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBuyersInsuranceRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/approvals/reports-analytics': {
+      id: '/_authenticated/approvals/reports-analytics'
+      path: '/approvals/reports-analytics'
+      fullPath: '/approvals/reports-analytics'
+      preLoaderRoute: typeof AuthenticatedApprovalsReportsAnalyticsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/approvals/monthly-consolidated': {
       id: '/_authenticated/approvals/monthly-consolidated'
       path: '/approvals/monthly-consolidated'
@@ -1691,6 +1711,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFeedbackformFeedbackformRoute: typeof AuthenticatedFeedbackformFeedbackformRoute
   AuthenticatedApprovalsExpenseCategoryRoute: typeof AuthenticatedApprovalsExpenseCategoryRoute
   AuthenticatedApprovalsMonthlyConsolidatedRoute: typeof AuthenticatedApprovalsMonthlyConsolidatedRoute
+  AuthenticatedApprovalsReportsAnalyticsRoute: typeof AuthenticatedApprovalsReportsAnalyticsRoute
   AuthenticatedBuyersInsuranceRoute: typeof AuthenticatedBuyersInsuranceRoute
   AuthenticatedBuyersOrdersRoute: typeof AuthenticatedBuyersOrdersRoute
   AuthenticatedBuyersPartnershipsRoute: typeof AuthenticatedBuyersPartnershipsRoute
@@ -1746,6 +1767,8 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
     AuthenticatedApprovalsExpenseCategoryRoute,
   AuthenticatedApprovalsMonthlyConsolidatedRoute:
     AuthenticatedApprovalsMonthlyConsolidatedRoute,
+  AuthenticatedApprovalsReportsAnalyticsRoute:
+    AuthenticatedApprovalsReportsAnalyticsRoute,
   AuthenticatedBuyersInsuranceRoute: AuthenticatedBuyersInsuranceRoute,
   AuthenticatedBuyersOrdersRoute: AuthenticatedBuyersOrdersRoute,
   AuthenticatedBuyersPartnershipsRoute: AuthenticatedBuyersPartnershipsRoute,
