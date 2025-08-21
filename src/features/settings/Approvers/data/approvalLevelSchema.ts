@@ -16,7 +16,7 @@ export const levelSchema = z.object({
 export const formSchema = z.object({
   defaultApprover: z.string().min(1, "Default First Approver is required"),
   selectedUser: z.string().min(1, "User is required"),
-  levels: z.array(levelSchema).min(1, "At least one level is required"),
+  levels: z.array(levelSchema).optional(),
 });
 
 export type FormValues = z.infer<typeof formSchema>;

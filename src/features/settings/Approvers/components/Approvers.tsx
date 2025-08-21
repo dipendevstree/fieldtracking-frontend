@@ -71,19 +71,20 @@ export default function Approvers() {
     handleSubmit,
     reset,
     watch,
-    formState: { isDirty, errors },
+    formState: { isDirty, dirtyFields, errors },
     setValue,
   } = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      defaultApprover: "",
-      selectedUser: "",
+      defaultApprover: user?.organization?.defaultExpensesApprovalRoleId,
+      selectedUser: user?.organization?.defaultExpensesApprovalUserId,
       levels: [],
     },
   });
 
   const { allRoles: allRolesList } = useGetAllRolesForDropdownList();
   const roleId = watch("defaultApprover");
+  const selectedUserId = watch("selectedUser");
   const { listData: userListDropDownDataforLevel = [] } =
     useGetUsersDropDownList({ roleId, enabled: true });
   const { listData: userListDropDownForExpenseTypes = [] } =
@@ -117,6 +118,15 @@ export default function Approvers() {
     labelKey: "fullName",
     valueKey: "id",
   }).map((option) => ({ ...option, value: String(option.value) }));
+
+  const assignedUserIdsInLevels = (watch("levels") || [])
+    .map((lvl: any) => lvl.user)
+    .filter(Boolean);
+
+  const filteredUsersForDefault = usersOptionsForLevels.filter(
+    (u) => !assignedUserIdsInLevels.includes(u.value)
+  );
+
   const usersOptionsForExpanseTypes = useSelectOptions<any>({
     listData: userListDropDownListForExpenseTypes,
     labelKey: "fullName",
@@ -174,7 +184,7 @@ export default function Approvers() {
         return acc;
       }, {});
 
-    values.levels.forEach((lvl, lvlIdx) => {
+    values?.levels?.forEach((lvl, lvlIdx) => {
       lvl.expenseTypes.forEach((et) => {
         if (!et.expensesLevelId) {
           allPayloads.push({
@@ -284,7 +294,7 @@ export default function Approvers() {
                 name="selectedUser"
                 render={({ field }) => (
                   <SearchableSelect
-                    options={usersOptionsForLevels}
+                    options={filteredUsersForDefault}
                     value={field.value}
                     onChange={field.onChange}
                     // onCancelPress={() => field.onChange("")}
@@ -356,7 +366,14 @@ export default function Approvers() {
             variant="default"
             className="bg-primary text-white flex items-center gap-2"
             type="submit"
-            disabled={!isDirty || isProcessing}
+            disabled={
+              isProcessing ||
+              !roleId || // must select role
+              !selectedUserId || // must select user
+              (!isDirty &&
+                !dirtyFields.defaultApprover &&
+                !dirtyFields.selectedUser)
+            }
           >
             {isProcessing && <Loader2 className="w-4 h-4 animate-spin" />}
             {isProcessing ? "Processing..." : "Save"}
@@ -414,12 +431,15 @@ function Level({
     name: `levels.${levelIdx}.expenseTypes` as const,
   });
 
+  const defaultUserId = watch("selectedUser");
   const assignedUserIds = (watch("levels") || [])
     .map((l: any) => l.user)
     .filter(Boolean);
   const currentUserId = watch(`levels.${levelIdx}.user`);
   const filteredUsersOptions = usersOptions.filter(
-    (u) => !assignedUserIds.includes(u.value) || u.value === currentUserId
+    (u) =>
+      (!assignedUserIds.includes(u.value) || u.value === currentUserId) &&
+      u.value !== defaultUserId
   );
 
   const handleLevelDelete = () => {
