@@ -132,6 +132,7 @@ export default function Approvers() {
     labelKey: "fullName",
     valueKey: "id",
   }).map((option) => ({ ...option, value: String(option.value) }));
+
   const tierOptions = Object.entries(TIER).map(([key, value]) => ({
     label: key.replace("TIER_", "Tier "),
     value,
@@ -493,6 +494,15 @@ function Level({
     });
   };
 
+  const levelExpenseTypes = watch(`levels.${levelIdx}.expenseTypes`) || [];
+  const isSelectedCombo = (type: string, tier: string, currentIdx: number) => {
+    // Check for duplicate type and tier in previous expense types only
+    return levelExpenseTypes.some(
+      (et: any, idx: number) =>
+        idx < currentIdx && et.type === type && et.tier === tier
+    );
+  };
+
   return (
     <Card className="px-6 py-4 mb-4 gap-4 relative">
       {levelFieldsLength > 1 && (
@@ -555,14 +565,20 @@ function Level({
             <Controller
               control={control}
               name={`levels.${levelIdx}.expenseTypes.${typeIdx}.tier`}
-              render={({ field }) => (
-                <SearchableSelect
-                  options={tierOptions}
-                  value={field.value}
-                  onChange={field.onChange}
-                  placeholder="Select tier"
-                />
-              )}
+              render={({ field }) => {
+                const currentType = levelExpenseTypes[typeIdx]?.type;
+                const filteredOptions = tierOptions.filter(
+                  (opt) => !isSelectedCombo(currentType, opt.value, typeIdx)
+                );
+                return (
+                  <SearchableSelect
+                    options={filteredOptions}
+                    value={field.value}
+                    onChange={field.onChange}
+                    placeholder="Select tier"
+                  />
+                );
+              }}
             />
           </div>
           <div className="flex-1 flex flex-col gap-2">
