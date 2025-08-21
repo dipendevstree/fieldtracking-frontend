@@ -588,6 +588,11 @@ function Level({
               name={`levels.${levelIdx}.expenseTypes.${typeIdx}.minAmount`}
               render={({ field }) => <Input type="number" {...field} />}
             />
+            <FieldError
+              error={
+                errors.levels?.[levelIdx]?.expenseTypes?.[typeIdx]?.minAmount
+              }
+            />
           </div>
           <div className="flex-1 flex flex-col gap-2">
             <Label>Max Amount</Label>
@@ -595,6 +600,11 @@ function Level({
               control={control}
               name={`levels.${levelIdx}.expenseTypes.${typeIdx}.maxAmount`}
               render={({ field }) => <Input type="number" {...field} />}
+            />
+            <FieldError
+              error={
+                errors.levels?.[levelIdx]?.expenseTypes?.[typeIdx]?.maxAmount
+              }
             />
           </div>
           <div className="flex items-center h-10 mt-2 md:mt-0">

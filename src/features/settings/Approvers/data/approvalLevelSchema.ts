@@ -1,12 +1,27 @@
 import { z } from "zod";
 
-export const expenseTypeSchema = z.object({
-  expensesLevelId: z.string().optional(),
-  type: z.string().min(1, "Expense type is required"),
-  tier: z.string().min(1, "Tier is required"),
-  minAmount: z.string().min(1, "Min amount is required"),
-  maxAmount: z.string().min(1, "Max amount is required"),
-});
+export const expenseTypeSchema = z
+  .object({
+    expensesLevelId: z.string().optional(),
+    type: z.string().min(1, "Expense type is required"),
+    tier: z.string().min(1, "Tier is required"),
+    minAmount: z
+      .string()
+      .min(1, "Min amount is required")
+      .refine((val) => !isNaN(Number(val)), {
+        message: "Min amount must be a number",
+      }),
+    maxAmount: z
+      .string()
+      .min(1, "Max amount is required")
+      .refine((val) => !isNaN(Number(val)), {
+        message: "Max amount must be a number",
+      }),
+  })
+  .refine((data) => Number(data.minAmount) < Number(data.maxAmount), {
+    message: "Min amount must be less than Max amount",
+    path: ["minAmount"],
+  });
 
 export const levelSchema = z.object({
   user: z.string().min(1, "User is required"),
