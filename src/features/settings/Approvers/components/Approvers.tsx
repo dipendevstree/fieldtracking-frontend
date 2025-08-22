@@ -3,10 +3,8 @@ import {
   useForm,
   useFieldArray,
   Controller,
-  UseFormWatch,
-  Control,
-  UseFormSetValue,
-  FieldErrors,
+  useFormContext,
+  FormProvider,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -82,15 +80,7 @@ export default function Approvers() {
     null
   );
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    watch,
-    formState: { isDirty, dirtyFields, errors },
-    setValue,
-    trigger,
-  } = useForm<FormValues>({
+  const methods = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       defaultApprover: user?.organization?.defaultExpensesApprovalRoleId,
@@ -98,6 +88,15 @@ export default function Approvers() {
       levels: [],
     },
   });
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { isDirty, dirtyFields, errors },
+  } = methods;
 
   const { allRoles: allRolesList } = useGetAllRolesForDropdownList();
   const roleId = watch("defaultApprover");
@@ -258,6 +257,19 @@ export default function Approvers() {
     }
   };
 
+  const defaultUserId = watch("selectedUser");
+
+  // 2. Count how many users are available for assignment in levels.
+  // We filter out the default approver user.
+  const totalAvailableUsersForLevels = usersOptionsForExpanseTypes.filter(
+    (u) => u.value !== defaultUserId
+  ).length;
+
+  // 3. The button is disabled if the number of levels is equal to or greater
+  // than the number of available users.
+  const isAddLevelButtonDisabled =
+    levelFields.length >= totalAvailableUsersForLevels;
+
   if (isLoading) {
     return (
       <div className="flex h-full min-h-[400px] w-full items-center justify-center">
@@ -268,124 +280,123 @@ export default function Approvers() {
 
   return (
     <>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
-          <div className="flex flex-col md:flex-row gap-4 w-full">
-            <div className="flex flex-col gap-2 w-full md:w-64">
-              <Label>
-                Default First Approver<span className="text-red-500">*</span>
-              </Label>
-              <Controller
-                control={control}
-                name="defaultApprover"
-                render={({ field }) => (
-                  <SearchableSelect
-                    options={rolesOptions as any}
-                    value={field.value}
-                    onChange={(val) => {
-                      field.onChange(val);
-                      setValue("selectedUser", "");
-                    }}
-                    placeholder="Select department"
-                  />
-                )}
-              />
-              <FieldError error={errors.defaultApprover} />
+      {/* 2. Wrap the form with FormProvider */}
+      <FormProvider {...methods}>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+            <div className="flex flex-col md:flex-row gap-4 w-full">
+              <div className="flex flex-col gap-2 w-full md:w-64">
+                <Label>
+                  Default First Approver<span className="text-red-500">*</span>
+                </Label>
+                <Controller
+                  control={control}
+                  name="defaultApprover"
+                  render={({ field }) => (
+                    <SearchableSelect
+                      options={rolesOptions as any}
+                      value={field.value}
+                      onChange={(val) => {
+                        field.onChange(val);
+                        setValue("selectedUser", "");
+                      }}
+                      placeholder="Select department"
+                    />
+                  )}
+                />
+                <FieldError error={errors.defaultApprover} />
+              </div>
+              <div className="flex flex-col gap-2 w-full md:w-64">
+                <Label>
+                  Select User<span className="text-red-500">*</span>
+                </Label>
+                <Controller
+                  control={control}
+                  name="selectedUser"
+                  render={({ field }) => (
+                    <SearchableSelect
+                      options={filteredUsersForDefault}
+                      value={field.value}
+                      onChange={field.onChange}
+                      placeholder="Select user"
+                      disabled={!roleId}
+                    />
+                  )}
+                />
+                <FieldError error={errors.selectedUser} />
+              </div>
             </div>
-            <div className="flex flex-col gap-2 w-full md:w-64">
-              <Label>
-                Select User<span className="text-red-500">*</span>
-              </Label>
-              <Controller
-                control={control}
-                name="selectedUser"
-                render={({ field }) => (
-                  <SearchableSelect
-                    options={filteredUsersForDefault}
-                    value={field.value}
-                    onChange={field.onChange}
-                    placeholder="Select user"
-                    disabled={!roleId}
-                  />
-                )}
-              />
-              <FieldError error={errors.selectedUser} />
+            <div className="flex justify-end w-full md:w-auto">
+              <Button
+                variant="default"
+                className="bg-primary text-white"
+                type="button"
+                disabled={isAddLevelButtonDisabled}
+                onClick={() =>
+                  addLevel({
+                    user: "",
+                    expenseTypes: [
+                      {
+                        type: EXPENSE_TYPE.DAILY,
+                        tier: TIER.TIER_1,
+                        minAmount: "0",
+                        maxAmount: "0",
+                      },
+                    ],
+                  })
+                }
+              >
+                + Add New Level
+              </Button>
             </div>
           </div>
-          <div className="flex justify-end w-full md:w-auto">
+
+          {levelFields.length === 0 ? (
+            <Card className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-muted/50 p-10 text-center">
+              <h3 className="text-lg font-semibold">
+                No Approval Levels Configured
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                Get started by clicking the "+ Add New Level" button above.
+              </p>
+            </Card>
+          ) : (
+            levelFields.map((level, levelIdx) => (
+              <Level
+                key={level.id}
+                levelIdx={levelIdx}
+                removeLevel={removeLevel}
+                levelFieldsLength={levelFields.length}
+                usersOptions={usersOptionsForExpanseTypes}
+                expanseTypeOptions={expanseTypeOptions}
+                tierOptions={tierOptions}
+                initiateDelete={initiateDelete}
+                deleteApprovalLevel={deleteApprovalLevel}
+                isDeleting={isDeleting}
+              />
+            ))
+          )}
+
+          <div className="flex justify-end gap-2 mt-8">
             <Button
               variant="default"
-              className="bg-primary text-white"
-              type="button"
-              onClick={() =>
-                addLevel({
-                  user: "",
-                  expenseTypes: [
-                    {
-                      type: EXPENSE_TYPE.DAILY,
-                      tier: TIER.TIER_1,
-                      minAmount: "0",
-                      maxAmount: "0",
-                    },
-                  ],
-                })
+              className="bg-primary text-white flex items-center gap-2"
+              type="submit"
+              disabled={
+                isProcessing ||
+                !roleId ||
+                !selectedUserId ||
+                (!isDirty &&
+                  !dirtyFields.defaultApprover &&
+                  !dirtyFields.selectedUser)
               }
             >
-              + Add New Level
+              {isProcessing && <Loader2 className="w-4 h-4 animate-spin" />}
+              {isProcessing ? "Processing..." : "Save"}
             </Button>
           </div>
-        </div>
-
-        {levelFields.length === 0 ? (
-          <Card className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed bg-muted/50 p-10 text-center">
-            <h3 className="text-lg font-semibold">
-              No Approval Levels Configured
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Get started by clicking the "+ Add New Level" button above.
-            </p>
-          </Card>
-        ) : (
-          levelFields.map((level, levelIdx) => (
-            <Level
-              key={level.id}
-              control={control}
-              levelIdx={levelIdx}
-              removeLevel={removeLevel}
-              levelFieldsLength={levelFields.length}
-              usersOptions={usersOptionsForExpanseTypes}
-              expanseTypeOptions={expanseTypeOptions}
-              tierOptions={tierOptions}
-              errors={errors}
-              watch={watch}
-              setValue={setValue}
-              initiateDelete={initiateDelete}
-              deleteApprovalLevel={deleteApprovalLevel}
-              isDeleting={isDeleting}
-              trigger={trigger}
-            />
-          ))
-        )}
-
-        <div className="flex justify-end gap-2 mt-8">
-          <Button
-            variant="default"
-            className="bg-primary text-white flex items-center gap-2"
-            type="submit"
-            disabled={
-              isProcessing ||
-              !roleId ||
-              !selectedUserId ||
-              (!isDirty &&
-                !dirtyFields.defaultApprover &&
-                !dirtyFields.selectedUser)
-            }
-          >
-            {isProcessing && <Loader2 className="w-4 h-4 animate-spin" />}
-            {isProcessing ? "Processing..." : "Save"}
-          </Button>
-        </div>
-      </form>
+        </form>
+      </FormProvider>
 
       <DeleteModal
         open={!!deletionState}
@@ -399,38 +410,37 @@ export default function Approvers() {
   );
 }
 
-// ----------- Level Component (Simplified Wrapper) -------------
-function Level({
-  control,
-  levelIdx,
-  removeLevel,
-  levelFieldsLength,
-  usersOptions,
-  expanseTypeOptions,
-  tierOptions,
-  errors,
-  watch,
-  setValue,
-  initiateDelete,
-  trigger,
-  deleteApprovalLevel,
-  isDeleting,
-}: {
-  control: Control<FormValues>;
+// ----------- Level Component -------------
+interface LevelProps {
   levelIdx: number;
   removeLevel: (index: number) => void;
   levelFieldsLength: number;
   usersOptions: { label: string; value: string }[];
   expanseTypeOptions: { label: string; value: string }[];
   tierOptions: { label: string; value: string }[];
-  errors: FieldErrors<FormValues>;
-  watch: UseFormWatch<FormValues>;
-  setValue: UseFormSetValue<FormValues>;
   initiateDelete: (state: DeletionState) => void;
   deleteApprovalLevel: any;
   isDeleting: boolean;
-  trigger: (name?: any) => Promise<boolean>;
-}) {
+}
+
+function Level({
+  levelIdx,
+  removeLevel,
+  levelFieldsLength,
+  usersOptions,
+  expanseTypeOptions,
+  tierOptions,
+  initiateDelete,
+  deleteApprovalLevel,
+  isDeleting,
+}: LevelProps) {
+  // 3. Get all necessary methods from context instead of props
+  const {
+    control,
+    watch,
+    formState: { errors },
+  } = useFormContext<FormValues>();
+
   const {
     fields: expenseTypeFields,
     append,
@@ -475,6 +485,51 @@ function Level({
     });
   };
 
+  const currentExpenseTypes = watch(`levels.${levelIdx}.expenseTypes`) || [];
+
+  // 1. Create a variable to determine if the "Add" button should be disabled.
+  const totalPossibleCombinations =
+    expanseTypeOptions.length * tierOptions.length;
+  const isAddButtonDisabled =
+    currentExpenseTypes.length >= totalPossibleCombinations;
+
+  // 2. Create the smart handler for the "Add" button's onClick event.
+  const handleSmartAppend = () => {
+    // Create a Set of used "Type-Tier" combinations for efficient lookup.
+    const usedCombinations = new Set(
+      currentExpenseTypes.map((et) => `${et.type}-${et.tier}`)
+    );
+
+    // Find the first available combination by iterating through all possibilities.
+    let nextCombination: { type: string; tier: string } | null = null;
+    for (const typeOption of expanseTypeOptions) {
+      for (const tierOption of tierOptions) {
+        const combinationKey = `${typeOption.value}-${tierOption.value}`;
+        if (!usedCombinations.has(combinationKey)) {
+          // We found the first available slot!
+          nextCombination = {
+            type: typeOption.value,
+            tier: tierOption.value,
+          };
+          break; // Exit the inner loop (tiers)
+        }
+      }
+      if (nextCombination) {
+        break; // Exit the outer loop (types)
+      }
+    }
+
+    // Append the found combination if it exists.
+    if (nextCombination) {
+      append({
+        type: nextCombination.type as EXPENSE_TYPE,
+        tier: nextCombination.tier as TIER,
+        minAmount: "0", // Will be auto-corrected by useEffect in ExpenseTypeRow
+        maxAmount: "0",
+      });
+    }
+  };
+
   return (
     <Card className="px-6 py-4 mb-4 gap-4 relative">
       {levelFieldsLength > 1 && (
@@ -496,7 +551,6 @@ function Level({
             Select User<span className="text-red-500">*</span>
           </Label>
           <Controller
-            control={control}
             name={`levels.${levelIdx}.user`}
             render={({ field }) => (
               <SearchableSelect
@@ -514,12 +568,8 @@ function Level({
       {expenseTypeFields.map((et, typeIdx) => (
         <ExpenseTypeRow
           key={et.id}
-          control={control}
           levelIdx={levelIdx}
           typeIdx={typeIdx}
-          watch={watch}
-          setValue={setValue}
-          errors={errors}
           remove={remove}
           canDelete={expenseTypeFields.length > 1}
           expanseTypeOptions={expanseTypeOptions}
@@ -527,21 +577,14 @@ function Level({
           isDeleting={isDeleting}
           initiateDelete={initiateDelete}
           deleteApprovalLevel={deleteApprovalLevel}
-          trigger={trigger}
         />
       ))}
 
       <Button
         type="button"
         className="mt-2"
-        onClick={() =>
-          append({
-            type: EXPENSE_TYPE.DAILY,
-            tier: TIER.TIER_1,
-            minAmount: "0",
-            maxAmount: "0",
-          })
-        }
+        onClick={handleSmartAppend}
+        disabled={isAddButtonDisabled}
       >
         + Add Expense Type
       </Button>
@@ -549,29 +592,10 @@ function Level({
   );
 }
 
-// ----------- Expense Type Row Component (Handles auto-fill logic) -------------
-function ExpenseTypeRow({
-  control,
-  levelIdx,
-  typeIdx,
-  watch,
-  setValue,
-  errors,
-  remove,
-  canDelete,
-  expanseTypeOptions,
-  tierOptions,
-  isDeleting,
-  initiateDelete,
-  deleteApprovalLevel,
-  trigger,
-}: {
-  control: Control<FormValues>;
+// ----------- Expense Type Row Component-------------
+interface ExpenseTypeRowProps {
   levelIdx: number;
   typeIdx: number;
-  watch: UseFormWatch<FormValues>;
-  setValue: UseFormSetValue<FormValues>;
-  errors: FieldErrors<FormValues>;
   remove: (index: number) => void;
   canDelete: boolean;
   expanseTypeOptions: { label: string; value: string }[];
@@ -579,8 +603,28 @@ function ExpenseTypeRow({
   isDeleting: boolean;
   initiateDelete: (state: DeletionState) => void;
   deleteApprovalLevel: any;
-  trigger: (name?: any) => Promise<boolean>;
-}) {
+}
+
+function ExpenseTypeRow({
+  levelIdx,
+  typeIdx,
+  remove,
+  canDelete,
+  expanseTypeOptions,
+  tierOptions,
+  isDeleting,
+  initiateDelete,
+  deleteApprovalLevel,
+}: ExpenseTypeRowProps) {
+  // 3. Get all necessary methods from context
+  const {
+    watch,
+    setValue,
+    trigger,
+    formState: { errors },
+    control,
+  } = useFormContext<FormValues>();
+
   const allLevels = watch("levels");
   const currentType = watch(`levels.${levelIdx}.expenseTypes.${typeIdx}.type`);
   const currentTier = watch(`levels.${levelIdx}.expenseTypes.${typeIdx}.tier`);
@@ -591,7 +635,7 @@ function ExpenseTypeRow({
     `levels.${levelIdx}.expenseTypes.${typeIdx}.maxAmount`
   );
 
-  // 🔑 re-validate all rows of same type+tier whenever one row changes
+  // This logic remains the same and now correctly uses methods from the context
   useEffect(() => {
     if (!currentType || !currentTier) return;
 
@@ -606,7 +650,6 @@ function ExpenseTypeRow({
   }, [currentType, currentTier, currentMin, currentMax, allLevels, trigger]);
 
   useEffect(() => {
-    // This effect runs whenever a dependency changes, including type, tier, or any value in any other level.
     if (currentType && currentTier) {
       const prevMaxAmount = findPreviousMaxAmount(
         allLevels,
@@ -620,14 +663,14 @@ function ExpenseTypeRow({
         const currentMinAmount = Number(
           watch(`levels.${levelIdx}.expenseTypes.${typeIdx}.minAmount`)
         );
-
-        // This is the key logic:
-        // We only auto-update the minAmount if the user's current value has become invalid
-        // (i.e., it's less than or equal to the previous level's max amount).
-        // This preserves any valid manual overrides the user has made.
         if (isNaN(currentMinAmount) || currentMinAmount <= prevMaxAmount) {
           setValue(
             `levels.${levelIdx}.expenseTypes.${typeIdx}.minAmount`,
+            String(suggestedMinAmount),
+            { shouldValidate: true }
+          );
+          setValue(
+            `levels.${levelIdx}.expenseTypes.${typeIdx}.maxAmount`,
             String(suggestedMinAmount),
             { shouldValidate: true }
           );
@@ -654,11 +697,34 @@ function ExpenseTypeRow({
     });
   };
 
+  const allRowsInLevel = watch(`levels.${levelIdx}.expenseTypes`) || [];
+
+  // 1. Create a map to count how many tiers are used for each expense type.
+  const usedTierCounts = new Map<string, number>();
+  allRowsInLevel.forEach((row, index) => {
+    // We only count rows OTHER than the one we are currently rendering.
+    if (index !== typeIdx && row.type) {
+      usedTierCounts.set(row.type, (usedTierCounts.get(row.type) || 0) + 1);
+    }
+  });
+
+  // 2. Filter the master list of expense types.
+  const filteredExpanseTypeOptions = expanseTypeOptions.filter((option) => {
+    // Always include the currently selected option in the list.
+    if (option.value === currentType) {
+      return true;
+    }
+    // Include the option only if the number of times it's been used
+    // is less than the total number of available tiers.
+    const count = usedTierCounts.get(option.value) || 0;
+    return count < tierOptions.length;
+  });
+
+  // --- This function for filtering Tiers is still needed and correct ---
   const isSelectedCombo = (type: string, tier: string, currentIdx: number) => {
-    const levelExpenseTypes = watch(`levels.${levelIdx}.expenseTypes`) || [];
-    return levelExpenseTypes.some(
+    return allRowsInLevel.some(
       (et: any, idx: number) =>
-        idx < currentIdx && et.type === type && et.tier === tier
+        idx !== currentIdx && et.type === type && et.tier === tier
     );
   };
 
@@ -671,7 +737,7 @@ function ExpenseTypeRow({
           name={`levels.${levelIdx}.expenseTypes.${typeIdx}.type`}
           render={({ field }) => (
             <SearchableSelect
-              options={expanseTypeOptions}
+              options={filteredExpanseTypeOptions}
               {...field}
               placeholder="Select type"
             />
@@ -700,9 +766,8 @@ function ExpenseTypeRow({
       <div className="flex-1 flex flex-col gap-2">
         <Label>Min Amount</Label>
         <Controller
-          control={control}
           name={`levels.${levelIdx}.expenseTypes.${typeIdx}.minAmount`}
-          render={({ field }) => <Input type="number" {...field} />}
+          render={({ field }) => <Input type="number" {...field} min={0} />}
         />
         <FieldError
           error={errors.levels?.[levelIdx]?.expenseTypes?.[typeIdx]?.minAmount}
@@ -711,9 +776,8 @@ function ExpenseTypeRow({
       <div className="flex-1 flex flex-col gap-2">
         <Label>Max Amount</Label>
         <Controller
-          control={control}
           name={`levels.${levelIdx}.expenseTypes.${typeIdx}.maxAmount`}
-          render={({ field }) => <Input type="number" {...field} />}
+          render={({ field }) => <Input type="number" {...field} min={0} />}
         />
         <FieldError
           error={errors.levels?.[levelIdx]?.expenseTypes?.[typeIdx]?.maxAmount}
