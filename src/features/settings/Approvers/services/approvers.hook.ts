@@ -267,3 +267,24 @@ export const useUpdateOrganization = (
     },
   });
 };
+
+export const useGetExpenseCategoriesDropDownList = (
+  params?: IListParams,
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<any>({
+    url: API.category.list,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    expenseCategories: query.data?.list ?? [],
+    perDiemSettings: query.data?.perDiemSettings ?? null,
+    categorySettings: query.data?.categorySettings ?? null,
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};

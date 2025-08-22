@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { EXPENSE_TYPE, TIER } from "@/data/app.data";
+import { TIER } from "@/data/app.data";
 
-// Schema for a single expense type entry
-const expenseTypeSchema = z
+// Schema for a single expense category entry
+const expenseCategorySchema = z
   .object({
     expensesLevelId: z.string().optional(),
-    type: z.nativeEnum(EXPENSE_TYPE),
+    expensesCategoryId: z.string().min(1, "Expense category is required."),
     tier: z.nativeEnum(TIER),
     minAmount: z.string().min(1, "Min amount is required."),
     maxAmount: z.string().min(1, "Max amount is required."),
@@ -25,9 +25,9 @@ const expenseTypeSchema = z
 // Schema for a single approval level
 const levelSchema = z.object({
   user: z.string().min(1, "Please select a user."),
-  expenseTypes: z
-    .array(expenseTypeSchema)
-    .min(1, "At least one expense type is required."),
+  expenseCategories: z
+    .array(expenseCategorySchema)
+    .min(1, "At least one expense category is required."),
 });
 
 // Main form schema with advanced cross-level validation
@@ -38,26 +38,26 @@ export const formSchema = z
     levels: z.array(levelSchema),
   })
   .superRefine((data, ctx) => {
-    const typeTierChains = new Map<string, any[]>();
+    const categoryTierChains = new Map<string, any[]>();
 
-    // 1. Group expense types by type-tier
+    // 1. Group expense categories by category-tier
     data.levels.forEach((level, levelIdx) => {
-      level.expenseTypes.forEach((et, typeIdx) => {
-        const key = `${et.type}-${et.tier}`;
-        if (!typeTierChains.has(key)) {
-          typeTierChains.set(key, []);
+      level.expenseCategories.forEach((ec, categoryIdx) => {
+        const key = `${ec.expensesCategoryId}-${ec.tier}`;
+        if (!categoryTierChains.has(key)) {
+          categoryTierChains.set(key, []);
         }
-        typeTierChains.get(key)?.push({
+        categoryTierChains.get(key)?.push({
           levelIdx,
-          typeIdx,
-          minAmount: Number(et.minAmount),
-          maxAmount: Number(et.maxAmount),
+          categoryIdx,
+          minAmount: Number(ec.minAmount),
+          maxAmount: Number(ec.maxAmount),
         });
       });
     });
 
     // 2. Validate sequential order inside each chain
-    for (const chain of typeTierChains.values()) {
+    for (const chain of categoryTierChains.values()) {
       for (let i = 1; i < chain.length; i++) {
         const prev = chain[i - 1];
         const current = chain[i];
@@ -70,8 +70,8 @@ export const formSchema = z
             path: [
               "levels",
               current.levelIdx,
-              "expenseTypes",
-              current.typeIdx,
+              "expenseCategories",
+              current.categoryIdx,
               "minAmount",
             ],
           });
@@ -83,8 +83,8 @@ export const formSchema = z
             path: [
               "levels",
               prev.levelIdx,
-              "expenseTypes",
-              prev.typeIdx,
+              "expenseCategories",
+              prev.categoryIdx,
               "maxAmount",
             ],
           });

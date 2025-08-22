@@ -11,14 +11,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { AlertCircle, Loader2, Trash2 } from "lucide-react";
-import { EXPENSE_TYPE, TIER } from "@/data/app.data";
-import { formatExpenseType } from "@/utils/commonFormatters";
+import { TIER } from "@/data/app.data";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import {
   useCreateApprovalsLevel,
   useDeleteApprovalsLevel,
   useGetAllApprovalsLevel,
   useGetAllRolesForDropdownList,
+  useGetExpenseCategoriesDropDownList,
   useGetUsersDropDownList,
   useUpdateApprovalsLevel,
   useUpdateOrganization,
@@ -28,29 +28,27 @@ import { formSchema, FormValues } from "../data/approvalLevelSchema";
 import { Card } from "@/components/ui/card";
 import { DeleteModal } from "@/components/shared/common-delete-modal";
 import { useAuthStore } from "@/stores/use-auth-store";
+import {
+  DeletionState,
+  ExpenseCategoryRowProps,
+  LevelProps,
+} from "../type/type";
 
-// State to manage information for the delete modal
-interface DeletionState {
-  onConfirm: () => void;
-  itemName: string;
-  itemIdentifierValue: string;
-}
-
-// Helper function to find the max amount for a given type/tier from all previous levels
+// Helper function to find the max amount for a given category/tier from all previous levels
 const findPreviousMaxAmount = (
   allLevels: FormValues["levels"],
   currentLevelIndex: number,
-  type: EXPENSE_TYPE,
+  expensesCategoryId: string,
   tier: TIER
 ): number | null => {
   // Iterate backwards from the current level
   for (let i = currentLevelIndex - 1; i >= 0; i--) {
     const prevLevel = allLevels[i];
-    const matchingExpenseType = prevLevel.expenseTypes.find(
-      (et) => et.type === type && et.tier === tier
+    const matchingExpenseCategory = prevLevel.expenseCategories.find(
+      (ec) => ec.expensesCategoryId === expensesCategoryId && ec.tier === tier
     );
-    if (matchingExpenseType) {
-      const maxAmount = Number(matchingExpenseType.maxAmount);
+    if (matchingExpenseCategory) {
+      const maxAmount = Number(matchingExpenseCategory.maxAmount);
       return isNaN(maxAmount) ? null : maxAmount;
     }
   }
@@ -80,6 +78,10 @@ export default function Approvers() {
     null
   );
 
+  const { expenseCategories: expenseCategoriesData } =
+    useGetExpenseCategoriesDropDownList();
+  const expenseCategoriesDropDownList = expenseCategoriesData || [];
+
   const methods = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -103,7 +105,7 @@ export default function Approvers() {
   const selectedUserId = watch("selectedUser");
   const { listData: userListDropDownDataforLevel = [] } =
     useGetUsersDropDownList({ roleId, enabled: !!roleId });
-  const { listData: userListDropDownForExpenseTypes = [] } =
+  const { listData: userListDropDownForExpenseCategories = [] } =
     useGetUsersDropDownList();
 
   const {
@@ -119,8 +121,8 @@ export default function Approvers() {
       fullName: `${u.firstName || ""} ${u.lastName || ""}`.trim(),
     })
   );
-  const userListDropDownListForExpenseTypes =
-    userListDropDownForExpenseTypes?.map((u: any) => ({
+  const userListDropDownListForExpenseCategories =
+    userListDropDownForExpenseCategories?.map((u: any) => ({
       ...u,
       fullName: `${u.firstName || ""} ${u.lastName || ""}`.trim(),
     }));
@@ -138,10 +140,11 @@ export default function Approvers() {
     .map((lvl: any) => lvl.user)
     .filter(Boolean);
   const filteredUsersForDefault = usersOptionsForLevels.filter(
-    (u) => !assignedUserIdsInLevels.includes(u.value)
+    (u) =>
+      !assignedUserIdsInLevels.includes(u.value) || u.value === selectedUserId
   );
-  const usersOptionsForExpanseTypes = useSelectOptions<any>({
-    listData: userListDropDownListForExpenseTypes,
+  const usersOptionsForExpenseCategories = useSelectOptions<any>({
+    listData: userListDropDownListForExpenseCategories,
     labelKey: "fullName",
     valueKey: "id",
   }).map((opt) => ({ ...opt, value: String(opt.value) }));
@@ -149,9 +152,22 @@ export default function Approvers() {
     label: key.replace("TIER_", "Tier "),
     value,
   }));
-  const expanseTypeOptions = Object.entries(EXPENSE_TYPE).map(
-    ([key, value]) => ({ label: formatExpenseType(key), value })
-  );
+  const expenseCategoryOptions = useSelectOptions({
+    listData: expenseCategoriesDropDownList,
+    labelKey: "categoryName",
+    valueKey: "expensesCategoryId",
+  }).map((option) => ({
+    ...option,
+    value: String(option.value),
+  }));
+
+  // Watch for changes in selectedUser and update first level if it exists
+  useEffect(() => {
+    const levels = watch("levels");
+    if (levels.length > 0 && selectedUserId) {
+      setValue("levels.0.user", selectedUserId);
+    }
+  }, [selectedUserId, setValue, watch]);
 
   // ----------- Prefill Data from API -------------
   useEffect(() => {
@@ -162,16 +178,16 @@ export default function Approvers() {
     ) {
       const prefilledLevels = Object.entries(allApprovalsLevelList).map(
         ([userId, records]) => {
-          const expenseTypes = (Array.isArray(records) ? records : []).map(
+          const expenseCategories = (Array.isArray(records) ? records : []).map(
             (rec) => ({
               expensesLevelId: rec.id,
-              type: rec.expenseType as EXPENSE_TYPE,
+              expensesCategoryId: rec.expensesCategoryId,
               tier: rec.tierkey as TIER,
               minAmount: String(rec.minAmount),
               maxAmount: String(rec.maxAmount),
             })
           );
-          return { user: userId, expenseTypes };
+          return { user: userId, expenseCategories };
         }
       );
       if (!isDirty) {
@@ -198,33 +214,34 @@ export default function Approvers() {
         return acc;
       }, {});
     values?.levels?.forEach((lvl, lvlIdx) => {
-      lvl.expenseTypes.forEach((et) => {
-        if (!et.expensesLevelId) {
+      lvl.expenseCategories.forEach((ec) => {
+        if (!ec.expensesLevelId) {
           allPayloads.push({
-            expenseType: et.type,
+            expensesCategoryId: ec.expensesCategoryId,
             level: lvlIdx + 1,
             userId: lvl.user,
-            tierkey: et.tier,
-            minAmount: Number(et.minAmount),
-            maxAmount: Number(et.maxAmount),
+            tierkey: ec.tier,
+            minAmount: Number(ec.minAmount),
+            maxAmount: Number(ec.maxAmount),
           });
         } else {
-          const original = originalRecordsMap[et.expensesLevelId];
+          const original = originalRecordsMap[ec.expensesLevelId];
           const isChanged =
-            original.expenseType !== et.type ||
-            original.tierkey !== et.tier ||
-            Number(original.minAmount) !== Number(et.minAmount) ||
-            Number(original.maxAmount) !== Number(et.maxAmount) ||
+            original.expensesCategoryId !== ec.expensesCategoryId ||
+            original.tierkey !== ec.tier ||
+            Number(original.minAmount) !== Number(ec.minAmount) ||
+            Number(original.maxAmount) !== Number(ec.maxAmount) ||
             String(original.userId) !== String(lvl.user);
           if (isChanged) {
             allPayloads.push({
-              expensesLevelId: et.expensesLevelId,
-              expenseType: et.type,
+              expensesLevelId: ec.expensesLevelId,
+
+              expensesCategoryId: ec.expensesCategoryId,
               level: lvlIdx + 1,
               userId: lvl.user,
-              tierkey: et.tier,
-              minAmount: Number(et.minAmount),
-              maxAmount: Number(et.maxAmount),
+              tierkey: ec.tier,
+              minAmount: Number(ec.minAmount),
+              maxAmount: Number(ec.maxAmount),
             });
           }
         }
@@ -259,14 +276,10 @@ export default function Approvers() {
 
   const defaultUserId = watch("selectedUser");
 
-  // 2. Count how many users are available for assignment in levels.
-  // We filter out the default approver user.
-  const totalAvailableUsersForLevels = usersOptionsForExpanseTypes.filter(
+  const totalAvailableUsersForLevels = usersOptionsForExpenseCategories.filter(
     (u) => u.value !== defaultUserId
   ).length;
 
-  // 3. The button is disabled if the number of levels is equal to or greater
-  // than the number of available users.
   const isAddLevelButtonDisabled =
     levelFields.length >= totalAvailableUsersForLevels;
 
@@ -280,7 +293,6 @@ export default function Approvers() {
 
   return (
     <>
-      {/* 2. Wrap the form with FormProvider */}
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
@@ -331,13 +343,14 @@ export default function Approvers() {
                 variant="default"
                 className="bg-primary text-white"
                 type="button"
-                disabled={isAddLevelButtonDisabled}
+                disabled={isAddLevelButtonDisabled || !selectedUserId}
                 onClick={() =>
                   addLevel({
-                    user: "",
-                    expenseTypes: [
+                    user: selectedUserId,
+                    expenseCategories: [
                       {
-                        type: EXPENSE_TYPE.DAILY,
+                        expensesCategoryId:
+                          expenseCategoryOptions?.[0]?.value ?? "", // Use first category as default
                         tier: TIER.TIER_1,
                         minAmount: "0",
                         maxAmount: "0",
@@ -367,12 +380,13 @@ export default function Approvers() {
                 levelIdx={levelIdx}
                 removeLevel={removeLevel}
                 levelFieldsLength={levelFields.length}
-                usersOptions={usersOptionsForExpanseTypes}
-                expanseTypeOptions={expanseTypeOptions}
+                usersOptions={usersOptionsForExpenseCategories}
+                expenseCategoryOptions={expenseCategoryOptions}
                 tierOptions={tierOptions}
                 initiateDelete={initiateDelete}
                 deleteApprovalLevel={deleteApprovalLevel}
                 isDeleting={isDeleting}
+                isFirstLevel={levelIdx === 0}
               />
             ))
           )}
@@ -411,30 +425,19 @@ export default function Approvers() {
 }
 
 // ----------- Level Component -------------
-interface LevelProps {
-  levelIdx: number;
-  removeLevel: (index: number) => void;
-  levelFieldsLength: number;
-  usersOptions: { label: string; value: string }[];
-  expanseTypeOptions: { label: string; value: string }[];
-  tierOptions: { label: string; value: string }[];
-  initiateDelete: (state: DeletionState) => void;
-  deleteApprovalLevel: any;
-  isDeleting: boolean;
-}
 
 function Level({
   levelIdx,
   removeLevel,
   levelFieldsLength,
   usersOptions,
-  expanseTypeOptions,
+  expenseCategoryOptions,
   tierOptions,
   initiateDelete,
   deleteApprovalLevel,
   isDeleting,
+  isFirstLevel,
 }: LevelProps) {
-  // 3. Get all necessary methods from context instead of props
   const {
     control,
     watch,
@@ -442,12 +445,12 @@ function Level({
   } = useFormContext<FormValues>();
 
   const {
-    fields: expenseTypeFields,
+    fields: expenseCategoryFields,
     append,
     remove,
   } = useFieldArray({
     control,
-    name: `levels.${levelIdx}.expenseTypes` as const,
+    name: `levels.${levelIdx}.expenseCategories` as const,
   });
 
   const defaultUserId = watch("selectedUser");
@@ -455,11 +458,14 @@ function Level({
     .map((l: any) => l.user)
     .filter(Boolean);
   const currentUserId = watch(`levels.${levelIdx}.user`);
-  const filteredUsersOptions = usersOptions.filter(
-    (u) =>
-      (!assignedUserIds.includes(u.value) || u.value === currentUserId) &&
-      u.value !== defaultUserId
-  );
+
+  const filteredUsersOptions = isFirstLevel
+    ? usersOptions
+    : usersOptions.filter(
+        (u) =>
+          (!assignedUserIds.includes(u.value) || u.value === currentUserId) &&
+          u.value !== defaultUserId
+      );
 
   const handleLevelDelete = () => {
     const levelData = watch(`levels.${levelIdx}`);
@@ -468,10 +474,10 @@ function Level({
       `User in Level ${levelIdx + 1}`;
     initiateDelete({
       itemName: `Level for ${userName}`,
-      itemIdentifierValue: `Level ${levelIdx + 1} and all its assigned expense types`,
+      itemIdentifierValue: `Level ${levelIdx + 1} and all its assigned expense categories`,
       onConfirm: () => {
-        const idsToDelete = (levelData.expenseTypes || [])
-          .map((et: any) => et.expensesLevelId)
+        const idsToDelete = (levelData.expenseCategories || [])
+          .map((ec: any) => ec.expensesLevelId)
           .filter(Boolean);
         if (idsToDelete.length > 0) {
           deleteApprovalLevel(
@@ -485,46 +491,43 @@ function Level({
     });
   };
 
-  const currentExpenseTypes = watch(`levels.${levelIdx}.expenseTypes`) || [];
+  const currentExpenseCategories =
+    watch(`levels.${levelIdx}.expenseCategories`) || [];
 
-  // 1. Create a variable to determine if the "Add" button should be disabled.
   const totalPossibleCombinations =
-    expanseTypeOptions.length * tierOptions.length;
+    expenseCategoryOptions.length * tierOptions.length;
   const isAddButtonDisabled =
-    currentExpenseTypes.length >= totalPossibleCombinations;
+    currentExpenseCategories.length >= totalPossibleCombinations;
 
-  // 2. Create the smart handler for the "Add" button's onClick event.
   const handleSmartAppend = () => {
-    // Create a Set of used "Type-Tier" combinations for efficient lookup.
     const usedCombinations = new Set(
-      currentExpenseTypes.map((et) => `${et.type}-${et.tier}`)
+      currentExpenseCategories.map(
+        (ec) => `${ec.expensesCategoryId}-${ec.tier}`
+      )
     );
 
-    // Find the first available combination by iterating through all possibilities.
-    let nextCombination: { type: string; tier: string } | null = null;
-    for (const typeOption of expanseTypeOptions) {
+    let nextCombination: { categoryId: string; tier: string } | null = null;
+    for (const categoryOption of expenseCategoryOptions) {
       for (const tierOption of tierOptions) {
-        const combinationKey = `${typeOption.value}-${tierOption.value}`;
+        const combinationKey = `${categoryOption.value}-${tierOption.value}`;
         if (!usedCombinations.has(combinationKey)) {
-          // We found the first available slot!
           nextCombination = {
-            type: typeOption.value,
+            categoryId: categoryOption.value,
             tier: tierOption.value,
           };
-          break; // Exit the inner loop (tiers)
+          break;
         }
       }
       if (nextCombination) {
-        break; // Exit the outer loop (types)
+        break;
       }
     }
 
-    // Append the found combination if it exists.
     if (nextCombination) {
       append({
-        type: nextCombination.type as EXPENSE_TYPE,
+        expensesCategoryId: nextCombination.categoryId,
         tier: nextCombination.tier as TIER,
-        minAmount: "0", // Will be auto-corrected by useEffect in ExpenseTypeRow
+        minAmount: "0",
         maxAmount: "0",
       });
     }
@@ -532,7 +535,7 @@ function Level({
 
   return (
     <Card className="px-6 py-4 mb-4 gap-4 relative">
-      {levelFieldsLength > 1 && (
+      {levelFieldsLength > 1 && !isFirstLevel && (
         <Button
           variant="ghost"
           size="icon"
@@ -544,7 +547,9 @@ function Level({
           <Trash2 className="w-5 h-5" />
         </Button>
       )}
-      <div className="font-semibold text-lg">Level {levelIdx + 1}</div>
+      <div className="font-semibold text-lg">
+        Level {levelIdx + 1} {isFirstLevel && "(Default User)"}
+      </div>
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1 flex flex-col gap-2">
           <Label>
@@ -555,9 +560,10 @@ function Level({
             render={({ field }) => (
               <SearchableSelect
                 options={filteredUsersOptions}
-                value={field.value}
+                value={isFirstLevel ? defaultUserId : field.value}
                 onChange={field.onChange}
                 placeholder="Select user"
+                disabled={isFirstLevel}
               />
             )}
           />
@@ -565,14 +571,14 @@ function Level({
         </div>
       </div>
 
-      {expenseTypeFields.map((et, typeIdx) => (
-        <ExpenseTypeRow
-          key={et.id}
+      {expenseCategoryFields.map((ec, categoryIdx) => (
+        <ExpenseCategoryRow
+          key={ec.id}
           levelIdx={levelIdx}
-          typeIdx={typeIdx}
+          categoryIdx={categoryIdx}
           remove={remove}
-          canDelete={expenseTypeFields.length > 1}
-          expanseTypeOptions={expanseTypeOptions}
+          canDelete={expenseCategoryFields.length > 1}
+          expenseCategoryOptions={expenseCategoryOptions}
           tierOptions={tierOptions}
           isDeleting={isDeleting}
           initiateDelete={initiateDelete}
@@ -586,37 +592,25 @@ function Level({
         onClick={handleSmartAppend}
         disabled={isAddButtonDisabled}
       >
-        + Add Expense Type
+        + Add Expense Category
       </Button>
     </Card>
   );
 }
 
-// ----------- Expense Type Row Component-------------
-interface ExpenseTypeRowProps {
-  levelIdx: number;
-  typeIdx: number;
-  remove: (index: number) => void;
-  canDelete: boolean;
-  expanseTypeOptions: { label: string; value: string }[];
-  tierOptions: { label: string; value: string }[];
-  isDeleting: boolean;
-  initiateDelete: (state: DeletionState) => void;
-  deleteApprovalLevel: any;
-}
+// ----------- Expense Category Row Component-------------
 
-function ExpenseTypeRow({
+function ExpenseCategoryRow({
   levelIdx,
-  typeIdx,
+  categoryIdx,
   remove,
   canDelete,
-  expanseTypeOptions,
+  expenseCategoryOptions,
   tierOptions,
   isDeleting,
   initiateDelete,
   deleteApprovalLevel,
-}: ExpenseTypeRowProps) {
-  // 3. Get all necessary methods from context
+}: ExpenseCategoryRowProps) {
   const {
     watch,
     setValue,
@@ -626,68 +620,96 @@ function ExpenseTypeRow({
   } = useFormContext<FormValues>();
 
   const allLevels = watch("levels");
-  const currentType = watch(`levels.${levelIdx}.expenseTypes.${typeIdx}.type`);
-  const currentTier = watch(`levels.${levelIdx}.expenseTypes.${typeIdx}.tier`);
+
+  const currentCategoryId = watch(
+    `levels.${levelIdx}.expenseCategories.${categoryIdx}.expensesCategoryId`
+  );
+  const currentTier = watch(
+    `levels.${levelIdx}.expenseCategories.${categoryIdx}.tier`
+  );
   const currentMin = watch(
-    `levels.${levelIdx}.expenseTypes.${typeIdx}.minAmount`
+    `levels.${levelIdx}.expenseCategories.${categoryIdx}.minAmount`
   );
   const currentMax = watch(
-    `levels.${levelIdx}.expenseTypes.${typeIdx}.maxAmount`
+    `levels.${levelIdx}.expenseCategories.${categoryIdx}.maxAmount`
   );
 
-  // This logic remains the same and now correctly uses methods from the context
   useEffect(() => {
-    if (!currentType || !currentTier) return;
+    if (!currentCategoryId || !currentTier) return;
 
     allLevels.forEach((lvl, li) => {
-      lvl.expenseTypes.forEach((et, ti) => {
-        if (et.type === currentType && et.tier === currentTier) {
-          trigger(`levels.${li}.expenseTypes.${ti}.minAmount`);
-          trigger(`levels.${li}.expenseTypes.${ti}.maxAmount`);
+      lvl.expenseCategories.forEach((ec, ci) => {
+        if (
+          ec.expensesCategoryId === currentCategoryId &&
+          ec.tier === currentTier
+        ) {
+          trigger(`levels.${li}.expenseCategories.${ci}.minAmount`);
+          trigger(`levels.${li}.expenseCategories.${ci}.maxAmount`);
         }
       });
     });
-  }, [currentType, currentTier, currentMin, currentMax, allLevels, trigger]);
+  }, [
+    currentCategoryId,
+    currentTier,
+    currentMin,
+    currentMax,
+    allLevels,
+    trigger,
+  ]);
 
   useEffect(() => {
-    if (currentType && currentTier) {
+    if (currentCategoryId && currentTier) {
       const prevMaxAmount = findPreviousMaxAmount(
         allLevels,
         levelIdx,
-        currentType,
+        currentCategoryId,
         currentTier
       );
 
       if (prevMaxAmount !== null) {
         const suggestedMinAmount = prevMaxAmount + 1;
         const currentMinAmount = Number(
-          watch(`levels.${levelIdx}.expenseTypes.${typeIdx}.minAmount`)
+          watch(`levels.${levelIdx}.expenseCategories.${categoryIdx}.minAmount`)
         );
         if (isNaN(currentMinAmount) || currentMinAmount <= prevMaxAmount) {
           setValue(
-            `levels.${levelIdx}.expenseTypes.${typeIdx}.minAmount`,
+            `levels.${levelIdx}.expenseCategories.${categoryIdx}.minAmount`,
             String(suggestedMinAmount),
             { shouldValidate: true }
           );
           setValue(
-            `levels.${levelIdx}.expenseTypes.${typeIdx}.maxAmount`,
+            `levels.${levelIdx}.expenseCategories.${categoryIdx}.maxAmount`,
             String(suggestedMinAmount),
             { shouldValidate: true }
           );
         }
       }
     }
-  }, [currentType, currentTier, allLevels, levelIdx, typeIdx, setValue, watch]);
+  }, [
+    currentCategoryId,
+    currentTier,
+    allLevels,
+    levelIdx,
+    categoryIdx,
+    setValue,
+    watch,
+  ]);
 
-  const handleExpenseTypeDelete = (idx: number) => {
-    const expenseTypeData = watch(`levels.${levelIdx}.expenseTypes.${idx}`);
+  const handleExpenseCategoryDelete = (idx: number) => {
+    const expenseCategoryData = watch(
+      `levels.${levelIdx}.expenseCategories.${idx}`
+    );
+    const categoryName =
+      expenseCategoryOptions.find(
+        (opt) => opt.value === expenseCategoryData.expensesCategoryId
+      )?.label || expenseCategoryData.expensesCategoryId;
     initiateDelete({
-      itemName: "Expense Type",
-      itemIdentifierValue: `${formatExpenseType(expenseTypeData.type)} (Tier: ${expenseTypeData.tier})`,
+      itemName: "Expense Category",
+      itemIdentifierValue: `${categoryName} (Tier: ${expenseCategoryData.tier})`,
       onConfirm: () => {
-        if (expenseTypeData.expensesLevelId) {
+        if (expenseCategoryData.expensesLevelId) {
           deleteApprovalLevel(
-            { ids: [expenseTypeData.expensesLevelId] },
+            { ids: [expenseCategoryData.expensesLevelId] },
             { onSuccess: () => remove(idx) }
           );
         } else {
@@ -697,49 +719,53 @@ function ExpenseTypeRow({
     });
   };
 
-  const allRowsInLevel = watch(`levels.${levelIdx}.expenseTypes`) || [];
+  const allRowsInLevel = watch(`levels.${levelIdx}.expenseCategories`) || [];
 
-  // 1. Create a map to count how many tiers are used for each expense type.
   const usedTierCounts = new Map<string, number>();
   allRowsInLevel.forEach((row, index) => {
-    // We only count rows OTHER than the one we are currently rendering.
-    if (index !== typeIdx && row.type) {
-      usedTierCounts.set(row.type, (usedTierCounts.get(row.type) || 0) + 1);
+    if (index !== categoryIdx && row.expensesCategoryId) {
+      usedTierCounts.set(
+        row.expensesCategoryId,
+        (usedTierCounts.get(row.expensesCategoryId) || 0) + 1
+      );
     }
   });
 
-  // 2. Filter the master list of expense types.
-  const filteredExpanseTypeOptions = expanseTypeOptions.filter((option) => {
-    // Always include the currently selected option in the list.
-    if (option.value === currentType) {
-      return true;
+  const filteredExpenseCategoryOptions = expenseCategoryOptions.filter(
+    (option) => {
+      if (option.value === currentCategoryId) {
+        return true;
+      }
+      const count = usedTierCounts.get(option.value) || 0;
+      return count < tierOptions.length;
     }
-    // Include the option only if the number of times it's been used
-    // is less than the total number of available tiers.
-    const count = usedTierCounts.get(option.value) || 0;
-    return count < tierOptions.length;
-  });
+  );
 
-  // --- This function for filtering Tiers is still needed and correct ---
-  const isSelectedCombo = (type: string, tier: string, currentIdx: number) => {
+  const isSelectedCombo = (
+    categoryId: string,
+    tier: string,
+    currentIdx: number
+  ) => {
     return allRowsInLevel.some(
-      (et: any, idx: number) =>
-        idx !== currentIdx && et.type === type && et.tier === tier
+      (ec: any, idx: number) =>
+        idx !== currentIdx &&
+        ec.expensesCategoryId === categoryId &&
+        ec.tier === tier
     );
   };
 
   return (
-    <div className="flex flex-col md:flex-row md:items-end gap-4 mt-4 mb-2">
+    <div className="flex flex-col md:flex-row md:items-end gap-4 mb-2">
       <div className="flex-1 flex flex-col gap-2">
-        <Label>Expense Type</Label>
+        <Label>Expense Category</Label>
         <Controller
           control={control}
-          name={`levels.${levelIdx}.expenseTypes.${typeIdx}.type`}
+          name={`levels.${levelIdx}.expenseCategories.${categoryIdx}.expensesCategoryId`}
           render={({ field }) => (
             <SearchableSelect
-              options={filteredExpanseTypeOptions}
+              options={filteredExpenseCategoryOptions}
               {...field}
-              placeholder="Select type"
+              placeholder="Select category"
             />
           )}
         />
@@ -748,10 +774,11 @@ function ExpenseTypeRow({
         <Label>Tier</Label>
         <Controller
           control={control}
-          name={`levels.${levelIdx}.expenseTypes.${typeIdx}.tier`}
+          name={`levels.${levelIdx}.expenseCategories.${categoryIdx}.tier`}
           render={({ field }) => {
             const filteredOptions = tierOptions.filter(
-              (opt) => !isSelectedCombo(currentType, opt.value, typeIdx)
+              (opt) =>
+                !isSelectedCombo(currentCategoryId, opt.value, categoryIdx)
             );
             return (
               <SearchableSelect
@@ -766,21 +793,27 @@ function ExpenseTypeRow({
       <div className="flex-1 flex flex-col gap-2">
         <Label>Min Amount</Label>
         <Controller
-          name={`levels.${levelIdx}.expenseTypes.${typeIdx}.minAmount`}
+          name={`levels.${levelIdx}.expenseCategories.${categoryIdx}.minAmount`}
           render={({ field }) => <Input type="number" {...field} min={0} />}
         />
         <FieldError
-          error={errors.levels?.[levelIdx]?.expenseTypes?.[typeIdx]?.minAmount}
+          error={
+            errors.levels?.[levelIdx]?.expenseCategories?.[categoryIdx]
+              ?.minAmount
+          }
         />
       </div>
       <div className="flex-1 flex flex-col gap-2">
         <Label>Max Amount</Label>
         <Controller
-          name={`levels.${levelIdx}.expenseTypes.${typeIdx}.maxAmount`}
+          name={`levels.${levelIdx}.expenseCategories.${categoryIdx}.maxAmount`}
           render={({ field }) => <Input type="number" {...field} min={0} />}
         />
         <FieldError
-          error={errors.levels?.[levelIdx]?.expenseTypes?.[typeIdx]?.maxAmount}
+          error={
+            errors.levels?.[levelIdx]?.expenseCategories?.[categoryIdx]
+              ?.maxAmount
+          }
         />
       </div>
       <div className="flex items-center h-10 mt-2 md:mt-0">
@@ -789,7 +822,7 @@ function ExpenseTypeRow({
             variant="ghost"
             size="icon"
             type="button"
-            onClick={() => handleExpenseTypeDelete(typeIdx)}
+            onClick={() => handleExpenseCategoryDelete(categoryIdx)}
             disabled={isDeleting}
           >
             <Trash2 className="w-5 h-5" />
