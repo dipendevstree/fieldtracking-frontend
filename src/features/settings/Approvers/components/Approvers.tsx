@@ -588,7 +588,6 @@ function Level({
 
       <Button
         type="button"
-        className="mt-2"
         onClick={handleSmartAppend}
         disabled={isAddButtonDisabled}
       >
@@ -755,80 +754,112 @@ function ExpenseCategoryRow({
   };
 
   return (
-    <div className="flex flex-col md:flex-row md:items-end gap-4 mb-2">
-      <div className="flex-1 flex flex-col gap-2">
-        <Label>Expense Category</Label>
-        <Controller
-          control={control}
-          name={`levels.${levelIdx}.expenseCategories.${categoryIdx}.expensesCategoryId`}
-          render={({ field }) => (
-            <SearchableSelect
-              options={filteredExpenseCategoryOptions}
-              {...field}
-              placeholder="Select category"
+    <div className="relative flex flex-col md:flex-row gap-4 mb-2 pr-12">
+      <div className="flex-1 flex flex-col md:flex-row md:items-start gap-4">
+        {/* Expense Category */}
+        <div className="flex-1">
+          <div className="flex flex-col gap-2">
+            <Label>Expense Category</Label>
+            <Controller
+              control={control}
+              name={`levels.${levelIdx}.expenseCategories.${categoryIdx}.expensesCategoryId`}
+              render={({ field }) => (
+                <SearchableSelect
+                  options={filteredExpenseCategoryOptions}
+                  {...field}
+                  placeholder="Select category"
+                />
+              )}
             />
-          )}
-        />
+          </div>
+
+          <FieldError
+            error={
+              errors.levels?.[levelIdx]?.expenseCategories?.[categoryIdx]
+                ?.expensesCategoryId
+            }
+          />
+        </div>
+
+        {/* Tier */}
+        <div className="flex-1">
+          <div className="flex flex-col gap-2">
+            <Label>Tier</Label>
+            <Controller
+              control={control}
+              name={`levels.${levelIdx}.expenseCategories.${categoryIdx}.tier`}
+              render={({ field }) => {
+                const filteredOptions = tierOptions.filter(
+                  (opt) =>
+                    !isSelectedCombo(currentCategoryId, opt.value, categoryIdx)
+                );
+                return (
+                  <SearchableSelect
+                    options={filteredOptions}
+                    {...field}
+                    placeholder="Select tier"
+                  />
+                );
+              }}
+            />
+          </div>
+
+          <FieldError
+            error={
+              errors.levels?.[levelIdx]?.expenseCategories?.[categoryIdx]?.tier
+            }
+          />
+        </div>
+
+        {/* Min Amount */}
+        <div className="flex-1">
+          <div className="flex flex-col gap-2">
+            <Label>Min Amount</Label>
+            <Controller
+              name={`levels.${levelIdx}.expenseCategories.${categoryIdx}.minAmount`}
+              render={({ field }) => <Input type="number" {...field} min={0} />}
+            />
+          </div>
+
+          <FieldError
+            error={
+              errors.levels?.[levelIdx]?.expenseCategories?.[categoryIdx]
+                ?.minAmount
+            }
+          />
+        </div>
+
+        {/* Max Amount */}
+        <div className="flex-1">
+          <div className="flex flex-col gap-2">
+            <Label>Max Amount</Label>
+            <Controller
+              name={`levels.${levelIdx}.expenseCategories.${categoryIdx}.maxAmount`}
+              render={({ field }) => <Input type="number" {...field} min={0} />}
+            />
+          </div>
+
+          <FieldError
+            error={
+              errors.levels?.[levelIdx]?.expenseCategories?.[categoryIdx]
+                ?.maxAmount
+            }
+          />
+        </div>
       </div>
-      <div className="flex-1 flex flex-col gap-2">
-        <Label>Tier</Label>
-        <Controller
-          control={control}
-          name={`levels.${levelIdx}.expenseCategories.${categoryIdx}.tier`}
-          render={({ field }) => {
-            const filteredOptions = tierOptions.filter(
-              (opt) =>
-                !isSelectedCombo(currentCategoryId, opt.value, categoryIdx)
-            );
-            return (
-              <SearchableSelect
-                options={filteredOptions}
-                {...field}
-                placeholder="Select tier"
-              />
-            );
-          }}
-        />
-      </div>
-      <div className="flex-1 flex flex-col gap-2">
-        <Label>Min Amount</Label>
-        <Controller
-          name={`levels.${levelIdx}.expenseCategories.${categoryIdx}.minAmount`}
-          render={({ field }) => <Input type="number" {...field} min={0} />}
-        />
-        <FieldError
-          error={
-            errors.levels?.[levelIdx]?.expenseCategories?.[categoryIdx]
-              ?.minAmount
-          }
-        />
-      </div>
-      <div className="flex-1 flex flex-col gap-2">
-        <Label>Max Amount</Label>
-        <Controller
-          name={`levels.${levelIdx}.expenseCategories.${categoryIdx}.maxAmount`}
-          render={({ field }) => <Input type="number" {...field} min={0} />}
-        />
-        <FieldError
-          error={
-            errors.levels?.[levelIdx]?.expenseCategories?.[categoryIdx]
-              ?.maxAmount
-          }
-        />
-      </div>
-      <div className="flex items-center h-10 mt-2 md:mt-0">
-        {canDelete && (
-          <Button
-            variant="ghost"
-            size="icon"
-            type="button"
-            onClick={() => handleExpenseCategoryDelete(categoryIdx)}
-            disabled={isDeleting}
-          >
-            <Trash2 className="w-5 h-5" />
-          </Button>
-        )}
-      </div>
+
+      {canDelete && (
+        <Button
+          variant="ghost"
+          size="icon"
+          type="button"
+          onClick={() => handleExpenseCategoryDelete(categoryIdx)}
+          disabled={isDeleting}
+          className="absolute top-5 right-0 mt-0"
+        >
+          <Trash2 className="w-5 h-5" />
+        </Button>
+      )}
     </div>
   );
 }
@@ -837,7 +868,7 @@ function ExpenseCategoryRow({
 function FieldError({ error }: { error?: { message?: string } }) {
   if (!error?.message) return null;
   return (
-    <p className="flex items-center gap-1 text-xs text-red-500">
+    <p className="flex items-center gap-1 text-xs text-red-500 mt-2">
       <AlertCircle className="h-3 w-3" />
       {error?.message}
     </p>
