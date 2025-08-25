@@ -13,6 +13,7 @@ export const columns: ColumnDef<any>[] = [
       return <div className='text-sm font-medium'>{customerType}</div>
     },
     enableHiding: false,
+    enableSorting: false,
   },
   {
     accessorKey: 'createdAt',
@@ -32,6 +33,7 @@ export const columns: ColumnDef<any>[] = [
         <div className='text-muted-foreground text-sm'>{formattedDate}</div>
       )
     },
+    enableSorting: false,
   },
   {
     id: 'actions',
@@ -39,5 +41,6 @@ export const columns: ColumnDef<any>[] = [
       <CustomDataTableColumnHeader column={column} title='Action' />
     ),
     cell: ({ row }) => <DataTableRowActions row={row} />,
+    enableSorting: false,
   },
 ]

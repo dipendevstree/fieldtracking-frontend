@@ -23,6 +23,7 @@ export const columns: ColumnDef<any>[] = [
       )
     },
     enableHiding: false,
+    enableSorting: false,
   },
   {
     accessorKey: 'dailyExpenseTotal',
@@ -37,6 +38,7 @@ export const columns: ColumnDef<any>[] = [
       const formattedAmount = `$${amount.toFixed(0)}`
       return <div className='text-sm font-medium'>{formattedAmount}</div>
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'travelExpenseTotal',
@@ -51,6 +53,7 @@ export const columns: ColumnDef<any>[] = [
       const formattedAmount = `$${amount.toFixed(0)}`
       return <div className='text-sm font-medium'>{formattedAmount}</div>
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'grandTotal',
@@ -62,6 +65,7 @@ export const columns: ColumnDef<any>[] = [
       const formattedAmount = `$${amount.toFixed(0)}`
       return <div className='text-sm font-medium'>{formattedAmount}</div>
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'status',
@@ -114,6 +118,7 @@ export const columns: ColumnDef<any>[] = [
         </div>
       )
     },
+    enableSorting: false,
   },
   {
     id: 'actions',

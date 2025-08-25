@@ -1,17 +1,12 @@
 import { useNavigate } from "@tanstack/react-router";
-import { IconEdit, IconEye } from "@tabler/icons-react";
-
+import { IconEdit} from "@tabler/icons-react";
 import CustomTooltip from "@/components/shared/custom-tooltip";
 import { useRolesStore } from "../store/roles.store";
 import { Button } from "@/components/ui/button";
 
 export function DataTableRowActions({ row }: any) {
-  const { setOpen, setCurrentRow } = useRolesStore();
-  const navigate = useNavigate();
-  const handleViewPermissions = (row: any) => {
-    setOpen("viewPermissions");
-    setCurrentRow(row.original);
-  };
+  const { setCurrentRow } = useRolesStore();
+  const navigate = useNavigate()
 
   const handleEditRole = (row: any) => {
     setCurrentRow(row.original);
@@ -23,15 +18,6 @@ export function DataTableRowActions({ row }: any) {
 
   return (
     <div className="flex items-center space-x-2">
-      <CustomTooltip title="View Permissions">
-        <Button
-          variant="outline"
-          onClick={() => handleViewPermissions(row)}
-          className="h-8 w-8 p-0"
-        >
-          <IconEye size={16} />
-        </Button>
-      </CustomTooltip>
       <CustomTooltip title="Edit Role">
         <Button
           variant="outline"

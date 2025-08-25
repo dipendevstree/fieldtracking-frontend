@@ -17,6 +17,7 @@ export const getExpenseLimitColumns = (
     cell: ({ row }) => (
       <div className="font-medium">{row.original.designation}</div>
     ),
+    enableSorting: false,
   },
   {
     accessorKey: 'dailyLimit',
@@ -29,6 +30,7 @@ export const getExpenseLimitColumns = (
     meta: {
       className: 'text',
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'monthlyLimit',
@@ -41,6 +43,7 @@ export const getExpenseLimitColumns = (
     meta: {
       className: 'text',
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'travelLimit',
@@ -53,6 +56,7 @@ export const getExpenseLimitColumns = (
     meta: {
       className: 'text',
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'isActive',
@@ -64,6 +68,7 @@ export const getExpenseLimitColumns = (
         {row.original.isActive ? 'Active' : 'Inactive'}
       </Badge>
     ),
+    enableSorting: false,
   },
   {
     id: 'actions',
@@ -100,6 +105,7 @@ export const getExpenseLimitColumns = (
         </div>
       </div>
     ),
+    enableSorting: false,
   },
 ]
 
@@ -116,6 +122,7 @@ export const getLocationAdjustmentColumns = (
     cell: ({ row }) => (
       <div className="capitalize">{row.original.locationType}</div>
     ),
+    enableSorting: false,
   },
   {
     accessorKey: 'adjustmentPercentage',

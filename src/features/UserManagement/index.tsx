@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,12 @@ import { UsersActionModal } from "./components/action-form-modal";
 import AllUsersTable from "./components/table";
 import { useGetAllUsers } from "./services/AllUsers.hook";
 import { useUsersStore } from "./store/users.store";
+import { useGetAllTerritoriesForDropdown } from "../userterritory/services/user-territory.hook";
+import { useGetAllRolesForDropdown } from "./services/Roles.hook";
+import { useSelectOptions } from "@/hooks/use-select-option";
+import { FilterConfig } from "@/components/global-filter-section";
+import GlobalFilterSection from "@/components/global-table-filter-section";
+import debounce from "lodash.debounce";
 
 const AllUsers = () => {
   const [pagination, setPagination] = useState({
@@ -17,20 +23,92 @@ const AllUsers = () => {
     limit: DEFAULT_PAGE_SIZE,
   });
 
+  const { filters, setFilters, setOpen, open } = useUsersStore();
+
+  // Query parameters including filters
+  const queryParams = useMemo(
+    () => ({
+      ...pagination,
+      searchFor: filters.search || "",
+      roleId: filters.roleId || "",
+      territoryId: filters.territoryId || "",
+    }),
+    [pagination, filters]
+  );
+
   // Organizations data
   const {
     totalCount = 0,
     allUsers = [],
     isLoading,
     error,
-  } = useGetAllUsers(pagination);
+  } = useGetAllUsers(queryParams);
+
+  // Get filter options
+  const { data: territoryList = [] } = useGetAllTerritoriesForDropdown();
+  const { data: roleList = [] } = useGetAllRolesForDropdown();
+
+  const territoryOptions = useSelectOptions({
+    listData: territoryList ?? [],
+    labelKey: "name",
+    valueKey: "id",
+  }).map((option) => ({
+    ...option,
+    value: String(option.value),
+  }));
+
+  const roleOptions = useSelectOptions({
+    listData: roleList ?? [],
+    labelKey: "roleName",
+    valueKey: "roleId",
+  }).map((option) => ({
+    ...option,
+    value: String(option.value),
+  }));
+
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      setFilters({ search: value });
+    }, 800),
+    []
+  );
+
+  const handleGlobalSearchChange = (value: string | undefined) => {
+    const searchValue = value ?? "";
+    debouncedSearch(searchValue);
+  };
+
+  const filtersConfig: FilterConfig[] = [
+    {
+      key: "search",
+      type: "search",
+      placeholder: "Search users...",
+      value: filters.search,
+      onChange: handleGlobalSearchChange,
+    },
+    {
+      key: "territoryId",
+      type: "select",
+      placeholder: "Territory",
+      value: filters.territoryId,
+      onChange: (value) => setFilters({ territoryId: value ?? "" }),
+      options: territoryOptions,
+    },
+    {
+      key: "roleId",
+      type: "select",
+      placeholder: "Role",
+      value: filters.roleId,
+      onChange: (value) => setFilters({ roleId: value ?? "" }),
+      options: roleOptions,
+    },
+  ];
 
   // User status counts
   // const { userStatusCounts, totalOrganizations } = useUserStatusCounts() || {
   //   userStatusCounts: {},
   // }
 
-  const { setOpen, open } = useUsersStore();
   const {} = useRouter();
 
   if (error) {
@@ -131,13 +209,22 @@ const AllUsers = () => {
         modulePermission="all_users"
         moduleAction="add"
       >
-        <AllUsersTable
-          data={allUsers}
-          totalCount={totalCount}
-          loading={isLoading}
-          currentPage={pagination.page}
-          paginationCallbacks={{ onPaginationChange }}
-        />
+        <div className="space-y-4">
+          {/* Filter Section */}
+          <GlobalFilterSection
+            key="user-management-filters"
+            filters={filtersConfig}
+          />
+          
+          {/* Table */}
+          <AllUsersTable
+            data={allUsers}
+            totalCount={totalCount}
+            loading={isLoading}
+            currentPage={pagination.page}
+            paginationCallbacks={{ onPaginationChange }}
+          />
+        </div>
       </TablePageLayout>
 
       {open && <UsersActionModal key={"users-action-modal"} />}
