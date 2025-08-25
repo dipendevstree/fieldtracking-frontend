@@ -72,7 +72,7 @@ export function ExpenseDetailsSideCard({
         (isLumpSum ? b.travelLumpSumId === id : b.travelRouteId === id)
     );
 
-  const getingButtonText = (item: any) => {
+  const gettingButtonText = (item: any) => {
     const REASON_BELOW = "Lower-level reviewers must review before you.";
     const REASON_MISMATCH = "This expense does not match your approval level.";
 
@@ -93,8 +93,13 @@ export function ExpenseDetailsSideCard({
     // 🟢 Case 1: No levels → only default approver
     if (!levels.length) {
       // If you have a "system default approver" (like AdminId)
-      if (me === currentUser?.organization?.defaultExpensesApprovalUserId)
+      const firstLevelUserId = [...(dailyExpanse?.expensesLevels || [])].sort(
+        (a, b) => a.level - b.level
+      )[0]?.userId;
+
+      if (me === firstLevelUserId) {
         return { ...base, buttonText: "Approve", status: "approved" };
+      }
 
       return { ...base, isDisable: true, reason: REASON_MISMATCH };
     }
@@ -173,7 +178,7 @@ export function ExpenseDetailsSideCard({
           ? (item as TravelLumpSum).travelLumpSumId
           : (item as TravelRoute).travelRouteId;
         const myReview = getReviewAndApproval(id);
-        const resultObj = getingButtonText(item);
+        const resultObj = gettingButtonText(item);
         return (
           <Card key={id} className="border shadow-sm mb-4">
             <CardHeader>
