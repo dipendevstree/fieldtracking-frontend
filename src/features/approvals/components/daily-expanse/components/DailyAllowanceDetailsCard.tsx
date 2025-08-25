@@ -17,6 +17,7 @@ export function DailyAllowanceDetailsCard({
   isApprovalLevel,
   dailyExpanse,
   onExpenseReviewAndApproval,
+  onUpdateExpanseDetails,
 }: DailyAllowanseDetailsProps) {
   const { user: currentUser } = useAuthStore();
   const [comments, setComments] = useState<Record<string, string>>({});
@@ -61,7 +62,18 @@ export function DailyAllowanceDetailsCard({
     );
 
   const isButtonDisabled = (id: string) => {
+    if (dailyExpanse?.status === "draft") return true;
     if (dailyExpanse?.getThisUserLevel === "defult") return false;
+
+    // Check if any level has rejected this specific allowance detail
+    const isRejectedByAnyLevel = dailyExpanse?.expenseReviewAndApproval.some(
+      (review: any) =>
+        review.status === "rejected" && review.dailyAllowanceDetailsId === id
+    );
+
+    if (isRejectedByAnyLevel) {
+      return true;
+    }
 
     const defaultApproval = dailyExpanse?.expenseReviewAndApproval.find(
       (b: any) =>
@@ -99,8 +111,16 @@ export function DailyAllowanceDetailsCard({
     });
   };
 
-  const handleUpdateReview = (item: any) => {
-    console.log("update review", item);
+  const handleUpdateReview = (
+    id: string,
+    status: "approved" | "rejected" | "reviewed",
+    commentId: string
+  ) => {
+    onUpdateExpanseDetails({
+      id,
+      status,
+      comment: comments[commentId],
+    });
   };
 
   return (
@@ -187,13 +207,53 @@ export function DailyAllowanceDetailsCard({
                     />
 
                     {myReview ? (
-                      <Button
-                        className="bg-green-600 text-white hover:bg-green-700 w-full"
-                        onClick={() => handleUpdateReview(myReview)}
-                      >
-                        Update Review
-                      </Button>
+                      myReview.status === "rejected" ? (
+                        // If rejected → keep showing Review + Reject
+                        <div className="grid w-full grid-cols-2 gap-2">
+                          <Button
+                            className="bg-green-600 text-white hover:bg-green-700"
+                            disabled={isDisabled}
+                            onClick={() =>
+                              handleUpdateReview(
+                                myReview.id,
+                                "reviewed",
+                                detail.id
+                              )
+                            }
+                          >
+                            Review Expense
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            disabled={isDisabled}
+                            onClick={() =>
+                              handleUpdateReview(
+                                myReview.id,
+                                "rejected",
+                                detail.id
+                              )
+                            }
+                          >
+                            Reject Expense
+                          </Button>
+                        </div>
+                      ) : (
+                        // If reviewed/approved → only Update Review
+                        <Button
+                          className="bg-green-600 text-white hover:bg-green-700 w-full"
+                          onClick={() =>
+                            handleUpdateReview(
+                              myReview.id,
+                              myReview.status,
+                              detail.id
+                            )
+                          }
+                        >
+                          Update Review
+                        </Button>
+                      )
                     ) : (
+                      // Initial state → Review/Approve + Reject
                       <div className="grid w-full grid-cols-2 gap-2">
                         <Button
                           className="bg-green-600 text-white hover:bg-green-700"

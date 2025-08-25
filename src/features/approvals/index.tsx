@@ -8,7 +8,7 @@ import { Main } from "@/components/layout/main";
 import CategoryExpanses from "./components/category/expenses-category";
 import DailyExpenses from "./components/daily-expanse/daily-expenses";
 import MonthlyExpenses from "./components/monthly-expanse/monthly-expenses";
-import ReportsAnalytics from "./components/Reports-&-Analytics/reports-&-analytics";
+// import ReportsAnalytics from "./components/Reports-&-Analytics/reports-&-analytics";
 
 export type ApprovalsTabValue =
   | "/approvals/daily-expense"
@@ -58,9 +58,9 @@ export default function ExpenseApprovalsPage() {
         <TabsContent value="/approvals/expense-category" className="space-y-4">
           <CategoryExpanses />
         </TabsContent>
-        <TabsContent value='/approvals/reports-analytics' className='space-y-4'>
+        {/* <TabsContent value='/approvals/reports-analytics' className='space-y-4'>
           <ReportsAnalytics />
-        </TabsContent> 
+        </TabsContent>  */}
       </Tabs>
     </Main>
   );

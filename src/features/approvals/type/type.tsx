@@ -45,6 +45,11 @@ export type TravelExpanseDetailsProps = {
     status: "approved" | "reviewed" | "rejected";
     comment: string;
   }) => void;
+  onUpdateExpanseDetails: (payload: {
+    id: string;
+    status: "approved" | "reviewed" | "rejected";
+    comment: string;
+  }) => void;
 };
 
 export type DailyAllowance = {
@@ -109,8 +114,13 @@ export type DailyAllowanseDetailsProps = {
   isApprovalLevel?: boolean;
   dailyExpanse: any;
   onExpenseReviewAndApproval: (payload: {
-    dailyAllowanceId:string;
+    dailyAllowanceId: string;
     dailyAllowanceDetailsId: string;
+    status: "approved" | "reviewed" | "rejected";
+    comment: string;
+  }) => void;
+  onUpdateExpanseDetails: (payload: {
+    id: string;
     status: "approved" | "reviewed" | "rejected";
     comment: string;
   }) => void;
