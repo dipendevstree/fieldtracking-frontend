@@ -17,6 +17,7 @@ export const getExpenseLimitColumns = (
     cell: ({ row }) => (
       <div className="font-medium">{row.original.designation}</div>
     ),
+    enableSorting: false,
   },
   {
     accessorKey: 'dailyLimit',
@@ -24,11 +25,12 @@ export const getExpenseLimitColumns = (
       <CustomDataTableColumnHeader column={column} title='Daily Limit' />
     ),
     cell: ({ row }) => (
-      <div className="text-right">${row.original.dailyLimit.toLocaleString()}</div>
+      <div className="text">${row.original.dailyLimit.toLocaleString()}</div>
     ),
     meta: {
-      className: 'text-right',
+      className: 'text',
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'monthlyLimit',
@@ -36,11 +38,12 @@ export const getExpenseLimitColumns = (
       <CustomDataTableColumnHeader column={column} title='Monthly Limit' />
     ),
     cell: ({ row }) => (
-      <div className="text-right">${row.original.monthlyLimit.toLocaleString()}</div>
+      <div className="text">${row.original.monthlyLimit.toLocaleString()}</div>
     ),
     meta: {
-      className: 'text-right',
+      className: 'text',
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'travelLimit',
@@ -48,11 +51,12 @@ export const getExpenseLimitColumns = (
       <CustomDataTableColumnHeader column={column} title='Travel Limit' />
     ),
     cell: ({ row }) => (
-      <div className="text-right">${row.original.travelLimit}/mile</div>
+        <div className="text">${row.original.travelLimit}/mile</div>
     ),
     meta: {
-      className: 'text-right',
+      className: 'text',
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'isActive',
@@ -64,6 +68,7 @@ export const getExpenseLimitColumns = (
         {row.original.isActive ? 'Active' : 'Inactive'}
       </Badge>
     ),
+    enableSorting: false,
   },
   {
     id: 'actions',
@@ -100,6 +105,7 @@ export const getExpenseLimitColumns = (
         </div>
       </div>
     ),
+    enableSorting: false,
   },
 ]
 
@@ -116,6 +122,7 @@ export const getLocationAdjustmentColumns = (
     cell: ({ row }) => (
       <div className="capitalize">{row.original.locationType}</div>
     ),
+    enableSorting: false,
   },
   {
     accessorKey: 'adjustmentPercentage',
@@ -123,12 +130,12 @@ export const getLocationAdjustmentColumns = (
       <CustomDataTableColumnHeader column={column} title='Adjustment %' />
     ),
     cell: ({ row }) => (
-      <div className={`text-right ${row.original.adjustmentPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+      <div className={`text ${row.original.adjustmentPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
         {row.original.adjustmentPercentage >= 0 ? '+' : ''}{row.original.adjustmentPercentage}%
       </div>
     ),
     meta: {
-      className: 'text-right',
+      className: 'text',
     },
   },
   {

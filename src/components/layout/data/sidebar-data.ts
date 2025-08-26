@@ -111,11 +111,6 @@ export const sidebarData: SidebarData = {
               menuKey: "visits_reports",
             },
             {
-              title: "Task Assignment",
-              url: "/calendar/task-assignment",
-              menuKey: "task_assignment",
-            },
-            {
               title: "Analytics",
               url: "/calendar/analytics",
               menuKey: "analytic",
@@ -139,7 +134,7 @@ export const sidebarData: SidebarData = {
             },
             {
               title: "Reports & Analytics",
-              url: "/",
+              url: "/approvals/reports-analytics",
               menuKey: "reports_analytics",
             },
           ],

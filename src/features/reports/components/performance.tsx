@@ -29,12 +29,15 @@ import { useSalesReps, useReportGeneration } from '../hooks/use-reports-api';
 import { reportsAPI, type ReportFilter } from '../services/reports-api';
 import { DateRangeFilter } from './DateRangeFilter';
 import { DateRange } from 'react-day-picker';
+import ReportsHead from './ReportsHead';
+import { CustomDataTable } from '@/components/shared/custom-data-table';
+import { SimpleBarChart } from './SimpleBarChart';
 
-
-interface QuickStatsData1 {
-  weeklyExpense: string;
-  topSpenders: string;
-  pendingApprovals: string;
+interface FeedbackReportData {
+  salesRep: string;
+  feedback: string;
+  date: string;
+  productivity: string;
 }
 
 interface QuickStatsData2 {
@@ -43,12 +46,12 @@ interface QuickStatsData2 {
   topFeedback: string;
 }
 
-
 // Sample data for Quick Stats sections
-const quickStatsData1: QuickStatsData1[] = [
-  { weeklyExpense: "Kristin Watson", topSpenders: "Wade Warren", pendingApprovals: "Dianne Russell" },
-  { weeklyExpense: "Floyd Miles", topSpenders: "Albert Flores", pendingApprovals: "Ronald Richards" },
-  { weeklyExpense: "Eleanor Pena", topSpenders: "Courtney Henry", pendingApprovals: "Jerome Bell" }
+const feedbackReportData: FeedbackReportData[] = [
+  { salesRep: "Kristin Watson", feedback: "Wade Warren", date: "12-02-2025", productivity: "100%" },
+  { salesRep: "Floyd Miles", feedback: "Albert Flores", date: "01-05-2025", productivity: "100%" },
+  { salesRep: "Eleanor Pena", feedback: "Courtney Henry", date: "21-09-2025", productivity: "100%" },
+  { salesRep: "Eleanor Pena", feedback: "Courtney Henry", date: "21-09-2025", productivity: "100%" },
 ];
 
 const quickStatsData2: QuickStatsData2[] = [
@@ -58,7 +61,6 @@ const quickStatsData2: QuickStatsData2[] = [
 ];
 
 export default function PerformanceReportGenerator() {
-  // Define filters interface following the same pattern as all-reports.tsx
   interface Filters {
     dateRange?: DateRange;
     salesRep: string;
@@ -88,23 +90,30 @@ export default function PerformanceReportGenerator() {
     salesRep: filters.salesRep || undefined,
   }), [filters.dateRange?.from, filters.dateRange?.to, filters.salesRep]);
 
- 
-  // Quick Stats 1 columns
-  const quickStats1Columns = useMemo<ColumnDef<QuickStatsData1>[]>(() => [
+  const feedbackReportColumns = useMemo<ColumnDef<FeedbackReportData>[]>(() => [
     {
-      accessorKey: 'weeklyExpense',
-      header: () => <span className="font-medium text-gray-600">Weekly Expense Summary</span>,
-      cell: ({ row }) => <span className="text-sm">{row.getValue('weeklyExpense')}</span>,
+      accessorKey: 'salesRep',
+      header: () => <span className="font-medium text-gray-600">Sales Rep</span>,
+      cell: ({ row }) => <span className="text-sm">{row.getValue('salesRep')}</span>,
+      enableSorting: false,
     },
     {
-      accessorKey: 'topSpenders',
-      header: () => <span className="font-medium text-gray-600">Top Spenders Report</span>,
-      cell: ({ row }) => <span className="text-sm">{row.getValue('topSpenders')}</span>,
+      accessorKey: 'feedback',
+      header: () => <span className="font-medium text-gray-600">Feedback Report</span>,
+      cell: ({ row }) => <span className="text-sm">{row.getValue('feedback')}</span>,
+      enableSorting: false,
     },
     {
-      accessorKey: 'pendingApprovals',
-      header: () => <span className="font-medium text-gray-600">Pending Approvals Report</span>,
-      cell: ({ row }) => <span className="text-sm">{row.getValue('pendingApprovals')}</span>,
+      accessorKey: 'date',
+      header: () => <span className="font-medium text-gray-600">Date</span>,
+      cell: ({ row }) => <span className="text-sm">{row.getValue('date')}</span>,
+      enableSorting: false,
+    },
+    {
+      accessorKey: 'productivity', // <-- FIXED: must match data property
+      header: () => <span className="font-medium text-gray-600">Productivity Report</span>,
+      cell: ({ row }) => <span className="text-sm">{row.getValue('productivity')}</span>,
+      enableSorting: false,
     },
   ], []);
 
@@ -126,14 +135,6 @@ export default function PerformanceReportGenerator() {
       cell: ({ row }) => <span className="text-sm">{row.getValue('topFeedback')}</span>,
     },
   ], []);
-
-
-
-  const quickStats1Table = useReactTable<QuickStatsData1>({
-    data: quickStatsData1,
-    columns: quickStats1Columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
 
   const quickStats2Table = useReactTable<QuickStatsData2>({
     data: quickStatsData2,
@@ -198,38 +199,6 @@ export default function PerformanceReportGenerator() {
               label="Date Range"
               setDateRange={(range) => handleFilterChange({ dateRange: range })}
             />
-            {/* <div className="space-y-2">
-              <Label htmlFor="date-range">Date Range</Label>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="relative">
-                  <Input 
-                    id="start-date"
-                    type="date" 
-                    placeholder="Start date"
-                    value={filters.dateRange?.from ? new Date(filters.dateRange.from).toISOString().split('T')[0] : ''}
-                    onChange={(e) => {
-                      const from = e.target.value ? new Date(e.target.value) : undefined;
-                      const to = filters.dateRange?.to;
-                      handleFilterChange({ dateRange: { from, to } });
-                    }}
-                  />
-                </div>
-                <div className="relative">
-                  <Input 
-                    id="end-date"
-                    type="date" 
-                    placeholder="End date"
-                    value={filters.dateRange?.to ? new Date(filters.dateRange.to).toISOString().split('T')[0] : ''}
-                    onChange={(e) => {
-                      const from = filters.dateRange?.from;
-                      const to = e.target.value ? new Date(e.target.value) : undefined;
-                      handleFilterChange({ dateRange: { from, to } });
-                    }}
-                  />
-                </div>
-              </div>
-            </div> */}
-
             <div className="space-y-2">
               <Label htmlFor="sales-rep">Sales Rep</Label>
               <Select value={filters.salesRep} onValueChange={(value) => handleFilterChange({ salesRep: value })}>
@@ -265,55 +234,40 @@ export default function PerformanceReportGenerator() {
         </CardContent>
       </Card>
 
-        {/* Quick Stats - First Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Stats</CardTitle>
-            <CardDescription>Expense report from 1 may to 2025</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                {quickStats1Table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id} className="py-3">
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {quickStats1Table.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} className="hover:bg-gray-50">
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="py-4">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-            </div>
-          </CardContent>
-        </Card>
+      <Card className="p-6 mt-6">
+        <ReportsHead
+          title="Feedback Reports"
+          subtitle="Expense report from 1 May to 2025"
+        />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-8">
+            {salesRepsLoading ? (
+              <div className="flex items-center justify-center h-48">
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <span className="ml-2">Loading reports...</span>
+              </div>
+            ) : (
+              <CustomDataTable
+                data={feedbackReportData}
+                columns={feedbackReportColumns as ColumnDef<unknown>[]}
+                totalCount={salesReps.length}
+              />
+            )}
+          </div>
+          <div className="lg:col-span-4">
+            <SimpleBarChart />
+          </div>
+        </div>
+      </Card>
 
-        {/* Quick Stats - Second Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Quick Stats</CardTitle>
-            <CardDescription>Expense report from 1 may to 2025</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
+      {/* Quick Stats */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Stats</CardTitle>
+          <CardDescription>Expense report from 1 may to 2025</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 {quickStats2Table.getHeaderGroups().map((headerGroup) => (
@@ -343,9 +297,9 @@ export default function PerformanceReportGenerator() {
                 ))}
               </TableBody>
             </Table>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

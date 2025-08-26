@@ -4,7 +4,7 @@ import { DataTableRowActions } from './roles-table-action-button'
 
 export const columns: ColumnDef<any>[] = [
   {
-    accessorKey: 'roleName',
+    accessorKey: 'roleId',
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title='Role Name' />
     ),
@@ -13,6 +13,7 @@ export const columns: ColumnDef<any>[] = [
       return <div className='text-sm font-medium'>{roleName}</div>
     },
     enableHiding: false,
+    enableSorting: false,
   },
   {
     accessorKey: 'users',
@@ -25,6 +26,7 @@ export const columns: ColumnDef<any>[] = [
         (Array.isArray(row.original.users) ? row.original.users.length : 0)
       return <div className='text-sm'>{usersCount} users</div>
     },
+    enableSorting: false,
   },
   {
     id: 'actions',
@@ -32,5 +34,6 @@ export const columns: ColumnDef<any>[] = [
       <CustomDataTableColumnHeader column={column} title='Action' />
     ),
     cell: ({ row }) => <DataTableRowActions row={row} />,
+    enableSorting: false,
   },
 ]

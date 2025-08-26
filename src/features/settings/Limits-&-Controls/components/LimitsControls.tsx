@@ -21,7 +21,7 @@ export default function LimitsControls({
   totalCount,
   paginationCallbacks,
   currentPage,
-  onSearchChange
+  onSearchChange,
 }: LimitsControlsProps) {
   const { setOpen, setCurrentLimit } = useLimitsControlsStore()
 
@@ -47,6 +47,7 @@ export default function LimitsControls({
 
   return (
     <div className="space-y-6">
+      
       {/* Search and Add Button Row */}
       <div className="flex items-center justify-between">
         <div className="relative flex-1 max-w-md">

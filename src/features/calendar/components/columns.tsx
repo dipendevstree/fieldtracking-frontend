@@ -19,6 +19,7 @@ export const columns: ColumnDef<any>[] = [
       return <div className='text-sm font-medium'>{territory}</div>
     },
     enableHiding: false,
+    enableSorting: false,
   },
   {
     accessorKey: 'Customer',
@@ -29,6 +30,7 @@ export const columns: ColumnDef<any>[] = [
       const companyName = row.original.customer?.companyName || ''
       return <div className='text-muted-foreground text-sm'>{companyName}</div>
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'date',
@@ -48,6 +50,7 @@ export const columns: ColumnDef<any>[] = [
       const dateAndTime = `${formattedDate} ${time}`.trim() || '-'
       return <div className='text-muted-foreground text-sm'>{dateAndTime}</div>
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'purpose',
@@ -58,6 +61,7 @@ export const columns: ColumnDef<any>[] = [
       const purpose = row.original.purpose || ''
       return <div className='text-muted-foreground text-sm'>{purpose}</div>
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'location',
@@ -76,6 +80,7 @@ export const columns: ColumnDef<any>[] = [
         </div>
       )
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'status',
@@ -86,6 +91,7 @@ export const columns: ColumnDef<any>[] = [
       const status = row.original.status || ''
       return <div className='text-muted-foreground text-sm'>{status}</div>
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'Priority',
@@ -96,6 +102,7 @@ export const columns: ColumnDef<any>[] = [
       const priority = row.original.priority || ''
       return <div className='text-muted-foreground text-sm'>{priority}</div>
     },
+    enableSorting: false,
   },
   {
     id: 'actions',
@@ -103,5 +110,6 @@ export const columns: ColumnDef<any>[] = [
       <CustomDataTableColumnHeader column={column} title='Action' />
     ),
     cell: ({ row }) => <DataTableRowActions row={row} />,
+    enableSorting: false,
   },
 ]
