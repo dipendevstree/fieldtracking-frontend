@@ -101,29 +101,6 @@ export const columns: ColumnDef<any>[] = [
     },
     enableSorting: false,
   },
-
-  // {
-  //   accessorKey: 'lastLogin',
-  //   header: ({ column }) => (
-  //     <CustomDataTableColumnHeader column={column} title='Last Login' />
-  //   ),
-  //   cell: ({ row }) => {
-  //     const lastLogin = row.original.lastLogin || row.original.createdDate
-  //     const formattedDate = lastLogin
-  //       ? new Date(lastLogin).toLocaleDateString('en-US', {
-  //           month: 'numeric',
-  //           day: 'numeric',
-  //           year: 'numeric',
-  //           hour: 'numeric',
-  //           minute: '2-digit',
-  //           hour12: true,
-  //         })
-  //       : '1/16/2024, 3:00:00 PM'
-  //     return (
-  //       <div className='text-muted-foreground text-sm'>{formattedDate}</div>
-  //     )
-  //   },
-  // },
   {
     accessorKey: 'status',
     header: ({ column }) => (

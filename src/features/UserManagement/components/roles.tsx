@@ -31,23 +31,56 @@ const Roles = () => {
   const queryParams = useMemo(
     () => ({
       ...pagination,
-      searchFor: filters.search || "",
+      search: filters.search || "", // Try 'search' instead of 'searchFor'
       roleId: filters.roleId || "",
     }),
-    [pagination, filters.search, filters.roleId]
+    [pagination, filters]
   );
 
-  useEffect(() => {
-    console.log("Search query params:", queryParams);
-  }, [queryParams]);
+  // Debug: Log query parameters when they change
+  console.log("Roles search query params:", queryParams);
 
-  // Organizations data
   const {
     totalCount = 0,
     allRoles = [],
     isLoading,
     error,
   } = useGetAllRoles(queryParams);
+
+  // Debug: Log the API response
+  console.log("API Response - allRoles:", allRoles);
+  console.log("API Response - totalCount:", totalCount);
+
+  // Client-side filtering as fallback if API doesn't support filtering
+  const filteredRoles = useMemo(() => {
+    if (!filters.search && !filters.roleId) {
+      return allRoles;
+    }
+
+    return allRoles.filter((role: any) => {
+      const matchesSearch = !filters.search || 
+        role.roleName?.toLowerCase().includes(filters.search.toLowerCase()) ||
+        role.name?.toLowerCase().includes(filters.search.toLowerCase());
+      
+      const matchesRoleId = !filters.roleId || 
+        String(role.roleId) === filters.roleId ||
+        String(role.id) === filters.roleId;
+
+      return matchesSearch && matchesRoleId;
+    });
+  }, [allRoles, filters.search, filters.roleId]);
+
+  const displayRoles = filteredRoles;
+  const displayTotalCount = filteredRoles.length;
+
+  // Debug: Log filtering results
+  console.log("Filtering results:", {
+    originalCount: allRoles.length,
+    filteredCount: filteredRoles.length,
+    searchFilter: filters.search,
+    roleIdFilter: filters.roleId,
+    filteredRoles: filteredRoles
+  });
 
   // Get filter options
   const { data: roleList = [] } = useGetAllRolesForDropdown();
@@ -61,24 +94,34 @@ const Roles = () => {
     value: String(option.value),
   }));
 
+  // Debug: Log filter options
+  console.log("Role filter options:", roleOptions);
+
   const debouncedSearch = useCallback(
     debounce((value: string) => {
-      setPagination((prev) => ({ ...prev, searchFor: value }));
+      setFilters({ search: value });
+      setPagination(prev => ({ ...prev, page: DEFAULT_PAGE_NUMBER })); // Reset to first page when searching
     }, 800),
     []
   );
 
   const handleGlobalSearchChange = (value: string | undefined) => {
     const searchValue = value ?? "";
+    console.log("Search value changed to:", searchValue);
     debouncedSearch(searchValue);
   };
 
   const handleRoleFilterChange = (value: string | undefined) => {
-    setFilters({ roleId: value ?? "" });
+    const roleId = value ?? "";
+    console.log("Role filter changed to:", roleId);
+    setFilters({ roleId: roleId });
+    setPagination(prev => ({ ...prev, page: DEFAULT_PAGE_NUMBER })); // Reset to first page when filtering
   };
 
   const clearFilters = () => {
+    console.log("Clearing all filters");
     setFilters({ search: "", roleId: "" });
+    setPagination(prev => ({ ...prev, page: DEFAULT_PAGE_NUMBER }));
   };
 
   const filtersConfig: FilterConfig[] = [
@@ -118,14 +161,6 @@ const Roles = () => {
     navigate({ to: "/user-management/add-roles-permission" });
   };
 
-  const handleEditRole = (roleData: any) => {
-    console.log("Edit Role button clicked", roleData);
-    setCurrentRow(roleData);
-    navigate({
-      to: `/user-management/edit-roles-permission/${roleData.roleId}`,
-    });
-  };
-
   const onPaginationChange = (page: number, pageSize: number) => {
     setPagination((prev) => ({ ...prev, page, limit: pageSize }));
   };
@@ -151,12 +186,11 @@ const Roles = () => {
             
             {/* Table */}
             <RolesTable
-              data={allRoles}
-              totalCount={totalCount}
+              data={displayRoles}
+              totalCount={displayTotalCount}
               loading={isLoading}
               currentPage={pagination.page}
               paginationCallbacks={{ onPaginationChange }}
-              onEditRole={handleEditRole}
             />
             
           </div>

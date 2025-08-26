@@ -9,7 +9,8 @@ interface UserTableProps {
   loading?: boolean
   paginationCallbacks: PaginationCallbacks
   currentPage?: number
-  onEditRole?: (roleData: any) => void
+  
+  hideActions?: boolean
 }
 
 const RolesTable = ({
@@ -18,7 +19,12 @@ const RolesTable = ({
   loading,
   paginationCallbacks,
   currentPage,
+  hideActions = false,
 }: UserTableProps) => {
+  const filteredColumns = hideActions
+  ? columns.filter((column) => column.id !== 'actions')
+  : columns
+
   return (
     <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
       <CustomDataTable
@@ -26,7 +32,7 @@ const RolesTable = ({
         loading={loading}
         data={data}
         currentPage={currentPage}
-        columns={columns as ColumnDef<unknown>[]}
+        columns={filteredColumns as ColumnDef<unknown>[]}
         totalCount={totalCount}
         key={'roles'}
       />

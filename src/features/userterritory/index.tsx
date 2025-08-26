@@ -15,34 +15,29 @@ import { useSelectOptions } from '@/hooks/use-select-option'
 import { FilterConfig } from '@/components/global-filter-section'
 import GlobalFilterSection from '@/components/global-table-filter-section'
 import debounce from 'lodash.debounce'
-import { useForm } from 'react-hook-form'
 
 const UserTerritory = () => {
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
-    searchFor: '',
-    territoryId: '',
   })
 
   const { setOpen, open } = useUserTerritoryStore()
 
-  // Use form for filter state like monthly-expenses
-  const { watch, setValue } = useForm({
-    defaultValues: { search: '', territoryId: '' },
+  // Filter state
+  const [filters, setFilters] = useState({
+    search: '',
+    territoryId: '',
   })
-
-  const searchValue = watch('search')
-  const territoryIdValue = watch('territoryId')
 
   // Query parameters including filters
   const queryParams = useMemo(
     () => ({
       ...pagination,
-      searchFor: pagination.searchFor || "",
-      territoryId: pagination.territoryId || "",
+      searchFor: filters.search || "",
+      territoryId: filters.territoryId || "",
     }),
-    [pagination]
+    [pagination, filters]
   )
 
   // Debug: Log query parameters when they change
@@ -56,6 +51,40 @@ const UserTerritory = () => {
     error,
   } = useGetAllTerritories(queryParams)
 
+  // Debug: Log the API response
+  console.log("API Response - allTerritories:", allTerritories);
+  console.log("API Response - totalCount:", totalCount);
+
+  // Client-side filtering as fallback if API doesn't support filtering
+  const filteredTerritories = useMemo(() => {
+    if (!filters.search && !filters.territoryId) {
+      return allTerritories;
+    }
+
+    return allTerritories.filter((territory: any) => {
+      const matchesSearch = !filters.search || 
+        territory.name?.toLowerCase().includes(filters.search.toLowerCase());
+      
+      const matchesTerritoryId = !filters.territoryId || 
+        String(territory.id) === filters.territoryId ||
+        String(territory.territoryId) === filters.territoryId;
+
+      return matchesSearch && matchesTerritoryId;
+    });
+  }, [allTerritories, filters.search, filters.territoryId]);
+
+  const displayTerritories = filteredTerritories;
+  const displayTotalCount = filteredTerritories.length;
+
+  // Debug: Log filtering results
+  console.log("Filtering results:", {
+    originalCount: allTerritories.length,
+    filteredCount: filteredTerritories.length,
+    searchFilter: filters.search,
+    territoryIdFilter: filters.territoryId,
+    filteredTerritories: filteredTerritories
+  });
+
   // Get filter options
   const { data: territoryList = [] } = useGetAllTerritoriesForDropdown();
 
@@ -68,42 +97,34 @@ const UserTerritory = () => {
     value: String(option.value),
   }));
 
+  // Debug: Log filter options
+  console.log("Territory filter options:", territoryOptions);
+
   const debouncedSearch = useCallback(
     debounce((value: string) => {
-      setPagination((prev) => ({
-        ...prev,
-        searchFor: value,
-        page: DEFAULT_PAGE_NUMBER, // Reset to first page when searching
-      }));
+      setFilters(prev => ({ ...prev, search: value }));
+      setPagination(prev => ({ ...prev, page: DEFAULT_PAGE_NUMBER })); // Reset to first page when searching
     }, 800),
     []
   );
 
   const handleGlobalSearchChange = (value: string | undefined) => {
     const searchValue = value ?? "";
-    setValue('search', searchValue);
+    console.log("Search value changed to:", searchValue);
     debouncedSearch(searchValue);
   };
 
   const handleTerritoryFilterChange = (value: string | undefined) => {
     const territoryId = value ?? "";
-    setValue('territoryId', territoryId);
-    setPagination((prev) => ({
-      ...prev,
-      territoryId: territoryId,
-      page: DEFAULT_PAGE_NUMBER, // Reset to first page when filtering
-    }));
+    console.log("Territory filter changed to:", territoryId);
+    setFilters(prev => ({ ...prev, territoryId: territoryId }));
+    setPagination(prev => ({ ...prev, page: DEFAULT_PAGE_NUMBER })); // Reset to first page when filtering
   };
 
   const clearFilters = () => {
-    setValue('search', '');
-    setValue('territoryId', '');
-    setPagination((prev) => ({
-      ...prev,
-      searchFor: '',
-      territoryId: '',
-      page: DEFAULT_PAGE_NUMBER,
-    }));
+    console.log("Clearing all filters");
+    setFilters({ search: "", territoryId: "" });
+    setPagination(prev => ({ ...prev, page: DEFAULT_PAGE_NUMBER }));
   };
 
   const filtersConfig: FilterConfig[] = [
@@ -111,14 +132,14 @@ const UserTerritory = () => {
       key: "search",
       type: "search",
       placeholder: "Search territories...",
-      value: searchValue,
+      value: filters.search,
       onChange: handleGlobalSearchChange,
     },
     {
       key: "territoryId",
       type: "select",
       placeholder: "Territory",
-      value: territoryIdValue,
+      value: filters.territoryId,
       onChange: handleTerritoryFilterChange,
       options: territoryOptions,
     },
@@ -165,8 +186,8 @@ const UserTerritory = () => {
           
           {/* Table */}
           <UserTerritoryTable
-            data={allTerritories}
-            totalCount={totalCount}
+            data={displayTerritories}
+            totalCount={displayTotalCount}
             loading={isLoading}
             currentPage={pagination.page}
             paginationCallbacks={{ onPaginationChange }}
