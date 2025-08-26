@@ -68,7 +68,7 @@ export default function Approvers() {
   );
 
   const { expenseCategories: expenseCategoriesData } =
-    useGetExpenseCategoriesDropDownList();
+    useGetExpenseCategoriesDropDownList({ defaultCategory: true });
   const expenseCategoriesDropDownList = expenseCategoriesData || [];
 
   const methods = useForm<FormValues>({
