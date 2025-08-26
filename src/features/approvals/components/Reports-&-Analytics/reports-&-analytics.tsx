@@ -58,79 +58,77 @@ const dailyExpenses = [
   },
 ]
 
-// Mock data for monthly consolidated expenses
-const monthlyConsolidated = [
-  {
-    repId: 1,
-    repName: "John Smith",
-    repAvatar: "/placeholder.svg?height=40&width=40",
-    dailyExpenses: {
-      travel: 450.75,
-      dailyAllowance: 1200.0,
-      meals: 340.5,
-      other: 125.0,
-    },
-    monthlyExpenses: {
-      trainPass: 150.0,
-      phoneRecharge: 75.0,
-      internetAllowance: 50.0,
-    },
-    totalDaily: 2116.25,
-    totalMonthly: 275.0,
-    netTotal: 2391.25,
-    status: "pending",
-  },
-  {
-    repId: 2,
-    repName: "Sarah Johnson",
-    repAvatar: "/placeholder.svg?height=40&width=40",
-    dailyExpenses: {
-      travel: 380.25,
-      dailyAllowance: 1050.0,
-      meals: 290.75,
-      other: 85.0,
-    },
-    monthlyExpenses: {
-      trainPass: 150.0,
-      phoneRecharge: 75.0,
-      internetAllowance: 50.0,
-    },
-    totalDaily: 1806.0,
-    totalMonthly: 275.0,
-    netTotal: 2081.0,
-    status: "approved",
-  },
-  {
-    repId: 3,
-    repName: "Mike Wilson",
-    repAvatar: "/placeholder.svg?height=40&width=40",
-    dailyExpenses: {
-      travel: 520.5,
-      dailyAllowance: 1350.0,
-      meals: 425.25,
-      other: 165.0,
-    },
-    monthlyExpenses: {
-      trainPass: 150.0,
-      phoneRecharge: 75.0,
-      internetAllowance: 50.0,
-    },
-    totalDaily: 2460.75,
-    totalMonthly: 275.0,
-    netTotal: 2735.75,
-    status: "pending",
-  },
-]
+// // Mock data for monthly consolidated expenses
+// const monthlyConsolidated = [
+//   {
+//     repId: 1,
+//     repName: "John Smith",
+//     repAvatar: "/placeholder.svg?height=40&width=40",
+//     dailyExpenses: {
+//       travel: 450.75,
+//       dailyAllowance: 1200.0,
+//       meals: 340.5,
+//       other: 125.0,
+//     },
+//     monthlyExpenses: {
+//       trainPass: 150.0,
+//       phoneRecharge: 75.0,
+//       internetAllowance: 50.0,
+//     },
+//     totalDaily: 2116.25,
+//     totalMonthly: 275.0,
+//     netTotal: 2391.25,
+//     status: "pending",
+//   },
+//   {
+//     repId: 2,
+//     repName: "Sarah Johnson",
+//     repAvatar: "/placeholder.svg?height=40&width=40",
+//     dailyExpenses: {
+//       travel: 380.25,
+//       dailyAllowance: 1050.0,
+//       meals: 290.75,
+//       other: 85.0,
+//     },
+//     monthlyExpenses: {
+//       trainPass: 150.0,
+//       phoneRecharge: 75.0,
+//       internetAllowance: 50.0,
+//     },
+//     totalDaily: 1806.0,
+//     totalMonthly: 275.0,
+//     netTotal: 2081.0,
+//     status: "approved",
+//   },
+//   {
+//     repId: 3,
+//     repName: "Mike Wilson",
+//     repAvatar: "/placeholder.svg?height=40&width=40",
+//     dailyExpenses: {
+//       travel: 520.5,
+//       dailyAllowance: 1350.0,
+//       meals: 425.25,
+//       other: 165.0,
+//     },
+//     monthlyExpenses: {
+//       trainPass: 150.0,
+//       phoneRecharge: 75.0,
+//       internetAllowance: 50.0,
+//     },
+//     totalDaily: 2460.75,
+//     totalMonthly: 275.0,
+//     netTotal: 2735.75,
+//     status: "pending",
+//   },
+// ]
 
 export default function ReportsAnalytics() {
   const handleExportPDF = () => {
     console.log("Exporting to PDF")
-    // Handle PDF export
   }
 
   const handleExportExcel = () => {
     console.log("Exporting to Excel")
-    // Handle Excel export
   }
 
   return (
@@ -185,7 +183,7 @@ export default function ReportsAnalytics() {
               <CardDescription>Overview of expense approval metrics.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+               <div className="space-y-4">
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Pending Approvals</span>
                   <span className="font-medium">{dailyExpenses.filter((e) => e.status === "pending").length}</span>
@@ -204,8 +202,8 @@ export default function ReportsAnalytics() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-muted-foreground">Highest Monthly Total</span>
-                  <span className="font-medium">
-                    ${Math.max(...monthlyConsolidated.map((r) => r.netTotal)).toLocaleString()}
+                    <span className="font-medium">
+                    ${Math.max(...dailyExpenses.map((r) => r.amount)).toLocaleString()}
                   </span>
                 </div>
               </div>

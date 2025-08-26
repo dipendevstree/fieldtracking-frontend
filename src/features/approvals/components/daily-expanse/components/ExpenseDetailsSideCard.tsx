@@ -22,6 +22,7 @@ export function ExpenseDetailsSideCard({
   isApprovalLevel,
   dailyExpanse,
   onExpenseReviewAndApproval,
+  onUpdateExpanseDetails,
 }: TravelExpanseDetailsProps) {
   const isLumpSum = expenseSubType === "travel_lump_sum";
   const entries = isLumpSum ? travelLumpSums : travelRoutes;
@@ -71,71 +72,108 @@ export function ExpenseDetailsSideCard({
         (isLumpSum ? b.travelLumpSumId === id : b.travelRouteId === id)
     );
 
-  const isButtonDisabled = (id: string) => {
-    if (dailyExpanse?.getThisUserLevel === "defult") return false;
+  const getingButtonText = (item: any) => {
+    const REASON_BELOW = "Lower-level reviewers must review before you.";
+    const REASON_MISMATCH = "This expense does not match your approval level.";
 
-    // Check if any level has rejected this specific item
-    const isRejectedByAnyLevel = dailyExpanse?.expenseReviewAndApproval.some(
-      (review: any) =>
-        review.status === "rejected" &&
-        (isLumpSum
-          ? review.travelLumpSumId === id
-          : review.travelRouteId === id)
-    );
+    const base = {
+      buttonText: "Review",
+      isDisable: false,
+      reason: "",
+      status: "reviewed" as "reviewed" | "approved",
+    };
 
-    // If any level has rejected, disable the button
-    if (isRejectedByAnyLevel) {
-      return true;
-    }
-
-    const defaultApproval = dailyExpanse?.expenseReviewAndApproval.find(
-      (b: any) =>
-        b.reviewerUserId === dailyExpanse?.defaultApprovalUser?.id &&
-        (isLumpSum ? b.travelLumpSumId === id : b.travelRouteId === id)
-    );
-
-    const belowLevels =
-      dailyExpanse?.expensesLevels?.filter(
-        (f: any) => f?.level < (dailyExpanse?.getThisUserLevel ?? 0)
+    const levels =
+      (dailyExpanse?.expensesLevels || []).filter(
+        (lvl: any) => lvl.expensesCategoryId == item.expensesCategoryId
       ) || [];
 
-    const approvedBelowLevels = belowLevels.filter((level: any) =>
-      dailyExpanse?.expenseReviewAndApproval.some(
-        (b: any) =>
-          b.reviewerUserId === level.userId &&
-          (isLumpSum ? b.travelLumpSumId === id : b.travelRouteId === id)
-      )
+    const me = currentUser?.id;
+
+    // 🟢 Case 1: No levels → only default approver
+    if (!levels.length) {
+      // If you have a "system default approver" (like AdminId)
+      if (me === currentUser?.organization?.defaultExpensesApprovalUserId)
+        return { ...base, buttonText: "Approve", status: "approved" };
+
+      return { ...base, isDisable: true, reason: REASON_MISMATCH };
+    }
+
+    // 🟢 Case 2: Pick level for amount (or fallback to last/highest level)
+    const approvalLevel =
+      levels.find(
+        (lvl: any) =>
+          lvl.minAmount <= item.amount && lvl.maxAmount >= item.amount
+      ) || [...levels].sort((a: any, b: any) => b.level - a.level)[0];
+
+    const myLevel = levels.find((lvl: any) => lvl.userId === me);
+    if (!myLevel) return { ...base, isDisable: true, reason: REASON_MISMATCH };
+
+    const lowerLevels = levels.filter(
+      (lvl: any) => lvl.level < approvalLevel.level
     );
 
-    return !(
-      defaultApproval && approvedBelowLevels.length === belowLevels.length
-    );
+    const allReviewed = (lvls: any[]) =>
+      lvls.every((lvl: any) =>
+        (dailyExpanse?.expenseReviewAndApproval || []).some(
+          (rev: any) =>
+            rev.reviewerUserId === lvl.userId && rev.status === "reviewed"
+        )
+      );
+
+    const buildResult = (isApprover: boolean, blockers: any[]) => {
+      const ready = !blockers.length || allReviewed(blockers);
+      return {
+        buttonText: isApprover ? "Approve" : "Review",
+        status: isApprover ? "approved" : "reviewed",
+        isDisable: !ready,
+        reason: ready ? "" : REASON_BELOW,
+      };
+    };
+
+    // 🟢 Case 3: Approver for this level (or fallback last level)
+    if (approvalLevel.userId === myLevel.userId) {
+      return buildResult(true, lowerLevels);
+    }
+
+    // 🟢 Case 4: Reviewer (lower level)
+    if (lowerLevels.some((lvl: any) => lvl.level === myLevel.level)) {
+      const belowMe = levels.filter((lvl: any) => lvl.level < myLevel.level);
+      return buildResult(false, belowMe);
+    }
+
+    // 🟢 Case 5: Otherwise mismatch
+    return { ...base, isDisable: true, reason: REASON_MISMATCH };
   };
 
-  const handleReviewAction = (
-    id: string,
-    status: "approved" | "rejected" | "reviewed"
-  ) => {
+  const handleReviewAction = (id: string, status: any) => {
     onExpenseReviewAndApproval({
       parentId: id,
-      status: isApprovalLevel && status === "reviewed" ? "approved" : status,
+      status: status,
       comment: comments[id] ?? "",
     });
   };
 
-  const handleUpdateReview = (item: any) => {
-    console.log("items", item);
+  const handleUpdateReview = (
+    id: string,
+    status: "approved" | "rejected" | "reviewed",
+    commentId: string
+  ) => {
+    onUpdateExpanseDetails({
+      id,
+      status: isApprovalLevel && status === "reviewed" ? "approved" : status,
+      comment: comments[commentId] ?? "",
+    });
   };
 
   return (
     <ScrollArea className="h-[calc(100vh-12rem)] space-y-4 pr-4">
-      {entries.map((item, idx) => {
+      {entries.map((item: any, idx) => {
         const id = isLumpSum
           ? (item as TravelLumpSum).travelLumpSumId
           : (item as TravelRoute).travelRouteId;
         const myReview = getReviewAndApproval(id);
-        const isDisabled = isButtonDisabled(id);
-
+        const resultObj = getingButtonText(item);
         return (
           <Card key={id} className="border shadow-sm mb-4">
             <CardHeader>
@@ -201,34 +239,67 @@ export function ExpenseDetailsSideCard({
                   onChange={(e) => handleChangeComment(id, e.target.value)}
                 />
                 {myReview ? (
-                  <Button
-                    className="bg-green-600 text-white hover:bg-green-700 w-full"
-                    onClick={() => handleUpdateReview(myReview)}
-                  >
-                    Update Review
-                  </Button>
-                ) : (
-                  <div className="grid w-full grid-cols-2 gap-2">
+                  myReview.status === "rejected" ? (
+                    // If rejected, keep showing Review + Reject
+                    <div className="grid w-full grid-cols-2 gap-2">
+                      <Button
+                        className="bg-green-600 text-white hover:bg-green-700"
+                        disabled={resultObj?.isDisable}
+                        onClick={() =>
+                          handleUpdateReview(myReview.id, "reviewed", id)
+                        }
+                      >
+                        Review Expense
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        disabled={resultObj?.isDisable}
+                        onClick={() =>
+                          handleUpdateReview(myReview.id, "rejected", id)
+                        }
+                      >
+                        Reject Expense
+                      </Button>
+                    </div>
+                  ) : (
+                    // If reviewed/approved, only show Update
                     <Button
-                      className="bg-green-600 text-white hover:bg-green-700"
-                      disabled={isDisabled}
+                      className="bg-green-600 text-white hover:bg-green-700 w-full"
+                      disabled={resultObj?.isDisable}
                       onClick={() =>
-                        handleReviewAction(
-                          id,
-                          isApprovalLevel ? "approved" : "reviewed"
-                        )
+                        handleUpdateReview(myReview.id, myReview.status, id)
                       }
                     >
-                      {isApprovalLevel ? "Approve Expense" : "Review Expense"}
+                      Update Review
                     </Button>
-                    <Button
-                      variant="destructive"
-                      disabled={isDisabled}
-                      onClick={() => handleReviewAction(id, "rejected")}
-                    >
-                      Reject Expense
-                    </Button>
-                  </div>
+                  )
+                ) : (
+                  // Initial state: Review + Reject
+                  <>
+                    {resultObj?.reason != "" && (
+                      <p className="text-red-600">{resultObj.reason}</p>
+                    )}
+                    <div className="grid w-full grid-cols-2 gap-2">
+                      <Button
+                        className="bg-green-600 text-white hover:bg-green-700"
+                        disabled={resultObj?.isDisable}
+                        onClick={() =>
+                          handleReviewAction(id, resultObj?.status)
+                        }
+                      >
+                        {resultObj?.status == "reviewed"
+                          ? "Review Expense"
+                          : "Approve Expense"}
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        disabled={resultObj?.isDisable}
+                        onClick={() => handleReviewAction(id, "rejected")}
+                      >
+                        Reject Expense
+                      </Button>
+                    </div>
+                  </>
                 )}
               </div>
             </CardContent>

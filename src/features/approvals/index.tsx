@@ -52,12 +52,12 @@ export default function ExpenseApprovalsPage() {
         <TabsContent value="/approvals/monthly-consolidated" className="space-y-4">
           <MonthlyExpenses />
         </TabsContent>
-        <TabsContent value='/approvals/reports-analytics' className='space-y-4'>
-          <ReportsAnalytics />
-        </TabsContent> 
         <TabsContent value="/approvals/expense-category" className="space-y-4">
           <CategoryExpanses />
         </TabsContent>
+        <TabsContent value='/approvals/reports-analytics' className='space-y-4'>
+          <ReportsAnalytics />
+        </TabsContent> 
       </Tabs>
     </Main>
   );

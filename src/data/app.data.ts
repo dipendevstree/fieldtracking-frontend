@@ -33,7 +33,6 @@ export enum EXPENSE_TYPE {
 }
 
 export enum EXPENSE_STATUS {
-  DRAFT = "draft",
   PENDING = "pending",
   APPROVED = "approved",
   PARTIALLY_APPROVED = "partially_approved",

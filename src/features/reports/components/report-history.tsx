@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Download, Eye, Search, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react"
+import { Download, Search, ChevronLeft, ChevronRight } from "lucide-react"
 import { DateRangeFilter } from './DateRangeFilter';
 import { DateRange } from 'react-day-picker';
 
