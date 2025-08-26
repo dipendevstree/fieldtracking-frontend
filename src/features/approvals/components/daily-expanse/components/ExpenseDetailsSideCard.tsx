@@ -108,7 +108,8 @@ export function ExpenseDetailsSideCard({
     const approvalLevel =
       levels.find(
         (lvl: any) =>
-          lvl.minAmount <= item.amount && lvl.maxAmount >= item.amount
+          lvl.minAmount <= Number(dailyExpanse?.totalAmount) &&
+          lvl.maxAmount >= Number(dailyExpanse?.totalAmount)
       ) || [...levels].sort((a: any, b: any) => b.level - a.level)[0];
 
     const myLevel = levels.find((lvl: any) => lvl.userId === me);
