@@ -33,9 +33,7 @@ const levelSchema = z.object({
 // Main form schema with advanced cross-level validation
 export const formSchema = z
   .object({
-    defaultApprover: z.string().min(1, "Default approver role is required."),
-    selectedUser: z.string().min(1, "Please select a default user."),
-    levels: z.array(levelSchema),
+    levels: z.array(levelSchema).min(1, "At least one approval level is required."),
   })
   .superRefine((data, ctx) => {
     const categoryTierChains = new Map<string, any[]>();

@@ -3,7 +3,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Detail } from "@/components/ui/detail";
 import { format } from "date-fns";
-import { DailyAllowanseDetailsProps } from "@/features/approvals/type/type";
+import {
+  DailyAllowanseDetailsProps,
+  DailyAllowanceDetail,
+} from "@/features/approvals/type/type";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -14,7 +17,6 @@ import { useEffect, useState } from "react";
 export function DailyAllowanceDetailsCard({
   dailyAllowances = [],
   expenseSubType,
-  isApprovalLevel,
   dailyExpanse,
   onExpenseReviewAndApproval,
   onUpdateExpanseDetails,
@@ -28,7 +30,6 @@ export function DailyAllowanceDetailsCard({
   useEffect(() => {
     if (dailyExpanse?.expenseReviewAndApproval) {
       const initialComments: Record<string, string> = {};
-
       dailyAllowances.forEach((allowance) => {
         allowance.dailyAllowancesDetails?.forEach((detail) => {
           const existingReview = dailyExpanse.expenseReviewAndApproval.find(
@@ -36,13 +37,11 @@ export function DailyAllowanceDetailsCard({
               review.reviewerUserId === currentUser?.id &&
               review.dailyAllowanceDetailsId === detail.id
           );
-
           if (existingReview?.comment) {
             initialComments[detail.id] = existingReview.comment;
           }
         });
       });
-
       setComments(initialComments);
     }
   }, [
@@ -61,41 +60,95 @@ export function DailyAllowanceDetailsCard({
         b.reviewerUserId === currentUser?.id && b.dailyAllowanceDetailsId === id
     );
 
-  const isButtonDisabled = (id: string) => {
-    if (dailyExpanse?.status === "draft") return true;
-    if (dailyExpanse?.getThisUserLevel === "defult") return false;
+  const gettingButtonText = (item: DailyAllowanceDetail) => {
+    const REASON_BELOW = "Lower-level reviewers must review before you.";
+    const REASON_MISMATCH = "This expense does not match your approval level.";
 
-    // Check if any level has rejected this specific allowance detail
-    const isRejectedByAnyLevel = dailyExpanse?.expenseReviewAndApproval.some(
-      (review: any) =>
-        review.status === "rejected" && review.dailyAllowanceDetailsId === id
-    );
+    const base = {
+      buttonText: "Review",
+      isDisable: false,
+      reason: "",
+      status: "reviewed" as "reviewed" | "approved",
+    };
 
-    if (isRejectedByAnyLevel) {
-      return true;
-    }
-
-    const defaultApproval = dailyExpanse?.expenseReviewAndApproval.find(
-      (b: any) =>
-        b.reviewerUserId === dailyExpanse?.defaultApprovalUser?.id &&
-        b.dailyAllowanceDetailsId === id
-    );
-
-    const belowLevels =
-      dailyExpanse?.expensesLevels?.filter(
-        (f: any) => f?.level < (dailyExpanse?.getThisUserLevel ?? 0)
+    // Filter levels specific to the item's category
+    const levels =
+      (dailyExpanse?.expensesLevels || []).filter(
+        (lvl: any) => lvl.expensesCategoryId == item.expensesCategoryId
       ) || [];
 
-    const approvedBelowLevels = belowLevels.filter((level: any) =>
-      dailyExpanse?.expenseReviewAndApproval.some(
-        (b: any) =>
-          b.reviewerUserId === level.userId && b.dailyAllowanceDetailsId === id
-      )
+    const me = currentUser?.id;
+
+    // 🟢 Case 1: No levels → only default approver
+    if (!levels.length) {
+      // If you have a "system default approver" (like AdminId)
+      const firstLevelUserId = [...(dailyExpanse?.expensesLevels || [])].sort(
+        (a, b) => a.level - b.level
+      )[0]?.userId;
+
+      if (me === firstLevelUserId) {
+        return { ...base, buttonText: "Approve", status: "approved" };
+      }
+
+      return { ...base, isDisable: true, reason: REASON_MISMATCH };
+    }
+
+    // Case 2: Determine the required approval level based on the amount
+    const approvalLevel =
+      levels.find(
+        (lvl: any) =>
+          lvl.minAmount <= item.amount && lvl.maxAmount >= item.amount
+      ) || [...levels].sort((a: any, b: any) => b.level - a.level)[0]; // Fallback to the highest level
+
+    const myLevel = levels.find((lvl: any) => lvl.userId === me);
+    if (!myLevel) return { ...base, isDisable: true, reason: REASON_MISMATCH };
+
+    // Find all levels that must review before the target approval level
+    const lowerLevels = levels.filter(
+      (lvl: any) => lvl.level < approvalLevel.level
     );
 
-    return !(
-      defaultApproval && approvedBelowLevels.length === belowLevels.length
-    );
+    // Helper to check if all required reviewers have reviewed THIS SPECIFIC item
+    const allReviewed = (lvls: any[], detailId: string) =>
+      lvls.every((lvl: any) =>
+        (dailyExpanse?.expenseReviewAndApproval || []).some(
+          (rev: any) =>
+            rev.reviewerUserId === lvl.userId &&
+            rev.status === "reviewed" &&
+            rev.dailyAllowanceDetailsId === detailId // Check against specific detail ID
+        )
+      );
+
+    // Helper to build the final result object
+    const buildResult = (
+      isApprover: boolean,
+      blockers: any[],
+      detailId: string
+    ) => {
+      const ready = !blockers.length || allReviewed(blockers, detailId);
+      return {
+        buttonText: isApprover ? "Approve" : "Review",
+        status: (isApprover ? "approved" : "reviewed") as
+          | "approved"
+          | "reviewed",
+        isDisable: !ready,
+        reason: ready ? "" : REASON_BELOW,
+      };
+    };
+
+    // Case 3: Current user IS the designated approver for this amount
+    if (approvalLevel.userId === myLevel.userId) {
+      return buildResult(true, lowerLevels, item.id);
+    }
+
+    // Case 4: Current user is a reviewer (at a level lower than the final approver)
+    if (lowerLevels.some((lvl: any) => lvl.level === myLevel.level)) {
+      const belowMe = levels.filter((lvl: any) => lvl.level < myLevel.level);
+      return buildResult(false, belowMe, item.id);
+    }
+
+    // Case 5: User is in the hierarchy but not the approver or a required reviewer
+    return { ...base, isDisable: true, reason: REASON_MISMATCH };
   };
 
   const handleReviewAction = (
@@ -106,7 +159,7 @@ export function DailyAllowanceDetailsCard({
     onExpenseReviewAndApproval({
       dailyAllowanceId,
       dailyAllowanceDetailsId,
-      status: isApprovalLevel && status === "reviewed" ? "approved" : status,
+      status,
       comment: comments[dailyAllowanceDetailsId] ?? "",
     });
   };
@@ -135,14 +188,13 @@ export function DailyAllowanceDetailsCard({
               {expenseSubType === "daily_outstation"
                 ? `Outstation Day ${i + 1}`
                 : "Daily Allowance"}
-              {/* <StatusBadge status={allowance.status} /> */}
             </CardTitle>
           </CardHeader>
           <Separator />
           <CardContent className="space-y-4 text-sm">
             {allowance.dailyAllowancesDetails?.map((detail) => {
               const myReview = getReviewAndApproval(detail.id);
-              const isDisabled = isButtonDisabled(detail.id);
+              const resultObj = gettingButtonText(detail);
 
               return (
                 <div key={detail.id} className="border p-4 rounded-md mb-4">
@@ -208,11 +260,10 @@ export function DailyAllowanceDetailsCard({
 
                     {myReview ? (
                       myReview.status === "rejected" ? (
-                        // If rejected → keep showing Review + Reject
                         <div className="grid w-full grid-cols-2 gap-2">
                           <Button
                             className="bg-green-600 text-white hover:bg-green-700"
-                            disabled={isDisabled}
+                            disabled={resultObj.isDisable}
                             onClick={() =>
                               handleUpdateReview(
                                 myReview.id,
@@ -225,7 +276,7 @@ export function DailyAllowanceDetailsCard({
                           </Button>
                           <Button
                             variant="destructive"
-                            disabled={isDisabled}
+                            disabled={resultObj.isDisable}
                             onClick={() =>
                               handleUpdateReview(
                                 myReview.id,
@@ -238,7 +289,6 @@ export function DailyAllowanceDetailsCard({
                           </Button>
                         </div>
                       ) : (
-                        // If reviewed/approved → only Update Review
                         <Button
                           className="bg-green-600 text-white hover:bg-green-700 w-full"
                           onClick={() =>
@@ -253,37 +303,41 @@ export function DailyAllowanceDetailsCard({
                         </Button>
                       )
                     ) : (
-                      // Initial state → Review/Approve + Reject
-                      <div className="grid w-full grid-cols-2 gap-2">
-                        <Button
-                          className="bg-green-600 text-white hover:bg-green-700"
-                          disabled={isDisabled}
-                          onClick={() =>
-                            handleReviewAction(
-                              allowance.dailyAllowanceId,
-                              detail.id,
-                              isApprovalLevel ? "approved" : "reviewed"
-                            )
-                          }
-                        >
-                          {isApprovalLevel
-                            ? "Approve Expense"
-                            : "Review Expense"}
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          disabled={isDisabled}
-                          onClick={() =>
-                            handleReviewAction(
-                              allowance.dailyAllowanceId,
-                              detail.id,
-                              "rejected"
-                            )
-                          }
-                        >
-                          Reject Expense
-                        </Button>
-                      </div>
+                      <>
+                        {resultObj.reason && (
+                          <p className="text-red-600 text-sm text-center">
+                            {resultObj.reason}
+                          </p>
+                        )}
+                        <div className="grid w-full grid-cols-2 gap-2">
+                          <Button
+                            className="bg-green-600 text-white hover:bg-green-700"
+                            disabled={resultObj.isDisable}
+                            onClick={() =>
+                              handleReviewAction(
+                                allowance.dailyAllowanceId,
+                                detail.id,
+                                resultObj.status as any
+                              )
+                            }
+                          >
+                            {resultObj.buttonText} Expense
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            disabled={resultObj.isDisable}
+                            onClick={() =>
+                              handleReviewAction(
+                                allowance.dailyAllowanceId,
+                                detail.id,
+                                "rejected"
+                              )
+                            }
+                          >
+                            Reject Expense
+                          </Button>
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>

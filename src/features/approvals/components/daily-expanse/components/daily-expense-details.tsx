@@ -29,6 +29,7 @@ import {
   useExpenseReviewAndApprovalUpdate,
 } from "@/features/approvals/services/daily-expanses.hook";
 import { useEffect, useMemo, useState } from "react";
+import { format } from "date-fns";
 
 export default function DailyExpenseDetails() {
   const [updateId, setUpdateId] = useState<string | null>(null);
@@ -126,6 +127,49 @@ export default function DailyExpenseDetails() {
     }
   }, [isSuccess, isSuccessUpdate, refetchExpanseDetails]);
 
+  const getReviewExtraInformation = (data: any) => {
+    if (dailyExpanse.expenseSubType === "travel_route") {
+      const value = dailyExpanse.travelRoutes.find(
+        (f: any) => f.travelRouteId === data.travelRouteId
+      );
+      return {
+        label: "Vehicle",
+        value: value?.vehicleCategory ?? "-",
+        amount: value?.amount ?? 0,
+      };
+    }
+    if (dailyExpanse.expenseSubType === "travel_lump_sum") {
+      const value = dailyExpanse.travelLumpSums.find(
+        (f: any) => f.travelLumpSumId === data.travelLumpSumId
+      );
+      return {
+        label: "Mode",
+        value: value?.mode ?? "-",
+        amount: value?.amount ?? 0,
+      };
+    }
+    if (
+      ["daily_local", "daily_outstation"].includes(dailyExpanse?.expenseSubType)
+    ) {
+      const allDetails = dailyExpanse?.dailyAllowances.flatMap(
+        (allowance: any) => allowance.dailyAllowancesDetails
+      );
+
+      const value = allDetails.find(
+        (f: any) => f.id === data.dailyAllowanceDetailsId
+      );
+
+      if (value) {
+        return {
+          label: "Category",
+          value: value.expensesCategory.categoryName,
+          amount: value.amount,
+        };
+      }
+    }
+    return { label: "", value: "value", amount: 0 };
+  };
+
   return (
     <Main>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -184,36 +228,51 @@ export default function DailyExpenseDetails() {
               <p className="font-medium text-sm mb-2">Review and Approval</p>
               <ScrollArea className="h-[calc(100vh-32rem)] pr-4">
                 {dailyExpanse?.expenseReviewAndApproval?.length ? (
-                  dailyExpanse.expenseReviewAndApproval.map((data: any) => (
-                    <Card
-                      key={data.id}
-                      className="p-4 shadow-sm border text-sm mb-3"
-                    >
-                      <div className="grid grid-cols-2 gap-2">
-                        <Detail
-                          label="Name"
-                          value={getFullName(
-                            data.reviewer?.firstName,
-                            data.reviewer?.lastName
-                          )}
-                        />
-                        <Detail
-                          label="Created At"
-                          value={
-                            data?.createdDate
-                              ? formatDateRange(data.createdDate)
-                              : "-"
-                          }
-                        />
-                        <Detail label="Level" value={getUserLevelLabel(data)} />
-                        <Detail label="Comment" value={data?.comment || "-"} />
-                        <Detail
-                          label="Status"
-                          value={<StatusBadge status={data?.status} />}
-                        />
-                      </div>
-                    </Card>
-                  ))
+                  dailyExpanse.expenseReviewAndApproval.map((data: any) => {
+                    const { label, value, amount } =
+                      getReviewExtraInformation(data);
+                    return (
+                      <Card
+                        key={data.id}
+                        className="p-4 shadow-sm border text-sm mb-3"
+                      >
+                        <div className="grid grid-cols-2 gap-2">
+                          <Detail
+                            label="Name"
+                            value={getFullName(
+                              data.reviewer?.firstName,
+                              data.reviewer?.lastName
+                            )}
+                          />
+                          <Detail
+                            label="Level"
+                            value={getUserLevelLabel(data)}
+                          />
+                          <Detail label={label} value={value} />
+                          <Detail label="Amount" value={amount} />
+                          <Detail
+                            label="Status"
+                            value={<StatusBadge status={data?.status} />}
+                          />
+                          <Detail
+                            label="Created At"
+                            value={
+                              data?.modifiedDate
+                                ? format(
+                                    new Date(data.modifiedDate),
+                                    "dd MMM yyyy, hh:mm a"
+                                  )
+                                : "-"
+                            }
+                          />
+                          <Detail
+                            label="Comment"
+                            value={data?.comment || "-"}
+                          />
+                        </div>
+                      </Card>
+                    );
+                  })
                 ) : (
                   <p className="text-muted-foreground text-sm">
                     No Review and Approval

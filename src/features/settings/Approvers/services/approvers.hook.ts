@@ -269,7 +269,7 @@ export const useUpdateOrganization = (
 };
 
 export const useGetExpenseCategoriesDropDownList = (
-  params?: IListParams,
+  params?: any,
   options?: { enabled?: boolean }
 ) => {
   const query = useFetchData<any>({
