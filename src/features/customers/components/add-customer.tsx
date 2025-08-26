@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { AlertCircle, MapPin, Plus, Trash2 } from "lucide-react";
+import { AlertCircle, MapPin, Plus, Trash2, Search } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -29,11 +29,11 @@ import {
   useGetCustomerById,
   useGetIndustry,
   useUpdateCustomer,
+  useGetUsersByRole,
 } from "../services/Customers.hook";
 import { useGetAllCustomerType } from "@/features/customer-type/services/CustomerType.hook";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { useGetAllRolesForDropdown } from "@/features/UserManagement/services/Roles.hook";
-import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
 import type { CustomerType } from "@/features/customer-type/type/type";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { useCreateCustomer } from "../services/Customers.hook";
@@ -185,10 +185,7 @@ export default function AddCustomerPage({
   const [selectedRoleIds, setSelectedRoleIds] = useState<
     Record<number, string>
   >({});
-  const { data: _usersList = [] } = useGetUsersForDropdown({
-    roleId: "",
-    enabled: false,
-  });
+
 
   useEffect(() => {
     if (isEditMode && customer) {
@@ -214,7 +211,6 @@ export default function AddCustomerPage({
                 ...prev,
                 [contactId]: contact.userRole.roleId,
               }));
-              loadUsersForContact(contactId, contact.userRole.roleId);
             }
             return {
               id: contactId, // useFieldArray needs a unique id
@@ -239,60 +235,9 @@ export default function AddCustomerPage({
     }
   }, [isEditMode, customer, reset, replace]);
 
-  // Add a new function to get users for a specific contact's role
-  const getUsersForRole = (roleId: string) => {
-    if (!roleId) return Promise.resolve([]);
 
-    return fetch(
-      `https://fieldtracking-api.devstree.in/api/v1/users/list?roleId=${roleId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-      }
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to fetch users");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        if (data && data.data && Array.isArray(data.data.list)) {
-          return data.data.list;
-        }
-        return [];
-      })
-      .catch((error) => {
-        console.error("Error fetching users:", error);
-        return [];
-      });
-  };
 
-  // Add state to store users per contact
-  const [usersPerContact, setUsersPerContact] = useState<
-    Record<number, Array<{ id: string; firstName: string; lastName: string }>>
-  >({});
-  const [loadingUsersForContact, setLoadingUsersForContact] = useState<
-    Record<number, boolean>
-  >({});
 
-  // Function to load users for a specific contact when role changes
-  const loadUsersForContact = async (contactId: number, roleId: string) => {
-    if (!roleId) return;
-
-    try {
-      setLoadingUsersForContact((prev) => ({ ...prev, [contactId]: true }));
-      const users = await getUsersForRole(roleId);
-      setUsersPerContact((prev) => ({ ...prev, [contactId]: users }));
-    } catch (_err) {
-      setUsersPerContact((prev) => ({ ...prev, [contactId]: [] }));
-    } finally {
-      setLoadingUsersForContact((prev) => ({ ...prev, [contactId]: false }));
-    }
-  };
 
   // Transform industry data for dropdown using the same pattern as organizations component
   const industryOptions = useSelectOptions<{
@@ -421,8 +366,6 @@ export default function AddCustomerPage({
 
     // Initialize state for the new contact
     setSelectedRoleIds((prev) => ({ ...prev, [newContactId]: "" }));
-    setUsersPerContact((prev) => ({ ...prev, [newContactId]: [] }));
-    setLoadingUsersForContact((prev) => ({ ...prev, [newContactId]: false }));
   };
 
   // Before submitting the form, let's ensure the contacts are properly included
@@ -948,16 +891,13 @@ export default function AddCustomerPage({
                                   render={({ field }) => (
                                     <Select
                                       value={field.value || ""}
-                                      onValueChange={async (val) => {
+                                      onValueChange={(val) => {
                                         if (val) {
+                                          console.log('Role selected:', val, 'for contact:', contact.id);
                                           field.onChange(val);
                                           setSelectedRoleIds((prev) => ({
                                             ...prev,
                                             [contact.id]: val,
-                                          }));
-                                          setUsersPerContact((prev) => ({
-                                            ...prev,
-                                            [contact.id]: [],
                                           }));
                                           const assignedRepField =
                                             form.getValues(
@@ -969,10 +909,6 @@ export default function AddCustomerPage({
                                               ""
                                             );
                                           }
-                                          await loadUsersForContact(
-                                            contact.id,
-                                            val
-                                          );
                                         }
                                       }}
                                     >
@@ -984,7 +920,7 @@ export default function AddCustomerPage({
                                       </SelectTrigger>
                                       <SelectContent
                                         id={`userRole-content-${index}`}
-                                        className="!w-full"
+                                        className="w-full"
                                       >
                                         {roleOptions.length > 0 ? (
                                           roleOptions.map((option) => (
@@ -1007,58 +943,89 @@ export default function AddCustomerPage({
                                 <Controller
                                   name={`contacts.${index}.assignedRep`}
                                   control={control}
-                                  render={({ field }) => (
-                                    <Select
-                                      value={field.value || ""}
-                                      onValueChange={(val) => {
-                                        if (val) {
-                                          field.onChange(val);
-                                        }
-                                      }}
-                                      disabled={
-                                        !selectedRoleIds[contact.id] ||
-                                        loadingUsersForContact[contact.id]
-                                      }
-                                    >
-                                      <SelectTrigger
-                                        className="w-full max-w-m"
-                                        id={`assignedRep-${index}`}
-                                      >
-                                        <SelectValue
-                                          placeholder={
-                                            loadingUsersForContact[contact.id]
-                                              ? "Loading..."
-                                              : "User Assign"
+                                  render={({ field }) => {
+                                    const { data: users, isLoading, error } = useGetUsersByRole(
+                                      selectedRoleIds[contact.id] || "",
+                                      !!selectedRoleIds[contact.id]
+                                    );
+                                    
+                                    const [searchTerm, setSearchTerm] = useState("");
+                                    
+                                    // Filter users based on search term
+                                    const filteredUsers = users?.filter((user: any) =>
+                                      `${user.firstName} ${user.lastName}`
+                                        .toLowerCase()
+                                        .includes(searchTerm.toLowerCase())
+                                    ) || [];
+                                    
+                                    return (
+                                      <Select
+                                        value={field.value || ""}
+                                        onValueChange={(val) => {
+                                          if (val) {
+                                            field.onChange(val);
                                           }
-                                        />
-                                      </SelectTrigger>
-                                      <SelectContent
-                                        id={`assignedRep-content-${index}`}
+                                        }}
+                                        disabled={!selectedRoleIds[contact.id] || isLoading}
                                       >
-                                        {usersPerContact[contact.id]?.length >
-                                        0 ? (
-                                          usersPerContact[contact.id].map(
-                                            (user) => (
-                                              <SelectItem
-                                                key={user.id}
-                                                value={String(user.id)}
-                                              >
-                                                {user.firstName +
-                                                  " " +
-                                                  user.lastName}
-                                              </SelectItem>
-                                            )
-                                          )
-                                        ) : (
-                                          <div className="px-4 py-2 text-gray-500">
-                                            {loadingUsersForContact[contact.id]
-                                              ? "Loading users..."
-                                              : "No users found for this role"}
+                                        <SelectTrigger
+                                          className="w-full max-w-m bg-white border border-gray-300 hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                          id={`assignedRep-${index}`}
+                                        >
+                                          <SelectValue
+                                            placeholder={
+                                              isLoading
+                                                ? "Loading..."
+                                                : "User Assign"
+                                            }
+                                          />
+                                        </SelectTrigger>
+                                        <SelectContent
+                                          id={`assignedRep-content-${index}`}
+                                          className="w-full min-w-[200px]"
+                                          position="popper"
+                                        >
+                                          {/* Search Input */}
+                                          <div className="flex items-center px-3 py-2 border-b border-gray-200">
+                                            <Search className="h-4 w-4 text-gray-400 mr-2" />
+                                            <input
+                                              className="flex h-9 w-full rounded-md border-0 bg-transparent px-0 py-1 text-sm shadow-none transition-colors placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-0"
+                                              placeholder="Search..."
+                                              value={searchTerm}
+                                              onChange={(e) => setSearchTerm(e.target.value)}
+                                              onClick={(e) => e.stopPropagation()}
+                                              autoFocus
+                                            />
                                           </div>
-                                        )}
-                                      </SelectContent>
-                                    </Select>
-                                  )}
+                                          
+                                          {/* Users List */}
+                                          <div className="max-h-60 overflow-y-auto">
+                                            {filteredUsers.length > 0 ? (
+                                              filteredUsers.map((user: any) => (
+                                                <SelectItem
+                                                  key={user.id}
+                                                  value={String(user.id)}
+                                                  className="cursor-pointer hover:bg-gray-50 px-3 py-2 text-sm"
+                                                >
+                                                  {user.firstName} {user.lastName}
+                                                </SelectItem>
+                                              ))
+                                            ) : (
+                                              <div className="px-3 py-2 text-sm text-gray-500">
+                                                {searchTerm 
+                                                  ? "No users found matching your search"
+                                                  : isLoading
+                                                    ? "Loading users..."
+                                                    : error 
+                                                      ? `Error: ${error.message}` 
+                                                      : "No users found for this role"}
+                                              </div>
+                                            )}
+                                          </div>
+                                        </SelectContent>
+                                      </Select>
+                                    );
+                                  }}
                                 />
                               </div>
                               {errors.contacts?.[index]?.userRole && (
@@ -1066,7 +1033,7 @@ export default function AddCustomerPage({
                                   <AlertCircle className="h-3 w-3" />
                                   {errors.contacts[index].userRole.message}
                                 </p>
-                              )}
+                                )}
                             </div>
                           )}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

@@ -1,6 +1,5 @@
 import { IconCalendarPlus, IconEdit, IconTrash } from "@tabler/icons-react";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
-
 import { useUsersStore } from "../store/users.store";
 import CustomTooltip from "@/components/shared/custom-tooltip";
 import { useNavigate } from "@tanstack/react-router";

@@ -9,6 +9,7 @@ export const columns: ColumnDef<any>[] = [
       <CustomDataTableColumnHeader column={column} title='Category Name' />
     ),
     enableHiding: false,
+    enableSorting: false,
   },
   {
     accessorKey: 'createdDate',
@@ -28,6 +29,7 @@ export const columns: ColumnDef<any>[] = [
         <div className='text-muted-foreground text-sm'>{formattedDate}</div>
       )
     },
+    enableSorting: false,
   },
   {
     id: 'actions',
@@ -35,5 +37,6 @@ export const columns: ColumnDef<any>[] = [
       <CustomDataTableColumnHeader column={column} title='Action' />
     ),
     cell: ({ row }) => <DataTableRowActions row={row} />,
+    enableSorting: false,
   },
 ]

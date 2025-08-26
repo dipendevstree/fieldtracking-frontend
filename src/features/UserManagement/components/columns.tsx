@@ -25,6 +25,7 @@ export const columns: ColumnDef<any>[] = [
       )
     },
     enableHiding: false,
+    enableSorting: false,
   },
   {
     accessorKey: 'email',
@@ -35,6 +36,7 @@ export const columns: ColumnDef<any>[] = [
       const email = row.original.email || row.original.adminData?.email
       return <div className='text-sm'>{email}</div>
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'phone',
@@ -49,6 +51,7 @@ export const columns: ColumnDef<any>[] = [
         <div className='text-sm'>{phone ? `${countryCode} ${phone}` : '-'}</div>
       )
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'role',
@@ -63,6 +66,7 @@ export const columns: ColumnDef<any>[] = [
         </div>
       )
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'territory',
@@ -73,6 +77,7 @@ export const columns: ColumnDef<any>[] = [
       const territoryName = row.original.territory?.name || '-'
       return <div className='text-sm'>{territoryName}</div>
     },
+    enableSorting: false,
   },
 
   {
@@ -94,30 +99,8 @@ export const columns: ColumnDef<any>[] = [
 
       return <div className='text-sm'>{displayValue}</div>
     },
+    enableSorting: false,
   },
-
-  // {
-  //   accessorKey: 'lastLogin',
-  //   header: ({ column }) => (
-  //     <CustomDataTableColumnHeader column={column} title='Last Login' />
-  //   ),
-  //   cell: ({ row }) => {
-  //     const lastLogin = row.original.lastLogin || row.original.createdDate
-  //     const formattedDate = lastLogin
-  //       ? new Date(lastLogin).toLocaleDateString('en-US', {
-  //           month: 'numeric',
-  //           day: 'numeric',
-  //           year: 'numeric',
-  //           hour: 'numeric',
-  //           minute: '2-digit',
-  //           hour12: true,
-  //         })
-  //       : '1/16/2024, 3:00:00 PM'
-  //     return (
-  //       <div className='text-muted-foreground text-sm'>{formattedDate}</div>
-  //     )
-  //   },
-  // },
   {
     accessorKey: 'status',
     header: ({ column }) => (
@@ -150,6 +133,7 @@ export const columns: ColumnDef<any>[] = [
         </Badge>
       )
     },
+    enableSorting: false,
   },
   {
     id: 'actions',
@@ -157,5 +141,6 @@ export const columns: ColumnDef<any>[] = [
       <CustomDataTableColumnHeader column={column} title='Action' />
     ),
     cell: ({ row }) => <DataTableRowActions row={row} />,
+    enableSorting: false,
   },
 ]

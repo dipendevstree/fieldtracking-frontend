@@ -41,6 +41,7 @@ export const getColumns = ({ onEdit }: GetColumnsProps): ColumnDef<Customer>[] =
       <CustomDataTableColumnHeader column={column} title='Company Name' />
     ),
     cell: ({ row }) => <div>{row.original.companyName ?? '-'}</div>,
+    enableSorting: false,
   },
   {
     accessorKey: 'customerType.typeName',
@@ -48,6 +49,7 @@ export const getColumns = ({ onEdit }: GetColumnsProps): ColumnDef<Customer>[] =
       <CustomDataTableColumnHeader column={column} title='Customer Type' />
     ),
     cell: ({ row }) => <div>{row.original.customerType?.typeName ?? '-'}</div>,
+    enableSorting: false,
   },
   {
     accessorKey: 'streetAddress',
@@ -73,6 +75,7 @@ export const getColumns = ({ onEdit }: GetColumnsProps): ColumnDef<Customer>[] =
         </Tooltip>
       );
     },
+    enableSorting: false,
   },
   {
     accessorKey: 'industry.industryName',
@@ -82,6 +85,7 @@ export const getColumns = ({ onEdit }: GetColumnsProps): ColumnDef<Customer>[] =
     cell: ({ row }) => {
       return <div>{row.original.industry?.industryName ?? '-'}</div>
     },
+    enableSorting: false,
   },
   {
     id: 'actions',

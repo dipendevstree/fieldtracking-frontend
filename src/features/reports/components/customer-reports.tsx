@@ -3,7 +3,6 @@ import {
   useReactTable,
   getCoreRowModel,
   flexRender,
-  ColumnDef,
   getPaginationRowModel,
   PaginationState,
 } from '@tanstack/react-table';
@@ -15,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
@@ -446,42 +446,54 @@ export default function CustomerReports() {
               </div>
             ) : (
               <>
-                <Table>
-                  <TableHeader>
-                    {directoryTable.getHeaderGroups().map((headerGroup) => (
-                      <TableRow key={headerGroup.id}>
-                        {headerGroup.headers.map((header) => (
-                          <TableHead key={header.id} className="py-3">
-                            {header.isPlaceholder
-                              ? null
-                              : flexRender(
-                                  header.column.columnDef.header,
-                                  header.getContext()
-                                )}
-                          </TableHead>
-                        ))}
-                      </TableRow>
-                    ))}
-                  </TableHeader>
-                  <TableBody>
-                    {directoryTable.getRowModel().rows.map((row) => (
-                      <TableRow key={row.id} className="hover:bg-gray-50">
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id} className="py-4">
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      {directoryTable.getHeaderGroups().map((headerGroup) => (
+                        <TableRow key={headerGroup.id} className="border-b border-border">
+                          {headerGroup.headers.map((header) => (
+                            <TableHead key={header.id} className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                              {header.isPlaceholder
+                                ? null
+                                : flexRender(
+                                    header.column.columnDef.header,
+                                    header.getContext()
+                                  )}
+                            </TableHead>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </TableHeader>
+                    <TableBody>
+                      {directoryTable.getRowModel().rows?.length ? (
+                        directoryTable.getRowModel().rows.map((row) => (
+                          <TableRow
+                            key={row.id}
+                            className="border-b border-border hover:bg-muted/50 transition-colors"
+                            data-state={row.getIsSelected() && "selected"}
+                          >
+                            {row.getVisibleCells().map((cell) => (
+                              <TableCell key={cell.id} className="p-4 align-middle">
+                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                              </TableCell>
+                            ))}
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={directoryColumns.length} className="h-24 text-center">
+                            No results.
                           </TableCell>
-                        ))}
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
                 
                 {/* Pagination Controls */}
-                <div className="flex items-center justify-between px-2 py-4">
-                  <div className="flex items-center space-x-2">
-                    <p className="text-sm text-gray-700">
-                      Total: {directoryTable.getFilteredRowModel().rows.length} records
-                    </p>
+                <div className="flex items-center justify-between space-x-2 py-4">
+                  <div className="flex-1 text-sm text-muted-foreground">
+                    {tableData.length} of {tableData.length} row(s) total.
                   </div>
                   
                   <div className="flex items-center space-x-6 lg:space-x-8">
@@ -565,35 +577,49 @@ export default function CustomerReports() {
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                {activityTable.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id} className="py-3">
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {activityTable.getRowModel().rows.map((row) => (
-                  <TableRow key={row.id} className="hover:bg-gray-50">
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id} className="py-4">
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  {activityTable.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id} className="border-b border-border">
+                      {headerGroup.headers.map((header) => (
+                        <TableHead key={header.id} className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  ))}
+                </TableHeader>
+                <TableBody>
+                  {activityTable.getRowModel().rows?.length ? (
+                    activityTable.getRowModel().rows.map((row) => (
+                      <TableRow
+                        key={row.id}
+                        className="border-b border-border hover:bg-muted/50 transition-colors"
+                        data-state={row.getIsSelected() && "selected"}
+                      >
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id} className="p-4 align-middle">
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={activityColumns.length} className="h-24 text-center">
+                        No results.
                       </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </CardContent>
       </Card>

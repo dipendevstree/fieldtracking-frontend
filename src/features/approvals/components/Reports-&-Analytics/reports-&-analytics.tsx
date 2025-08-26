@@ -1,62 +1,62 @@
-// import { useState } from "react"
-// import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-// import { Button } from "@/components/ui/button"
-// import { Download, FileText } from "lucide-react"
-// // Mock data for daily expenses
-// const dailyExpenses = [
-//   {
-//     id: 1,
-//     repName: "John Smith",
-//     repAvatar: "/placeholder.svg?height=32&width=32",
-//     date: "2024-01-15",
-//     category: "Travel Allowance",
-//     amount: 45.5,
-//     description: "Client visit - Downtown office",
-//     receipt: true,
-//     status: "pending",
-//     submittedAt: "2024-01-15 14:30",
-//     mileage: "25 miles",
-//   },
-//   {
-//     id: 2,
-//     repName: "Sarah Johnson",
-//     repAvatar: "/placeholder.svg?height=32&width=32",
-//     date: "2024-01-15",
-//     category: "Daily Allowance",
-//     amount: 75.0,
-//     description: "Field work - North Zone",
-//     receipt: true,
-//     status: "pending",
-//     submittedAt: "2024-01-15 16:45",
-//     mileage: null,
-//   },
-//   {
-//     id: 3,
-//     repName: "Mike Wilson",
-//     repAvatar: "/placeholder.svg?height=32&width=32",
-//     date: "2024-01-14",
-//     category: "Meals & Entertainment",
-//     amount: 120.0,
-//     description: "Client lunch meeting",
-//     receipt: true,
-//     status: "approved",
-//     submittedAt: "2024-01-14 19:20",
-//     mileage: null,
-//   },
-//   {
-//     id: 4,
-//     repName: "Emily Davis",
-//     repAvatar: "/placeholder.svg?height=32&width=32",
-//     date: "2024-01-14",
-//     category: "Travel Allowance",
-//     amount: 67.25,
-//     description: "Training session travel",
-//     receipt: false,
-//     status: "pending",
-//     submittedAt: "2024-01-14 17:15",
-//     mileage: "35 miles",
-//   },
-// ]
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Download, FileText } from "lucide-react"
+
+// Mock data for daily expenses
+const dailyExpenses = [
+  {
+    id: 1,
+    repName: "John Smith",
+    repAvatar: "/placeholder.svg?height=32&width=32",
+    date: "2024-01-15",
+    category: "Travel Allowance",
+    amount: 45.5,
+    description: "Client visit - Downtown office",
+    receipt: true,
+    status: "pending",
+    submittedAt: "2024-01-15 14:30",
+    mileage: "25 miles",
+  },
+  {
+    id: 2,
+    repName: "Sarah Johnson",
+    repAvatar: "/placeholder.svg?height=32&width=32",
+    date: "2024-01-15",
+    category: "Daily Allowance",
+    amount: 75.0,
+    description: "Field work - North Zone",
+    receipt: true,
+    status: "pending",
+    submittedAt: "2024-01-15 16:45",
+    mileage: null,
+  },
+  {
+    id: 3,
+    repName: "Mike Wilson",
+    repAvatar: "/placeholder.svg?height=32&width=32",
+    date: "2024-01-14",
+    category: "Meals & Entertainment",
+    amount: 120.0,
+    description: "Client lunch meeting",
+    receipt: true,
+    status: "approved",
+    submittedAt: "2024-01-14 19:20",
+    mileage: null,
+  },
+  {
+    id: 4,
+    repName: "Emily Davis",
+    repAvatar: "/placeholder.svg?height=32&width=32",
+    date: "2024-01-14",
+    category: "Travel Allowance",
+    amount: 67.25,
+    description: "Training session travel",
+    receipt: false,
+    status: "pending",
+    submittedAt: "2024-01-14 17:15",
+    mileage: "35 miles",
+  },
+]
 
 // // Mock data for monthly consolidated expenses
 // const monthlyConsolidated = [
@@ -122,117 +122,95 @@
 //   },
 // ]
 
-// export default function ReportsAnalytics() {
-//   const [selectedTab, setSelectedTab] = useState("daily")
-//   const [statusFilter, setStatusFilter] = useState("all")
-//   const [searchTerm, setSearchTerm] = useState("")
+export default function ReportsAnalytics() {
+  const handleExportPDF = () => {
+    console.log("Exporting to PDF")
+  }
 
-//   const handleExportPDF = () => {
-//     console.log("Exporting to PDF")
-//     // Handle PDF export
-//   }
+  const handleExportExcel = () => {
+    console.log("Exporting to Excel")
+  }
 
-//   const handleExportExcel = () => {
-//     console.log("Exporting to Excel")
-//     // Handle Excel export
-//   }
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between space-y-2">
+        <h2 className="text-3xl font-bold tracking-tight">Reports & Analytics</h2>
+        <div className="flex items-center space-x-2">
+          <Button variant="outline" onClick={handleExportPDF}>
+            <FileText className="h-4 w-4 mr-2" />
+            Export PDF
+          </Button>
+          <Button variant="outline" onClick={handleExportExcel}>
+            <Download className="h-4 w-4 mr-2" />
+            Export Excel
+          </Button>
+        </div>
+      </div>
 
-//   const filteredDailyExpenses = dailyExpenses.filter((expense) => {
-//     const matchesSearch =
-//       expense.repName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//       expense.description.toLowerCase().includes(searchTerm.toLowerCase())
-//     const matchesStatus = statusFilter === "all" || expense.status === statusFilter
-//     return matchesSearch && matchesStatus
-//   })
+      {/* Reports & Analytics Content */}
+      <div className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>Export Options</CardTitle>
+              <CardDescription>Generate detailed reports for expense analysis.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <Button className="w-full justify-start bg-white hover:bg-gray-50 text-gray-700 border border-gray-300" onClick={handleExportPDF}>
+                  <div className="w-6 h-6 bg-red-500 text-white text-xs font-bold rounded flex items-center justify-center mr-3">PDF</div>
+                  Export Daily Expenses (PDF)
+                </Button>
+                <Button className="w-full justify-start bg-white hover:bg-gray-50 text-gray-700 border border-gray-300" variant="outline" onClick={handleExportExcel}>
+                  <div className="w-6 h-6 bg-green-500 text-white text-xs font-bold rounded flex items-center justify-center mr-3">XLS</div>
+                  Export Daily Expenses (Excel)
+                </Button>
+                <Button className="w-full justify-start bg-white hover:bg-gray-50 text-gray-700 border border-gray-300" onClick={handleExportPDF}>
+                  <div className="w-6 h-6 bg-red-500 text-white text-xs font-bold rounded flex items-center justify-center mr-3">PDF</div>
+                  Export Monthly Consolidated (PDF)
+                </Button>
+                <Button className="w-full justify-start bg-white hover:bg-gray-50 text-gray-700 border border-gray-300" variant="outline" onClick={handleExportExcel}>
+                  <div className="w-6 h-6 bg-green-500 text-white text-xs font-bold rounded flex items-center justify-center mr-3">XLS</div>
+                  Export Monthly Consolidated (Excel)
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
-//   const filteredMonthlyExpenses = monthlyConsolidated.filter((expense) => {
-//     const matchesSearch = expense.repName.toLowerCase().includes(searchTerm.toLowerCase())
-//     const matchesStatus = statusFilter === "all" || expense.status === statusFilter
-//     return matchesSearch && matchesStatus
-//   })
-
-//   const totalConsolidatedAmount = monthlyConsolidated.reduce((sum, rep) => sum + rep.netTotal, 0)
-
-//   return (
-//     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-//       <div className="flex items-center justify-between space-y-2">
-//         <h2 className="text-3xl font-bold tracking-tight">Reports & Analytics</h2>
-//         <div className="flex items-center space-x-2">
-//           <Button variant="outline" onClick={handleExportPDF}>
-//             <FileText className="h-4 w-4 mr-2" />
-//             Export PDF
-//           </Button>
-//           <Button variant="outline" onClick={handleExportExcel}>
-//             <Download className="h-4 w-4 mr-2" />
-//             Export Excel
-//           </Button>
-//         </div>
-//       </div>
-
-//       {/* Reports & Analytics Content */}
-//       <div className="space-y-4">
-//         <div className="grid gap-4 md:grid-cols-2">
-//           <Card>
-//             <CardHeader>
-//               <CardTitle>Export Options</CardTitle>
-//               <CardDescription>Generate detailed reports for expense analysis.</CardDescription>
-//             </CardHeader>
-//             <CardContent className="space-y-4">
-//               <div className="space-y-3">
-//                 <Button className="w-full justify-start" onClick={handleExportPDF}>
-//                   <FileText className="h-4 w-4 mr-2" />
-//                   Export Daily Expenses (PDF)
-//                 </Button>
-//                 <Button className="w-full justify-start" variant="outline" onClick={handleExportExcel}>
-//                   <Download className="h-4 w-4 mr-2" />
-//                   Export Daily Expenses (Excel)
-//                 </Button>
-//                 <Button className="w-full justify-start" onClick={handleExportPDF}>
-//                   <FileText className="h-4 w-4 mr-2" />
-//                   Export Monthly Consolidated (PDF)
-//                 </Button>
-//                 <Button className="w-full justify-start" variant="outline" onClick={handleExportExcel}>
-//                   <Download className="h-4 w-4 mr-2" />
-//                   Export Monthly Consolidated (Excel)
-//                 </Button>
-//               </div>
-//             </CardContent>
-//           </Card>
-
-//           <Card>
-//             <CardHeader>
-//               <CardTitle>Quick Stats</CardTitle>
-//               <CardDescription>Overview of expense approval metrics.</CardDescription>
-//             </CardHeader>
-//             <CardContent>
-//               <div className="space-y-4">
-//                 <div className="flex justify-between">
-//                   <span className="text-sm text-muted-foreground">Pending Approvals</span>
-//                   <span className="font-medium">{dailyExpenses.filter((e) => e.status === "pending").length}</span>
-//                 </div>
-//                 <div className="flex justify-between">
-//                   <span className="text-sm text-muted-foreground">Approved Today</span>
-//                   <span className="font-medium">
-//                     {dailyExpenses.filter((e) => e.status === "approved" && e.date === "2024-01-15").length}
-//                   </span>
-//                 </div>
-//                 <div className="flex justify-between">
-//                   <span className="text-sm text-muted-foreground">Average Daily Expense</span>
-//                   <span className="font-medium">
-//                     ${(dailyExpenses.reduce((sum, e) => sum + e.amount, 0) / dailyExpenses.length).toFixed(2)}
-//                   </span>
-//                 </div>
-//                 <div className="flex justify-between">
-//                   <span className="text-sm text-muted-foreground">Highest Monthly Total</span>
-//                   <span className="font-medium">
-//                     ${Math.max(...monthlyConsolidated.map((r) => r.netTotal)).toLocaleString()}
-//                   </span>
-//                 </div>
-//               </div>
-//             </CardContent>
-//           </Card>
-//         </div>
-//       </div>
-//     </div>
-//   )
-// }
+          <Card>
+            <CardHeader>
+              <CardTitle>Quick Stats</CardTitle>
+              <CardDescription>Overview of expense approval metrics.</CardDescription>
+            </CardHeader>
+            <CardContent>
+               <div className="space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Pending Approvals</span>
+                  <span className="font-medium">{dailyExpenses.filter((e) => e.status === "pending").length}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Approved Today</span>
+                  <span className="font-medium">
+                    {dailyExpenses.filter((e) => e.status === "approved" && e.date === "2024-01-15").length}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Average Daily Expense</span>
+                  <span className="font-medium">
+                    ${(dailyExpenses.reduce((sum, e) => sum + e.amount, 0) / dailyExpenses.length).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Highest Monthly Total</span>
+                    <span className="font-medium">
+                    ${Math.max(...dailyExpenses.map((r) => r.amount)).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
+  )
+}

@@ -147,6 +147,21 @@ export const useGetMenu = () => {
   };
 };
 
+export const useGetUsersByRole = (roleId: string, enabled: boolean = false) => {
+  const query = useFetchData<any>({
+    url: API.users.list,
+    params: { roleId },
+    enabled: enabled && !!roleId,
+  });
+  return {
+    ...query,
+    data: query.data?.list ?? [],
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
 export const useCreateCustomer = (onSuccess?: () => void) => {
   return usePostData<CreateCustomerPayload, any>({
     url: API.customerMain.create,
