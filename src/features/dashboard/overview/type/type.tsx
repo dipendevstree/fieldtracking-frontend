@@ -1,6 +1,5 @@
 export interface DashboardKPI {
   totalSalesReps: number;
- 
 }
 
 export interface SalesRep {
@@ -61,4 +60,13 @@ export interface OverviewFilter {
   dateFrom?: string;
   dateTo?: string;
   searchFor?: string;
+}
+
+export interface AuditPagination {
+  page: number;
+  limit: number;
+  entity?: string;
+  action?: string;
+  startDate?: string;
+  endDate?: string;
 }

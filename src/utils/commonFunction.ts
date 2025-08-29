@@ -154,3 +154,20 @@ export function formatDateRange(startDate?: string, endDate?: string): string {
   const formattedEnd = format(new Date(endDate), "dd-MM-yyyy");
   return `${formattedStart} To ${formattedEnd}`;
 }
+
+export function formatName(value: string): string {
+  if (!value) return "";
+
+  return (
+    value
+      // convert camelCase → words
+      .replace(/([a-z])([A-Z])/g, "$1 $2")
+      // collapse multiple spaces
+      .replace(/\s+/g, " ")
+      .trim()
+      // capitalize each word
+      .split(" ")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ")
+  );
+}

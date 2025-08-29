@@ -4,7 +4,7 @@ import usePostData from "@/hooks/use-post-data";
 // import useDeleteData from '@/hooks/use-delete-data'
 // import usePatchData from '@/hooks/use-patch-data'
 import { DashboardStats, SalesRep, RecentActivity } from "../type/type";
-import API from '@/config/api/api'
+import API from "@/config/api/api";
 
 export interface IListParams {
   sort?: string;
@@ -158,4 +158,24 @@ export const useExportDashboardReport = (onSuccess?: () => void) => {
       }
     },
   });
+};
+
+export const useGetAuditLogs = (
+  params?: any,
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<any>({
+    url: API.overview?.auditLogList,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    data: query.data,
+    activities: query.data?.list ?? [],
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
 };

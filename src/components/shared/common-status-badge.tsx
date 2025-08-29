@@ -29,6 +29,16 @@ const statusColors: Record<string, { text: string; bg: string; dot: string }> =
       bg: "bg-blue-100",
       dot: "bg-blue-500",
     },
+    success: {
+      text: "text-green-600",
+      bg: "bg-green-100",
+      dot: "bg-green-500",
+    },
+    failure: {
+      text: "text-red-600",
+      bg: "bg-red-100",
+      dot: "bg-red-500",
+    },
     // fallback color handled in component
   };
 
