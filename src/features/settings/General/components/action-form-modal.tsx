@@ -7,7 +7,7 @@ import {
   GeneralSettingsPayload,
   CompanyInfoPayload
 } from '../services/Generalhook'
-import { useGeneralSettingsStore } from '../store/customer-type.store'
+import { useGeneralSettingsStore } from '../store/general.store'
 import { GeneralSettingsActionForm, CompanyInfoActionForm } from './action-form'
 import { TGeneralSettingsFormSchema, TCompanyInfoFormSchema } from '../data/schema'
 import { toast } from 'sonner'

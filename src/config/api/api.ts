@@ -156,6 +156,16 @@ const API = {
     delete: "expenseApprovalLevel/multi-delete",
     organizationCreate: "organization/patch",
   },
+  generalSettings: {
+    list: "general-settings/list",
+    get: "general-settings",
+    update: "general-settings/patch",
+    create: "general-settings/create",
+    companyInfo: "general-settings/company-info",
+    updateCompanyInfo: "general-settings/company-info/patch",
+    systemPreferences: "general-settings/system-preferences",
+    updateSystemPreferences: "general-settings/system-preferences/patch",
+  },
 };
 
 Object.freeze(API);

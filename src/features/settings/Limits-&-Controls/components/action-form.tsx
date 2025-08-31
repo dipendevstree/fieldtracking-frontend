@@ -26,6 +26,7 @@ import {
 } from '../data/schema'
 import { ExpenseLimit, LocationAdjustment, ExpenseExpirySettings } from '../type/type'
 
+
 // Expense Limit Action Form
 interface ExpenseLimitFormProps {
   currentLimit?: Partial<ExpenseLimit>
@@ -48,9 +49,10 @@ export function ExpenseLimitActionForm({
     resolver: zodResolver(expenseLimitFormSchema),
     defaultValues: {
       designation: currentLimit?.designation ?? '',
+      tierkey: currentLimit?.tierkey ?? '',
+      category: currentLimit?.category ?? '',
       dailyLimit: currentLimit?.dailyLimit ?? 0,
       monthlyLimit: currentLimit?.monthlyLimit ?? 0,
-      travelLimit: currentLimit?.travelLimit ?? 0,
       isActive: currentLimit?.isActive ?? true,
     },
   })
@@ -95,7 +97,7 @@ export function ExpenseLimitActionForm({
             className='space-y-6'
           >
             {/* Designation Field */}
-            <div className='space-y-2'>
+            <div className='space-y-2 color-red'>
               <Label htmlFor='designation'>Designation *</Label>
               <Controller
                 name='designation'
@@ -113,6 +115,52 @@ export function ExpenseLimitActionForm({
                 <p className='flex items-center gap-1 text-xs text-red-500'>
                   <AlertCircle className='h-3 w-3' />
                   {errors.designation.message}
+                </p>
+              )}
+            </div>
+
+            {/* Tier Field */}
+            <div className='space-y-2'>
+              <Label htmlFor='tierkey'>Tier *</Label>
+              <Controller
+                name='tierkey'
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    id='tierkey'
+                    placeholder='Enter tier'
+                    value={field.value || ''}
+                  />
+                )}
+              />
+              {errors.tierkey && (
+                <p className='flex items-center gap-1 text-xs text-red-500'>
+                  <AlertCircle className='h-3 w-3' />
+                  {errors.tierkey.message}
+                </p>
+              )}
+            </div>
+
+            {/* Category Field */}
+            <div className='space-y-2'>
+              <Label htmlFor='category'>Category *</Label>
+              <Controller
+                name='category'
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    {...field}
+                    id='category'
+                    placeholder='Enter category'
+                    value={field.value || ''}
+                  />
+                )}
+              />
+              {errors.category && (
+                <p className='flex items-center gap-1 text-xs text-red-500'>
+                  <AlertCircle className='h-3 w-3' />
+                  {errors.category.message}
                 </p>
               )}
             </div>
@@ -161,31 +209,6 @@ export function ExpenseLimitActionForm({
                 <p className='flex items-center gap-1 text-xs text-red-500'>
                   <AlertCircle className='h-3 w-3' />
                   {errors.monthlyLimit.message}
-                </p>
-              )}
-            </div>
-
-            {/* Travel Limit Field */}
-            <div className='space-y-2'>
-              <Label htmlFor='travelLimit'>Travel Limit ($/mile) *</Label>
-              <Controller
-                name='travelLimit'
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    id='travelLimit'
-                    type='number'
-                    step='0.01'
-                    placeholder='Enter travel limit per mile'
-                    value={field.value || ''}
-                  />
-                )}
-              />
-              {errors.travelLimit && (
-                <p className='flex items-center gap-1 text-xs text-red-500'>
-                  <AlertCircle className='h-3 w-3' />
-                  {errors.travelLimit.message}
                 </p>
               )}
             </div>

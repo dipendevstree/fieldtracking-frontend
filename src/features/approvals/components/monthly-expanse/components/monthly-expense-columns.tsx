@@ -67,64 +67,64 @@ export const columns: ColumnDef<any>[] = [
     },
     enableSorting: false,
   },
-  {
-    accessorKey: 'status',
-    header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Status' />
-    ),
-    cell: ({ row }) => {
-      const status = row.original.status || ''
+  // {
+  //   accessorKey: 'status',
+  //   header: ({ column }) => (
+  //     <CustomDataTableColumnHeader column={column} title='Status' />
+  //   ),
+  //   cell: ({ row }) => {
+  //     const status = row.original.status || ''
 
-      let statusColor = 'text-gray-600'
-      let statusBg = 'bg-gray-100'
-      let statusText = status
-      let dotColor = 'bg-gray-500'
+  //     let statusColor = 'text-gray-600'
+  //     let statusBg = 'bg-gray-100'
+  //     let statusText = status
+  //     let dotColor = 'bg-gray-500'
 
-      switch (status) {
-        case 'pending':
-          statusColor = 'text-red-600'
-          statusBg = 'bg-red-100'
-          statusText = 'Pending'
-          dotColor = 'bg-red-500'
-          break
-        case 'partially_approved':
-          statusColor = 'text-yellow-600'
-          statusBg = 'bg-yellow-100'
-          statusText = 'Partially Approved'
-          dotColor = 'bg-yellow-500'
-          break
-        case 'approved':
-          statusColor = 'text-green-600'
-          statusBg = 'bg-green-100'
-          statusText = 'Approved'
-          dotColor = 'bg-green-500'
-          break
-        case 'complete':
-          statusColor = 'text-blue-600'
-          statusBg = 'bg-blue-100'
-          statusText = 'Complete'
-          dotColor = 'bg-blue-500'
-          break
-        default:
-          statusText = status
-      }
+  //     switch (status) {
+  //       case 'pending':
+  //         statusColor = 'text-red-600'
+  //         statusBg = 'bg-red-100'
+  //         statusText = 'Pending'
+  //         dotColor = 'bg-red-500'
+  //         break
+  //       case 'partially_approved':
+  //         statusColor = 'text-yellow-600'
+  //         statusBg = 'bg-yellow-100'
+  //         statusText = 'Partially Approved'
+  //         dotColor = 'bg-yellow-500'
+  //         break
+  //       case 'approved':
+  //         statusColor = 'text-green-600'
+  //         statusBg = 'bg-green-100'
+  //         statusText = 'Approved'
+  //         dotColor = 'bg-green-500'
+  //         break
+  //       case 'complete':
+  //         statusColor = 'text-blue-600'
+  //         statusBg = 'bg-blue-100'
+  //         statusText = 'Complete'
+  //         dotColor = 'bg-blue-500'
+  //         break
+  //       default:
+  //         statusText = status
+  //     }
 
-      return (
-        <div
-          className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${statusColor} ${statusBg}`}
-        >
-          <span className={`mr-1 h-2 w-2 rounded-full ${dotColor}`}></span>
-          {statusText}
-        </div>
-      )
-    },
-    enableSorting: false,
-  },
-  {
-    id: 'actions',
-    header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Action' />
-    ),
-    cell: ({ row }) => <DataTableRowActions row={row} />,
-  },
+  //     return (
+  //       <div
+  //         className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ${statusColor} ${statusBg}`}
+  //       >
+  //         <span className={`mr-1 h-2 w-2 rounded-full ${dotColor}`}></span>
+  //         {statusText}
+  //       </div>
+  //     )
+  //   },
+  //   enableSorting: false,
+  // },
+  // {
+  //   id: 'actions',
+  //   header: ({ column }) => (
+  //     <CustomDataTableColumnHeader column={column} title='Action' />
+  //   ),
+  //   cell: ({ row }) => <DataTableRowActions row={row} />,
+  // },
 ]

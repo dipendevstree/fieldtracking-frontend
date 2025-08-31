@@ -17,6 +17,8 @@ export interface IListParams {
 // Expense Limits
 export interface ExpenseLimitPayload {
   designation: string
+  tierkey: string
+  category: string
   dailyLimit: number
   monthlyLimit: number
   travelLimit: number

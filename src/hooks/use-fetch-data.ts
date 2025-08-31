@@ -5,6 +5,7 @@ import { buildQueryString } from '@/utils/storage'
 export interface FetchDataOptions<TData, TParams> {
   url: string
   params?: TParams
+  queryKey?: string
   queryOptions?: Omit<
     UseQueryOptions<TData, Error, TData>,
     'queryKey' | 'queryFn'
@@ -15,11 +16,12 @@ export interface FetchDataOptions<TData, TParams> {
 const useFetchData = <TData = unknown, TParams = Record<string, unknown>>({
   url,
   params = {} as TParams,
+  queryKey,
   queryOptions = {},
   enabled = true,
 }: FetchDataOptions<TData, TParams>) => {
   return useQuery<TData, Error>({
-    queryKey: [url, params],
+    queryKey: queryKey ? [queryKey, params] : [url, params],
     queryFn: async (): Promise<TData> => {
       const queryString = buildQueryString(params as Record<string, unknown>)
       const response = await instance.get({ url: `${url}${queryString}` })

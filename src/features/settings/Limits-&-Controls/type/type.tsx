@@ -1,9 +1,10 @@
 export interface ExpenseLimit {
   limitId: string
   designation: string
+  tierkey: string
+  category: string
   dailyLimit: number
   monthlyLimit: number
-  travelLimit: number // per mile rate
   isActive: boolean
   createdAt?: string
   updatedAt?: string

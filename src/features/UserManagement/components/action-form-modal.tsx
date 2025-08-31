@@ -20,6 +20,7 @@ export function UsersActionModal() {
 
   const {
     mutate: updateUser,
+    isPending: isUpdateLoading,
     isSuccess: isUpdateSuccess,
     isError: isUpdateError,
   } = useUpdateUser(currentRow?.id || '')
@@ -54,10 +55,11 @@ export function UsersActionModal() {
       departmentId: values.departmentId,
       reportingToRoleId: values.reportingToRoleId,
       isWebUser: values.isWebUser ?? false,
-      reportingToIds: [values.reportingToIds],
+      reportingToIds: Array.isArray(values.reportingToIds) ? values.reportingToIds : values.reportingToIds ? [values.reportingToIds] : [],
       territoryId: values.territoryId,
     }
 
+    console.log('Create user payload:', payload) // Debug log
     createUser(payload)
   }
 
@@ -76,9 +78,11 @@ export function UsersActionModal() {
       departmentId: values.departmentId,
       reportingToRoleId: values.reportingToRoleId,
       isWebUser: values.isWebUser ?? false,
-      reportingToIds: values.reportingToIds || [],
+      reportingToIds: Array.isArray(values.reportingToIds) ? values.reportingToIds : values.reportingToIds ? [values.reportingToIds] : [],
       territoryId: values.territoryId,
     }
+    
+    console.log('Update user payload:', payload) // Debug log
     updateUser(payload)
   }
 
@@ -112,40 +116,36 @@ export function UsersActionModal() {
       {currentRow && (
         <>
           <UserActionForm
-            key='edit-user'
+            key={`users-action-edit-${currentRow.id || currentRow.created_at}`}
             open={open === 'edit'}
-            // loading={isUpdateLoading}
-            currentRow={{
-              ...currentRow,
-              status:
-                typeof currentRow.status === 'boolean'
-                  ? currentRow.status
-                    ? 'active'
-                    : 'inactive'
-                  : currentRow.status,
-              role:
-                typeof currentRow.role === 'string'
-                  ? currentRow.role
-                  : String(currentRow.role),
-            }}
+            loading={isUpdateLoading}
+            currentRow={currentRow}
             onSubmit={handleUpdateUser}
             onOpenChange={(value) => {
-              if (!value) closeModal()
-              else setOpen('edit')
+              if (!value) {
+                setOpen(null)
+                setTimeout(() => setCurrentRow(null), 300)
+              } else {
+                setOpen('edit')
+              }
             }}
           />
 
           <DeleteModal
-            key='delete-user'
+            key={`users-action-delete-${currentRow.createdDate || currentRow.created_at}`}
             open={open === 'delete'}
-            currentRow={currentRow}
             itemIdentifier={'id' as keyof typeof currentRow}
-            itemName='User'
+            itemName={'User'}
             onDelete={handleDeleteUser}
             onOpenChange={(value) => {
-              if (!value) closeModal()
-              else setOpen('delete')
+              if (!value) {
+                setOpen(null)
+                setTimeout(() => setCurrentRow(null), 300)
+              } else {
+                setOpen('delete')
+              }
             }}
+            currentRow={currentRow}
           />
         </>
       )}

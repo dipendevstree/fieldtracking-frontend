@@ -10,8 +10,6 @@ import { UserTerritoryActionModal } from './compoenents/action-form-modal'
 import UserTerritoryTable from './compoenents/table'
 import { useGetAllTerritories } from './services/user-territory.hook'
 import { useUserTerritoryStore } from './store/users-territory.store'
-import { useGetAllTerritoriesForDropdown } from './services/user-territory.hook'
-import { useSelectOptions } from '@/hooks/use-select-option'
 import { FilterConfig } from '@/components/global-filter-section'
 import GlobalFilterSection from '@/components/global-table-filter-section'
 import debounce from 'lodash.debounce'
@@ -24,10 +22,9 @@ const UserTerritory = () => {
 
   const { setOpen, open } = useUserTerritoryStore()
 
-  // Filter state
+  // Filter state - only search
   const [filters, setFilters] = useState({
     search: '',
-    territoryId: '',
   })
 
   // Query parameters including filters
@@ -35,7 +32,6 @@ const UserTerritory = () => {
     () => ({
       ...pagination,
       searchFor: filters.search || "",
-      territoryId: filters.territoryId || "",
     }),
     [pagination, filters]
   )
@@ -57,7 +53,7 @@ const UserTerritory = () => {
 
   // Client-side filtering as fallback if API doesn't support filtering
   const filteredTerritories = useMemo(() => {
-    if (!filters.search && !filters.territoryId) {
+    if (!filters.search) {
       return allTerritories;
     }
 
@@ -65,13 +61,9 @@ const UserTerritory = () => {
       const matchesSearch = !filters.search || 
         territory.name?.toLowerCase().includes(filters.search.toLowerCase());
       
-      const matchesTerritoryId = !filters.territoryId || 
-        String(territory.id) === filters.territoryId ||
-        String(territory.territoryId) === filters.territoryId;
-
-      return matchesSearch && matchesTerritoryId;
+      return matchesSearch;
     });
-  }, [allTerritories, filters.search, filters.territoryId]);
+  }, [allTerritories, filters.search]);
 
   const displayTerritories = filteredTerritories;
   const displayTotalCount = filteredTerritories.length;
@@ -81,24 +73,8 @@ const UserTerritory = () => {
     originalCount: allTerritories.length,
     filteredCount: filteredTerritories.length,
     searchFilter: filters.search,
-    territoryIdFilter: filters.territoryId,
     filteredTerritories: filteredTerritories
   });
-
-  // Get filter options
-  const { data: territoryList = [] } = useGetAllTerritoriesForDropdown();
-
-  const territoryOptions = useSelectOptions({
-    listData: territoryList ?? [],
-    labelKey: "name",
-    valueKey: "id",
-  }).map((option) => ({
-    ...option,
-    value: String(option.value),
-  }));
-
-  // Debug: Log filter options
-  console.log("Territory filter options:", territoryOptions);
 
   const debouncedSearch = useCallback(
     debounce((value: string) => {
@@ -114,16 +90,9 @@ const UserTerritory = () => {
     debouncedSearch(searchValue);
   };
 
-  const handleTerritoryFilterChange = (value: string | undefined) => {
-    const territoryId = value ?? "";
-    console.log("Territory filter changed to:", territoryId);
-    setFilters(prev => ({ ...prev, territoryId: territoryId }));
-    setPagination(prev => ({ ...prev, page: DEFAULT_PAGE_NUMBER })); // Reset to first page when filtering
-  };
-
   const clearFilters = () => {
     console.log("Clearing all filters");
-    setFilters({ search: "", territoryId: "" });
+    setFilters({ search: "" });
     setPagination(prev => ({ ...prev, page: DEFAULT_PAGE_NUMBER }));
   };
 
@@ -134,14 +103,6 @@ const UserTerritory = () => {
       placeholder: "Search territories...",
       value: filters.search,
       onChange: handleGlobalSearchChange,
-    },
-    {
-      key: "territoryId",
-      type: "select",
-      placeholder: "Territory",
-      value: filters.territoryId,
-      onChange: handleTerritoryFilterChange,
-      options: territoryOptions,
     },
   ];
 
@@ -177,7 +138,7 @@ const UserTerritory = () => {
         moduleAction="add"
       >
         <div className="space-y-4">
-          {/* Filter Section */}
+          {/* Filter Section - Only Search */}
           <GlobalFilterSection
             key="territories-management-filters"
             filters={filtersConfig}

@@ -20,6 +20,26 @@ export const getExpenseLimitColumns = (
     enableSorting: false,
   },
   {
+    accessorKey: 'tierkey',
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title='Tier' />
+    ),
+    cell: ({ row }) => (
+      <div className="font-medium">{row.original.tierkey}</div>
+    ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: 'category',
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title='Category' />
+    ),
+    cell: ({ row }) => (
+      <div className="font-medium">{row.original.category}</div>
+    ),
+    enableSorting: false,
+  },
+  {
     accessorKey: 'dailyLimit',
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title='Daily Limit' />
@@ -45,19 +65,7 @@ export const getExpenseLimitColumns = (
     },
     enableSorting: false,
   },
-  {
-    accessorKey: 'travelLimit',
-    header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Travel Limit' />
-    ),
-    cell: ({ row }) => (
-        <div className="text">${row.original.travelLimit}/mile</div>
-    ),
-    meta: {
-      className: 'text',
-    },
-    enableSorting: false,
-  },
+ 
   {
     accessorKey: 'isActive',
     header: ({ column }) => (

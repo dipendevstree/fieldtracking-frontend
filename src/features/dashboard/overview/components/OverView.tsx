@@ -304,12 +304,6 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          {/* <CardContent>
-            <div className="text-2xl font-bold">{kpis.totalSalesReps}</div>
-            <p className="text-xs text-muted-foreground">
-              {kpis.activeInField} active in field
-            </p>
-          </CardContent> */}
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -318,13 +312,6 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
             </CardTitle>
             <MapPin className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
-          {/* <CardContent>
-            <div className="text-2xl font-bold">{kpis.activeInField}</div>
-            <p className="text-xs text-muted-foreground">
-              {Math.round((kpis.activeInField / kpis.totalSalesReps) * 100)}% of
-              total team
-            </p>
-          </CardContent> */}
         </Card>
       </div>
 
@@ -401,7 +388,6 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search..."
-                  value={customerPagination.searchFor}
                   onChange={(e) => handleCustomerSearchChange(e.target.value)}
                   className="pl-8 w-[300px]"
                 />

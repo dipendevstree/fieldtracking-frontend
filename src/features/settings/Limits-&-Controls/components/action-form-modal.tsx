@@ -116,14 +116,26 @@ export function LimitsControlsActionModal() {
     try {
       const payload: ExpenseLimitPayload = {
         designation: values.designation.trim(),
+        tierkey: values.tierkey.trim(),
+        category: values.category.trim(),
         dailyLimit: values.dailyLimit,
         monthlyLimit: values.monthlyLimit,
-        travelLimit: values.travelLimit,
         isActive: values.isActive,
+        travelLimit: 0.45,
       }
       
       if (!payload.designation) {
         toast.error('Designation is required')
+        return
+      }
+      
+      if (!payload.tierkey) {
+        toast.error('Tier is required')
+        return
+      }
+      
+      if (!payload.category) {
+        toast.error('Category is required')
         return
       }
       
@@ -143,14 +155,26 @@ export function LimitsControlsActionModal() {
       
       const payload: ExpenseLimitPayload = {
         designation: values.designation.trim(),
+        tierkey: values.tierkey.trim(),
+        category: values.category.trim(),
         dailyLimit: values.dailyLimit,
         monthlyLimit: values.monthlyLimit,
-        travelLimit: values.travelLimit,
         isActive: values.isActive,
+        travelLimit: 0.45,
       }
       
       if (!payload.designation) {
         toast.error('Designation is required')
+        return
+      }
+      
+      if (!payload.tierkey) {
+        toast.error('Tier is required')
+        return
+      }
+      
+      if (!payload.category) {
+        toast.error('Category is required')
         return
       }
       

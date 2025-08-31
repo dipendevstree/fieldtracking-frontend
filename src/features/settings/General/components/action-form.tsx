@@ -85,7 +85,7 @@ export function GeneralSettingsActionForm({
         <DialogHeader className='flex flex-row items-center justify-between space-y-0 pb-4'>
           <div>
             <DialogTitle className='text-xl font-semibold'>
-              {isEdit ? 'Edit General Settings' : 'Configure General Settings'}
+              {isEdit ? 'Save' : 'Configure General Settings'}
             </DialogTitle>
             <DialogDescription className='text-muted-foreground mt-1 text-sm'>
               {isEdit
@@ -364,20 +364,6 @@ export function CompanyInfoActionForm({
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
       <DialogContent className='max-h-[80vh] !max-w-md overflow-y-auto'>
-        <DialogHeader className='flex flex-row items-center justify-between space-y-0 pb-4'>
-          <div>
-            <DialogTitle className='text-xl font-semibold'>
-              {isEdit ? 'Edit Company Information' : 'Add Company Information'}
-            </DialogTitle>
-            <DialogDescription className='text-muted-foreground mt-1 text-sm'>
-              {isEdit
-                ? 'Update company information.'
-                : 'Add company information.'}
-            </DialogDescription>
-          </div>
-          <DialogClose asChild></DialogClose>
-        </DialogHeader>
-
         <Form {...form}>
           <form
             id='company-info-form'

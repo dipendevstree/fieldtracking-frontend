@@ -31,8 +31,7 @@ const Roles = () => {
   const queryParams = useMemo(
     () => ({
       ...pagination,
-      search: filters.search || "", // Try 'search' instead of 'searchFor'
-      roleId: filters.roleId || "",
+      searchFor: filters.search || "", 
     }),
     [pagination, filters]
   );
@@ -111,16 +110,9 @@ const Roles = () => {
     debouncedSearch(searchValue);
   };
 
-  const handleRoleFilterChange = (value: string | undefined) => {
-    const roleId = value ?? "";
-    console.log("Role filter changed to:", roleId);
-    setFilters({ roleId: roleId });
-    setPagination(prev => ({ ...prev, page: DEFAULT_PAGE_NUMBER })); // Reset to first page when filtering
-  };
-
   const clearFilters = () => {
     console.log("Clearing all filters");
-    setFilters({ search: "", roleId: "" });
+    setFilters({ search: "" });
     setPagination(prev => ({ ...prev, page: DEFAULT_PAGE_NUMBER }));
   };
 
@@ -131,14 +123,6 @@ const Roles = () => {
       placeholder: "Search roles...",
       value: filters.search,
       onChange: handleGlobalSearchChange,
-    },
-    {
-      key: "roleId",
-      type: "select",
-      placeholder: "Role",
-      value: filters.roleId,
-      onChange: handleRoleFilterChange,
-      options: roleOptions,
     },
   ];
 

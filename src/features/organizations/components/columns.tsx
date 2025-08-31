@@ -37,6 +37,7 @@ export const columns: ColumnDef<any>[] = [
         </div>
       )
     },
+    enableHiding: false,
   },
   {
     accessorKey: 'industry.industryName',
@@ -46,6 +47,7 @@ export const columns: ColumnDef<any>[] = [
     cell: ({ row }) => {
       return <div>{row.original.industry?.industryName ?? '-'}</div>
     },
+    enableHiding: false,
   },
   {
     accessorKey: 'userCount',
@@ -53,6 +55,7 @@ export const columns: ColumnDef<any>[] = [
       <CustomDataTableColumnHeader column={column} title='Users' />
     ),
     cell: ({ row }) => <div>{row.original.userCount ?? 0}</div>,
+    enableHiding: false,
   },
   {
     accessorKey: 'isActive',
@@ -67,6 +70,7 @@ export const columns: ColumnDef<any>[] = [
         </Badge>
       )
     },
+    enableHiding: false,
   },
   {
     accessorKey: 'createdDate',
@@ -78,6 +82,7 @@ export const columns: ColumnDef<any>[] = [
       const formattedDate = new Date(rawDate).toLocaleDateString('en-US')
       return <div className='text-muted-foreground'>{formattedDate}</div>
     },
+    enableHiding: false,
   },
   {
     id: 'actions',

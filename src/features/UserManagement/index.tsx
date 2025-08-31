@@ -44,6 +44,13 @@ const AllUsers = () => {
     error,
   } = useGetAllUsers(queryParams);
 
+  // Debug logging
+  console.log('Users query params:', queryParams);
+  console.log('Users data:', allUsers);
+  console.log('Total count:', totalCount);
+  console.log('Loading:', isLoading);
+  console.log('Error:', error);
+
   // Get filter options
   const { data: territoryList = [] } = useGetAllTerritoriesForDropdown();
   const { data: roleList = [] } = useGetAllRolesForDropdown();

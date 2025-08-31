@@ -1,8 +1,10 @@
+import API from '@/config/api/api'
 import useFetchData from '@/hooks/use-fetch-data'
 import usePatchData from '@/hooks/use-patch-data'
+import usePostData from '@/hooks/use-post-data'
 import { GeneralSettings, CompanyInfo, SystemPreferences } from '../type/type'
 
-const GENERAL_SETTINGS_QUERY = 'general-settings/list'
+const GENERAL_SETTINGS_QUERY = API.generalSettings.list
 
 export interface IListParams {
   sort?: string
@@ -35,9 +37,10 @@ export interface GeneralSettingsResponse {
   statusCode: number
 }
 
-export const useUpdateGeneralSettings = (onSuccess?: () => void) => {
-  return usePatchData<GeneralSettingsResponse, GeneralSettingsPayload>({
-    url: 'general-settings/update',
+export const useUpdateGeneralSettings = (organizationId?: string, onSuccess?: () => void) => {
+  const url = organizationId ? `${API.organizations.update}/${organizationId}` : API.organizations.update
+  return usePatchData<any, any>({
+    url,
     refetchQueries: [GENERAL_SETTINGS_QUERY],
     onSuccess: () => {
       if (onSuccess) {
@@ -65,7 +68,7 @@ export interface CompanyInfoResponse {
 
 export const useUpdateCompanyInfo = (onSuccess?: () => void) => {
   return usePatchData<CompanyInfoResponse, CompanyInfoPayload>({
-    url: 'general-settings/company/update',
+    url: API.generalSettings.updateCompanyInfo,
     refetchQueries: [GENERAL_SETTINGS_QUERY],
     onSuccess: () => {
       if (onSuccess) {
@@ -92,7 +95,7 @@ export interface SystemPreferencesResponse {
 
 export const useUpdateSystemPreferences = (onSuccess?: () => void) => {
   return usePatchData<SystemPreferencesResponse, SystemPreferencesPayload>({
-    url: 'general-settings/preferences/update',
+    url: API.generalSettings.updateSystemPreferences,
     refetchQueries: [GENERAL_SETTINGS_QUERY],
     onSuccess: () => {
       if (onSuccess) {
@@ -108,6 +111,67 @@ export interface GeneralSettingsListResponse {
   companyInfo: CompanyInfo
   systemPreferences: SystemPreferences
   totalCount: number
+}
+
+// Get general settings data
+export const useGetGeneralSettings = (options?: { enabled?: boolean }) => {
+  const query = useFetchData<any>({
+    url: API.generalSettings.get,
+    enabled: options?.enabled ?? true,
+  })
+
+  return {
+    ...query,
+    data: query.data,
+    generalSettings: query.data ?? null,
+    isLoading: query.isLoading,
+    error: query.error,
+  }
+}
+
+// Get company info data
+export const useGetCompanyInfo = (options?: { enabled?: boolean }) => {
+  const query = useFetchData<any>({
+    url: API.generalSettings.companyInfo,
+    enabled: options?.enabled ?? true, 
+  })
+
+  return {
+    ...query,
+    data: query.data,
+    companyInfo: query.data ?? null,
+    isLoading: query.isLoading,
+    error: query.error,
+  }
+}
+
+// Get system preferences data
+export const useGetSystemPreferences = (options?: { enabled?: boolean }) => {
+  const query = useFetchData<any>({
+    url: API.generalSettings.systemPreferences,
+    enabled: options?.enabled ?? true,
+  })
+
+  return {
+    ...query,
+    data: query.data,
+    systemPreferences: query.data ?? null,
+    isLoading: query.isLoading,
+    error: query.error,
+  }
+}
+
+// Create general settings
+export const useCreateGeneralSettings = (onSuccess?: () => void) => {
+  return usePostData({
+    url: API.generalSettings.create,
+    refetchQueries: [GENERAL_SETTINGS_QUERY],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess()
+      }
+    },
+  })
 }
 
 export const useGetGeneralSettingsData = (
