@@ -111,6 +111,7 @@ const API = {
     performance: "overview/performance",
     updateStatus: "overview/update-status",
     exportReport: "overview/export-report",
+    auditLogList: "auditLog/all",
   },
 
   territories: {
