@@ -298,7 +298,8 @@ export const defaultAuthState: Omit<AuthState, keyof AuthActions> = {
   isLoading: false,
   isAuthenticated: false,
   isPasswordChanged: false,
-
+  refreshTrigger: 0,
+  refreshUser: async () => {},
   // Default implementations for missing methods
   hasPermission: () => false,
   hasPermissionGroup: () => false,

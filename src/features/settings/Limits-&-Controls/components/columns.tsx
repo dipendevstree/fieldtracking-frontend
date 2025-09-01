@@ -20,12 +20,12 @@ export const getExpenseLimitColumns = (
     enableSorting: false,
   },
   {
-    accessorKey: 'tierkey',
+    accessorKey: 'tierKey',
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title='Tier' />
     ),
     cell: ({ row }) => (
-      <div className="font-medium">{row.original.tierkey}</div>
+      <div className="font-medium">{row.original.tierKey}</div>
     ),
     enableSorting: false,
   },

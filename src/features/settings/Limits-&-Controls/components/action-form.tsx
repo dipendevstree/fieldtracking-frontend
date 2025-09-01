@@ -1,4 +1,5 @@
 import { Controller, useForm } from 'react-hook-form'
+import { useEffect } from 'react'
 import { DialogClose, DialogDescription } from '@radix-ui/react-dialog'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle } from 'lucide-react'
@@ -25,6 +26,7 @@ import {
   TExpenseExpirySettingsFormSchema 
 } from '../data/schema'
 import { ExpenseLimit, LocationAdjustment, ExpenseExpirySettings } from '../type/type'
+import { TIER } from '@/data/app.data'
 
 
 // Expense Limit Action Form
@@ -33,6 +35,7 @@ interface ExpenseLimitFormProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   loading?: boolean
+  expenseCategories?: any[]
   onSubmit: (values: TExpenseLimitFormSchema) => void
 }
 
@@ -42,15 +45,22 @@ export function ExpenseLimitActionForm({
   onOpenChange,
   onSubmit: onSubmitValues,
   loading,
+  expenseCategories = [],
 }: ExpenseLimitFormProps) {
   const isEdit = !!currentLimit
+
+  // Define tier options using the TIER enum from app.data.ts
+  const tiers = Object.values(TIER).map((tierValue) => ({
+    label: tierValue.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+    value: tierValue,
+  }))
 
   const form = useForm<TExpenseLimitFormSchema>({
     resolver: zodResolver(expenseLimitFormSchema),
     defaultValues: {
       designation: currentLimit?.designation ?? '',
-      tierkey: currentLimit?.tierkey ?? '',
-      category: currentLimit?.category ?? '',
+      tierkey: currentLimit?.tierKey ?? '',
+      category: '', // Will be set from expenseCategoryId if editing
       dailyLimit: currentLimit?.dailyLimit ?? 0,
       monthlyLimit: currentLimit?.monthlyLimit ?? 0,
       isActive: currentLimit?.isActive ?? true,
@@ -61,8 +71,19 @@ export function ExpenseLimitActionForm({
     control,
     handleSubmit,
     reset,
+    setValue,
     formState: { errors },
   } = form
+
+  // Set category from expenseCategoryId when editing
+  useEffect(() => {
+    if (isEdit && currentLimit?.expenseCategoryId && expenseCategories.length > 0) {
+      const category = expenseCategories.find(cat => cat.categoryId === currentLimit.expenseCategoryId)
+      if (category) {
+        setValue('category', category.categoryName)
+      }
+    }
+  }, [isEdit, currentLimit?.expenseCategoryId, expenseCategories, setValue])
 
   const onSubmit = (values: TExpenseLimitFormSchema) => {
     onSubmitValues(values)
@@ -120,18 +141,24 @@ export function ExpenseLimitActionForm({
             </div>
 
             {/* Tier Field */}
-            <div className='space-y-2'>
-              <Label htmlFor='tierkey'>Tier *</Label>
+            <div className='space-y-2 color-red'>
+              <Label htmlFor='tierkey '>Tier *</Label>
               <Controller
                 name='tierkey'
                 control={control}
                 render={({ field }) => (
-                  <Input
-                    {...field}
-                    id='tierkey'
-                    placeholder='Enter tier'
-                    value={field.value || ''}
-                  />
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder='Select tier' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {tiers.map((tier) => (
+                        <SelectItem key={tier.value} value={tier.value}>
+                          {tier.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 )}
               />
               {errors.tierkey && (
@@ -149,12 +176,18 @@ export function ExpenseLimitActionForm({
                 name='category'
                 control={control}
                 render={({ field }) => (
-                  <Input
-                    {...field}
-                    id='category'
-                    placeholder='Enter category'
-                    value={field.value || ''}
-                  />
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder='Select category' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {expenseCategories.map((category) => (
+                        <SelectItem key={category.categoryId} value={category.categoryName}>
+                          {category.categoryName}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 )}
               />
               {errors.category && (

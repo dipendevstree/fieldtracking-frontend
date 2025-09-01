@@ -166,6 +166,22 @@ const API = {
     systemPreferences: "general-settings/system-preferences",
     updateSystemPreferences: "general-settings/system-preferences/patch",
   },
+  limitsControls: {
+    list: "limits-controls/list",
+    expenseLimits: {
+      create: "limits-controls/expense-limits/create",
+      update: "limits-controls/expense-limits/update",
+      delete: "limits-controls/expense-limits/delete",
+    },
+    locationAdjustments: {
+      create: "limits-controls/location-adjustments/create",
+      update: "limits-controls/location-adjustments/update",
+      delete: "limits-controls/location-adjustments/delete",
+    },
+    expirySettings: {
+      update: "limits-controls/expiry-settings/update",
+    },
+  },
 };
 
 Object.freeze(API);

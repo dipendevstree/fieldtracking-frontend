@@ -15,17 +15,13 @@ const LimitsControlsPage = () => {
     searchFor: '',
   })
 
-  const { expenseLimits: mockExpenseLimits, locationAdjustments: mockLocationAdjustments } = useLimitsControlsStore()
   const {
     expenseLimits = [],
     locationAdjustments = [],
     totalCount = 0,
+    isLoading,
     error,
   } = useGetLimitsControlsData(pagination)
-
-  const displayExpenseLimits = expenseLimits.length > 0 ? expenseLimits : mockExpenseLimits
-  const displayLocationAdjustments = locationAdjustments.length > 0 ? locationAdjustments : mockLocationAdjustments
-  const displayTotalCount = totalCount > 0 ? totalCount : mockExpenseLimits.length
   const debouncedSearch = useCallback(
     debounce((searchTerm: string) => {
       setPagination(prev => ({
@@ -68,9 +64,10 @@ const LimitsControlsPage = () => {
         </div>
 
         <LimitsControls
-          expenseLimits={displayExpenseLimits}
-          locationAdjustments={displayLocationAdjustments}
-          totalCount={displayTotalCount}
+          expenseLimits={expenseLimits}
+          locationAdjustments={locationAdjustments}
+          totalCount={totalCount}
+          loading={isLoading}
           paginationCallbacks={{
             onPaginationChange: handlePaginationChange,
           }}

@@ -11,6 +11,7 @@ interface LimitsControlsProps {
   expenseLimits: ExpenseLimit[]
   locationAdjustments: LocationAdjustment[]
   totalCount: number
+  loading?: boolean
   paginationCallbacks?: PaginationCallbacks
   currentPage?: number
   onSearchChange?: (value: string) => void
@@ -19,6 +20,7 @@ interface LimitsControlsProps {
 export default function LimitsControls({
   expenseLimits,
   totalCount,
+  loading,
   paginationCallbacks,
   currentPage,
   onSearchChange,
@@ -69,6 +71,7 @@ export default function LimitsControls({
         data={expenseLimits}
         columns={expenseLimitColumns}
         totalCount={totalCount}
+        loading={loading}
         currentPage={currentPage}
         paginationCallbacks={paginationCallbacks}
         defaultPageSize={10}

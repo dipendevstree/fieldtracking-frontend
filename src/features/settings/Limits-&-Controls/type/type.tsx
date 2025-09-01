@@ -1,8 +1,8 @@
 export interface ExpenseLimit {
   limitId: string
   designation: string
-  tierkey: string
-  category: string
+  tierKey: string
+  expenseCategoryId: string
   dailyLimit: number
   monthlyLimit: number
   isActive: boolean

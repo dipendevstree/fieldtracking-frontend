@@ -5,8 +5,8 @@ export const expenseLimitFormSchema = z.object({
   designation: z.string().min(1, 'Designation is required'),
   tierkey: z.string().min(1, 'Tier is required'),
   category: z.string().min(1, 'Category is required'),
-  dailyLimit: z.number().min(0, 'Daily limit must be 0 or greater'),
-  monthlyLimit: z.number().min(0, 'Monthly limit must be 0 or greater'),
+  dailyLimit: z.coerce.number().min(0, 'Daily limit must be 0 or greater'),
+  monthlyLimit: z.coerce.number().min(0, 'Monthly limit must be 0 or greater'),
   isActive: z.boolean(),
 })
 

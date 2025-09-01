@@ -15,6 +15,8 @@ import {
 import { useLimitsControlsStore } from '../store/limits-&-controls.store'
 import { ExpenseLimitActionForm, LocationAdjustmentActionForm, ExpenseExpirySettingsActionForm } from './action-form'
 import { TExpenseLimitFormSchema, TLocationAdjustmentFormSchema, TExpenseExpirySettingsFormSchema } from '../data/schema'
+import { useGetExpenseCategoriesData } from '../../Expense-categories/services/expense-categories.hook'
+import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from '@/data/app.data'
 import { toast } from 'sonner'
 
 export function LimitsControlsActionModal() {
@@ -28,6 +30,12 @@ export function LimitsControlsActionModal() {
     currentExpirySettings,
     setCurrentExpirySettings
   } = useLimitsControlsStore()
+
+  // Fetch expense categories for the form
+  const { expenseCategories = [] } = useGetExpenseCategoriesData({
+    page: DEFAULT_PAGE_NUMBER,
+    limit: DEFAULT_PAGE_SIZE,
+  })
 
   // Expense Limit hooks
   const {
@@ -114,27 +122,37 @@ export function LimitsControlsActionModal() {
   // Expense Limit handlers
   const handleCreateExpenseLimit = (values: TExpenseLimitFormSchema) => {
     try {
+      console.log('Form values received:', values)
+      
+      // Find the expense category ID from the category name
+      const selectedCategory = expenseCategories.find(cat => cat.categoryName === values.category)
+      if (!selectedCategory) {
+        toast.error('Selected category not found')
+        return
+      }
+      
       const payload: ExpenseLimitPayload = {
         designation: values.designation.trim(),
-        tierkey: values.tierkey.trim(),
-        category: values.category.trim(),
+        tierKey: values.tierkey.trim(),
+        expenseCategoryId: selectedCategory.categoryId,
         dailyLimit: values.dailyLimit,
         monthlyLimit: values.monthlyLimit,
         isActive: values.isActive,
-        travelLimit: 0.45,
       }
+      
+      console.log('Payload being sent to API:', payload)
       
       if (!payload.designation) {
         toast.error('Designation is required')
         return
       }
       
-      if (!payload.tierkey) {
+      if (!payload.tierKey) {
         toast.error('Tier is required')
         return
       }
       
-      if (!payload.category) {
+      if (!payload.expenseCategoryId) {
         toast.error('Category is required')
         return
       }
@@ -153,14 +171,20 @@ export function LimitsControlsActionModal() {
         return
       }
       
+      // Find the expense category ID from the category name
+      const selectedCategory = expenseCategories.find(cat => cat.categoryName === values.category)
+      if (!selectedCategory) {
+        toast.error('Selected category not found')
+        return
+      }
+      
       const payload: ExpenseLimitPayload = {
         designation: values.designation.trim(),
-        tierkey: values.tierkey.trim(),
-        category: values.category.trim(),
+        tierKey: values.tierkey.trim(),
+        expenseCategoryId: selectedCategory.categoryId,
         dailyLimit: values.dailyLimit,
         monthlyLimit: values.monthlyLimit,
         isActive: values.isActive,
-        travelLimit: 0.45,
       }
       
       if (!payload.designation) {
@@ -168,12 +192,12 @@ export function LimitsControlsActionModal() {
         return
       }
       
-      if (!payload.tierkey) {
+      if (!payload.tierKey) {
         toast.error('Tier is required')
         return
       }
       
-      if (!payload.category) {
+      if (!payload.expenseCategoryId) {
         toast.error('Category is required')
         return
       }
@@ -273,6 +297,7 @@ export function LimitsControlsActionModal() {
         key='add-limit'
         open={open === 'add-limit'}
         loading={isCreateLimitLoading}
+        expenseCategories={expenseCategories}
         onSubmit={handleCreateExpenseLimit}
         onOpenChange={(value) => {
           if (!value) closeModal()
@@ -287,6 +312,7 @@ export function LimitsControlsActionModal() {
             open={open === 'edit-limit'}
             loading={isUpdateLimitLoading}
             currentLimit={currentLimit}
+            expenseCategories={expenseCategories}
             onSubmit={handleUpdateExpenseLimit}
             onOpenChange={(value) => {
               if (!value) closeModal()

@@ -7,6 +7,7 @@ import { AlertCircle } from "lucide-react";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { useSelectOptions } from "@/hooks/use-select-option";
+import { TIER } from "@/data/app.data";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -96,18 +97,11 @@ export function UserActionForm({
     labelKey: "departmentName",
     valueKey: "departmentId",
   });
-  const tiers = [
-    { label: "Tier 1", value: "tier_1" },
-    { label: "Tier 2", value: "tier_2" },
-    { label: "Tier 3", value: "tier_3" },
-    { label: "Tier 4", value: "tier_4" },
-    { label: "Tier 5", value: "tier_5" },
-    { label: "Tier 6", value: "tier_6" },
-    { label: "Tier 7", value: "tier_7" },
-    { label: "Tier 8", value: "tier_8" },
-    { label: "Tier 9", value: "tier_9" },
-    { label: "Tier 10", value: "tier_10" },
-  ];
+  // Define tier options using the TIER enum from app.data.ts
+  const tiers = Object.values(TIER).map((tierValue) => ({
+    label: tierValue.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+    value: tierValue,
+  }));
   const formatPhoneToE164 = (phone: string, countryCode: string) => {
     if (!phone) return "";
 
