@@ -410,7 +410,10 @@ function Level({
       >
         <Trash2 className="w-5 h-5" />
       </Button>
-      <div className="font-semibold text-lg">Level {levelIdx + 1}</div>
+      <div className="font-semibold text-lg">
+        Level {levelIdx + 1}
+        {levelIdx === 0 && " (Default Approver)"}
+      </div>
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1 flex flex-col gap-2">
           <Label>

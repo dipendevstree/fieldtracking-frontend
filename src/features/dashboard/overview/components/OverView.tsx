@@ -1,5 +1,5 @@
-import { useState, useCallback } from "react";
-import { ColumnDef } from '@tanstack/react-table';
+import { useState, useCallback, useEffect } from "react";
+import { ColumnDef } from "@tanstack/react-table";
 import {
   Card,
   CardContent,
@@ -9,12 +9,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Users,
-  MapPin,
-  Search,
-} from "lucide-react";
-import { SalesRep, DashboardKPI } from "../type/type";
+import { Users, MapPin, Search } from "lucide-react";
+import { SalesRep, DashboardKPI, AuditPagination } from "../type/type";
 import { useGetCustomers } from "@/features/customers/services/Customers.hook";
 import { useGetAllVisit } from "@/features/calendar/services/calendar-view.hook";
 import { useGetIndustry } from "@/features/customers/services/Customers.hook";
@@ -27,59 +23,20 @@ import {
 } from "@/components/ui/select";
 import debounce from "lodash.debounce";
 import { CustomDataTable } from "@/components/shared/custom-data-table";
-
+import { useGetAuditLogs } from "../services/OverView.hook";
+import { endOfDay, format, startOfDay } from "date-fns";
+import StatusBadge from "@/components/shared/common-status-badge";
+import { formatName, getFullName } from "@/utils/commonFunction";
+import LongText from "@/components/long-text";
+import { formatAuditChanges } from "../data/helperFunction";
+import { DateRangeFilter } from "@/features/reports/components/DateRangeFilter";
+import { DateRange } from "react-day-picker";
 
 interface OverviewProps {
   salesReps: SalesRep[];
   kpis: DashboardKPI;
   loading?: boolean;
 }
-
-// Mock data for recent activities
-const mockData = {
-  recentActivities: [
-    {
-      id: 1,
-      user: "Alice Johnson",
-      action: "completed a visit to",
-      target: "TechCorp Solutions",
-      time: "2 minutes ago",
-      type: "visit",
-    },
-    {
-      id: 2,
-      user: "Bob Smith",
-      action: "submitted expense report for",
-      target: "Travel & Meals",
-      time: "15 minutes ago",
-      type: "expense",
-    },
-    {
-      id: 3,
-      user: "Carol Davis",
-      action: "started route to",
-      target: "Downtown District",
-      time: "1 hour ago",
-      type: "route",
-    },
-    {
-      id: 4,
-      user: "David Wilson",
-      action: "updated status to",
-      target: "On Break",
-      time: "2 hours ago",
-      type: "status",
-    },
-    {
-      id: 5,
-      user: "Eva Martinez",
-      action: "logged in from",
-      target: "Mobile App",
-      time: "3 hours ago",
-      type: "login",
-    },
-  ],
-};
 
 export default function Overview({ salesReps: _salesReps }: OverviewProps) {
   // Pagination state for Today's Schedule with proper API params
@@ -103,19 +60,46 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
     customerTypeId: "",
   });
 
+  const [auditPagination, setAuditPagination] = useState<AuditPagination>({
+    page: 1,
+    limit: 10,
+    entity: "",
+    action: undefined,
+  });
+
+  const [selectedDateRange, setSelectedDateRange] = useState<
+    DateRange | undefined
+  >(undefined);
+
   // Get customer data from API with proper parameters
-  const { 
-    data: customersResponse = { list: [], totalCount: 0 }, 
-    isLoading: customersLoading, 
-    totalCount: customerTotalCount = 0 
+  const {
+    data: customersResponse = { list: [], totalCount: 0 },
+    isLoading: customersLoading,
+    totalCount: customerTotalCount = 0,
   } = useGetCustomers(customerPagination);
 
   // Extract customers list from response
   const customers = customersResponse?.list || [];
 
   // Get schedule/visit data from API with proper parameters
-  const { data: scheduleData = [], isLoading: scheduleLoading, totalCount: scheduleTotalCount = 0 } =
-    useGetAllVisit(schedulePagination);
+  const {
+    data: scheduleData = [],
+    isLoading: scheduleLoading,
+    totalCount: scheduleTotalCount = 0,
+  } = useGetAllVisit(schedulePagination);
+
+  // Get Audit logs data from API with proper parameters
+  const {
+    data: auditLogsResponse = {
+      list: [],
+      totalCount: 0,
+      totalPages: 0,
+      currentPage: 1,
+    },
+    isLoading: auditLogsLoading,
+  } = useGetAuditLogs(auditPagination);
+
+  const auditLogsList = auditLogsResponse.list || [];
 
   // Utility function to truncate location text
   const truncateLocation = (location: string, maxLength: number = 50) => {
@@ -127,67 +111,80 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
   // Debounced search for schedule
   const debouncedScheduleSearch = useCallback(
     debounce((value: string) => {
-      setSchedulePagination(prev => ({
+      setSchedulePagination((prev) => ({
         ...prev,
         searchFor: value,
-        page: 1 // Reset to first page when searching
+        page: 1, // Reset to first page when searching
       }));
     }, 800),
     []
   );
 
-  const handleScheduleSearchChange = useCallback((value: string) => {
-    debouncedScheduleSearch(value);
-  }, [debouncedScheduleSearch]);
+  const handleScheduleSearchChange = useCallback(
+    (value: string) => {
+      debouncedScheduleSearch(value);
+    },
+    [debouncedScheduleSearch]
+  );
 
   // Status filter handler
   const handleStatusFilterChange = (value: string) => {
-    setSchedulePagination(prev => ({
+    setSchedulePagination((prev) => ({
       ...prev,
       status: value === "All Status" ? "" : value.toLowerCase(),
-      page: 1 // Reset to first page when filtering
+      page: 1, // Reset to first page when filtering
     }));
   };
 
   // Debounced search for customers
   const debouncedCustomerSearch = useCallback(
     debounce((value: string) => {
-      setCustomerPagination(prev => ({
+      setCustomerPagination((prev) => ({
         ...prev,
         searchFor: value,
-        page: 1 // Reset to first page when searching
+        page: 1, // Reset to first page when searching
       }));
     }, 800),
     []
   );
 
-  const handleCustomerSearchChange = useCallback((value: string) => {
-    debouncedCustomerSearch(value);
-  }, [debouncedCustomerSearch]);
+  const handleCustomerSearchChange = useCallback(
+    (value: string) => {
+      debouncedCustomerSearch(value);
+    },
+    [debouncedCustomerSearch]
+  );
 
   // Industry filter handler
   const handleIndustryFilterChange = (value: string) => {
-    const selectedIndustry = industryList.find(industry => industry.industryName === value);
-    setCustomerPagination(prev => ({
+    const selectedIndustry = industryList.find(
+      (industry) => industry.industryName === value
+    );
+    setCustomerPagination((prev) => ({
       ...prev,
-      industryId: value === "All Industries" ? "" : selectedIndustry?.industryId || "",
-      page: 1 // Reset to first page when filtering
+      industryId:
+        value === "All Industries" ? "" : selectedIndustry?.industryId || "",
+      page: 1, // Reset to first page when filtering
     }));
   };
 
   // Map schedule data to proper format (API handles filtering)
   const mappedScheduleData = scheduleData.map((visit: any) => ({
     ...visit,
-    salesRepName: visit.salesRepresentativeUser ? 
-      `${visit.salesRepresentativeUser.firstName || ""} ${visit.salesRepresentativeUser.lastName || ""}`.trim() || "Unassigned"
+    salesRepName: visit.salesRepresentativeUser
+      ? `${visit.salesRepresentativeUser.firstName || ""} ${visit.salesRepresentativeUser.lastName || ""}`.trim() ||
+        "Unassigned"
       : visit.salesRepresentativeName || "Unassigned",
     customerName: visit.customer?.companyName || visit.customerName || "N/A",
-    formattedDateTime: visit.date && visit.time ? 
-      `${new Date(visit.date).toLocaleDateString()} ${visit.time}` : "N/A",
-    displayStatus: visit.status ? 
-      visit.status.charAt(0).toUpperCase() + visit.status.slice(1) : "Scheduled",
+    formattedDateTime:
+      visit.date && visit.time
+        ? `${new Date(visit.date).toLocaleDateString()} ${visit.time}`
+        : "N/A",
+    displayStatus: visit.status
+      ? visit.status.charAt(0).toUpperCase() + visit.status.slice(1)
+      : "Scheduled",
     displayPriority: visit.priority || "Medium",
-    location: visit.streetAddress || visit.location || "N/A"
+    location: visit.streetAddress || visit.location || "N/A",
   }));
 
   // Get industry data for filter
@@ -196,37 +193,82 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
   // Get current industry filter display value
   const getCurrentIndustryFilterValue = () => {
     if (!customerPagination.industryId) return "All Industries";
-    const selectedIndustry = industryList.find(industry => industry.industryId === customerPagination.industryId);
+    const selectedIndustry = industryList.find(
+      (industry) => industry.industryId === customerPagination.industryId
+    );
     return selectedIndustry?.industryName || "All Industries";
   };
+
+  const debouncedAuditSearch = useCallback(
+    debounce((value: string) => {
+      setAuditPagination((prev) => ({
+        ...prev,
+        entity: value,
+        page: 1,
+      }));
+    }, 300),
+    []
+  );
+
+  const handleAuditSearchChange = useCallback(
+    (value: string) => {
+      debouncedAuditSearch(value);
+    },
+    [debouncedAuditSearch]
+  );
+
+  const handleActionFilterChange = (value: string) => {
+    setAuditPagination((prev) => ({
+      ...prev,
+      page: 1,
+      action: value === "ALL ACTION" ? undefined : value,
+    }));
+  };
+
+  useEffect(() => {
+    if (selectedDateRange?.from && selectedDateRange?.to) {
+      setAuditPagination((prev) => ({
+        ...prev,
+        page: 1,
+        startDate: startOfDay(selectedDateRange.from!).toISOString(),
+        endDate: endOfDay(selectedDateRange.to!).toISOString(),
+      }));
+    } else {
+      // clear filter if no dates selected
+      setAuditPagination((prev) => {
+        const { startDate, endDate, ...rest } = prev;
+        return { ...rest, page: 1 };
+      });
+    }
+  }, [selectedDateRange]);
 
   // Define column types for schedule data
   const scheduleColumns: ColumnDef<unknown>[] = [
     {
-      accessorKey: 'salesRepName',
-      header: 'Sales Rep',
+      accessorKey: "salesRepName",
+      header: "Sales Rep",
       cell: ({ row }) => (
         <div className="font-medium">{(row.original as any).salesRepName}</div>
       ),
     },
     {
-      accessorKey: 'customerName',
-      header: 'Customer',
+      accessorKey: "customerName",
+      header: "Customer",
       cell: ({ row }) => <div>{(row.original as any).customerName}</div>,
     },
     {
-      accessorKey: 'formattedDateTime',
-      header: 'Date & Time',
+      accessorKey: "formattedDateTime",
+      header: "Date & Time",
       cell: ({ row }) => <div>{(row.original as any).formattedDateTime}</div>,
     },
     {
-      accessorKey: 'purpose',
-      header: 'Purpose',
+      accessorKey: "purpose",
+      header: "Purpose",
       cell: ({ row }) => <div>{(row.original as any).purpose || "N/A"}</div>,
     },
     {
-      accessorKey: 'location',
-      header: 'Location',
+      accessorKey: "location",
+      header: "Location",
       cell: ({ row }) => (
         <div title={(row.original as any).location}>
           {truncateLocation((row.original as any).location)}
@@ -234,12 +276,14 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
       ),
     },
     {
-      accessorKey: 'displayStatus',
-      header: 'Status',
+      accessorKey: "displayStatus",
+      header: "Status",
       cell: ({ row }) => (
         <Badge
           variant={
-            (row.original as any).displayStatus.toLowerCase() === "completed" ? "default" : "secondary"
+            (row.original as any).displayStatus.toLowerCase() === "completed"
+              ? "default"
+              : "secondary"
           }
         >
           {(row.original as any).displayStatus}
@@ -247,12 +291,10 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
       ),
     },
     {
-      accessorKey: 'displayPriority',
-      header: 'Priority',
+      accessorKey: "displayPriority",
+      header: "Priority",
       cell: ({ row }) => (
-        <Badge variant="outline">
-          {(row.original as any).displayPriority}
-        </Badge>
+        <Badge variant="outline">{(row.original as any).displayPriority}</Badge>
       ),
     },
   ];
@@ -260,35 +302,111 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
   // Define column types for customer data
   const customerColumns: ColumnDef<unknown>[] = [
     {
-      accessorKey: 'companyName',
-      header: 'Company Name',
+      accessorKey: "companyName",
+      header: "Company Name",
       cell: ({ row }) => (
         <div className="font-medium">
-          {(row.original as any).companyName || (row.original as any).CustomerName || "N/A"}
+          {(row.original as any).companyName ||
+            (row.original as any).CustomerName ||
+            "N/A"}
         </div>
       ),
     },
     {
-      accessorKey: 'customerType.typeName',
-      header: 'Customer Type',
+      accessorKey: "customerType.typeName",
+      header: "Customer Type",
       cell: ({ row }) => (
         <div>{(row.original as any).customerType?.typeName || "N/A"}</div>
       ),
     },
     {
-      accessorKey: 'streetAddress',
-      header: 'Location',
+      accessorKey: "streetAddress",
+      header: "Location",
       cell: ({ row }) => (
-        <div title={(row.original as any).streetAddress || (row.original as any).adminName || "N/A"}>
-          {truncateLocation((row.original as any).streetAddress || (row.original as any).adminName || "N/A")}
+        <div
+          title={
+            (row.original as any).streetAddress ||
+            (row.original as any).adminName ||
+            "N/A"
+          }
+        >
+          {truncateLocation(
+            (row.original as any).streetAddress ||
+              (row.original as any).adminName ||
+              "N/A"
+          )}
         </div>
       ),
     },
     {
-      accessorKey: 'industry.industryName',
-      header: 'Industry',
+      accessorKey: "industry.industryName",
+      header: "Industry",
       cell: ({ row }) => (
         <div>{(row.original as any).industry?.industryName || "N/A"}</div>
+      ),
+    },
+  ];
+
+  // Define column types for Audit log Activities data
+  const auditLogColumns: ColumnDef<any>[] = [
+    {
+      accessorKey: "user",
+      header: "User",
+      cell: ({ row }) => (
+        <div className="font-medium">
+          {row.original?.user?.firstName
+            ? formatName(
+                getFullName(
+                  row.original?.user?.firstName,
+                  row.original?.user?.lastName
+                )
+              )
+            : "System"}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "action",
+      header: "Action",
+      cell: ({ row }) => (
+        <div className="font-medium">{formatName(row.original.action)}</div>
+      ),
+    },
+
+    {
+      accessorKey: "entity",
+      header: "Entity",
+      cell: ({ row }) => (
+        <div className="font-medium">{formatName(row.original.entity)}</div>
+      ),
+    },
+
+    {
+      accessorKey: "timestamp",
+      header: "Date",
+      cell: ({ row }) => (
+        <div>{format(row.original.timestamp, "dd-MM-yyyy, hh:mm a")}</div>
+      ),
+    },
+    {
+      accessorKey: "resource",
+      header: "Resource",
+      cell: ({ row }) => (
+        <LongText className="text-sm max-w-sm">
+          {formatAuditChanges(
+            row.original.oldValue,
+            row.original.newValue,
+            row.original.action,
+            row.original.entity
+          )}
+        </LongText>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: "Status",
+      cell: ({ row }) => (
+        <StatusBadge status={row.original.status.toLowerCase()} />
       ),
     },
   ];
@@ -348,8 +466,12 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
                 />
               </div>
               <Select
-                value={schedulePagination.status ? 
-                  schedulePagination.status.charAt(0).toUpperCase() + schedulePagination.status.slice(1) : "All Status"}
+                value={
+                  schedulePagination.status
+                    ? schedulePagination.status.charAt(0).toUpperCase() +
+                      schedulePagination.status.slice(1)
+                    : "All Status"
+                }
                 onValueChange={handleStatusFilterChange}
               >
                 <SelectTrigger className="w-[140px]">
@@ -373,12 +495,12 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
             currentPage={schedulePagination.page}
             paginationCallbacks={{
               onPaginationChange: (page: number, pageSize: number) => {
-                setSchedulePagination(prev => ({
+                setSchedulePagination((prev) => ({
                   ...prev,
                   page,
-                  limit: pageSize
+                  limit: pageSize,
                 }));
-              }
+              },
             }}
             loading={scheduleLoading}
             key="schedule-table"
@@ -416,7 +538,10 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
                 <SelectContent>
                   <SelectItem value="All Industries">All Industries</SelectItem>
                   {industryList.map((industry) => (
-                    <SelectItem key={industry.industryId} value={industry.industryName}>
+                    <SelectItem
+                      key={industry.industryId}
+                      value={industry.industryName}
+                    >
                       {industry.industryName}
                     </SelectItem>
                   ))}
@@ -433,12 +558,12 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
             currentPage={customerPagination.page}
             paginationCallbacks={{
               onPaginationChange: (page: number, pageSize: number) => {
-                setCustomerPagination(prev => ({
+                setCustomerPagination((prev) => ({
                   ...prev,
                   page,
-                  limit: pageSize
+                  limit: pageSize,
                 }));
-              }
+              },
             }}
             loading={customersLoading}
             key="customer-table"
@@ -446,30 +571,66 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
         </CardContent>
       </Card>
 
-      {/* Recent Activities */}
+      {/* Audit Log  */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Activities</CardTitle>
-          <CardDescription>Latest team activities and updates</CardDescription>
+          <div>
+            <CardTitle>Audit Logs</CardTitle>
+            <CardDescription>
+              Track user activities and system events
+            </CardDescription>
+          </div>
+          <div className="relative flex gap-2 mt-4">
+            <div>
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search By Entity..."
+                className="pl-8 w-[300px]"
+                onChange={(e) => handleAuditSearchChange(e.target.value)}
+              />
+            </div>
+            <DateRangeFilter
+              dateRange={selectedDateRange}
+              setDateRange={setSelectedDateRange}
+              className="w-full max-w-xs"
+            />
+            <Select
+              value={auditPagination.action ?? "ALL ACTION"}
+              onValueChange={handleActionFilterChange}
+            >
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="All Action" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL ACTION">All Action</SelectItem>
+                <SelectItem value="CREATE">Create</SelectItem>
+                <SelectItem value="UPDATE">Update</SelectItem>
+                <SelectItem value="DELETE">Delete</SelectItem>
+                <SelectItem value="USER LOGIN">User Login</SelectItem>
+                <SelectItem value="ADMIN LOGIN">Admin Login</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {mockData.recentActivities.map((activity) => (
-              <div key={activity.id} className="flex items-center space-x-4">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <div className="flex-1">
-                  <p className="text-sm">
-                    <span className="font-medium">{activity.user}</span>{" "}
-                    {activity.action}{" "}
-                    <span className="font-medium">{activity.target}</span>
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {activity.time}
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <CustomDataTable
+            data={auditLogsList}
+            columns={auditLogColumns as any}
+            totalCount={auditLogsResponse.totalCount}
+            currentPage={auditPagination.page}
+            defaultPageSize={auditPagination.limit}
+            paginationCallbacks={{
+              onPaginationChange: (page: number, pageSize: number) => {
+                setAuditPagination((prev) => ({
+                  ...prev,
+                  page,
+                  limit: pageSize,
+                }));
+              },
+            }}
+            loading={auditLogsLoading}
+            key="auditLog"
+          />
         </CardContent>
       </Card>
     </div>
