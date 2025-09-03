@@ -74,7 +74,7 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
         defaultCurrency: "inr", 
         dateFormat: "dd-mm-yyyy", 
         distanceUnit: "kilometers", 
-        ratePerKm: org.rsPerKm?.toString() || "30"
+        ratePerKm: org.rsPerKm?.toString() || ""
       }
       console.log('Form data being set:', newFormData)
       setFormData(newFormData)
@@ -139,23 +139,27 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
 
           {/* Company Information Section */}
           <div className="space-y-6 mb-10">
-            <h3 className="text-lg font-medium text-gray-900">Company Information</h3>
+            <div className="space-y-2">
+              <h3 className="text-lg font-medium text-gray-900">Company Information</h3>
+             
+            </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-2">
                 <Label htmlFor="company-name" className="text-sm font-medium text-gray-700">
-                  Organization Name
+                  Organization Name <span className="text-red-500">*</span>
                 </Label>
                 <Input 
                   id="company-name" 
                   value={formData.organizationName}
                   onChange={(e) => handleInputChange('organizationName', e.target.value)}
+                  placeholder="Enter your organization name"
                   className="h-10"
                 />
             </div>
               
             <div className="space-y-2">
                 <Label htmlFor="timezone" className="text-sm font-medium text-gray-700">
-                  Default Timezone
+                  Default Timezone <span className="text-red-500">*</span>
                 </Label>
                 {/* Set form user system timezone */}
                 <Select
@@ -182,7 +186,7 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
 
               <div className="space-y-2">
                 <Label htmlFor="org-type" className="text-sm font-medium text-gray-700">
-                  Organization Type
+                  Organization Type <span className="text-red-500">*</span>
                 </Label>
                 {orgTypeLoading ? (
                   <div className="text-gray-500 text-sm">Loading...</div>
@@ -209,13 +213,14 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
 
               <div className="space-y-2">
                 <Label htmlFor="website" className="text-sm font-medium text-gray-700">
-                  Website
+                  Website <span className="text-red-500">*</span>
                 </Label>
                 <Input 
                   id="website" 
                   type="url"
                   value={formData.website}
                   onChange={(e) => handleInputChange('website', e.target.value)}
+                  placeholder="https://your-website.com"
                   className="h-10"
                 />
               </div>
@@ -223,7 +228,7 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
 
             <div className="space-y-2">
               <Label htmlFor="description" className="text-sm font-medium text-gray-700">
-                Organization Description
+                Organization Description 
               </Label>
               <Textarea 
                 id="description"
@@ -239,17 +244,20 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
 
           {/* Address Information Section */}
           <div className="space-y-6 mb-10">
-            <h3 className="text-lg font-medium text-gray-900">Address Information</h3>
+            <div className="space-y-2">
+              <h3 className="text-lg font-medium text-gray-900">Address Information</h3>
+            </div>
             
             <div className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="street-address" className="text-sm font-medium text-gray-700">
-                  Street Address
+                  Street Address <span className="text-red-500">*</span>
                 </Label>
                 <Input 
                   id="street-address"
                   value={formData.streetAddress}
                   onChange={(e) => handleInputChange('streetAddress', e.target.value)}
+                  placeholder="Enter street address"
                   className="h-10"
                 />
               </div>
@@ -257,24 +265,26 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label htmlFor="city" className="text-sm font-medium text-gray-700">
-                    City
+                    City <span className="text-red-500">*</span>
                   </Label>
                   <Input 
                     id="city"
                     value={formData.city}
                     onChange={(e) => handleInputChange('city', e.target.value)}
+                    placeholder="Enter city name"
                     className="h-10"
                   />
                 </div>
                 
                 <div className="space-y-2">
                   <Label htmlFor="state" className="text-sm font-medium text-gray-700">
-                    State/Province
+                    State/Province <span className="text-red-500">*</span>
                   </Label>
                   <Input 
                     id="state"
                     value={formData.state}
                     onChange={(e) => handleInputChange('state', e.target.value)}
+                    placeholder="Enter state or province"
                     className="h-10"
                   />
                 </div>
@@ -283,24 +293,26 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
                   <Label htmlFor="zip-code" className="text-sm font-medium text-gray-700">
-                    ZIP/Postal Code
+                    ZIP/Postal Code <span className="text-red-500">*</span>
                   </Label>
                   <Input 
                     id="zip-code"
                     value={formData.zipCode}
                     onChange={(e) => handleInputChange('zipCode', e.target.value)}
+                    placeholder="Enter ZIP or postal code"
                     className="h-10"
                   />
             </div>
                 
             <div className="space-y-2">
                   <Label htmlFor="country" className="text-sm font-medium text-gray-700">
-                    Country
+                    Country <span className="text-red-500">*</span>
                   </Label>
                   <Input 
                     id="country"
                     value={formData.country}
                     onChange={(e) => handleInputChange('country', e.target.value)}
+                    placeholder="Enter country name"
                     className="h-10"
                   />
                 </div>
@@ -315,7 +327,12 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <Label className="text-lg font-medium text-gray-900">Auto-Expense Approval</Label>
-                <p className="text-sm text-gray-600">Automatically approve expenses</p>
+                <p className="text-sm text-gray-600">
+                  {autoExpenseApproval 
+                    ? 'Automatically approve expenses (Rate per KM is required)' 
+                    : 'Manually approve expenses'
+                  }
+                </p>
               </div>
               <Switch 
                 id="auto-expense" 
@@ -327,12 +344,13 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
             {autoExpenseApproval && (
               <div className="space-y-2 mt-4">
                 <Label htmlFor="rate-per-km" className="text-sm font-medium text-gray-700">
-                  Rate Per KM (₹)
+                  Rate Per KM (₹) <span className="text-red-500">*</span>
                 </Label>
                 <Input 
                   id="rate-per-km" 
                   value={formData.ratePerKm}
                   onChange={(e) => handleInputChange('ratePerKm', e.target.value)}
+                  placeholder="30"
                   className="w-32 h-10" 
                   type="number" 
                 />

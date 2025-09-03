@@ -90,7 +90,7 @@ export function CustomerTypeActionForm({
           >
             {/* Customer Type Field */}
             <div className="space-y-2">
-              <Label htmlFor="typeName">Customer Type *</Label>
+              <Label htmlFor="typeName">Customer Type <span className="text-red-500">*</span></Label>
               <Controller
                 name="typeName"
                 control={control}

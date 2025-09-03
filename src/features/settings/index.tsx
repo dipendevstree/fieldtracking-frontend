@@ -6,13 +6,13 @@ import { Main } from "@/components/layout/main"
 import { cn } from "@/lib/utils"
 
 // Import the actual page components
-import ExpenseCategoriesPage from '../settings/Expense-categories'
-import LimitsControlsPage from '../settings/Limits-&-Controls'
-import ApproversPage from '../settings/Approvers'
-import FieldTrackingPage from '../settings/Field-Tracking'
-import NotificationsPage from '../settings/notifications'
-import MobileFeaturesPage from '../settings/Mobile-Features'
-import GeneralSettingsPage from '../settings/General'
+import ExpenseCategoriesPage from './Expense-categories'
+import LimitsControlsPage from './Limits-&-Controls'
+import ApproversPage from './Approvers'
+import FieldTrackingPage from './Field-Tracking'
+import NotificationsPage from './notifications'
+import MobileFeaturesPage from './Mobile-Features'
+import GeneralSettingsPage from './General'
 
 // Define valid tab values with proper typing
 export type SettingsTabValue =
@@ -43,7 +43,7 @@ const SETTINGS_TABS = [
     component: ApproversPage
   },
   {
-    value: '/settings/field-tracking/',
+    value: '/settings/field-tracking',
     label: 'Field Tracking',
     component: FieldTrackingPage
   },

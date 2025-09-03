@@ -1,10 +1,8 @@
 import { create } from 'zustand'
-import { ExpenseLimit, LocationAdjustment, ExpenseExpirySettings, LimitsControlsConfig } from '../type/type'
+import { ExpenseLimit, LimitsControlsConfig } from '../type/type'
 
 // Define the dialog types
-type DialogType = 'add-limit' | 'edit-limit' | 'delete-limit' | 
-                  'add-adjustment' | 'edit-adjustment' | 'delete-adjustment' | 
-                  'edit-expiry-settings' | null
+type DialogType = 'add-limit' | 'edit-limit' | 'delete-limit' | null
 
 // No mock data - using API data only
 
@@ -18,21 +16,9 @@ interface LimitsControlsStoreState {
   currentLimit: ExpenseLimit | null
   setCurrentLimit: (limit: ExpenseLimit | null) => void
   
-  currentAdjustment: LocationAdjustment | null
-  setCurrentAdjustment: (adjustment: LocationAdjustment | null) => void
-  
-  currentExpirySettings: ExpenseExpirySettings | null
-  setCurrentExpirySettings: (settings: ExpenseExpirySettings | null) => void
-  
   // Data lists
   expenseLimits: ExpenseLimit[]
   setExpenseLimits: (limits: ExpenseLimit[]) => void
-  
-  locationAdjustments: LocationAdjustment[]
-  setLocationAdjustments: (adjustments: LocationAdjustment[]) => void
-  
-  expirySettings: ExpenseExpirySettings | null
-  setExpirySettings: (settings: ExpenseExpirySettings | null) => void
   
   // Configuration
   limitsControlsConfig: LimitsControlsConfig | null
@@ -43,27 +29,21 @@ interface LimitsControlsStoreState {
 export const useLimitsControlsStore = create<LimitsControlsStoreState>((set) => ({
   // Dialog state
   open: null,
-  setOpen: (open) => set({ open }),
+  setOpen: (open) => {
+    console.log('Setting dialog open state:', open)
+    set({ open })
+  },
   
   // Current data
   currentLimit: null,
-  setCurrentLimit: (limit) => set({ currentLimit: limit }),
-  
-  currentAdjustment: null,
-  setCurrentAdjustment: (adjustment) => set({ currentAdjustment: adjustment }),
-  
-  currentExpirySettings: null,
-  setCurrentExpirySettings: (settings) => set({ currentExpirySettings: settings }),
+  setCurrentLimit: (limit) => {
+    console.log('Setting current limit:', limit)
+    set({ currentLimit: limit })
+  },
   
   // Data lists - Initialize empty, will be populated by API
   expenseLimits: [],
   setExpenseLimits: (limits) => set({ expenseLimits: limits }),
-  
-  locationAdjustments: [],
-  setLocationAdjustments: (adjustments) => set({ locationAdjustments: adjustments }),
-  
-  expirySettings: null,
-  setExpirySettings: (settings) => set({ expirySettings: settings }),
   
   // Configuration
   limitsControlsConfig: null,

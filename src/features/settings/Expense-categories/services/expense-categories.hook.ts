@@ -30,6 +30,7 @@ export const useCreateExpenseCategory = (onSuccess?: () => void) => {
     url: API.category.create,
     refetchQueries: [EXPENSE_CATEGORIES_QUERY],
     onSuccess: () => {
+      console.log('Expense category created successfully, refetching data...')
       if (onSuccess) {
         onSuccess()
       }
@@ -45,6 +46,7 @@ export const useUpdateExpenseCategory = (id: string, onSuccess?: () => void) => 
     url: `${API.category.update}/${id}`,
     refetchQueries: [EXPENSE_CATEGORIES_QUERY],
     onSuccess: () => {
+      console.log('Expense category updated successfully, refetching data...')
       if (onSuccess) {
         onSuccess()
       }
@@ -60,6 +62,7 @@ export const useDeleteExpenseCategory = (id: string, onSuccess?: () => void) => 
     url: `${API.category.delete}/${id}`,
     refetchQueries: [EXPENSE_CATEGORIES_QUERY],
     onSuccess: () => {
+      console.log('Expense category deleted successfully, refetching data...')
       if (onSuccess && id) onSuccess()
     },
     onError: (error) => {

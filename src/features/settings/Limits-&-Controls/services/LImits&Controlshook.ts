@@ -1,170 +1,102 @@
-import API from '@/config/api/api'
-import useFetchData from '@/hooks/use-fetch-data'
-import usePostData from '@/hooks/use-post-data'
-import useDeleteData from '@/hooks/use-delete-data'
-import usePatchData from '@/hooks/use-patch-data'
-import { ExpenseLimit, LocationAdjustment, ExpenseExpirySettings } from '../type/type'
+import useFetchData from "@/hooks/use-fetch-data";
+import usePostData from "@/hooks/use-post-data";
+import useDeleteData from "@/hooks/use-delete-data";
+import usePatchData from "@/hooks/use-patch-data";
+import { ExpenseLimit } from "../type/type";
+import { toast } from "sonner";
 
-const LIMITS_CONTROLS_QUERY = API.limitsControls.list
+const LIMITS_CONTROLS_QUERY = "expenseLimits/list";
 
 export interface IListParams {
-  sort?: string
-  limit: number
-  page: number
-  searchFor?: string
-  [key: string]: unknown
+  sort?: string;
+  limit: number;
+  page: number;
+  searchFor?: string;
+  [key: string]: unknown;
 }
 
 // Expense Limits
 export interface ExpenseLimitPayload {
-  designation: string
-  tierKey: string
-  expenseCategoryId: string
-  dailyLimit: number
-  monthlyLimit: number
-  isActive: boolean
+  tierKey: string;
+  expenseCategoryId: string;
+  dailyLimit: number;
+  monthlyLimit: number;
+  isActive: boolean;
 }
 
 export interface ExpenseLimitResponse {
-  data: ExpenseLimit
-  message: string
-  statusCode: number
+  data: ExpenseLimit;
+  message: string;
+  statusCode: number;
 }
 
-export const useCreateExpenseLimit = (onSuccess?: () => void) => {
+export const useCreateExpenseLimit = () => {
   return usePostData<ExpenseLimitResponse, ExpenseLimitPayload>({
-    url: API.limitsControls.expenseLimits.create,
+    url: "expenseLimits/create",
     refetchQueries: [LIMITS_CONTROLS_QUERY],
     onSuccess: () => {
-      if (onSuccess) {
-        onSuccess()
-      }
+      console.log("Expense limit created successfully, refetching data...");
+      toast.success("Expense limit created successfully!");
     },
     onError: (error) => {
-      console.error('Error creating expense limit:', error)
+      console.error("Error creating expense limit:", error);
+      toast.error("Failed to create expense limit. Please try again.");
     },
-  })
-}
+  });
+};
 
-export const useUpdateExpenseLimit = (id: string, onSuccess?: () => void) => {
+export const useUpdateExpenseLimit = (id: string) => {
+  if (!id) {
+    return {
+      mutate: () => {
+        toast.error("Cannot update: Expense limit ID is missing");
+      },
+      isPending: false,
+      isSuccess: false,
+      isError: false,
+    };
+  }
+
   return usePatchData<ExpenseLimitResponse, ExpenseLimitPayload>({
-    url: `${API.limitsControls.expenseLimits.update}/${id}`,
+    url: `expenseLimits/patch/${id}`,
     refetchQueries: [LIMITS_CONTROLS_QUERY],
     onSuccess: () => {
-      if (onSuccess) {
-        onSuccess()
-      }
+      toast.success("Expense limit updated successfully!");
     },
-    onError: (error) => {
-      console.error('Error updating expense limit:', error)
+    onError: () => {
+      toast.error("Failed to update expense limit. Please try again.");
     },
-  })
-}
+  });
+};
 
-export const useDeleteExpenseLimit = (id: string, onSuccess?: () => void) => {
+export const useDeleteExpenseLimit = (id: string) => {
+  if (!id) {
+    return {
+      mutate: () => {
+        toast.error("Cannot delete: Expense limit ID is missing");
+      },
+      isPending: false,
+      isSuccess: false,
+      isError: false,
+    };
+  }
+
   return useDeleteData({
-    url: id ? `${API.limitsControls.expenseLimits.delete}/${id}` : API.limitsControls.expenseLimits.delete,
+    url: `expenseLimits/delete/${id}`,
     refetchQueries: [LIMITS_CONTROLS_QUERY],
     onSuccess: () => {
-      if (onSuccess && id) onSuccess()
+      toast.success("Expense limit deleted successfully!");
     },
-    onError: (error) => {
-      console.error('Error deleting expense limit:', error)
+    onError: () => {
+      toast.error("Failed to delete expense limit. Please try again.");
     },
-  })
-}
-
-// Location Adjustments
-export interface LocationAdjustmentPayload {
-  locationType: 'metropolitan' | 'rural' | 'suburban'
-  adjustmentPercentage: number
-  isActive: boolean
-}
-
-export interface LocationAdjustmentResponse {
-  data: LocationAdjustment
-  message: string
-  statusCode: number
-}
-
-export const useCreateLocationAdjustment = (onSuccess?: () => void) => {
-  return usePostData<LocationAdjustmentResponse, LocationAdjustmentPayload>({
-    url: API.limitsControls.locationAdjustments.create,
-    refetchQueries: [LIMITS_CONTROLS_QUERY],
-    onSuccess: () => {
-      if (onSuccess) {
-        onSuccess()
-      }
-    },
-    onError: (error) => {
-      console.error('Error creating location adjustment:', error)
-    },
-  })
-}
-
-export const useUpdateLocationAdjustment = (id: string, onSuccess?: () => void) => {
-  return usePatchData<LocationAdjustmentResponse, LocationAdjustmentPayload>({
-    url: `${API.limitsControls.locationAdjustments.update}/${id}`,
-    refetchQueries: [LIMITS_CONTROLS_QUERY],
-    onSuccess: () => {
-      if (onSuccess) {
-        onSuccess()
-      }
-    },
-    onError: (error) => {
-      console.error('Error updating location adjustment:', error)
-    },
-  })
-}
-
-export const useDeleteLocationAdjustment = (id: string, onSuccess?: () => void) => {
-  return useDeleteData({
-    url: id ? `${API.limitsControls.locationAdjustments.delete}/${id}` : API.limitsControls.locationAdjustments.delete,
-    refetchQueries: [LIMITS_CONTROLS_QUERY],
-    onSuccess: () => {
-      if (onSuccess && id) onSuccess()
-    },
-    onError: (error) => {
-      console.error('Error deleting location adjustment:', error)
-    },
-  })
-}
-
-// Expense Expiry Settings
-export interface ExpenseExpirySettingsPayload {
-  submissionDeadline: number
-  warningPeriod: number
-  autoRejectAfterExpiry: boolean
-  allowLateSubmissions: boolean
-}
-
-export interface ExpenseExpirySettingsResponse {
-  data: ExpenseExpirySettings
-  message: string
-  statusCode: number
-}
-
-export const useUpdateExpenseExpirySettings = (onSuccess?: () => void) => {
-  return usePatchData<ExpenseExpirySettingsResponse, ExpenseExpirySettingsPayload>({
-    url: API.limitsControls.expirySettings.update,
-    refetchQueries: [LIMITS_CONTROLS_QUERY],
-    onSuccess: () => {
-      if (onSuccess) {
-        onSuccess()
-      }
-    },
-    onError: (error) => {
-      console.error('Error updating expiry settings:', error)
-    },
-  })
-}
+  });
+};
 
 // Data fetching hooks
 export interface LimitsControlsListResponse {
-  expenseLimits: ExpenseLimit[]
-  locationAdjustments: LocationAdjustment[]
-  expirySettings: ExpenseExpirySettings
-  totalCount: number
+  list: ExpenseLimit[];
+  totalCount: number;
 }
 
 export const useGetLimitsControlsData = (
@@ -175,15 +107,13 @@ export const useGetLimitsControlsData = (
     url: LIMITS_CONTROLS_QUERY,
     params,
     enabled: options?.enabled ?? true,
-  })
+  });
 
   return {
     ...query,
-    expenseLimits: query.data?.expenseLimits ?? [],
-    locationAdjustments: query.data?.locationAdjustments ?? [],
-    expirySettings: query.data?.expirySettings ?? null,
+    expenseLimits: query.data?.list ?? [],
     totalCount: query.data?.totalCount ?? 0,
     isLoading: query.isLoading,
     error: query.error,
-  }
-}
+  };
+};

@@ -22,10 +22,10 @@ export const generalSettingsFormSchema = z.object({
 export const companyInfoFormSchema = z.object({
   companyName: z.string().min(1, 'Company name is required'),
   defaultTimezone: z.string().min(1, 'Default timezone is required'),
-  contactEmail: z.string().email('Invalid email address').optional().or(z.literal('')),
-  contactPhone: z.string().optional(),
-  address: z.string().optional(),
-  website: z.string().url('Invalid website URL').optional().or(z.literal('')),
+  contactEmail: z.string().min(1, 'Contact email is required').email('Invalid email address'),
+  contactPhone: z.string().min(1, 'Contact phone is required'),
+  address: z.string().min(1, 'Address is required'),
+  website: z.string().min(1, 'Website is required').url('Invalid website URL'),
 })
 
 // Schema for system preferences

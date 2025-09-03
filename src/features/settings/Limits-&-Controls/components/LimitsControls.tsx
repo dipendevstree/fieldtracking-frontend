@@ -4,12 +4,11 @@ import { Plus, Search } from "lucide-react"
 import { LimitsControlsTable } from "./LimitsControlsTable"
 import { PaginationCallbacks } from "@/components/shared/custom-table-pagination"
 import { getExpenseLimitColumns } from "./columns"
-import { ExpenseLimit, LocationAdjustment } from "../type/type"
+import { ExpenseLimit } from "../type/type"
 import { useLimitsControlsStore } from "../store/limits-&-controls.store"
 
 interface LimitsControlsProps {
   expenseLimits: ExpenseLimit[]
-  locationAdjustments: LocationAdjustment[]
   totalCount: number
   loading?: boolean
   paginationCallbacks?: PaginationCallbacks
@@ -33,11 +32,13 @@ export default function LimitsControls({
   }
 
   const handleEditExpenseLimit = (limit: ExpenseLimit) => {
+    console.log('handleEditExpenseLimit called with limit:', limit)
     setCurrentLimit(limit)
     setOpen('edit-limit')
   }
 
   const handleDeleteExpenseLimit = (limit: ExpenseLimit) => {
+    console.log('handleDeleteExpenseLimit called with limit:', limit)
     setCurrentLimit(limit)
     setOpen('delete-limit')
   }

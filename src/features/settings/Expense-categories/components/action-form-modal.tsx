@@ -7,6 +7,7 @@ import {
   useDeleteExpenseCategory,
   useUpdateExpenseCategory,
 } from '../services/expense-categories.hook'
+import { toast } from 'sonner'
 
 export function ExpenseCategoryActionModal() {
   const { open, setOpen, currentCategory, setCurrentCategory } = useExpenseCategoriesStore()
@@ -16,24 +17,20 @@ export function ExpenseCategoryActionModal() {
     isPending: isCreateLoading,
     isSuccess: isCreateSuccess,
     isError: isCreateError,
-  } = useCreateExpenseCategory()
+  } = useCreateExpenseCategory(() => {
+    console.log('Create success callback triggered')
+    closeModal()
+  })
 
   const {
     mutate: updateExpenseCategory,
     isPending: isUpdateLoading,
     isSuccess: isUpdateSuccess,
     isError: isUpdateError,
-  } = useUpdateExpenseCategory(currentCategory?.categoryId || '')
-
-  // Auto-close on successful create/update
-  useEffect(() => {
-    if (
-      (isCreateSuccess && !isCreateError) ||
-      (isUpdateSuccess && !isUpdateError)
-    ) {
-      closeModal()
-    }
-  }, [isCreateSuccess, isCreateError, isUpdateSuccess, isUpdateError])
+  } = useUpdateExpenseCategory(currentCategory?.categoryId || '', () => {
+    console.log('Update success callback triggered')
+    closeModal()
+  })
 
   const closeModal = () => {
     setOpen(null)
@@ -54,20 +51,39 @@ export function ExpenseCategoryActionModal() {
     updateExpenseCategory(payload)
   }
 
-  const { mutate: deleteExpenseCategory } = useDeleteExpenseCategory(
-    currentCategory?.categoryId || '',
-    () => {
-      closeModal()
-    }
-  )
+  const {
+    mutate: deleteExpenseCategory,
+    isSuccess: isDeleteSuccess,
+    isError: isDeleteError,
+  } = useDeleteExpenseCategory(currentCategory?.categoryId || '', () => {
+    console.log('Delete success callback triggered')
+    closeModal()
+  })
   
   const handleDeleteExpenseCategory = () => {
-    if (currentCategory?.categoryId) {
+    try {
+      if (!currentCategory?.categoryId) {
+        toast.error('Category ID is missing')
+        return
+      }
+      
       deleteExpenseCategory()
-    } else {
-      closeModal()
+    } catch (error) {
+      console.error('Error deleting expense category:', error)
+      toast.error('Failed to delete expense category')
     }
   }
+
+  // Auto-close on successful create/update/delete
+  useEffect(() => {
+    if (
+      (isCreateSuccess && !isCreateError) ||
+      (isUpdateSuccess && !isUpdateError) ||
+      (isDeleteSuccess && !isDeleteError)
+    ) {
+      closeModal()
+    }
+  }, [isCreateSuccess, isCreateError, isUpdateSuccess, isUpdateError, isDeleteSuccess, isDeleteError])
 
   return (
     <>

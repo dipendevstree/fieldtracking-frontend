@@ -8,23 +8,12 @@ const API = {
     signup: "auth/signup",
     getDepartment: "department/list",
     organizationTypes: "organizationType/list",
-    setPassword: "auth/changePassword",
-    forgotPassword: "auth/forgot-password",
-    resetPassword: "auth/reset-password",
   },
   category: {
     list: "expensesCategory/list",
     create: "expensesCategory/create",
     delete: "expensesCategory/delete",
     update: "expensesCategory/patch",
-  },
-  expenseCategories: {
-    list: "expenseCategory/list",
-    create: "expenseCategory/create",
-    update: "expenseCategory/patch",
-    delete: "expenseCategory/delete",
-    perDiemSettings: "expenseCategory/per-diem-settings/update",
-    settings: "expenseCategory/settings/update",
   },
   liveTracking: {
     list: "liveTracking/list",
@@ -98,20 +87,11 @@ const API = {
     list: "role/list",
     create: "role/create",
     update: "role/patch",
-    delete: "role/delete",
+    delete: "roles/delete",
     details: "roles/details",
     permissions: "permission/list",
     getAllPermissions: "role",
     organizationMenulist: "organizationMenu/list",
-  },
-  overview: {
-    stats: "overview/stats",
-    salesReps: "overview/sales-reps",
-    activities: "overview/activities",
-    performance: "overview/performance",
-    updateStatus: "overview/update-status",
-    exportReport: "overview/export-report",
-    auditLogList: "auditLog/all",
   },
 
   territories: {
@@ -127,18 +107,10 @@ const API = {
     analytics: "visit/analytics",
     getVisitByID: "visit",
     delete: "visit/delete",
-    visitFeedBack: "visit/visitFeedBack",
-  },
-  dailyExpenses: {
-    list: "expenses/list",
-    getById: "expenses",
-    expenseReviewAndApproval: "expenseReviewAndApproval/create",
-    expenseReviewAndApprovalUpdate: "expenseReviewAndApproval/patch",
   },
   customer: {
     customerList: "customer/list",
   },
-
   drivers: {
     list: "driver/list",
     create: "driver/add-driver",
@@ -146,42 +118,26 @@ const API = {
     delete: "driver/delete",
     details: "driver/driver-documents",
   },
-  approvals: {
-    lists: "approvals/list",
-    action: "approvals/action",
-    stats: "approvals/stats",
-    workflows: "approval-workflows",
-    list: "expenseApprovalLevel/list",
-    create: "expenseApprovalLevel/create",
-    update: "expenseApprovalLevel/patch",
-    delete: "expenseApprovalLevel/multi-delete",
-    organizationCreate: "organization/patch",
+  documents: {
+    list: "document/list",
+    create: "document/create",
+    update: "document/update",
+    delete: "document/delete",
   },
-  generalSettings: {
-    list: "general-settings/list",
-    get: "general-settings",
-    update: "general-settings/patch",
-    create: "general-settings/create",
-    companyInfo: "general-settings/company-info",
-    updateCompanyInfo: "general-settings/company-info/patch",
-    systemPreferences: "general-settings/system-preferences",
-    updateSystemPreferences: "general-settings/system-preferences/patch",
+  notifications: {
+    list: "notification/list",
+    create: "notification/create",
+    update: "notification/update",
+    delete: "notification/delete",
+    details: "notification/detail",
+    sendNotification: "notification/send",
   },
-  limitsControls: {
-    list: "limits-controls/list",
-    expenseLimits: {
-      create: "limits-controls/expense-limits/create",
-      update: "limits-controls/expense-limits/update",
-      delete: "limits-controls/expense-limits/delete",
-    },
-    locationAdjustments: {
-      create: "limits-controls/location-adjustments/create",
-      update: "limits-controls/location-adjustments/update",
-      delete: "limits-controls/location-adjustments/delete",
-    },
-    expirySettings: {
-      update: "limits-controls/expiry-settings/update",
-    },
+  settings: {
+    list: "settings/list",
+    create: "settings/create",
+    update: "settings/update",
+    delete: "settings/delete",
+    details: "settings/detail",
   },
 };
 

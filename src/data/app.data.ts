@@ -47,14 +47,14 @@ export enum EXPENSE_SUB_TYPE {
 }
 
 export enum TIER {
-  TIER_1 = "tier_1",
-  TIER_2 = "tier_2",
-  TIER_3 = "tier_3",
-  TIER_4 = "tier_4",
-  TIER_5 = "tier_5",
-  TIER_6 = "tier_6",
-  TIER_7 = "tier_7",
-  TIER_8 = "tier_8",
-  TIER_9 = "tier_9",
-  TIER_10 = "tier_10",
+  TIER_1 = "Tier 1",
+  TIER_2 = "Tier 2",
+  TIER_3 = "Tier 3",
+  TIER_4 = "Tier 4",
+  TIER_5 = "Tier 5",
+  TIER_6 = "Tier 6",
+  TIER_7 = "Tier 7",
+  TIER_8 = "Tier 8",
+  TIER_9 = "Tier 9",
+  TIER_10 = "Tier 10",
 }

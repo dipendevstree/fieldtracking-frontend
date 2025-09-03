@@ -447,7 +447,7 @@ export default function AddCustomerPage({
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label htmlFor="companyName">Company Name *</Label>
+                          <Label htmlFor="companyName">Company Name <span className="text-red-500">*</span></Label>
                           <Controller
                             name="companyName"
                             control={control}
@@ -475,7 +475,7 @@ export default function AddCustomerPage({
                           )}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="industry">Industry *</Label>
+                          <Label htmlFor="industry">Industry <span className="text-red-500">*</span></Label>
                           <Controller
                             name="industry"
                             control={control}
@@ -527,7 +527,7 @@ export default function AddCustomerPage({
                           )}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="customerType">Customer Type *</Label>
+                          <Label htmlFor="customerType">Customer Type <span className="text-red-500">*</span> </Label>
                           <Controller
                             name="customerType"
                             control={control}
@@ -642,7 +642,7 @@ export default function AddCustomerPage({
                           </RadioGroup>
                         </div>
                         <div className="space-y-2">
-                          <Label>Find Location *</Label>
+                          <Label>Find Location <span className="text-red-500">*</span></Label>
                           {locationInputMode === "search" ? (
                             <Input
                               type="text"
@@ -677,7 +677,7 @@ export default function AddCustomerPage({
                         </div>
 
                         <div className="space-y-2 col-span-2">
-                          <Label>Street Address *</Label>
+                          <Label>Street Address <span className="text-red-500">*</span></Label>
                           <Controller
                             name="address"
                             control={control}
@@ -702,7 +702,7 @@ export default function AddCustomerPage({
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="city">City *</Label>
+                          <Label htmlFor="city">City <span className="text-red-500">*</span></Label>
                           <Controller
                             name="city"
                             control={control}
@@ -728,7 +728,7 @@ export default function AddCustomerPage({
                           )}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="state">State/Province *</Label>
+                          <Label htmlFor="state">State/Province <span className="text-red-500">*</span></Label>
                           <Controller
                             name="state"
                             control={control}
@@ -754,7 +754,7 @@ export default function AddCustomerPage({
                           )}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="zipCode">ZIP/Postal Code *</Label>
+                          <Label htmlFor="zipCode">ZIP/Postal Code <span className="text-red-500">*</span></Label>
                           <Controller
                             name="zipCode"
                             control={control}
@@ -780,7 +780,7 @@ export default function AddCustomerPage({
                           )}
                         </div>
                         <div className="space-y-3">
-                          <Label htmlFor="country">Country *</Label>
+                          <Label htmlFor="country">Country <span className="text-red-500">*</span></Label>
                           <Controller
                             name="country"
                             control={control}
@@ -1039,7 +1039,7 @@ export default function AddCustomerPage({
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="space-y-2">
                               <Label htmlFor={`contact-name-${index}`}>
-                                Contact Name *
+                                Contact Name <span className="text-red-500">*</span>
                               </Label>
                               <Controller
                                 name={`contacts.${index}.name`}
@@ -1099,7 +1099,7 @@ export default function AddCustomerPage({
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor={`contact-email-${index}`}>
-                                Email Address *
+                                Email Address <span className="text-red-500">*</span>
                               </Label>
                               <Controller
                                 name={`contacts.${index}.email`}
@@ -1130,7 +1130,7 @@ export default function AddCustomerPage({
                             </div>
                             <div className="space-y-2">
                               <Label htmlFor={`contact-phone-${index}`}>
-                                Phone Number *
+                                Phone Number <span className="text-red-500">*</span>
                               </Label>
 
                               <Controller

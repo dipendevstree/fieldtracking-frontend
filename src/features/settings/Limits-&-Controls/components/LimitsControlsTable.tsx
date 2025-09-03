@@ -48,6 +48,13 @@ export function LimitsControlsTable<TData>({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [sorting, setSorting] = useState<SortingState>([])
 
+  // Debug logging
+  console.log('LimitsControlsTable:', { 
+    dataLength: data?.length, 
+    totalCount, 
+    loading 
+  })
+
   const table = useReactTable({
     data,
     columns,
@@ -123,7 +130,7 @@ export function LimitsControlsTable<TData>({
                     colSpan={columns.length}
                     className='h-24 text-center'
                   >
-                    No results.
+                    No results. 
                   </TableCell>
                 </TableRow>
               )}

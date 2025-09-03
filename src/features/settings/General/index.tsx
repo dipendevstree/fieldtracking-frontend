@@ -37,6 +37,31 @@ const GeneralSettingsPage = () => {
       return
     }
 
+    // Validate required fields
+    const requiredFields = [
+      'organizationName',
+      'organizationType',
+      'website',
+      'streetAddress',
+      'city',
+      'state',
+      'zipCode',
+      'country'
+    ]
+
+    const missingFields = requiredFields.filter(field => !currentSettingsData[field])
+    
+    if (missingFields.length > 0) {
+      toast.error(`Please fill in all required fields: ${missingFields.join(', ')}`)
+      return
+    }
+
+    // Validate rate per KM when auto-expense is enabled
+    if (currentSettingsData.autoExpenseApproval && (!currentSettingsData.ratePerKm || parseFloat(currentSettingsData.ratePerKm) <= 0)) {
+      toast.error('Rate per KM is required when auto-expense approval is enabled')
+      return
+    }
+
     try {
       // Prepare payload that matches your API structure
       const organizationUpdatePayload = {
