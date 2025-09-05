@@ -30,13 +30,9 @@ export const useCreateExpenseCategory = (onSuccess?: () => void) => {
     url: API.category.create,
     refetchQueries: [EXPENSE_CATEGORIES_QUERY],
     onSuccess: () => {
-      console.log('Expense category created successfully, refetching data...')
       if (onSuccess) {
         onSuccess()
       }
-    },
-    onError: (error) => {
-      console.error('Error creating expense category:', error)
     },
   })
 }
@@ -46,29 +42,29 @@ export const useUpdateExpenseCategory = (id: string, onSuccess?: () => void) => 
     url: `${API.category.update}/${id}`,
     refetchQueries: [EXPENSE_CATEGORIES_QUERY],
     onSuccess: () => {
-      console.log('Expense category updated successfully, refetching data...')
       if (onSuccess) {
         onSuccess()
       }
-    },
-    onError: (error) => {
-      console.error('Error updating expense category:', error)
     },
   })
 }
 
 export const useDeleteExpenseCategory = (id: string, onSuccess?: () => void) => {
-  return useDeleteData({
-    url: `${API.category.delete}/${id}`,
+  const deleteHook = useDeleteData({
+    url: id ? `${API.category.delete}/${id}` : API.category.delete,
     refetchQueries: [EXPENSE_CATEGORIES_QUERY],
     onSuccess: () => {
-      console.log('Expense category deleted successfully, refetching data...')
       if (onSuccess && id) onSuccess()
     },
-    onError: (error) => {
-      console.error('Error deleting expense category:', error)
-    },
   })
+  if (!id) {
+    return {
+      ...deleteHook,
+      mutate: () => {
+      },
+    }
+  }
+  return deleteHook
 }
 
 // Per Diem Settings

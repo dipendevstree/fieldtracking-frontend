@@ -12,6 +12,23 @@ import { toast } from 'sonner'
 export function ExpenseCategoryActionModal() {
   const { open, setOpen, currentCategory, setCurrentCategory } = useExpenseCategoriesStore()
   
+  // Debug: Log the current category structure and find correct ID field
+  useEffect(() => {
+    if (currentCategory) {
+      console.log('Current category object:', currentCategory)
+      console.log('Available fields in currentCategory:', Object.keys(currentCategory))
+      console.log('categoryId value:', currentCategory.categoryId)
+      // Check for alternative ID field names
+      const altId = (currentCategory as any).id || (currentCategory as any).expensesCategoryId || (currentCategory as any).expenseCategoryId
+      console.log('Alternative ID value:', altId)
+    }
+  }, [currentCategory])
+  
+  // Helper function to get the correct ID field
+  const getCategoryId = (category: any) => {
+    return category?.categoryId || category?.id || category?.expensesCategoryId || category?.expenseCategoryId || ''
+  }
+  
   const {
     mutate: createExpenseCategory,
     isPending: isCreateLoading,
@@ -27,7 +44,7 @@ export function ExpenseCategoryActionModal() {
     isPending: isUpdateLoading,
     isSuccess: isUpdateSuccess,
     isError: isUpdateError,
-  } = useUpdateExpenseCategory(currentCategory?.categoryId || '', () => {
+  } = useUpdateExpenseCategory(getCategoryId(currentCategory), () => {
     console.log('Update success callback triggered')
     closeModal()
   })
@@ -45,28 +62,42 @@ export function ExpenseCategoryActionModal() {
   }
 
   const handleUpdateExpenseCategory = (values: any) => {
-    const payload = {
-      categoryName: values.categoryName.trim(),
+    try {
+      const categoryId = getCategoryId(currentCategory)
+      if (!categoryId) {
+        console.error('No category ID found for update. Current category:', currentCategory)
+        toast.error('Category ID is missing. Please refresh and try again.')
+        return
+      }
+      
+      const payload = {
+        categoryName: values.categoryName.trim(),
+      }
+      
+      console.log('Updating category with ID:', categoryId, 'Payload:', payload)
+      updateExpenseCategory(payload)
+    } catch (error) {
+      console.error('Error updating expense category:', error)
+      toast.error('Failed to update expense category')
     }
-    updateExpenseCategory(payload)
   }
 
   const {
     mutate: deleteExpenseCategory,
     isSuccess: isDeleteSuccess,
     isError: isDeleteError,
-  } = useDeleteExpenseCategory(currentCategory?.categoryId || '', () => {
-    console.log('Delete success callback triggered')
-    closeModal()
-  })
+  } = useDeleteExpenseCategory(getCategoryId(currentCategory));
   
   const handleDeleteExpenseCategory = () => {
     try {
-      if (!currentCategory?.categoryId) {
-        toast.error('Category ID is missing')
+      const categoryId = getCategoryId(currentCategory)
+      if (!categoryId) {
+        console.error('No category ID found. Current category:', currentCategory)
+        toast.error('Category ID is missing. Please refresh and try again.')
         return
       }
       
+      console.log('Deleting category with ID:', categoryId)
       deleteExpenseCategory()
     } catch (error) {
       console.error('Error deleting expense category:', error)

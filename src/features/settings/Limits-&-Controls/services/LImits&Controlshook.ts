@@ -1,11 +1,11 @@
+import API from "@/config/api/api";
 import useFetchData from "@/hooks/use-fetch-data";
 import usePostData from "@/hooks/use-post-data";
 import useDeleteData from "@/hooks/use-delete-data";
 import usePatchData from "@/hooks/use-patch-data";
 import { ExpenseLimit } from "../type/type";
-import { toast } from "sonner";
 
-const LIMITS_CONTROLS_QUERY = "expenseLimits/list";
+const LIMITS_CONTROLS_QUERY = API.expenseLimit.list;
 
 export interface IListParams {
   sort?: string;
@@ -30,68 +30,47 @@ export interface ExpenseLimitResponse {
   statusCode: number;
 }
 
-export const useCreateExpenseLimit = () => {
+export const useCreateExpenseLimit = (onSuccess?: () => void) => {
   return usePostData<ExpenseLimitResponse, ExpenseLimitPayload>({
-    url: "expenseLimits/create",
+    url: API.expenseLimit.create,
     refetchQueries: [LIMITS_CONTROLS_QUERY],
     onSuccess: () => {
-      console.log("Expense limit created successfully, refetching data...");
-      toast.success("Expense limit created successfully!");
+      if (onSuccess) {
+        onSuccess()
+      }
     },
-    onError: (error) => {
-      console.error("Error creating expense limit:", error);
-      toast.error("Failed to create expense limit. Please try again.");
-    },
-  });
-};
+  })
+}
 
-export const useUpdateExpenseLimit = (id: string) => {
-  if (!id) {
-    return {
-      mutate: () => {
-        toast.error("Cannot update: Expense limit ID is missing");
-      },
-      isPending: false,
-      isSuccess: false,
-      isError: false,
-    };
-  }
-
+export const useUpdateExpenseLimit = (id: string, onSuccess?: () => void) => {
   return usePatchData<ExpenseLimitResponse, ExpenseLimitPayload>({
-    url: `expenseLimits/patch/${id}`,
+    url: `${API.expenseLimit.update}/${id}`,
     refetchQueries: [LIMITS_CONTROLS_QUERY],
     onSuccess: () => {
-      toast.success("Expense limit updated successfully!");
+      if (onSuccess) {
+        onSuccess()
+      }
     },
-    onError: () => {
-      toast.error("Failed to update expense limit. Please try again.");
-    },
-  });
-};
+  })
+}
 
-export const useDeleteExpenseLimit = (id: string) => {
+export const useDeleteExpenseLimit = (id: string, onSuccess?: () => void) => {
+  const deleteHook = useDeleteData({
+    url: id ? `${API.expenseLimit.delete}/${id}` : API.expenseLimit.delete,
+    refetchQueries: [LIMITS_CONTROLS_QUERY],
+    onSuccess: () => {
+      if (onSuccess && id) onSuccess()
+    },
+  })
   if (!id) {
     return {
+      ...deleteHook,
       mutate: () => {
-        toast.error("Cannot delete: Expense limit ID is missing");
       },
-      isPending: false,
-      isSuccess: false,
-      isError: false,
-    };
+    }
   }
-
-  return useDeleteData({
-    url: `expenseLimits/delete/${id}`,
-    refetchQueries: [LIMITS_CONTROLS_QUERY],
-    onSuccess: () => {
-      toast.success("Expense limit deleted successfully!");
-    },
-    onError: () => {
-      toast.error("Failed to delete expense limit. Please try again.");
-    },
-  });
-};
+  return deleteHook
+}
 
 // Data fetching hooks
 export interface LimitsControlsListResponse {
@@ -115,5 +94,5 @@ export const useGetLimitsControlsData = (
     totalCount: query.data?.totalCount ?? 0,
     isLoading: query.isLoading,
     error: query.error,
-  };
+};
 };

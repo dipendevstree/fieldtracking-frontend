@@ -1,8 +1,8 @@
 import { Controller, useForm } from 'react-hook-form'
-import { useEffect } from 'react'
 import { DialogClose, DialogDescription } from '@radix-ui/react-dialog'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlertCircle } from 'lucide-react'
+import { useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -21,17 +21,17 @@ import {
   expenseLimitFormSchema, 
   TExpenseLimitFormSchema
 } from '../data/schema'
-import { ExpenseLimit } from '../type/type'
 import { TIER } from '@/data/app.data'
+import { ExpenseCategory } from '../../Expense-categories/type/type'
 
 
 // Expense Limit Action Form
-interface ExpenseLimitFormProps {
-  currentLimit?: Partial<ExpenseLimit>
+interface Props {
+  currentLimit?: Partial<TExpenseLimitFormSchema>
   open: boolean
   onOpenChange: (open: boolean) => void
   loading?: boolean
-  expenseCategories?: any[]
+  expenseCategories?: ExpenseCategory[]
   onSubmit: (values: TExpenseLimitFormSchema) => void
 }
 
@@ -42,7 +42,7 @@ export function ExpenseLimitActionForm({
   onSubmit: onSubmitValues,
   loading,
   expenseCategories = [],
-}: ExpenseLimitFormProps) {
+}: Props) {
   const isEdit = !!currentLimit
 
   // Define tier options using the TIER enum from app.data.ts
@@ -54,13 +54,18 @@ export function ExpenseLimitActionForm({
   const form = useForm<TExpenseLimitFormSchema>({
     resolver: zodResolver(expenseLimitFormSchema),
     defaultValues: {
-      tierkey: currentLimit?.tierKey ?? '',
-      expenseCategoryId: currentLimit?.expenseCategoryId ?? '',
-      dailyLimit: currentLimit?.dailyLimit ?? 0,
-      monthlyLimit: currentLimit?.monthlyLimit ?? 0,
-      isActive: currentLimit?.isActive ?? true,
+      tierkey: '',
+      expenseCategoryId: '',
+      dailyLimit: 0,
+      monthlyLimit: 0,
+      isActive: true,
     },
-  })
+    mode: 'onChange', // Enable real-time validation
+  });
+
+  // Debug form state
+  const watchedValues = form.watch();
+  console.log('Form watched values:', watchedValues);
 
   const {
     control,
@@ -69,32 +74,56 @@ export function ExpenseLimitActionForm({
     formState: { errors },
   } = form
 
+  const onSubmit = (values: TExpenseLimitFormSchema) => {
+    console.log('Form submission triggered with values:', values);
+    console.log('Form errors:', errors);
+    console.log('Form is valid:', Object.keys(errors).length === 0);
+    
+    try {
+      onSubmitValues(values);
+    } catch (error) {
+      console.error('Error during form submission:', error);
+    }
+  }
 
-
-  // Reset form on successful submission (for create mode)
+  // Reset form values when currentLimit changes (for edit mode)
   useEffect(() => {
-    if (!loading && !isEdit) {
+    console.log('Form reset triggered:', { currentLimit, isEdit });
+    if (currentLimit && isEdit) {
+      const resetValues = {
+        tierkey: currentLimit.tierkey || '',
+        expenseCategoryId: currentLimit.expenseCategoryId || '',
+        dailyLimit: currentLimit.dailyLimit || 0,
+        monthlyLimit: currentLimit.monthlyLimit || 0,
+        isActive: currentLimit.isActive ?? true,
+      };
+      console.log('Resetting form with values:', resetValues);
+      reset(resetValues);
+    } else if (!currentLimit) {
+      const defaultValues = {
+        tierkey: '',
+        expenseCategoryId: '',
+        dailyLimit: 0,
+        monthlyLimit: 0,
+        isActive: true,
+      };
+      console.log('Resetting form to default values:', defaultValues);
+      reset(defaultValues);
+    }
+  }, [currentLimit, isEdit, reset])
+
+  const handleDialogChange = (state: boolean) => {
+    if (!state) {
+      // Reset form to default values when closing
       reset({
         tierkey: '',
         expenseCategoryId: '',
         dailyLimit: 0,
         monthlyLimit: 0,
         isActive: true,
-      })
+      });
     }
-  }, [loading, isEdit, reset])
-
-  const onSubmit = (values: TExpenseLimitFormSchema) => {
-    console.log('Form submitted with values:', values)
-    onSubmitValues(values)
-  }
-
-  const handleDialogChange = (state: boolean) => {
-    if (!state) {
-      reset()
-      console.log('Expense limit form reset on dialog close')
-    }
-    onOpenChange(state)
+    onOpenChange(state);
   }
 
   return (
@@ -152,33 +181,69 @@ export function ExpenseLimitActionForm({
 
             {/* Category Field */}
             <div className='space-y-2 w-full'>
-              <Label htmlFor='category'>Category <span className="text-red-500">*</span></Label>
+              <Label htmlFor='expenseCategoryId'>Category <span className="text-red-500">*</span></Label>
               <Controller
                 name='expenseCategoryId'
                 control={control}
-                render={({ field }) => (
-                  <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger className='w-full'>
-                      <SelectValue placeholder='Select category' />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {expenseCategories.length === 0 ? (
-                        <SelectItem value="no-categories" disabled>
-                          No categories available
-                        </SelectItem>
-                      ) : (
-                        expenseCategories.map((category) => {
-                          console.log('Rendering category:', category)
-                          return (
-                            <SelectItem key={category.expenseCategoryId} value={category.expenseCategoryId}>
-                              {category.categoryName}
-                            </SelectItem>
-                          )
-                        })
-                      )}
-                    </SelectContent>
-                  </Select>
-                )}
+                render={({ field }) => {
+                  console.log('Category field render:', {
+                    fieldValue: field.value,
+                    fieldValueType: typeof field.value,
+                    availableCategoriesCount: expenseCategories?.length || 0,
+                    isEdit,
+                    currentLimit: currentLimit?.expenseCategoryId
+                  });
+                  
+                  // Find the selected category to display its name
+                  const selectedCategory = expenseCategories?.find(cat => {
+                    return String(cat.categoryId) === String(field.value);
+                  });
+                  
+                  const selectedCategoryName = selectedCategory 
+                    ? selectedCategory.categoryName
+                    : '';
+
+                  return (
+                    <Select 
+                      value={field.value || ''} 
+                      onValueChange={(value) => {
+                        console.log('Category selected:', value);
+                        field.onChange(value);
+                      }}
+                    >
+                      <SelectTrigger className='w-full'>
+                        <SelectValue placeholder='Select category'>
+                          {selectedCategoryName || ''}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {expenseCategories?.length > 0 ? (
+                          expenseCategories.map((category) => {
+                            console.log('Rendering category:', { 
+                              categoryId: category.categoryId, 
+                              categoryName: category.categoryName, 
+                              category 
+                            });
+                            
+                            return (
+                              <SelectItem 
+                                key={category.categoryId} 
+                                value={String(category.categoryId)}
+                                className="cursor-pointer"
+                              >
+                                {category.categoryName}
+                              </SelectItem>
+                            );
+                          })
+                        ) : (
+                          <SelectItem value="no-categories" disabled>
+                            No categories available
+                          </SelectItem>
+                        )}
+                      </SelectContent>
+                    </Select>
+                  );
+                }}
               />
               {errors.expenseCategoryId && (
                 <p className='flex items-center gap-1 text-xs text-red-500'>

@@ -24,11 +24,11 @@ export default function UserPolylineMap({
   currentPosition,
   selectedUser,
 }: UserPolylineMapProps) {
-  const [showLabels, setShowLabels] = useState(false); // 🔘 Toggle state
+  const [showLabels, setShowLabels] = useState(false); 
 
   return (
     <>
-      {/* 🟢 Toggle Button */}
+      
       <div
         style={{
           position: "absolute",
@@ -68,7 +68,6 @@ export default function UserPolylineMap({
         />
       )}
 
-      {/* 🟢 Show trail dots only if toggle is ON */}
       {showLabels &&
         path.slice(0, -1).map(
           (pos, idx) =>

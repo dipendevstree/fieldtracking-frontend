@@ -74,7 +74,6 @@ export const useGetAllCustomerType = (
 }
 
 export const useDeleteCustomerType = (id: string, onSuccess?: () => void) => {
-  // Use a dummy hook for empty ID that maintains the same return shape
   const deleteHook = useDeleteData({
     url: id ? `${API.customerType.delete}/${id}` : API.customerType.delete,
     refetchQueries: [CUSTOMER_TYPE_QUERY],
@@ -82,16 +81,12 @@ export const useDeleteCustomerType = (id: string, onSuccess?: () => void) => {
       if (onSuccess && id) onSuccess()
     },
   })
-  
-  // If ID is empty, override the mutate function to do nothing
   if (!id) {
     return {
       ...deleteHook,
       mutate: () => {
-        // Do nothing if ID is missing
       },
     }
   }
-  
   return deleteHook
 }

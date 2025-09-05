@@ -1,151 +1,37 @@
-import { useState } from 'react'
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from '@tanstack/react-table'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { TableLoader } from '@/components/shared/custom-table-loader'
-import {
-  GlobalPagination,
-  PaginationCallbacks,
-} from '@/components/shared/custom-table-pagination'
+import { ColumnDef } from '@tanstack/react-table'
+import { CustomDataTable } from '@/components/shared/custom-data-table'
+import { PaginationCallbacks } from '@/components/shared/custom-table-pagination'
+import { ExpenseLimit } from '../type/type'
 
-interface LimitsControlsTableProps<TData> {
-  columns: ColumnDef<TData>[]
-  data: TData[]
+interface LimitsControlsTableProps {
+  data: ExpenseLimit[]
+  columns: ColumnDef<ExpenseLimit>[]
   totalCount: number
   loading?: boolean
-  currentPage?: number
   paginationCallbacks?: PaginationCallbacks
-  defaultPageSize?: number
+  currentPage?: number
 }
 
-export function LimitsControlsTable<TData>({
-  columns,
+export function LimitsControlsTable({
   data,
+  columns,
   totalCount,
   loading,
-  currentPage,
   paginationCallbacks,
-  defaultPageSize = 10,
-}: LimitsControlsTableProps<TData>) {
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [sorting, setSorting] = useState<SortingState>([])
-
-  // Debug logging
-  console.log('LimitsControlsTable:', { 
-    dataLength: data?.length, 
-    totalCount, 
-    loading 
-  })
-
-  const table = useReactTable({
-    data,
-    columns,
-    state: {
-      sorting,
-      columnVisibility,
-      columnFilters,
-    },
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-  })
+  currentPage,
+}: LimitsControlsTableProps) {
 
   return (
-    <div className='space-y-4 rounded-xl p-4 shadow'>
-      <div className='rounded-md border'>
-        {loading && <TableLoader columnsLength={columns.length} />}
-
-        {!loading && (
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id} className='group/row'>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <TableHead
-                        key={header.id}
-                        colSpan={header.colSpan}
-                        className={
-                          header.column.columnDef.meta?.className ?? ''
-                        }
-                      >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    )
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && 'selected'}
-                    className='group/row'
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell
-                        key={cell.id}
-                        className={cell.column.columnDef.meta?.className ?? ''}
-                      >
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className='h-24 text-center'
-                  >
-                    No results. 
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        )}
-      </div>
-      <GlobalPagination
+    <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
+      <CustomDataTable
+        paginationCallbacks={paginationCallbacks}
+        loading={loading}
+        data={data}
         currentPage={currentPage}
-        defaultPageSize={defaultPageSize}
-        table={table}
-        buttonSize='md'
-        callbacks={paginationCallbacks}
+        columns={columns as ColumnDef<unknown>[]}
         totalCount={totalCount}
+        key={'limitsControls'}
       />
     </div>
   )
-} 
+}

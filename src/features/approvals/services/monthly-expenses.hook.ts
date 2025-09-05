@@ -3,7 +3,7 @@ import { useGetAllRolesForDropdown } from '@/features/UserManagement/services/Ro
 import { useGetUsersForDropdown } from '@/features/buyers/services/users.hook'
 import API from '@/config/api/api'
 
-const MONTHLY_EXPENSES_QUERY = API.monthlyExpenses.consolidated
+const MONTHLY_EXPENSES_QUERY = API.Expenses.consolidated
 
 export interface IMonthlyExpensesParams {
   limit: number
@@ -27,6 +27,7 @@ export interface MonthlyExpenseData {
 export interface MonthlyExpensesResponse {
   list: MonthlyExpenseData[]
   totalCount: number
+  currentPage?: number
 }
 
 export const useGetMonthlyExpensesData = (
@@ -38,7 +39,6 @@ export const useGetMonthlyExpensesData = (
     params,
     enabled: options?.enabled ?? true,
   })
-
   return {
     ...query,
     monthlyExpenses: query.data?.list ?? [],

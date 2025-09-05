@@ -1,17 +1,23 @@
 import { useState, useCallback } from "react";
+import { useForm } from "react-hook-form";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import { cn } from "@/lib/utils";
 import { Main } from "@/components/layout/main";
 import LimitsControls from "./components/LimitsControls";
 import { LimitsControlsActionModal } from "./components/action-form-modal";
-import { useGetLimitsControlsData } from "./services/LImits&Controlshook";
+import { useGetLimitsControlsData, IListParams } from "./services/LImits&Controlshook";
 import debounce from "lodash.debounce";
+import { FilterConfig } from "@/components/global-filter-section";
 
 const LimitsControlsPage = () => {
-  const [pagination, setPagination] = useState({
+  const [pagination, setPagination] = useState<IListParams>({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
     searchFor: "",
+  });
+
+  const { watch, setValue } = useForm({
+    defaultValues: { search: "" },
   });
 
   const {
@@ -21,31 +27,23 @@ const LimitsControlsPage = () => {
     error,
   } = useGetLimitsControlsData(pagination);
 
-  // Debug logging
-  console.log("LimitsControlsPage:", {
-    expenseLimits: expenseLimits?.length,
-    totalCount,
-    isLoading,
-  });
 
   const debouncedSearch = useCallback(
-    debounce((searchTerm: string) => {
+    debounce((value: string) => {
       setPagination((prev) => ({
         ...prev,
-        searchFor: searchTerm,
-        page: 1,
+        searchFor: value,
+        page: 1, // Reset to first page when searching
       }));
-    }, 500), // Reduced debounce time for better responsiveness
+    }, 800), // Consistent with monthly-expense pattern
     []
   );
 
-  // Handle search change
-  const handleSearchChange = useCallback(
-    (searchTerm: string) => {
-      debouncedSearch(searchTerm);
-    },
-    [debouncedSearch]
-  );
+  const handleGlobalSearchChange = (value: string | undefined) => {
+    const searchValue = value ?? ''
+    setValue('search', searchValue)
+    debouncedSearch(searchValue)
+  }
 
   // Handle pagination change
   const handlePaginationChange = useCallback(
@@ -60,21 +58,23 @@ const LimitsControlsPage = () => {
   );
 
   if (error) {
-    console.warn("API Error (using mock data):", error);
+    console.error("Limits Controls Error:", error);
   }
+
+  const filters: FilterConfig[] = [
+    {
+      key: 'search',
+      type: 'search',
+      onChange: handleGlobalSearchChange,
+      placeholder: 'Search by tier, category...',
+      value: watch('search'),
+    },
+  ];
 
   return (
     <Main className={cn("flex flex-col gap-2 p-4")}>
       {/* Limits Controls Configuration Section */}
       <div className="mt-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold">Expense Limits & Controls</h1>
-          <p className="text-muted-foreground">
-            Configure expense limits based on designation, location, and
-            category.
-          </p>
-        </div>
-
         <LimitsControls
           expenseLimits={expenseLimits}
           totalCount={totalCount}
@@ -83,7 +83,7 @@ const LimitsControlsPage = () => {
             onPaginationChange: handlePaginationChange,
           }}
           currentPage={pagination.page}
-          onSearchChange={handleSearchChange}
+          filters={filters}
         />
       </div>
 

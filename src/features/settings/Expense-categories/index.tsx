@@ -34,6 +34,11 @@ const ExpenseCategoriesPage = () => {
       error,
       pagination,
     })
+    // Log individual category structure to debug ID field
+    if (expenseCategories && expenseCategories.length > 0) {
+      console.log('First category structure:', expenseCategories[0])
+      console.log('Available fields:', Object.keys(expenseCategories[0]))
+    }
   }, [expenseCategories, totalCount, isLoading, error, pagination])
 
   if (error) {

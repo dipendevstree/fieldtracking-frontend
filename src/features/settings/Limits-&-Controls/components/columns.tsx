@@ -9,6 +9,7 @@ export const getExpenseLimitColumns = (
   onEdit: (limit: ExpenseLimit) => void,
   onDelete: (limit: ExpenseLimit) => void
 ): ColumnDef<ExpenseLimit>[] => [
+
   {
     accessorKey: 'tierKey',
     header: ({ column }) => (
@@ -24,9 +25,13 @@ export const getExpenseLimitColumns = (
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title='Category' />
     ),
-    cell: ({ row }) => (
-      <div className="font-medium">{row.original.expenseCategoryId}</div>
-    ),
+    cell: ({ row }) => {
+      // Display category name if available, otherwise show ID
+      const categoryName = row.original.expenseCategoryId
+      return (
+        <div className="font-medium">{categoryName}</div>
+      )
+    },
     enableSorting: false,
   },
   {

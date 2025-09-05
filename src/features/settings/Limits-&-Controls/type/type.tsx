@@ -1,6 +1,6 @@
 export interface ExpenseLimit {
-  limitId: string
-  designation: string
+  expenseLimitId: string
+  typeName: string
   tierKey: string
   expenseCategoryId: string
   dailyLimit: number

@@ -1,11 +1,12 @@
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Plus, Search } from "lucide-react"
+import { Plus } from "lucide-react"
 import { LimitsControlsTable } from "./LimitsControlsTable"
 import { PaginationCallbacks } from "@/components/shared/custom-table-pagination"
 import { getExpenseLimitColumns } from "./columns"
 import { ExpenseLimit } from "../type/type"
 import { useLimitsControlsStore } from "../store/limits-&-controls.store"
+import { FilterConfig } from "@/components/global-filter-section"
+import GlobalFilterSection from "@/components/global-table-filter-section"
 
 interface LimitsControlsProps {
   expenseLimits: ExpenseLimit[]
@@ -13,7 +14,8 @@ interface LimitsControlsProps {
   loading?: boolean
   paginationCallbacks?: PaginationCallbacks
   currentPage?: number
-  onSearchChange?: (value: string) => void
+  filters?: FilterConfig[]
+  onSearchChange?: (searchValue: string) => void
 }
 
 export default function LimitsControls({
@@ -22,7 +24,7 @@ export default function LimitsControls({
   loading,
   paginationCallbacks,
   currentPage,
-  onSearchChange,
+  filters,
 }: LimitsControlsProps) {
   const { setOpen, setCurrentLimit } = useLimitsControlsStore()
 
@@ -32,13 +34,11 @@ export default function LimitsControls({
   }
 
   const handleEditExpenseLimit = (limit: ExpenseLimit) => {
-    console.log('handleEditExpenseLimit called with limit:', limit)
     setCurrentLimit(limit)
     setOpen('edit-limit')
   }
 
   const handleDeleteExpenseLimit = (limit: ExpenseLimit) => {
-    console.log('handleDeleteExpenseLimit called with limit:', limit)
     setCurrentLimit(limit)
     setOpen('delete-limit')
   }
@@ -51,20 +51,20 @@ export default function LimitsControls({
   return (
     <div className="space-y-6">
       
-      {/* Search and Add Button Row */}
-      <div className="flex items-center justify-between">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search expense limits..."
-            className="pl-10"
-            onChange={(e) => onSearchChange?.(e.target.value)}
-          />
+      {/* Header, Search, and Add Button Card */}
+      <div className="bg-white rounded-lg border p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-2xl font-bold">Expense Limits & Controls</h1>
+          <Button onClick={handleAddExpenseLimit}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Limit
+          </Button>
         </div>
-        <Button onClick={handleAddExpenseLimit}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Limit
-        </Button>
+        
+        {/* Search Section */}
+        {filters && (
+          <GlobalFilterSection key={'limits-controls-filters'} filters={filters} />
+        )}
       </div>
 
       {/* Table */}
@@ -75,7 +75,7 @@ export default function LimitsControls({
         loading={loading}
         currentPage={currentPage}
         paginationCallbacks={paginationCallbacks}
-        defaultPageSize={10}
+      
       />
     </div>
   )

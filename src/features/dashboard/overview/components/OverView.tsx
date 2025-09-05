@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import {
   Card,
@@ -14,6 +14,7 @@ import { SalesRep, DashboardKPI, AuditPagination } from "../type/type";
 import { useGetCustomers } from "@/features/customers/services/Customers.hook";
 import { useGetAllVisit } from "@/features/calendar/services/calendar-view.hook";
 import { useGetIndustry } from "@/features/customers/services/Customers.hook";
+import { useGetUsers } from "@/features/livetracking/services/live-tracking-services";
 import {
   Select,
   SelectContent,
@@ -88,6 +89,16 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
     totalCount: scheduleTotalCount = 0,
   } = useGetAllVisit(schedulePagination);
 
+  // Get live tracking users data to count active users
+  const {
+    listData: liveTrackingUsers = [],
+    isLoading: liveTrackingLoading,
+  } = useGetUsers({
+    page: 1,
+    limit: 1000, // Get all users to count them
+    includeLatLong: true,
+  });
+
   // Get Audit logs data from API with proper parameters
   const {
     data: auditLogsResponse = {
@@ -100,6 +111,37 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
   } = useGetAuditLogs(auditPagination);
 
   const auditLogsList = auditLogsResponse.list || [];
+
+    // Calculate dashboard metrics
+    const dashboardMetrics = useMemo(() => {
+      // Calculate Total Sales Reps from schedule data
+      const uniqueSalesReps = new Set();
+      scheduleData.forEach((visit: any) => {
+        if (visit.salesRepresentativeUser?.id) {
+          uniqueSalesReps.add(visit.salesRepresentativeUser.id);
+        } else if (visit.salesRepresentativeUserId) {
+          uniqueSalesReps.add(visit.salesRepresentativeUserId);
+        }
+      });
+  
+      // Calculate Active in Field from live tracking data
+      const activeUsers = liveTrackingUsers.filter((user: any) => user.isOnline).length;
+  
+      // Debug logging
+      console.log('Dashboard Metrics Calculation:', {
+        scheduleDataCount: scheduleData.length,
+        uniqueSalesRepsCount: uniqueSalesReps.size,
+        liveTrackingUsersCount: liveTrackingUsers.length,
+        activeUsersCount: activeUsers,
+        uniqueSalesRepsArray: Array.from(uniqueSalesReps),
+      });
+  
+      return {
+        totalSalesReps: uniqueSalesReps.size,
+        activeInField: activeUsers,
+      };
+    }, [scheduleData, liveTrackingUsers]);
+  
 
   // Utility function to truncate location text
   const truncateLocation = (location: string, maxLength: number = 50) => {
@@ -422,6 +464,14 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {scheduleLoading ? "..." : dashboardMetrics.totalSalesReps}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              From today's schedule
+            </p>
+          </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -430,6 +480,14 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
             </CardTitle>
             <MapPin className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {liveTrackingLoading ? "..." : dashboardMetrics.activeInField}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Currently online
+            </p>
+          </CardContent>
         </Card>
       </div>
 
