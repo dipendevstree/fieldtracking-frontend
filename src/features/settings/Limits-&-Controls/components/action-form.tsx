@@ -181,54 +181,29 @@ export function ExpenseLimitActionForm({
 
             {/* Category Field */}
             <div className='space-y-2 w-full'>
-              <Label htmlFor='expenseCategoryId'>Category <span className="text-red-500">*</span></Label>
+              <Label htmlFor='expenseCategoryId'>Category<span className="text-red-500">*</span></Label>
               <Controller
                 name='expenseCategoryId'
                 control={control}
                 render={({ field }) => {
-                  console.log('Category field render:', {
-                    fieldValue: field.value,
-                    fieldValueType: typeof field.value,
-                    availableCategoriesCount: expenseCategories?.length || 0,
-                    isEdit,
-                    currentLimit: currentLimit?.expenseCategoryId
-                  });
-                  
-                  // Find the selected category to display its name
-                  const selectedCategory = expenseCategories?.find(cat => {
-                    return String(cat.categoryId) === String(field.value);
-                  });
-                  
-                  const selectedCategoryName = selectedCategory 
-                    ? selectedCategory.categoryName
-                    : '';
-
                   return (
                     <Select 
-                      value={field.value || ''} 
+                      key={`category-select-${open}`} // Removed field.value from key
+                      value={field.value || ""} 
                       onValueChange={(value) => {
-                        console.log('Category selected:', value);
                         field.onChange(value);
                       }}
                     >
                       <SelectTrigger className='w-full'>
-                        <SelectValue placeholder='Select category'>
-                          {selectedCategoryName || ''}
-                        </SelectValue>
+                        <SelectValue placeholder='Select category' />
                       </SelectTrigger>
                       <SelectContent>
                         {expenseCategories?.length > 0 ? (
                           expenseCategories.map((category) => {
-                            console.log('Rendering category:', { 
-                              categoryId: category.categoryId, 
-                              categoryName: category.categoryName, 
-                              category 
-                            });
-                            
                             return (
                               <SelectItem 
                                 key={category.categoryId} 
-                                value={String(category.categoryId)}
+                                value={category.categoryName}
                                 className="cursor-pointer"
                               >
                                 {category.categoryName}

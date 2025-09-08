@@ -6,7 +6,6 @@ import { getExpenseLimitColumns } from "./columns"
 import { ExpenseLimit } from "../type/type"
 import { useLimitsControlsStore } from "../store/limits-&-controls.store"
 import { FilterConfig } from "@/components/global-filter-section"
-import GlobalFilterSection from "@/components/global-table-filter-section"
 
 interface LimitsControlsProps {
   expenseLimits: ExpenseLimit[]
@@ -24,7 +23,6 @@ export default function LimitsControls({
   loading,
   paginationCallbacks,
   currentPage,
-  filters,
 }: LimitsControlsProps) {
   const { setOpen, setCurrentLimit } = useLimitsControlsStore()
 
@@ -53,18 +51,17 @@ export default function LimitsControls({
       
       {/* Header, Search, and Add Button Card */}
       <div className="bg-white rounded-lg border p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="text-2xl font-bold">Expense Limits & Controls</h1>
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <h1 className="text-2xl font-bold">Expense Limits & Controls</h1>
+            <p className="text-sm text-muted-foreground mt-2">Manage expense limits and controls for your organization.</p>
+          </div>
           <Button onClick={handleAddExpenseLimit}>
             <Plus className="h-4 w-4 mr-2" />
             Add Limit
           </Button>
         </div>
         
-        {/* Search Section */}
-        {filters && (
-          <GlobalFilterSection key={'limits-controls-filters'} filters={filters} />
-        )}
       </div>
 
       {/* Table */}

@@ -27,6 +27,11 @@ const LimitsControlsPage = () => {
     error,
   } = useGetLimitsControlsData(pagination);
 
+  // Debug: Log the data to understand the mismatch
+  console.log('Pagination params:', pagination);
+  console.log('Expense limits data:', expenseLimits);
+  console.log('Total count:', totalCount);
+  console.log('Actual records received:', expenseLimits.length);
 
   const debouncedSearch = useCallback(
     debounce((value: string) => {
