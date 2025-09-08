@@ -157,6 +157,10 @@ const API = {
     delete: "expenseApprovalLevel/multi-delete",
     organizationCreate: "organization/patch",
   },
+  notificationSettings: {
+    get: "notification-configuration",
+    update: "notification-configuration",
+  },
 };
 
 Object.freeze(API);
