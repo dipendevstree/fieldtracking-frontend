@@ -79,7 +79,7 @@ export const getExpenseLimitColumns = (
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <div
-          className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-green-500 bg-green-50 hover:bg-green-100 hover:text-green-700 h-8 w-8 p-0 cursor-pointer"
+          className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
           onClick={() => onEdit(row.original)}
           role="button"
           tabIndex={0}
@@ -93,7 +93,7 @@ export const getExpenseLimitColumns = (
           <Edit className="h-4 w-4 text-green-600" />
         </div>
         <div
-          className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-red-500 bg-red-50 hover:bg-red-100 hover:text-red-700 h-8 w-8 p-0 cursor-pointer"
+          className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
           onClick={() => onDelete(row.original)}
           role="button"
           tabIndex={0}
