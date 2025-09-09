@@ -1,4 +1,3 @@
-// import API from '@/config/api/api'
 import useFetchData from "@/hooks/use-fetch-data";
 import usePostData from "@/hooks/use-post-data";
 import useDeleteData from "@/hooks/use-delete-data";
@@ -8,6 +7,8 @@ import {
   NotificationRule,
   NotificationTemplate,
 } from "../type/type";
+import usePutData from "@/hooks/use-put-data";
+import API from "@/config/api/api";
 
 const NOTIFICATIONS_QUERY = "notifications/list";
 
@@ -201,4 +202,30 @@ export const useGetNotificationsData = (
     isLoading: query.isLoading,
     error: query.error,
   };
+};
+
+export const useGetNotificationData = (
+  params?: any,
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<any>({
+    url: API.notificationSettings.get,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    data: query.data ?? null,
+    isLoading: query.isLoading,
+    error: query.error,
+    isFetched: query.isFetched,
+  };
+};
+
+export const useUpdateNotifications = () => {
+  return usePutData<any>({
+    url: API.notificationSettings.update,
+    refetchQueries: [API.notificationSettings.get],
+  });
 };
