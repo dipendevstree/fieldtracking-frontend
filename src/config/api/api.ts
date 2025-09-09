@@ -182,7 +182,6 @@ const API = {
     delete: "expenseApprovalLevel/multi-delete",
     organizationCreate: "organization/patch",
   },
-<<<<<<< HEAD
   generalSettings: {
     list: "generalSettings/list",
     get: "generalSettings/get",
@@ -197,11 +196,10 @@ const API = {
     create: "expenseLimit/create",
     update: "expenseLimit/patch",
     delete: "expenseLimit/delete",
-=======
+  },
   notificationSettings: {
     get: "notification-configuration",
     update: "notification-configuration",
->>>>>>> cfcfebb4201cfe9f89c13823bc18d8cab5025883
   },
 };
 
