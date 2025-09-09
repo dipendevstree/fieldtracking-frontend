@@ -38,6 +38,7 @@ export function LimitsControlsActionModal() {
   const { expenseCategories: fetchedCategories } = useGetExpenseCategoriesData({
     limit: 100,
     page: 1,
+    defaultCategory: true
   });
 
   // Update store when data is fetched
@@ -111,7 +112,7 @@ export function LimitsControlsActionModal() {
     console.log('handleCreateExpenseLimit called with:', values);
     try {
       const payload: ExpenseLimitPayload = {
-        tierKey: values.tierkey,
+        tierKey: values.tierKey,
         expenseCategoryId: values.expenseCategoryId,
         dailyLimit: values.dailyLimit,
         monthlyLimit: values.monthlyLimit,
@@ -144,7 +145,7 @@ export function LimitsControlsActionModal() {
       }
 
       const payload: ExpenseLimitPayload = {
-        tierKey: values.tierkey,
+        tierKey: values.tierKey,
         expenseCategoryId: values.expenseCategoryId,
         dailyLimit: values.dailyLimit,
         monthlyLimit: values.monthlyLimit,

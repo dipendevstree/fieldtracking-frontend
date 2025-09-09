@@ -54,7 +54,7 @@ export function ExpenseLimitActionForm({
   const form = useForm<TExpenseLimitFormSchema>({
     resolver: zodResolver(expenseLimitFormSchema),
     defaultValues: {
-      tierkey: '',
+      tierKey: '',
       expenseCategoryId: '',
       dailyLimit: 0,
       monthlyLimit: 0,
@@ -91,7 +91,7 @@ export function ExpenseLimitActionForm({
     console.log('Form reset triggered:', { currentLimit, isEdit });
     if (currentLimit && isEdit) {
       const resetValues = {
-        tierkey: currentLimit.tierkey || '',
+        tierKey: currentLimit.tierKey || '',
         expenseCategoryId: currentLimit.expenseCategoryId || '',
         dailyLimit: currentLimit.dailyLimit || 0,
         monthlyLimit: currentLimit.monthlyLimit || 0,
@@ -101,7 +101,7 @@ export function ExpenseLimitActionForm({
       reset(resetValues);
     } else if (!currentLimit) {
       const defaultValues = {
-        tierkey: '',
+        tierKey: '',
         expenseCategoryId: '',
         dailyLimit: 0,
         monthlyLimit: 0,
@@ -116,7 +116,7 @@ export function ExpenseLimitActionForm({
     if (!state) {
       // Reset form to default values when closing
       reset({
-        tierkey: '',
+        tierKey: '',
         expenseCategoryId: '',
         dailyLimit: 0,
         monthlyLimit: 0,
@@ -152,9 +152,9 @@ export function ExpenseLimitActionForm({
 
             {/* Tier Field */}
             <div className='space-y-2 w-full'>
-              <Label htmlFor='tierkey'>Tier <span className="text-red-500">*</span></Label>
+              <Label htmlFor='tierKey'>Tier <span className="text-red-500">*</span></Label>
               <Controller
-                name='tierkey'
+                name='tierKey'
                 control={control}
                 render={({ field }) => (
                   <Select value={field.value} onValueChange={field.onChange}>
@@ -171,10 +171,10 @@ export function ExpenseLimitActionForm({
                   </Select>
                 )}
               />
-              {errors.tierkey && (
+              {errors.tierKey && (
                 <p className='flex items-center gap-1 text-xs text-red-500'>
                   <AlertCircle className='h-3 w-3' />
-                  {errors.tierkey.message}
+                  {errors.tierKey.message}
                 </p>
               )}
             </div>
@@ -199,11 +199,11 @@ export function ExpenseLimitActionForm({
                       </SelectTrigger>
                       <SelectContent>
                         {expenseCategories?.length > 0 ? (
-                          expenseCategories.map((category) => {
+                          expenseCategories.map((category:any) => {
                             return (
                               <SelectItem 
-                                key={category.categoryId} 
-                                value={category.categoryName}
+                                key={category.expensesCategoryId} 
+                                value={category.expensesCategoryId}
                                 className="cursor-pointer"
                               >
                                 {category.categoryName}
