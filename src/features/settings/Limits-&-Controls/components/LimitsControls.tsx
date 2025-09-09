@@ -1,27 +1,28 @@
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Plus, Search } from "lucide-react"
+import { Plus } from "lucide-react"
 import { LimitsControlsTable } from "./LimitsControlsTable"
 import { PaginationCallbacks } from "@/components/shared/custom-table-pagination"
 import { getExpenseLimitColumns } from "./columns"
-import { ExpenseLimit, LocationAdjustment } from "../type/type"
+import { ExpenseLimit } from "../type/type"
 import { useLimitsControlsStore } from "../store/limits-&-controls.store"
+import { FilterConfig } from "@/components/global-filter-section"
 
 interface LimitsControlsProps {
   expenseLimits: ExpenseLimit[]
-  locationAdjustments: LocationAdjustment[]
   totalCount: number
+  loading?: boolean
   paginationCallbacks?: PaginationCallbacks
   currentPage?: number
-  onSearchChange?: (value: string) => void
+  filters?: FilterConfig[]
+  onSearchChange?: (searchValue: string) => void
 }
 
 export default function LimitsControls({
   expenseLimits,
   totalCount,
+  loading,
   paginationCallbacks,
   currentPage,
-  onSearchChange,
 }: LimitsControlsProps) {
   const { setOpen, setCurrentLimit } = useLimitsControlsStore()
 
@@ -48,20 +49,19 @@ export default function LimitsControls({
   return (
     <div className="space-y-6">
       
-      {/* Search and Add Button Row */}
-      <div className="flex items-center justify-between">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search expense limits..."
-            className="pl-10"
-            onChange={(e) => onSearchChange?.(e.target.value)}
-          />
+      {/* Header, Search, and Add Button Card */}
+      <div className="bg-white rounded-lg border p-6 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <h1 className="text-2xl font-bold">Expense Limits & Controls</h1>
+            <p className="text-sm text-muted-foreground mt-2">Manage expense limits and controls for your organization.</p>
+          </div>
+          <Button onClick={handleAddExpenseLimit}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Limit
+          </Button>
         </div>
-        <Button onClick={handleAddExpenseLimit}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Limit
-        </Button>
+        
       </div>
 
       {/* Table */}
@@ -69,9 +69,10 @@ export default function LimitsControls({
         data={expenseLimits}
         columns={expenseLimitColumns}
         totalCount={totalCount}
+        loading={loading}
         currentPage={currentPage}
         paginationCallbacks={paginationCallbacks}
-        defaultPageSize={10}
+      
       />
     </div>
   )

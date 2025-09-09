@@ -85,7 +85,7 @@ export function GeneralSettingsActionForm({
         <DialogHeader className='flex flex-row items-center justify-between space-y-0 pb-4'>
           <div>
             <DialogTitle className='text-xl font-semibold'>
-              {isEdit ? 'Edit General Settings' : 'Configure General Settings'}
+              {isEdit ? 'Save' : 'Configure General Settings'}
             </DialogTitle>
             <DialogDescription className='text-muted-foreground mt-1 text-sm'>
               {isEdit
@@ -107,7 +107,7 @@ export function GeneralSettingsActionForm({
               <h4 className='text-lg font-medium'>Company Information</h4>
               <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <div className='space-y-2'>
-                  <Label htmlFor='companyName'>Company Name *</Label>
+                  <Label htmlFor='companyName'>Company Name <span className="text-red-500">*</span></Label>
                   <Controller
                     name='companyInformation.companyName'
                     control={control}
@@ -128,7 +128,7 @@ export function GeneralSettingsActionForm({
                   )}
                 </div>
                 <div className='space-y-2'>
-                  <Label htmlFor='defaultTimezone'>Default Timezone *</Label>
+                  <Label htmlFor='defaultTimezone'>Default Timezone <span className="text-red-500">*</span></Label>
                   <Controller
                     name='companyInformation.defaultTimezone'
                     control={control}
@@ -161,7 +161,7 @@ export function GeneralSettingsActionForm({
               <h4 className='text-lg font-medium'>Currency & Formatting</h4>
               <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
                 <div className='space-y-2'>
-                  <Label htmlFor='defaultCurrency'>Default Currency *</Label>
+                  <Label htmlFor='defaultCurrency'>Default Currency <span className="text-red-500">*</span></Label>
                   <Controller
                     name='currencyAndFormatting.defaultCurrency'
                     control={control}
@@ -187,7 +187,7 @@ export function GeneralSettingsActionForm({
                   )}
                 </div>
                 <div className='space-y-2'>
-                  <Label htmlFor='dateFormat'>Date Format *</Label>
+                  <Label htmlFor='dateFormat'>Date Format <span className="text-red-500">*</span></Label>
                   <Controller
                     name='currencyAndFormatting.dateFormat'
                     control={control}
@@ -212,7 +212,7 @@ export function GeneralSettingsActionForm({
                   )}
                 </div>
                 <div className='space-y-2'>
-                  <Label htmlFor='distanceUnit'>Distance Unit *</Label>
+                  <Label htmlFor='distanceUnit'>Distance Unit <span className="text-red-500">*</span></Label>
                   <Controller
                     name='currencyAndFormatting.distanceUnit'
                     control={control}
@@ -276,7 +276,7 @@ export function GeneralSettingsActionForm({
                 </div>
               </div>
               <div className='space-y-2'>
-                <Label htmlFor='sessionTimeoutMinutes'>Session Timeout (minutes) *</Label>
+                <Label htmlFor='sessionTimeoutMinutes'>Session Timeout (minutes) <span className="text-red-500">*</span></Label>
                 <Controller
                   name='securitySettings.sessionTimeoutMinutes'
                   control={control}
@@ -364,20 +364,6 @@ export function CompanyInfoActionForm({
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
       <DialogContent className='max-h-[80vh] !max-w-md overflow-y-auto'>
-        <DialogHeader className='flex flex-row items-center justify-between space-y-0 pb-4'>
-          <div>
-            <DialogTitle className='text-xl font-semibold'>
-              {isEdit ? 'Edit Company Information' : 'Add Company Information'}
-            </DialogTitle>
-            <DialogDescription className='text-muted-foreground mt-1 text-sm'>
-              {isEdit
-                ? 'Update company information.'
-                : 'Add company information.'}
-            </DialogDescription>
-          </div>
-          <DialogClose asChild></DialogClose>
-        </DialogHeader>
-
         <Form {...form}>
           <form
             id='company-info-form'
@@ -386,7 +372,7 @@ export function CompanyInfoActionForm({
           >
             {/* Company Name Field */}
             <div className='space-y-2'>
-              <Label htmlFor='companyName'>Company Name *</Label>
+              <Label htmlFor='companyName'>Company Name <span className="text-red-500">*</span></Label>
               <Controller
                 name='companyName'
                 control={control}
@@ -409,7 +395,7 @@ export function CompanyInfoActionForm({
 
             {/* Default Timezone Field */}
             <div className='space-y-2'>
-              <Label htmlFor='defaultTimezone'>Default Timezone *</Label>
+              <Label htmlFor='defaultTimezone'>Default Timezone <span className="text-red-500">*</span></Label>
               <Controller
                 name='defaultTimezone'
                 control={control}
@@ -461,7 +447,7 @@ export function CompanyInfoActionForm({
 
             {/* Contact Phone Field */}
             <div className='space-y-2'>
-              <Label htmlFor='contactPhone'>Contact Phone</Label>
+              <Label htmlFor='contactPhone'>Contact Phone <span className="text-red-500">*</span></Label>
               <Controller
                 name='contactPhone'
                 control={control}
@@ -469,16 +455,22 @@ export function CompanyInfoActionForm({
                   <Input
                     {...field}
                     id='contactPhone'
-                    placeholder='Enter contact phone'
+                    placeholder='Enter contact phone number'
                     value={field.value || ''}
                   />
                 )}
               />
+              {errors.contactPhone && (
+                <p className='flex items-center gap-1 text-xs text-red-500'>
+                  <AlertCircle className='h-3 w-3' />
+                  {errors.contactPhone.message}
+                </p>
+              )}
             </div>
 
             {/* Address Field */}
             <div className='space-y-2'>
-              <Label htmlFor='address'>Address</Label>
+              <Label htmlFor='address'>Address <span className="text-red-500">*</span></Label>
               <Controller
                 name='address'
                 control={control}
@@ -486,16 +478,22 @@ export function CompanyInfoActionForm({
                   <Textarea
                     {...field}
                     id='address'
-                    placeholder='Enter company address'
+                    placeholder='Enter complete company address'
                     value={field.value || ''}
                   />
                 )}
               />
+              {errors.address && (
+                <p className='flex items-center gap-1 text-xs text-red-500'>
+                  <AlertCircle className='h-3 w-3' />
+                  {errors.address.message}
+                </p>
+              )}
             </div>
 
             {/* Website Field */}
             <div className='space-y-2'>
-              <Label htmlFor='website'>Website</Label>
+              <Label htmlFor='website'>Website <span className="text-red-500">*</span></Label>
               <Controller
                 name='website'
                 control={control}

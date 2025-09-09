@@ -101,12 +101,14 @@ export interface AuthState {
   isLoading: boolean;
   isAuthenticated: boolean;
   isPasswordChanged: boolean;
+  refreshTrigger: number;
 
   // Actions
   login: (userData: LoginUser) => void;
   logout: () => void;
   updateUser: (userData: Partial<LoginUser>) => void;
   setIsPasswordChanged: (value: boolean) => void;
+  refreshUser: () => Promise<void>;
 
   // Permission helpers - Updated to work with nested permission structure
   hasPermission: (permissionName: string) => boolean;
@@ -296,7 +298,8 @@ export const defaultAuthState: Omit<AuthState, keyof AuthActions> = {
   isLoading: false,
   isAuthenticated: false,
   isPasswordChanged: false,
-
+  refreshTrigger: 0,
+  refreshUser: async () => {},
   // Default implementations for missing methods
   hasPermission: () => false,
   hasPermissionGroup: () => false,

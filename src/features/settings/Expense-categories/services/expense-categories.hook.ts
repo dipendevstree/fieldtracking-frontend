@@ -34,9 +34,6 @@ export const useCreateExpenseCategory = (onSuccess?: () => void) => {
         onSuccess()
       }
     },
-    onError: (error) => {
-      console.error('Error creating expense category:', error)
-    },
   })
 }
 
@@ -49,23 +46,25 @@ export const useUpdateExpenseCategory = (id: string, onSuccess?: () => void) => 
         onSuccess()
       }
     },
-    onError: (error) => {
-      console.error('Error updating expense category:', error)
-    },
   })
 }
 
 export const useDeleteExpenseCategory = (id: string, onSuccess?: () => void) => {
-  return useDeleteData({
-    url: `${API.category.delete}/${id}`,
+  const deleteHook = useDeleteData({
+    url: id ? `${API.category.delete}/${id}` : API.category.delete,
     refetchQueries: [EXPENSE_CATEGORIES_QUERY],
     onSuccess: () => {
       if (onSuccess && id) onSuccess()
     },
-    onError: (error) => {
-      console.error('Error deleting expense category:', error)
-    },
   })
+  if (!id) {
+    return {
+      ...deleteHook,
+      mutate: () => {
+      },
+    }
+  }
+  return deleteHook
 }
 
 // Per Diem Settings

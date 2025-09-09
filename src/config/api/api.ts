@@ -64,8 +64,8 @@ const API = {
     list: "organization/list",
     create: "organization/create",
     update: "organization/patch",
-    delete: "merchant/delete",
-    details: "merchant/detail",
+    delete: "organization/delete",
+    details: "organization/detail",
     getWorkingHours: "merchant/working-hours/list",
     updateWorkingHours: "merchant/working-hours",
     statusCounts: "organization/analytics",
@@ -76,17 +76,18 @@ const API = {
   employeeRange: {
     list: "employeeRang/list",
     create: "employeeRang/create",
-    update: "employeeRang/delete",
+    update: "employeeRang/patch",
+    delete: "employeeRange/delete",
   },
   industry: {
     list: "industry/list",
     create: "industry/create",
-    update: "industry/delete",
+    update: "industry/patch",
   },
   menu: {
     list: "menu/list",
     create: "menu/create",
-    update: "menu/delete",
+    update: "menu/patch",
   },
   users: {
     list: "users/list",
@@ -98,7 +99,7 @@ const API = {
     list: "role/list",
     create: "role/create",
     update: "role/patch",
-    delete: "role/delete",
+    delete: "roles/delete",
     details: "roles/details",
     permissions: "permission/list",
     getAllPermissions: "role",
@@ -113,7 +114,6 @@ const API = {
     exportReport: "overview/export-report",
     auditLogList: "auditLog/all",
   },
-
   territories: {
     list: "userTerritory/list",
     create: "userTerritory/create",
@@ -138,13 +138,38 @@ const API = {
   customer: {
     customerList: "customer/list",
   },
-
   drivers: {
     list: "driver/list",
     create: "driver/add-driver",
     update: "driver/update",
     delete: "driver/delete",
     details: "driver/driver-documents",
+  },
+  documents: {
+    list: "document/list",
+    create: "document/create",
+    update: "document/update",
+    delete: "document/delete",
+  },
+  notifications: {
+    list: "notification/list",
+    create: "notification/create",
+    update: "notification/update",
+    delete: "notification/delete",
+    details: "notification/detail",
+    sendNotification: "notification/send",
+  },
+  settings: {
+    list: "settings/list",
+    create: "settings/create",
+    update: "settings/update",
+    delete: "settings/delete",
+    details: "settings/detail",
+  },
+  Expenses: {
+    consolidated: "expenses/monthly-consolidated",
+    list: "expenses/monthly-expenses/list",
+    getById: "expenses/monthly-expenses",
   },
   approvals: {
     lists: "approvals/list",
@@ -156,6 +181,21 @@ const API = {
     update: "expenseApprovalLevel/patch",
     delete: "expenseApprovalLevel/multi-delete",
     organizationCreate: "organization/patch",
+  },
+  generalSettings: {
+    list: "generalSettings/list",
+    get: "generalSettings/get",
+    create: "generalSettings/create",
+    updateCompanyInfo: "generalSettings/company-info",
+    updateSystemPreferences: "generalSettings/system-preferences",
+    companyInfo: "generalSettings/company-info",
+    systemPreferences: "generalSettings/system-preferences",
+  },
+  expenseLimit: {
+    list: "expenseLimit/list",
+    create: "expenseLimit/create",
+    update: "expenseLimit/patch",
+    delete: "expenseLimit/delete",
   },
   notificationSettings: {
     get: "notification-configuration",

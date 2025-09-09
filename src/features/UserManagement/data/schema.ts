@@ -16,7 +16,7 @@ export const formSchema = z.object({
   territoryId: z.string().min(1, 'Territory is required'),
   roleId: z.string().min(1, 'Role is required'),
   reportingToRoleId: z.string().min(1, 'Reporting To Role is required'),
-  reportingToIds: z.string().min(1, 'Reporting to is required'),
+  reportingToIds: z.array(z.string()).min(1, 'Reporting to is required'),
 
   tierkey: z.string().min(1, 'Tier to is required'),
 

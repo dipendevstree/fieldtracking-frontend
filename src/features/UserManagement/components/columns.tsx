@@ -79,24 +79,43 @@ export const columns: ColumnDef<any>[] = [
     },
     enableSorting: false,
   },
-
   {
-    accessorKey: 'manager',
+    accessorKey: 'reportingToIds',
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title='Reporting To' />
     ),
     cell: ({ row }) => {
+      const reportingToIds = row.original.reportingToIds
       const reportingTo = row.original.reportingTo
-
-      const displayValue =
-        Array.isArray(reportingTo) && reportingTo.length > 0
-          ? reportingTo
-              .map((user: any) =>
-                `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim()
-              )
-              .join(', ')
-          : '-'
-
+      
+      console.log('=== TABLE DISPLAY DEBUG ===')
+      console.log('Row data:', row.original)
+      console.log('reportingToIds:', reportingToIds)
+      console.log('reportingTo:', reportingTo)
+      
+      let displayValue = '-'
+      
+      // First try to get names from reportingTo (if API provides full user objects)
+      if (Array.isArray(reportingTo) && reportingTo.length > 0) {
+        displayValue = reportingTo
+          .map((user: any) => `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim())
+          .filter(name => name.length > 0)
+          .join(', ')
+      }
+      // If no names found, try to get from reportingToIds (if they contain user objects)
+      else if (Array.isArray(reportingToIds) && reportingToIds.length > 0) {
+        // Check if reportingToIds contains user objects or just IDs
+        if (typeof reportingToIds[0] === 'object' && reportingToIds[0]?.firstName) {
+          displayValue = reportingToIds
+            .map((user: any) => `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim())
+            .filter(name => name.length > 0)
+            .join(', ')
+        } else {
+          // If reportingToIds contains just IDs, we can't display names without additional API call
+          displayValue = `${reportingToIds.length} user(s)`
+        }
+      }
+      
       return <div className='text-sm'>{displayValue}</div>
     },
     enableSorting: false,

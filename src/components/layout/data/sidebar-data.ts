@@ -1,17 +1,12 @@
 import {
-  AppWindow,
   Building2,
-  Calendar,
-  ChartColumn,
   Home,
   MapPin,
-  Shield,
-  ShieldUser,
   Settings,
+  Shield,
   Bell,
   FileText,
 } from "lucide-react";
-
 import { type SidebarData } from "../types";
 
 export const sidebarData: SidebarData = {
@@ -23,7 +18,7 @@ export const sidebarData: SidebarData = {
   },
   teams: [
     {
-      name: "FieldFieldTrack360",
+      name: "FieldTrack Pro",
       logo: Building2,
       plan: "Enterprise",
     },
@@ -54,7 +49,6 @@ export const sidebarData: SidebarData = {
               url: "/customers",
               menuKey: "customer_directory",
             },
-
             {
               title: "Add Customer",
               url: "/customers/add-customer",
@@ -70,7 +64,7 @@ export const sidebarData: SidebarData = {
 
         {
           title: "User Management",
-          icon: ShieldUser,
+          icon: Shield,
           menuKey: "User_Management",
           items: [
             {
@@ -92,7 +86,7 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "Calendar",
-          icon: Calendar,
+          icon: Shield,
           menuKey: "calendar",
           items: [
             {
@@ -119,7 +113,7 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "Approvals",
-          icon: AppWindow,
+          icon: Shield,
           menuKey: "approvals",
           items: [
             {
@@ -137,11 +131,12 @@ export const sidebarData: SidebarData = {
               url: "/approvals/reports-analytics",
               menuKey: "reports_analytics",
             },
+           
           ],
         },
         {
           title: "Reports",
-          icon: ChartColumn,
+          icon: Shield,
           menuKey: "reports",
           items: [
             {
@@ -158,7 +153,7 @@ export const sidebarData: SidebarData = {
       items: [
         {
           title: "Settings",
-          url: "/setting",
+          url: "/settings",
           icon: Settings,
           menuKey: "settings",
         },
@@ -188,7 +183,7 @@ export const SUPER_ADMIN_SIDEBAR_DATA: SidebarData = {
   },
   teams: [
     {
-      name: "FieldFieldTrack360",
+      name: "FieldTrack Pro",
       logo: Building2,
       plan: "Enterprise",
     },

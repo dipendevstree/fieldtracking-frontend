@@ -18,6 +18,7 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       isAuthenticated: false,
       isPasswordChanged: false,
+      refreshTrigger: 0,
 
       // Actions
       login: (data: any) => {
@@ -275,6 +276,19 @@ export const useAuthStore = create<AuthState>()(
         const { user } = get();
         return !!(user?.access_token && user?.user_id);
       },
+
+      // Refresh user data from API
+      refreshUser: async () => {
+        try {
+          set((state) => ({
+            ...state,
+            refreshTrigger: Date.now()
+          }));
+        } catch (error) {
+          console.error('Error refreshing user data:', error);
+          throw error;
+        }
+      },
     }),
     {
       name: "auth-storage",
@@ -312,11 +326,13 @@ export const useAuth = () => {
     user: store.user,
     isLoading: store.isLoading,
     isAuthenticated: store.isAuthenticated,
+    refreshTrigger: store.refreshTrigger,
 
     // Actions
     login: store.login,
     logout: store.logout,
     updateUser: store.updateUser,
+    refreshUser: store.refreshUser,
 
     // Permission helpers
     hasPermission: store.hasPermission,

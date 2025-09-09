@@ -6,13 +6,11 @@ import { Main } from "@/components/layout/main"
 import { cn } from "@/lib/utils"
 
 // Import the actual page components
-import ExpenseCategoriesPage from '../settings/Expense-categories'
-import LimitsControlsPage from '../settings/Limits-&-Controls'
-import ApproversPage from '../settings/Approvers'
-// import FieldTrackingPage from '../settings/Field-Tracking'
-import MobileFeaturesPage from '../settings/Mobile-Features'
-import GeneralSettingsPage from '../settings/General'
-import Notifications from "./notifications/components/Notifications"
+import ExpenseCategoriesPage from './Expense-categories'
+import LimitsControlsPage from './Limits-&-Controls'
+import ApproversPage from './Approvers'
+import NotificationsPage from './notifications'
+import GeneralSettingsPage from './General'
 
 // Define valid tab values with proper typing
 export type SettingsTabValue =
@@ -20,9 +18,7 @@ export type SettingsTabValue =
   | '/settings/expense-categories'
   | '/settings/limits-controls'
   | '/settings/approvers'
-  | '/settings/field-tracking'
   | '/settings/notifications'
-  | '/settings/mobile-features'
   | '/settings/general'
 
 // Tab configuration for better maintainability
@@ -42,20 +38,10 @@ const SETTINGS_TABS = [
     label: 'Approvers',
     component: ApproversPage
   },
-  // {
-  //   value: '/settings/field-tracking/',
-  //   label: 'Field Tracking',
-  //   component: FieldTrackingPage
-  // },
   {
     value: '/settings/notifications',
     label: 'Notifications',
-    component: Notifications
-  },
-  {
-    value: '/settings/mobile-features',
-    label: 'Mobile Features',
-    component: MobileFeaturesPage
+    component: NotificationsPage
   },
   {
     value: '/settings/general',
@@ -105,7 +91,7 @@ export default function SettingsPage() {
         onValueChange={handleTabChange}
         className="mt-4 space-y-5"
       >
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-5">
           {SETTINGS_TABS.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value}>
               {tab.label}

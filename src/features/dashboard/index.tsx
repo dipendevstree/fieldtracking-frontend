@@ -5,11 +5,13 @@ import { Main } from "@/components/layout/main";
 import { cn } from "@/lib/utils";
 import { Users, Download } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { useAuth } from "@/stores/use-auth-store";
 
 // Import the actual page components
 import OverviewPage from "./overview/components/OverView";
 import LiveTrackingPage from "./Live-Tracking/live-tracking-dashboard";
 import ApprovalsPage from "./Approvals/components/approvals";
+import SuperAdminDashboard from "./super-admin";
 
 // Define valid tab values with proper typing
 export type DashboardTabValue =
@@ -38,6 +40,13 @@ const DASHBOARD_TABS = [
 ] as const;
 
 export default function DashboardPage() {
+  const { user } = useAuth();
+  
+  // If user is super admin, show super admin dashboard
+  if (user?.isSuperAdmin) {
+    return <SuperAdminDashboard />;
+  }
+
   // Initialize with first tab as default (overview)
   const [activeTab, setActiveTab] = useState<DashboardTabValue>(
     "/dashboard/overview"
