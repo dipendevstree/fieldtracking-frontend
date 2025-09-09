@@ -18,6 +18,7 @@ interface GeneralApplicationSettingsProps {
 export default function GeneralApplicationSettings({ onDataChange }: GeneralApplicationSettingsProps) {
   const { user } = useAuth()
   const [autoExpenseApproval, setAutoExpenseApproval] = useState(false)
+  const [allowAddUsersBasedOnTerritories, setAllowAddUsersBasedOnTerritories] = useState(false)
   const [formData, setFormData] = useState({
     organizationName: "",
     organizationType: "",
@@ -79,6 +80,7 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
       console.log('Form data being set:', newFormData)
       setFormData(newFormData)
       setAutoExpenseApproval(org.isAutoExpense || false)
+      setAllowAddUsersBasedOnTerritories(org.allowAddUsersBasedOnTerritories || false)
     }
   }, [user]) // Removed refreshTrigger dependency
 
@@ -87,10 +89,11 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
     if (onDataChange) {
       onDataChange({
         ...formData,
-        autoExpenseApproval
+        autoExpenseApproval,
+        allowAddUsersBasedOnTerritories
       })
     }
-  }, [formData, autoExpenseApproval, onDataChange])
+  }, [formData, autoExpenseApproval, allowAddUsersBasedOnTerritories, onDataChange])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -321,6 +324,18 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
         </div>
 
           <Separator className="my-8" />
+
+          {/* Allow to add Users based on Territories Section */}
+          <div className="flex items-center justify-between">
+              <div className="space-y-3">
+                <Label className="text-lg font-medium text-gray-900">Allow to add Users based on Territories</Label>
+              </div>
+              <Switch 
+                id="territory-users" 
+                checked={allowAddUsersBasedOnTerritories}
+                onCheckedChange={setAllowAddUsersBasedOnTerritories}
+              />
+            </div>
 
           {/* Auto-Expense Approval Section */}
           <div className="space-y-4 mb-8">

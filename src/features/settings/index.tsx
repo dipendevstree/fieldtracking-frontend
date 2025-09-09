@@ -9,9 +9,7 @@ import { cn } from "@/lib/utils"
 import ExpenseCategoriesPage from './Expense-categories'
 import LimitsControlsPage from './Limits-&-Controls'
 import ApproversPage from './Approvers'
-import FieldTrackingPage from './Field-Tracking'
 import NotificationsPage from './notifications'
-import MobileFeaturesPage from './Mobile-Features'
 import GeneralSettingsPage from './General'
 
 // Define valid tab values with proper typing
@@ -20,9 +18,7 @@ export type SettingsTabValue =
   | '/settings/expense-categories'
   | '/settings/limits-controls'
   | '/settings/approvers'
-  | '/settings/field-tracking'
   | '/settings/notifications'
-  | '/settings/mobile-features'
   | '/settings/general'
 
 // Tab configuration for better maintainability
@@ -43,19 +39,9 @@ const SETTINGS_TABS = [
     component: ApproversPage
   },
   {
-    value: '/settings/field-tracking',
-    label: 'Field Tracking',
-    component: FieldTrackingPage
-  },
-  {
     value: '/settings/notifications',
     label: 'Notifications',
     component: NotificationsPage
-  },
-  {
-    value: '/settings/mobile-features',
-    label: 'Mobile Features',
-    component: MobileFeaturesPage
   },
   {
     value: '/settings/general',
@@ -105,7 +91,7 @@ export default function SettingsPage() {
         onValueChange={handleTabChange}
         className="mt-4 space-y-5"
       >
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-5">
           {SETTINGS_TABS.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value}>
               {tab.label}
