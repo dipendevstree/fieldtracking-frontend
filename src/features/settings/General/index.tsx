@@ -78,6 +78,7 @@ const GeneralSettingsPage = () => {
         isActive: true,
         isAutoExpense: currentSettingsData.autoExpenseApproval,
         rsPerKm: currentSettingsData.autoExpenseApproval ? parseFloat(currentSettingsData.ratePerKm) || 0 : 0,
+        allowAddUsersBasedOnTerritories: currentSettingsData.allowAddUsersBasedOnTerritories,
       }
 
       console.log('Organization update payload:', organizationUpdatePayload)
@@ -102,6 +103,7 @@ const GeneralSettingsPage = () => {
                 state: currentSettingsData.state,
                 isAutoExpense: currentSettingsData.autoExpenseApproval,
                 rsPerKm: currentSettingsData.autoExpenseApproval ? parseFloat(currentSettingsData.ratePerKm) || 0 : 0,
+                allowAddUsersBasedOnTerritories: currentSettingsData.allowAddUsersBasedOnTerritories,
               }
 
               console.log('Updating organization in auth store:', updatedOrganization)
