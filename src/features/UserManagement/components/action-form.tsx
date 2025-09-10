@@ -40,6 +40,7 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   loading?: boolean;
   onSubmit: (values: TFormSchema) => void;
+  allowTerritoryFilter?: boolean;
 }
 
 export function UserActionForm({
@@ -48,6 +49,7 @@ export function UserActionForm({
   onOpenChange,
   onSubmit: onSubmitValues,
   loading,
+  allowTerritoryFilter,
 }: Props) {
   const isEdit = !!currentRow;
 
@@ -99,7 +101,7 @@ export function UserActionForm({
   });
   // Define tier options using the TIER enum from app.data.ts
   const tiers = Object.values(TIER).map((tierValue) => ({
-    label: tierValue.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()),
+    label: tierValue.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase()),
     value: tierValue,
   }));
   const formatPhoneToE164 = (phone: string, countryCode: string) => {
@@ -495,41 +497,41 @@ export function UserActionForm({
 
               {/* Row 4: Territory & User Tier */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="territoryId">
-                    Territory <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="territoryId"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        value={getFieldValue(field.value)}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select territories..." />
-                        </SelectTrigger>
-                        <SelectContent className="!w-full">
-                          {territories.map((option) => (
-                            <SelectItem
-                              key={option.value}
-                              value={String(option.value)}
-                            >
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                {allowTerritoryFilter && (
+                  <div className="space-y-2">
+                    <Label htmlFor="territoryId">Territory</Label>
+                    <Controller
+                      name="territoryId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={getFieldValue(field.value)}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select territories..." />
+                          </SelectTrigger>
+                          <SelectContent className="!w-full">
+                            {territories.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={String(option.value)}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.territoryId && (
+                      <p className="flex items-center gap-1 text-xs text-red-500">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.territoryId.message}
+                      </p>
                     )}
-                  />
-                  {errors.territoryId && (
-                    <p className="flex items-center gap-1 text-xs text-red-500">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.territoryId.message}
-                    </p>
-                  )}
-                </div>
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label htmlFor="tierkey">

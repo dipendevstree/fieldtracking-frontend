@@ -13,9 +13,10 @@ import { useUsersStore } from "./store/users.store";
 import { useGetAllTerritoriesForDropdown } from "../userterritory/services/user-territory.hook";
 import { useGetAllRolesForDropdown } from "./services/Roles.hook";
 import { useSelectOptions } from "@/hooks/use-select-option";
-import { FilterConfig } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import debounce from "lodash.debounce";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { SearchFilterConfig, SelectFilterConfig } from "./types";
 
 const AllUsers = () => {
   const [pagination, setPagination] = useState({
@@ -23,18 +24,25 @@ const AllUsers = () => {
     limit: DEFAULT_PAGE_SIZE,
   });
 
+  const { user } = useAuthStore();
+  const allowTerritoryFilter =
+    user?.organization?.allowAddUsersBasedOnTerritories;
+
   const { filters, setFilters, setOpen, open } = useUsersStore();
 
-  // Query parameters including filters
-  const queryParams = useMemo(
-    () => ({
+  const queryParams = useMemo((): any => {
+    const params: any = {
       ...pagination,
       searchFor: filters.search || "",
       roleId: filters.roleId || "",
-      territoryId: filters.territoryId || "",
-    }),
-    [pagination, filters]
-  );
+    };
+
+    if (allowTerritoryFilter) {
+      params.territoryId = filters.territoryId || "";
+    }
+
+    return params;
+  }, [pagination, filters, allowTerritoryFilter]);
 
   // Organizations data
   const {
@@ -45,11 +53,11 @@ const AllUsers = () => {
   } = useGetAllUsers(queryParams);
 
   // Debug logging
-  console.log('Users query params:', queryParams);
-  console.log('Users data:', allUsers);
-  console.log('Total count:', totalCount);
-  console.log('Loading:', isLoading);
-  console.log('Error:', error);
+  console.log("Users query params:", queryParams);
+  console.log("Users data:", allUsers);
+  console.log("Total count:", totalCount);
+  console.log("Loading:", isLoading);
+  console.log("Error:", error);
 
   // Get filter options
   const { data: territoryList = [] } = useGetAllTerritoriesForDropdown();
@@ -85,7 +93,7 @@ const AllUsers = () => {
     debouncedSearch(searchValue);
   };
 
-  const filtersConfig: FilterConfig[] = [
+  const filtersConfig: (SearchFilterConfig | SelectFilterConfig)[] = [
     {
       key: "search",
       type: "search",
@@ -93,14 +101,18 @@ const AllUsers = () => {
       value: filters.search,
       onChange: handleGlobalSearchChange,
     },
-    {
-      key: "territoryId",
-      type: "select",
-      placeholder: "Territory",
-      value: filters.territoryId,
-      onChange: (value) => setFilters({ territoryId: value ?? "" }),
-      options: territoryOptions,
-    },
+    ...(allowTerritoryFilter
+      ? [
+          {
+            key: "territoryId",
+            type: "select",
+            placeholder: "Territory",
+            value: filters.territoryId,
+            onChange: (value) => setFilters({ territoryId: value ?? "" }),
+            options: territoryOptions,
+          } as SelectFilterConfig,
+        ]
+      : []),
     {
       key: "roleId",
       type: "select",
@@ -108,7 +120,7 @@ const AllUsers = () => {
       value: filters.roleId,
       onChange: (value) => setFilters({ roleId: value ?? "" }),
       options: roleOptions,
-    },
+    } as SelectFilterConfig,
   ];
 
   const {} = useRouter();
@@ -148,7 +160,7 @@ const AllUsers = () => {
             key="user-management-filters"
             filters={filtersConfig}
           />
-          
+
           {/* Table */}
           <AllUsersTable
             data={allUsers}

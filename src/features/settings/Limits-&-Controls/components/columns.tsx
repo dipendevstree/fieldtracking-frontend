@@ -1,81 +1,86 @@
-import { ColumnDef } from '@tanstack/react-table'
-import { CustomDataTableColumnHeader } from '@/components/shared/custom-table-header-column'
-import { Edit, Trash2 } from 'lucide-react'
-import { ExpenseLimit } from '../type/type'
-import { Badge } from '@/components/ui/badge'
+import { ColumnDef } from "@tanstack/react-table";
+import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
+import { Edit, Trash2 } from "lucide-react";
+import { ExpenseLimit } from "../type/type";
+import { Badge } from "@/components/ui/badge";
 
 // Expense Limit Columns
 export const getExpenseLimitColumns = (
   onEdit: (limit: ExpenseLimit) => void,
   onDelete: (limit: ExpenseLimit) => void
 ): ColumnDef<ExpenseLimit>[] => [
-
   {
-    accessorKey: 'tierKey',
+    accessorKey: "tierKey",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Tier' />
+      <CustomDataTableColumnHeader column={column} title="Tier" />
     ),
     cell: ({ row }) => (
-      <div className="font-medium">{row.original.tierKey}</div>
+      <div className="font-medium">
+        {row.original.tierKey
+          .replace("_", " ")
+          .replace(/\b\w/g, (l) => l.toUpperCase())}
+      </div>
     ),
     enableSorting: false,
   },
   {
-    accessorKey: 'expenseCategoryId',
+    accessorKey: "expenseCategoryId",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Category' />
+      <CustomDataTableColumnHeader column={column} title="Category" />
     ),
     cell: ({ row }) => {
-      // Display category name if available, otherwise show ID
-      const categoryName = row.original.expenseCategoryId
+      console.log("row.original.categoryName", row.original);
+
       return (
-        <div className="font-medium">{categoryName}</div>
-      )
+        <div className="font-medium">
+          {row.original?.expenseCategory?.categoryName}
+        </div>
+      );
     },
     enableSorting: false,
   },
   {
-    accessorKey: 'dailyLimit',
+    accessorKey: "dailyLimit",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Daily Limit' />
+      <CustomDataTableColumnHeader column={column} title="Daily Limit" />
     ),
     cell: ({ row }) => (
       <div className="text">${row.original.dailyLimit.toLocaleString()}</div>
     ),
     meta: {
-      className: 'text',
+      className: "text",
     },
     enableSorting: false,
   },
   {
-    accessorKey: 'monthlyLimit',
+    accessorKey: "monthlyLimit",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Monthly Limit' />
+      <CustomDataTableColumnHeader column={column} title="Monthly Limit" />
     ),
     cell: ({ row }) => (
       <div className="text">${row.original.monthlyLimit.toLocaleString()}</div>
     ),
     meta: {
-      className: 'text',
+      className: "text",
     },
     enableSorting: false,
   },
- 
+
   {
-    accessorKey: 'isActive',
+    accessorKey: "isActive",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Status' />
+      <CustomDataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => (
-      <Badge variant={row.original.isActive ? 'default' : 'secondary'}>
-        {row.original.isActive ? 'Active' : 'Inactive'}
+      <Badge variant={row.original.isActive ? "default" : "secondary"}>
+        {row.original.isActive ? "Active" : "Inactive"}
       </Badge>
     ),
     enableSorting: false,
   },
   {
-    id: 'actions',
-    header: 'Actions',
+    id: "actions",
+    header: "Actions",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
         <div
@@ -84,9 +89,9 @@ export const getExpenseLimitColumns = (
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault()
-              onEdit(row.original)
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onEdit(row.original);
             }
           }}
         >
@@ -98,9 +103,9 @@ export const getExpenseLimitColumns = (
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault()
-              onDelete(row.original)
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onDelete(row.original);
             }
           }}
         >
@@ -110,6 +115,4 @@ export const getExpenseLimitColumns = (
     ),
     enableSorting: false,
   },
-]
-
- 
+];
