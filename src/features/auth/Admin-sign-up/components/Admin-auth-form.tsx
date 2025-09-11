@@ -528,6 +528,7 @@ const RegistrationForm = () => {
                               render={({ field }) => (
                                 <Input
                                   {...field}
+                                   placeholder="Enter your password"
                                   id='password'
                                   type={showPassword ? 'text' : 'password'}
                                   className={
@@ -706,6 +707,7 @@ const RegistrationForm = () => {
                                 <Input
                                   {...field}
                                   id='confirmPassword'
+                                  placeholder="Enter your confirm password"
                                   type={
                                     showConfirmPassword ? 'text' : 'password'
                                   }
