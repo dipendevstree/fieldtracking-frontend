@@ -1,5 +1,4 @@
 import { format } from "date-fns";
-import sampleReceipt from "@/assets/a320e87c6acd18eb34ccbfefbcddc062644af66a.png";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -14,6 +13,17 @@ import {
   TravelExpanseDetailsProps,
   TravelRoute,
 } from "@/features/approvals/type/type";
+import { FileDown } from "lucide-react";
+import {
+  IconFileWord,
+  IconFileTypePdf,
+  IconFileTypeXls,
+  IconFileSpreadsheet,
+  IconArchive,
+  IconJson,
+  IconFile,
+} from "@tabler/icons-react";
+import { isImage } from "@/utils/commonFunction";
 
 export function ExpenseDetailsSideCard({
   expenseSubType,
@@ -28,6 +38,32 @@ export function ExpenseDetailsSideCard({
   const entries = isLumpSum ? travelLumpSums : travelRoutes;
   const { user: currentUser } = useAuthStore();
   const [comments, setComments] = useState<Record<string, string>>({});
+
+  const getFileIcon = (file: string) => {
+    const ext = file.split(".").pop()?.toLowerCase();
+
+    switch (ext) {
+      case "pdf":
+        return <IconFileTypePdf className="h-12 w-12 text-red-600" />;
+      case "doc":
+      case "docx":
+        return <IconFileWord className="h-12 w-12 text-blue-600" />;
+      case "xls":
+      case "xlsx":
+        return <IconFileTypeXls className="h-12 w-12 text-green-600" />;
+      case "csv":
+        return <IconFileSpreadsheet className="h-12 w-12 text-emerald-600" />;
+      case "zip":
+      case "rar":
+        return <IconArchive className="h-12 w-12 text-yellow-600" />;
+      case "js":
+      case "ts":
+      case "json":
+        return <IconJson className="h-12 w-12 text-purple-600" />;
+      default:
+        return <IconFile className="h-12 w-12 text-gray-600" />;
+    }
+  };
 
   // Pre-fill comments from existing reviews when data changes
   useEffect(() => {
@@ -222,23 +258,60 @@ export function ExpenseDetailsSideCard({
               </div>
               <Separator />
               <div className="flex flex-col items-center space-y-4 pt-2">
-                <img
-                  src={sampleReceipt || ""}
-                  alt="Receipt"
-                  className="h-auto w-40 rounded border"
-                />
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="outline">View Full Size</Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-4xl p-0">
-                    <img
-                      src={sampleReceipt || ""}
-                      alt="Full Receipt"
-                      className="h-auto w-full rounded"
-                    />
-                  </DialogContent>
-                </Dialog>
+                {item.filesUrl?.length > 0 && (
+                  <div className="grid grid-cols-3 gap-3 w-full">
+                    {item.filesUrl.map((file: string, idx: number) => {
+                      if (isImage(file)) {
+                        // 🖼️ Image Preview
+                        return (
+                          <Dialog key={idx}>
+                            <DialogTrigger asChild>
+                              <img
+                                src={file}
+                                alt={`Receipt ${idx + 1}`}
+                                className="h-28 w-full cursor-pointer rounded border object-cover"
+                              />
+                            </DialogTrigger>
+                            <DialogContent className="max-w-4xl p-0">
+                              <img
+                                src={file}
+                                alt={`Receipt Full ${idx + 1}`}
+                                className="h-auto w-full rounded"
+                              />
+                            </DialogContent>
+                          </Dialog>
+                        );
+                      } else {
+                        // 📄 Non-image → Icon + Download Button
+                        return (
+                          <div
+                            key={idx}
+                            className="flex flex-col items-center justify-between h-28 w-full rounded border bg-gray-50 p-2"
+                          >
+                            <div className="flex-1 flex items-center justify-center">
+                              {getFileIcon(file)}
+                            </div>
+                            <Button
+                              asChild
+                              size="sm"
+                              variant="outline"
+                              className="w-full mt-2"
+                            >
+                              <a
+                                href={file}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <FileDown className="h-4 w-4 mr-1" /> Download
+                              </a>
+                            </Button>
+                          </div>
+                        );
+                      }
+                    })}
+                  </div>
+                )}
+
                 <Textarea
                   placeholder="Add Comment (Optional)"
                   value={comments[id] ?? ""}
