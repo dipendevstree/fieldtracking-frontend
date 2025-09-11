@@ -2,7 +2,7 @@ import { z } from 'zod'
 
 // Schema for expense limits
 export const expenseLimitFormSchema = z.object({
-  tierkey: z.string().min(1, 'Tier is required'),
+  tierKey: z.string().min(1, 'Tier is required'),
   expenseCategoryId: z.string().min(1, 'Expense category is required'),
   dailyLimit: z.coerce.number().min(0, 'Daily limit must be 0 or greater'),
   monthlyLimit: z.coerce.number().min(0, 'Monthly limit must be 0 or greater'),

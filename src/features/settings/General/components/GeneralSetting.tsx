@@ -337,6 +337,8 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
               />
             </div>
 
+            <Separator className="my-6"/>
+
           {/* Auto-Expense Approval Section */}
           <div className="space-y-4 mb-8">
             <div className="flex items-center justify-between">

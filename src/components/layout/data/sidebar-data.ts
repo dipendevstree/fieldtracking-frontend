@@ -6,6 +6,10 @@ import {
   Shield,
   Bell,
   FileText,
+  UserCircle,
+  Calendar1Icon,
+  ShieldCheck,
+  ChartPie,
 } from "lucide-react";
 import { type SidebarData } from "../types";
 
@@ -64,7 +68,7 @@ export const sidebarData: SidebarData = {
 
         {
           title: "User Management",
-          icon: Shield,
+          icon: UserCircle,
           menuKey: "User_Management",
           items: [
             {
@@ -86,7 +90,7 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "Calendar",
-          icon: Shield,
+          icon: Calendar1Icon,
           menuKey: "calendar",
           items: [
             {
@@ -113,7 +117,7 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "Approvals",
-          icon: Shield,
+          icon: ShieldCheck,
           menuKey: "approvals",
           items: [
             {
@@ -131,12 +135,11 @@ export const sidebarData: SidebarData = {
               url: "/approvals/reports-analytics",
               menuKey: "reports_analytics",
             },
-           
           ],
         },
         {
           title: "Reports",
-          icon: Shield,
+          icon: ChartPie,
           menuKey: "reports",
           items: [
             {

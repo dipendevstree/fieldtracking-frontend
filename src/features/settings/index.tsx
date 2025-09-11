@@ -1,77 +1,79 @@
-import { useState } from "react"
-import { useRouter } from "@tanstack/react-router"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
-import { Main } from "@/components/layout/main"
-import { cn } from "@/lib/utils"
+import { useState } from "react";
+import { useRouter } from "@tanstack/react-router";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Main } from "@/components/layout/main";
+import { cn } from "@/lib/utils";
 
 // Import the actual page components
-import ExpenseCategoriesPage from './Expense-categories'
-import LimitsControlsPage from './Limits-&-Controls'
-import ApproversPage from './Approvers'
-import NotificationsPage from './notifications'
-import GeneralSettingsPage from './General'
+import ExpenseCategoriesPage from "./Expense-categories";
+import LimitsControlsPage from "./Limits-&-Controls";
+import ApproversPage from "./Approvers";
+import GeneralSettingsPage from "./General";
+import Notifications from "./notifications/components/Notifications";
 
 // Define valid tab values with proper typing
 export type SettingsTabValue =
-  | '/settings'
-  | '/settings/expense-categories'
-  | '/settings/limits-controls'
-  | '/settings/approvers'
-  | '/settings/notifications'
-  | '/settings/general'
+  | "/settings"
+  | "/settings/expense-categories"
+  | "/settings/limits-controls"
+  | "/settings/approvers"
+  | "/settings/notifications"
+  | "/settings/general";
 
 // Tab configuration for better maintainability
 const SETTINGS_TABS = [
   {
-    value: '/settings/expense-categories',
-    label: 'Expense Categories',
-    component: ExpenseCategoriesPage
+    value: "/settings/expense-categories",
+    label: "Expense Categories",
+    component: ExpenseCategoriesPage,
   },
   {
-    value: '/settings/limits-controls',
-    label: 'Limits & Controls',
-    component: LimitsControlsPage
+    value: "/settings/limits-controls",
+    label: "Limits & Controls",
+    component: LimitsControlsPage,
   },
   {
-    value: '/settings/approvers',
-    label: 'Approvers',
-    component: ApproversPage
+    value: "/settings/approvers",
+    label: "Approvers",
+    component: ApproversPage,
   },
   {
-    value: '/settings/notifications',
-    label: 'Notifications',
-    component: NotificationsPage
+    value: "/settings/notifications",
+    label: "Notifications",
+    component: Notifications,
   },
   {
-    value: '/settings/general',
-    label: 'General',
-    component: GeneralSettingsPage
-  }
-] as const
+    value: "/settings/general",
+    label: "General",
+    component: GeneralSettingsPage,
+  },
+] as const;
 
 // Configurable default tab - change this to set the default tab
-      const DEFAULT_SETTINGS_TAB: SettingsTabValue = '/settings/expense-categories'
+const DEFAULT_SETTINGS_TAB: SettingsTabValue = "/settings/expense-categories";
 
 export default function SettingsPage() {
-  const { latestLocation } = useRouter()
-  const pathname = latestLocation.pathname
-  
+  const { latestLocation } = useRouter();
+  const pathname = latestLocation.pathname;
+
   // Initialize with URL-based default or fallback to configured default
   const [activeTab, setActiveTab] = useState<SettingsTabValue>(
-    pathname.includes('/settings/') ? pathname as SettingsTabValue : DEFAULT_SETTINGS_TAB
-  )
+    pathname.includes("/settings/")
+      ? (pathname as SettingsTabValue)
+      : DEFAULT_SETTINGS_TAB
+  );
 
   const handleTabChange = (value: string) => {
-    setActiveTab(value as SettingsTabValue)
-  }
+    setActiveTab(value as SettingsTabValue);
+  };
 
   const handleExportSettings = () => {
     // TODO: Implement settings export functionality
-  }
+  };
 
   return (
-    <Main className={cn('flex flex-col gap-2 p-4')}>
+    <Main className={cn("flex flex-col gap-2 p-4")}>
       <div className="flex items-center justify-between space-y-2">
         <h2 className="text-3xl font-bold tracking-tight">
           Settings & Configuration
@@ -100,14 +102,18 @@ export default function SettingsPage() {
         </TabsList>
 
         {SETTINGS_TABS.map((tab) => {
-          const Component = tab.component
+          const Component = tab.component;
           return (
-            <TabsContent key={tab.value} value={tab.value} className="space-y-4">
+            <TabsContent
+              key={tab.value}
+              value={tab.value}
+              className="space-y-4"
+            >
               <Component />
             </TabsContent>
-          )
+          );
         })}
       </Tabs>
     </Main>
-  )
+  );
 }

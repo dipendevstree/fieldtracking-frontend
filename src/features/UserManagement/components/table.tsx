@@ -1,15 +1,16 @@
-import { ColumnDef } from '@tanstack/react-table'
-import { CustomDataTable } from '@/components/shared/custom-data-table'
-import { PaginationCallbacks } from '@/components/shared/custom-table-pagination'
-import { columns } from './columns'
+import { ColumnDef } from "@tanstack/react-table";
+import { CustomDataTable } from "@/components/shared/custom-data-table";
+import { PaginationCallbacks } from "@/components/shared/custom-table-pagination";
+import { columns } from "./columns";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 interface UserTableProps {
-  data: any[]
-  totalCount: number
-  loading?: boolean
-  paginationCallbacks: PaginationCallbacks
-  currentPage?: number
-  hideActions?: boolean
+  data: any[];
+  totalCount: number;
+  loading?: boolean;
+  paginationCallbacks: PaginationCallbacks;
+  currentPage?: number;
+  hideActions?: boolean;
 }
 
 const AllUsersTable = ({
@@ -20,12 +21,20 @@ const AllUsersTable = ({
   currentPage,
   hideActions = false,
 }: UserTableProps) => {
-  const filteredColumns = hideActions
-    ? columns.filter((column) => column.id !== 'actions')
-    : columns
+  const { user } = useAuthStore();
+  const allowTerritoryFilter =
+    user?.organization?.allowAddUsersBasedOnTerritories;
+  const filteredColumns = columns.filter((column: any) => {
+    console.log("Column ID:", column);
+
+    if (hideActions && column.id === "actions") return false;
+    if (!allowTerritoryFilter && column.accessorKey === "territory")
+      return false;
+    return true;
+  });
 
   return (
-    <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
+    <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12">
       <CustomDataTable
         paginationCallbacks={paginationCallbacks}
         loading={loading}
@@ -33,10 +42,10 @@ const AllUsersTable = ({
         currentPage={currentPage}
         columns={filteredColumns as ColumnDef<unknown>[]}
         totalCount={totalCount}
-        key={'users'}
+        key={"users"}
       />
     </div>
-  )
-}
+  );
+};
 
-export default AllUsersTable
+export default AllUsersTable;
