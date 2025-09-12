@@ -45,7 +45,7 @@ export const getExpenseLimitColumns = (
       <CustomDataTableColumnHeader column={column} title="Daily Limit" />
     ),
     cell: ({ row }) => (
-      <div className="text">${row.original.dailyLimit.toLocaleString()}</div>
+      <div className="text">{row.original.dailyLimit.toLocaleString()}</div>
     ),
     meta: {
       className: "text",
@@ -58,7 +58,7 @@ export const getExpenseLimitColumns = (
       <CustomDataTableColumnHeader column={column} title="Monthly Limit" />
     ),
     cell: ({ row }) => (
-      <div className="text">${row.original.monthlyLimit.toLocaleString()}</div>
+      <div className="text">{row.original.monthlyLimit.toLocaleString()}</div>
     ),
     meta: {
       className: "text",

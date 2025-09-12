@@ -230,7 +230,7 @@ export function ExpenseLimitActionForm({
 
             {/* Daily Limit Field */}
             <div className='space-y-2'>
-              <Label htmlFor='dailyLimit'>Daily Limit ($) <span className="text-red-500">*</span></Label>
+              <Label htmlFor='dailyLimit'>Daily Limit <span className="text-red-500">*</span></Label>
               <Controller
                 name='dailyLimit'
                 control={control}
@@ -254,7 +254,7 @@ export function ExpenseLimitActionForm({
 
             {/* Monthly Limit Field */}
             <div className='space-y-2'>
-              <Label htmlFor='monthlyLimit'>Monthly Limit ($) <span className="text-red-500">*</span></Label>
+              <Label htmlFor='monthlyLimit'>Monthly Limit <span className="text-red-500">*</span></Label>
               <Controller
                 name='monthlyLimit'
                 control={control}
