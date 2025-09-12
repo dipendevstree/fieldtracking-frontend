@@ -1,6 +1,7 @@
 import API from '@/config/api/api'
 import useDeleteData from '@/hooks/use-delete-data'
 import useFetchData from '@/hooks/use-fetch-data'
+import useFetchInfiniteData from '@/hooks/use-fetch-Infinite-data'
 import usePatchData from '@/hooks/use-patch-data'
 import usePostData from '@/hooks/use-post-data'
 
@@ -117,4 +118,33 @@ export const useDeleteVisits = (id: string, onSuccess?: () => void) => {
       }
     },
   })
+}
+
+export const useGetAllCompletedVisit = (
+  params: IListParams,
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<any>({
+    url: `${CALENDAR_QUERY}`,
+    params: { 
+      status: "completed", 
+      ...params 
+    },
+    enabled: options?.enabled ?? true,
+  })
+  console.log('query', query, query.data && Object.keys(query.data))
+  return {
+    ...query,
+    data: query.data?.list,
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  }
+  return {
+    ...query,
+    data: query.data?.pages?.list,
+    totalCount: query.data?.pages?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  }
 }

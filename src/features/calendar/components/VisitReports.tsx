@@ -8,23 +8,21 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-
-const visitReports = [
-  {
-    id: '1',
-    rep: 'John Smith',
-    customer: 'Acme Corp',
-    date: '2024-01-10',
-    outcome: 'Successful demo, client interested in premium package',
-    clientFeedback: 'Very impressed with the features and pricing',
-    satisfaction: 5,
-    nextActions: 'Send proposal by Friday, schedule follow-up call',
-    status: 'completed',
-  },
-  // ... other reports
-]
+import { useGetAllCompletedVisit } from '../services/calendar-view.hook'
+import { useState } from 'react'
+import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from '@/data/app.data'
+import moment from 'moment-timezone'
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 export default function VisitReports() {
+  const [pagination, setPagination] = useState({
+    page: DEFAULT_PAGE_NUMBER,
+    limit: DEFAULT_PAGE_SIZE,
+  });
+  
+  const completedVisits = useGetAllCompletedVisit(pagination);
+console.log('completedVisits', completedVisits)
+  const visitReports = completedVisits.data ?? [];
   const getStatusBadge = (status: string) => {
     const variants = {
       confirmed: 'bg-green-100 text-green-800',
@@ -47,67 +45,74 @@ export default function VisitReports() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className='space-y-6'>
-          {visitReports.map((report) => (
-            <div key={report.id} className='space-y-4 rounded-lg border p-6'>
-              <div className='flex items-center justify-between'>
-                <div>
-                  <h3 className='text-lg font-semibold'>{report.customer}</h3>
-                  <p className='text-muted-foreground text-sm'>
-                    {report.rep} • {report.date}
-                  </p>
-                </div>
-                <div className='flex items-center space-x-2'>
-                  <div className='flex items-center'>
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 ${i < report.satisfaction ? 'fill-current text-yellow-400' : 'text-gray-300'}`}
-                      />
-                    ))}
+        <InfiniteScroll
+          loader={<p className='text-center text-sm text-gray-500'>Loading more reports...</p>}
+          dataLength={visitReports.length}
+          next={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
+          hasMore={completedVisits.totalCount < visitReports.length}
+        >
+          <div className='space-y-6'>
+            {visitReports.map((report: any, key: number) => (
+              <div key={key} className='space-y-4 rounded-lg border p-6'>
+                <div className='flex items-center justify-between'>
+                  <div>
+                    <h3 className='text-lg font-semibold'>{report?.customer?.companyName}</h3>
+                    <p className='text-muted-foreground text-sm'>
+                      {`${report?.salesRepresentativeUser?.firstName} ${report?.salesRepresentativeUser?.lastName}`} • {moment(report.date).format("YYYY-MM-DD")}
+                    </p>
                   </div>
-                  <Badge className={getStatusBadge(report.status)}>
-                    {report.status}
-                  </Badge>
+                  <div className='flex items-center space-x-2'>
+                    <div className='flex items-center'>
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-4 w-4 ${i < (report.feedBackSalesSkillsAndKnowledgeRating) ? 'fill-current text-yellow-400' : 'text-gray-300'}`}
+                        />
+                      ))}
+                    </div>
+                    <Badge className={getStatusBadge(report.status)}>
+                      {report.status}
+                    </Badge>
+                  </div>
                 </div>
-              </div>
-              <div className='grid gap-4 md:grid-cols-2'>
+                <div className='grid gap-4 md:grid-cols-2'>
+                  <div>
+                    <h4 className='mb-2 font-medium text-green-800'>
+                      Visit Outcome
+                    </h4>
+                    <p className='rounded-md bg-green-50 p-3 text-sm'>
+                      {(report.meetingOutcomes || []).join(', ')}
+                    </p>
+                  </div>
+                  <div>
+                    <h4 className='mb-2 font-medium text-blue-800'>
+                      Client Feedback
+                    </h4>
+                    <p className='rounded-md bg-blue-50 p-3 text-sm'>
+                      {report.feedBackDescription || "-"}
+                    </p>
+                  </div>
+                </div>
                 <div>
-                  <h4 className='mb-2 font-medium text-green-800'>
-                    Visit Outcome
+                  <h4 className='mb-2 font-medium text-purple-800'>
+                    Next Actions
                   </h4>
-                  <p className='rounded-md bg-green-50 p-3 text-sm'>
-                    {report.outcome}
+                  <p className='rounded-md bg-purple-50 p-3 text-sm'>
+                    {report.nextActions}
                   </p>
                 </div>
-                <div>
-                  <h4 className='mb-2 font-medium text-blue-800'>
-                    Client Feedback
-                  </h4>
-                  <p className='rounded-md bg-blue-50 p-3 text-sm'>
-                    {report.clientFeedback}
-                  </p>
+                <div className='flex justify-end space-x-2'>
+                  <Button variant='outline' size='sm'>
+                    <Eye className='mr-2 h-4 w-4' /> View Details
+                  </Button>
+                  <Button variant='outline' size='sm'>
+                    Export Report
+                  </Button>
                 </div>
               </div>
-              <div>
-                <h4 className='mb-2 font-medium text-purple-800'>
-                  Next Actions
-                </h4>
-                <p className='rounded-md bg-purple-50 p-3 text-sm'>
-                  {report.nextActions}
-                </p>
-              </div>
-              <div className='flex justify-end space-x-2'>
-                <Button variant='outline' size='sm'>
-                  <Eye className='mr-2 h-4 w-4' /> View Details
-                </Button>
-                <Button variant='outline' size='sm'>
-                  Export Report
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </InfiniteScroll>
       </CardContent>
     </Card>
   )
