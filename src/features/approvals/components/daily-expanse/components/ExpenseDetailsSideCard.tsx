@@ -13,7 +13,7 @@ import {
   TravelExpanseDetailsProps,
   TravelRoute,
 } from "@/features/approvals/type/type";
-import { FileDown } from "lucide-react";
+import { FileDown, Loader2 } from "lucide-react";
 import {
   IconFileWord,
   IconFileTypePdf,
@@ -25,15 +25,24 @@ import {
 } from "@tabler/icons-react";
 import { isImage } from "@/utils/commonFunction";
 
-export function ExpenseDetailsSideCard({
-  expenseSubType,
-  travelLumpSums = [],
-  travelRoutes = [],
-  isApprovalLevel,
-  dailyExpanse,
-  onExpenseReviewAndApproval,
-  onUpdateExpanseDetails,
-}: TravelExpanseDetailsProps) {
+export function ExpenseDetailsSideCard(
+  props: TravelExpanseDetailsProps & {
+    loadingIds?: Record<string, boolean>;
+    updatingReviewKeys?: Record<string, boolean>;
+  }
+) {
+  const {
+    expenseSubType,
+    travelLumpSums = [],
+    travelRoutes = [],
+    isApprovalLevel,
+    dailyExpanse,
+    onExpenseReviewAndApproval,
+    onUpdateExpanseDetails,
+    loadingIds = {},
+    updatingReviewKeys = null,
+  } = props;
+
   const isLumpSum = expenseSubType === "travel_lump_sum";
   const entries = isLumpSum ? travelLumpSums : travelRoutes;
   const { user: currentUser } = useAuthStore();
@@ -216,6 +225,17 @@ export function ExpenseDetailsSideCard({
           : (item as TravelRoute).travelRouteId;
         const myReview = getReviewAndApproval(id);
         const resultObj = gettingButtonText(item);
+
+        // --- Loader Keys ---
+        const approveKey = `${id}-${resultObj?.status}`;
+        const rejectKey = `${id}-rejected`;
+        const isProcessingApprove = loadingIds[approveKey] ?? false;
+        const isProcessingReject = loadingIds[rejectKey] ?? false;
+        const isUpdatingApprove =
+          myReview?.id && updatingReviewKeys?.[`${myReview.id}-reviewed`];
+        const isUpdatingReject =
+          myReview?.id && updatingReviewKeys?.[`${myReview.id}-rejected`];
+
         return (
           <Card key={id} className="border shadow-sm mb-4">
             <CardHeader>
@@ -323,37 +343,56 @@ export function ExpenseDetailsSideCard({
                     <div className="grid w-full grid-cols-2 gap-2">
                       <Button
                         className="bg-green-600 text-white hover:bg-green-700"
-                        disabled={resultObj?.isDisable}
+                        disabled={resultObj?.isDisable || isUpdatingApprove}
                         onClick={() =>
                           handleUpdateReview(myReview.id, "reviewed", id)
                         }
                       >
-                        Review Expense
+                        {isUpdatingApprove ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Processing...
+                          </>
+                        ) : (
+                          "Review Expense"
+                        )}
                       </Button>
                       <Button
                         variant="destructive"
-                        disabled={resultObj?.isDisable}
+                        disabled={resultObj?.isDisable || isUpdatingReject}
                         onClick={() =>
                           handleUpdateReview(myReview.id, "rejected", id)
                         }
                       >
-                        Reject Expense
+                        {isUpdatingReject ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Processing...
+                          </>
+                        ) : (
+                          "Reject Expense"
+                        )}
                       </Button>
                     </div>
                   ) : (
-                    // If reviewed/approved, only show Update
                     <Button
                       className="bg-green-600 text-white hover:bg-green-700 w-full"
-                      disabled={resultObj?.isDisable}
+                      disabled={resultObj?.isDisable || isUpdatingApprove}
                       onClick={() =>
                         handleUpdateReview(myReview.id, myReview.status, id)
                       }
                     >
-                      Update Review
+                      {isUpdatingApprove ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                          Updating...
+                        </>
+                      ) : (
+                        "Update Review"
+                      )}
                     </Button>
                   )
                 ) : (
-                  // Initial state: Review + Reject
                   <>
                     {resultObj?.reason != "" && (
                       <p className="text-red-600">{resultObj.reason}</p>
@@ -361,21 +400,35 @@ export function ExpenseDetailsSideCard({
                     <div className="grid w-full grid-cols-2 gap-2">
                       <Button
                         className="bg-green-600 text-white hover:bg-green-700"
-                        disabled={resultObj?.isDisable}
+                        disabled={resultObj?.isDisable || isProcessingApprove}
                         onClick={() =>
                           handleReviewAction(id, resultObj?.status)
                         }
                       >
-                        {resultObj?.status == "reviewed"
-                          ? "Review Expense"
-                          : "Approve Expense"}
+                        {isProcessingApprove ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Processing...
+                          </>
+                        ) : resultObj?.status == "reviewed" ? (
+                          "Review Expense"
+                        ) : (
+                          "Approve Expense"
+                        )}
                       </Button>
                       <Button
                         variant="destructive"
-                        disabled={resultObj?.isDisable}
+                        disabled={resultObj?.isDisable || isProcessingReject}
                         onClick={() => handleReviewAction(id, "rejected")}
                       >
-                        Reject Expense
+                        {isProcessingReject ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                            Processing...
+                          </>
+                        ) : (
+                          "Reject Expense"
+                        )}
                       </Button>
                     </div>
                   </>

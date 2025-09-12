@@ -22,7 +22,7 @@ import {
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useEffect, useState } from "react";
 import { isImage } from "@/utils/commonFunction";
-import { FileDown } from "lucide-react";
+import { FileDown, Loader2 } from "lucide-react";
 
 export function DailyAllowanceDetailsCard({
   dailyAllowances = [],
@@ -30,7 +30,12 @@ export function DailyAllowanceDetailsCard({
   dailyExpanse,
   onExpenseReviewAndApproval,
   onUpdateExpanseDetails,
-}: DailyAllowanseDetailsProps) {
+  loadingIds = {},
+  updatingReviewKeys = {},
+}: DailyAllowanseDetailsProps & {
+  loadingIds?: Record<string, boolean>;
+  updatingReviewKeys?: Record<string, boolean>;
+}) {
   const { user: currentUser } = useAuthStore();
   const [comments, setComments] = useState<Record<string, string>>({});
 
@@ -231,6 +236,16 @@ export function DailyAllowanceDetailsCard({
               const myReview = getReviewAndApproval(detail.id);
               const resultObj = gettingButtonText(detail);
 
+              // ✅ loader keys
+              const approveKey = `${detail.id}-${resultObj?.status}`;
+              const rejectKey = `${detail.id}-rejected`;
+              const isProcessingApprove = loadingIds[approveKey] ?? false;
+              const isProcessingReject = loadingIds[rejectKey] ?? false;
+              const isUpdatingApprove =
+                myReview?.id && updatingReviewKeys?.[`${myReview.id}-reviewed`];
+              const isUpdatingReject =
+                myReview?.id && updatingReviewKeys?.[`${myReview.id}-rejected`];
+
               return (
                 <div key={detail.id} className="border p-4 rounded-md mb-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -252,6 +267,7 @@ export function DailyAllowanceDetailsCard({
                   <Separator className="mt-4 mb-2" />
 
                   <div className="flex flex-col items-center space-y-4 pt-2">
+                    {/* files */}
                     <div className="grid grid-cols-3 gap-3 w-full">
                       {detail.filesUrl?.length > 0 &&
                         detail.filesUrl.map((file: string, idx: number) => {
@@ -319,7 +335,7 @@ export function DailyAllowanceDetailsCard({
                         <div className="grid w-full grid-cols-2 gap-2">
                           <Button
                             className="bg-green-600 text-white hover:bg-green-700"
-                            disabled={resultObj.isDisable}
+                            disabled={resultObj.isDisable || isUpdatingApprove}
                             onClick={() =>
                               handleUpdateReview(
                                 myReview.id,
@@ -328,11 +344,18 @@ export function DailyAllowanceDetailsCard({
                               )
                             }
                           >
-                            Review Expense
+                            {isUpdatingApprove ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                Processing...
+                              </>
+                            ) : (
+                              "Review Expense"
+                            )}
                           </Button>
                           <Button
                             variant="destructive"
-                            disabled={resultObj.isDisable}
+                            disabled={resultObj.isDisable || isUpdatingReject}
                             onClick={() =>
                               handleUpdateReview(
                                 myReview.id,
@@ -341,12 +364,20 @@ export function DailyAllowanceDetailsCard({
                               )
                             }
                           >
-                            Reject Expense
+                            {isUpdatingReject ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                Processing...
+                              </>
+                            ) : (
+                              "Reject Expense"
+                            )}
                           </Button>
                         </div>
                       ) : (
                         <Button
                           className="bg-green-600 text-white hover:bg-green-700 w-full"
+                          disabled={resultObj.isDisable || isUpdatingApprove}
                           onClick={() =>
                             handleUpdateReview(
                               myReview.id,
@@ -355,7 +386,14 @@ export function DailyAllowanceDetailsCard({
                             )
                           }
                         >
-                          Update Review
+                          {isUpdatingApprove ? (
+                            <>
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              Updating...
+                            </>
+                          ) : (
+                            "Update Review"
+                          )}
                         </Button>
                       )
                     ) : (
@@ -368,7 +406,9 @@ export function DailyAllowanceDetailsCard({
                         <div className="grid w-full grid-cols-2 gap-2">
                           <Button
                             className="bg-green-600 text-white hover:bg-green-700"
-                            disabled={resultObj.isDisable}
+                            disabled={
+                              resultObj.isDisable || isProcessingApprove
+                            }
                             onClick={() =>
                               handleReviewAction(
                                 allowance.dailyAllowanceId,
@@ -377,11 +417,19 @@ export function DailyAllowanceDetailsCard({
                               )
                             }
                           >
-                            {resultObj.buttonText} Expense
+                            {isProcessingApprove ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                Processing...
+                              </>
+                            ) : (
+                              resultObj.buttonText
+                            )}
+                            Expense
                           </Button>
                           <Button
                             variant="destructive"
-                            disabled={resultObj.isDisable}
+                            disabled={resultObj.isDisable || isProcessingReject}
                             onClick={() =>
                               handleReviewAction(
                                 allowance.dailyAllowanceId,
@@ -390,7 +438,14 @@ export function DailyAllowanceDetailsCard({
                               )
                             }
                           >
-                            Reject Expense
+                            {isProcessingReject ? (
+                              <>
+                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                Processing...
+                              </>
+                            ) : (
+                              "Reject Expense"
+                            )}
                           </Button>
                         </div>
                       </>
