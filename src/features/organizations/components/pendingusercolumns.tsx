@@ -2,6 +2,7 @@ import { ColumnDef } from '@tanstack/react-table'
 import { Badge } from '@/components/ui/badge'
 import { CustomDataTableColumnHeader } from '@/components/shared/custom-table-header-column'
 import { DataTableRowActions } from './PendingUser-table-action-button'
+import LongText from '@/components/long-text'
 
 export const pendingusercolumns: ColumnDef<any>[] = [
   {
@@ -44,7 +45,7 @@ export const pendingusercolumns: ColumnDef<any>[] = [
       const city = row.original.organization?.city
 
       return (
-        <div>
+        <LongText className='max-w-sm'>
           <div className='font-medium'>{orgName}</div>
           {website && (
             <div className='text-muted-foreground text-xs'>{website}</div>
@@ -54,7 +55,7 @@ export const pendingusercolumns: ColumnDef<any>[] = [
               {address}, {city}
             </div>
           )}
-        </div>
+        </LongText>
       )
     },
   },
