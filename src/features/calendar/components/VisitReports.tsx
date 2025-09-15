@@ -21,8 +21,8 @@ export default function VisitReports() {
   });
   
   const completedVisits = useGetAllCompletedVisit(pagination);
-console.log('completedVisits', completedVisits)
-  const visitReports = completedVisits.data ?? [];
+
+  const visitReports = completedVisits.allData ?? [];
   const getStatusBadge = (status: string) => {
     const variants = {
       confirmed: 'bg-green-100 text-green-800',
@@ -53,7 +53,7 @@ console.log('completedVisits', completedVisits)
         >
           <div className='space-y-6'>
             {visitReports.map((report: any, key: number) => (
-              <div key={key} className='space-y-4 rounded-lg border p-6'>
+              <div key={key} className='space-y-4 rounded-lg border p-6' ref={key === visitReports.length - 1 ? completedVisits.lastPostRef : null}>
                 <div className='flex items-center justify-between'>
                   <div>
                     <h3 className='text-lg font-semibold'>{report?.customer?.companyName}</h3>

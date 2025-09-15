@@ -1,18 +1,34 @@
-import { useInfiniteQuery, UseInfiniteQueryOptions } from '@tanstack/react-query'
+import {
+  useInfiniteQuery,
+  UseInfiniteQueryOptions,
+} from '@tanstack/react-query'
 import instance from '@/config/instance/instance'
 import { buildQueryString } from '@/utils/storage'
 
 export interface PaginatedResponse<TItem = any> {
   list: TItem[]
+  totalPages: number
+  currentPage: number
   totalCount: number
 }
 
-export interface FetchInfiniteDataOptions<TData, TParams> {
+type DefaultQueryKey = readonly unknown[]
+
+export interface FetchInfiniteDataOptions<
+  TData = unknown,
+  TParams = Record<string, any>
+> {
   url: string
   params?: TParams
   queryKey?: string
   queryOptions?: Omit<
-    UseInfiniteQueryOptions<TData, Error, TData>,
+    UseInfiniteQueryOptions<
+      PaginatedResponse<TData>, // TQueryFnData
+      Error,                    // TError
+      PaginatedResponse<TData>, // TData
+      DefaultQueryKey,          // TQueryKey
+      number                    // TPageParam
+    >,
     'queryKey' | 'queryFn' | 'getNextPageParam' | 'initialPageParam'
   >
   enabled?: boolean
@@ -28,7 +44,13 @@ const useFetchInfiniteData = <
   queryOptions = {},
   enabled = true,
 }: FetchInfiniteDataOptions<TData, TParams>) => {
-  return useInfiniteQuery<PaginatedResponse<TData>, Error>({
+  return useInfiniteQuery<
+    PaginatedResponse<TData>, // TQueryFnData
+    Error,                    // TError
+    PaginatedResponse<TData>, // TData
+    DefaultQueryKey,          // TQueryKey
+    number                    // TPageParam
+  >({
     queryKey: queryKey ? [queryKey, params] : [url, params],
     queryFn: async ({ pageParam = 1 }): Promise<PaginatedResponse<TData>> => {
       const queryString = buildQueryString({
@@ -46,11 +68,12 @@ const useFetchInfiniteData = <
       const loaded = allPages.flatMap((p) => p.list).length
       return loaded < total ? allPages.length + 1 : undefined
     },
+    initialPageParam: 1,
     enabled,
     retry: 1,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: queryOptions?.refetchOnWindowFocus ?? false,
     staleTime: 0,
-    placeholderData: (prevData) => prevData,
+    placeholderData: (prev) => prev ?? undefined,
     ...queryOptions,
   })
 }
