@@ -68,9 +68,6 @@ export default function DashboardPage() {
           <h2 className="text-3xl font-bold tracking-tight">
             Field Sales Dashboard
           </h2>
-          <p className="text-muted-foreground">
-            Monitor your field sales team performance and activities
-          </p>
         </div>
         <div className="flex items-center space-x-2">
           <Button variant="outline" onClick={handleExportReport}>

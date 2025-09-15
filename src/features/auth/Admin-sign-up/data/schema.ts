@@ -39,10 +39,10 @@ export const step2Schema = z.object({
   organizationName: z.string().nonempty('Organization name is required'),
   organizationTypes: z.string().nonempty('Organization type is required'),
   website: z
-    .string()
-    .refine((val) => val === '' || z.string().url().safeParse(val).success, {
-      message: 'Website must be a valid URL',
-    }),
+    .string().optional(),
+    // .refine((val) => val === '' || z.string().url().safeParse(val).success, {
+    //   message: 'Website must be a valid URL',
+    // }),
   description: z.string().optional(),
   timeZone: z.string().optional(),
 })
@@ -66,15 +66,9 @@ export const step3Schema = z.object({
 })
 
 export const step4Schema = z.object({
-  terms: z.literal(true, {
-    errorMap: () => ({ message: 'You must agree to the Terms of Service' }),
-  }),
-  privacy: z.literal(true, {
-    errorMap: () => ({ message: 'You must agree to the Privacy Policy' }),
-  }),
-  consent: z.literal(true, {
-    errorMap: () => ({ message: 'You must consent to data processing' }),
-  }),
+  terms: z.boolean().optional(),
+  privacy: z.boolean().optional(),
+  consent: z.boolean().optional(),
 })
 
 // Combined form schema with all validations

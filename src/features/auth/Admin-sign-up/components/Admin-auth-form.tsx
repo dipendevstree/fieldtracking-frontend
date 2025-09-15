@@ -99,7 +99,7 @@ const RegistrationForm = () => {
 
   // Make sure formSchema is imported or defined above this usage:
 
-  const { control, setValue, watch, trigger, formState, handleSubmit } =
+  const { control, setValue, watch, trigger, formState, setError, handleSubmit } =
     useForm<TFormSchema>({
       resolver: zodResolver(formSchema),
       mode: 'onChange',
@@ -122,7 +122,7 @@ const RegistrationForm = () => {
         timeZone: systemTimeZone,
       },
     })
-  const { errors } = formState
+  const { errors, isSubmitted } = formState
 
   useEffect(() => {
     if (data) {
@@ -207,9 +207,32 @@ const RegistrationForm = () => {
     createUser(payload)
   }
 
-  const onSubmit = (value: any) => {
-    handleCreateAdmin(value)
-  }
+  const onSubmit = (value: TFormSchema) => {
+    
+    if(currentStep === 4 && !isSubmitted ) return;
+    let hasError = false;
+  
+    if (!value.terms) {
+      setError('terms', { type: 'manual', message: "You must agree to the Terms of Service" });
+      hasError = true;
+    }
+  
+    if (!value.privacy) {
+      setError('privacy', { type: 'manual', message: "You must agree to the Privacy Policy" });
+      hasError = true;
+    }
+  
+    if (!value.consent) {
+      setError('consent', { type: 'manual', message: "You must consent to data processing" });
+      hasError = true;
+    }
+  
+    if (hasError) return;
+  
+    // No errors, proceed
+    handleCreateAdmin(value);
+  };
+
   const getFieldError = (fieldName: keyof TFormSchema) => {
     return errors[fieldName]?.message
   }
@@ -528,6 +551,7 @@ const RegistrationForm = () => {
                               render={({ field }) => (
                                 <Input
                                   {...field}
+                                   placeholder="Enter your password"
                                   id='password'
                                   type={showPassword ? 'text' : 'password'}
                                   className={
@@ -706,6 +730,7 @@ const RegistrationForm = () => {
                                 <Input
                                   {...field}
                                   id='confirmPassword'
+                                  placeholder="Enter your confirm password"
                                   type={
                                     showConfirmPassword ? 'text' : 'password'
                                   }

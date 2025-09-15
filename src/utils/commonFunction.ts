@@ -171,3 +171,12 @@ export function formatName(value: string): string {
       .join(" ")
   );
 }
+
+/**
+ * Check if a given file URL is an image
+ */
+export const isImage = (file: string) => {
+  const imageExtensions = ["jpg", "jpeg", "png", "gif", "webp"];
+  const ext = file.split(".").pop()?.toLowerCase();
+  return imageExtensions.includes(ext ?? "");
+};

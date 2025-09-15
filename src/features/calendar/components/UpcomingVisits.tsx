@@ -30,7 +30,7 @@ export default function UpcomingVisits() {
     salesRepresentativeUserId: "",
     isUpcoming: true,
     customerId: "",
-    status: "",
+    status: "pending",
   });
 
   const { watch, setValue } = useForm<FormData>({

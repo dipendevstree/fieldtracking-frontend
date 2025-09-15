@@ -3,7 +3,6 @@ import { ColumnDef } from "@tanstack/react-table";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -497,9 +496,6 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Today's Schedule</CardTitle>
-              <CardDescription>
-                Manage your customer database and relationships.
-              </CardDescription>
             </div>
             <div className="flex items-center space-x-2">
               <div className="relative">
@@ -559,9 +555,6 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Customer List</CardTitle>
-              <CardDescription>
-                Manage your customer database and relationships.
-              </CardDescription>
             </div>
             <div className="flex items-center space-x-2">
               <div className="relative">
@@ -620,9 +613,6 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
         <CardHeader>
           <div>
             <CardTitle>Audit Logs</CardTitle>
-            <CardDescription>
-              Track user activities and system events
-            </CardDescription>
           </div>
           <div className="relative flex gap-2 mt-4">
             <div>
