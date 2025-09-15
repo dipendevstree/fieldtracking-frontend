@@ -177,6 +177,9 @@ export default function AddCustomerPage({
     name: "contacts",
   });
 
+  const contacts = form.watch("contacts");
+  const isAnyContactPrimary = contacts.some((contact) => contact.isPrimary);
+
   const { allCustomerType = [] } = useGetAllCustomerType({
     page: 1,
     limit: 100,
@@ -185,7 +188,6 @@ export default function AddCustomerPage({
   const [selectedRoleIds, setSelectedRoleIds] = useState<
     Record<number, string>
   >({});
-
 
   useEffect(() => {
     if (isEditMode && customer) {
@@ -235,10 +237,6 @@ export default function AddCustomerPage({
     }
   }, [isEditMode, customer, reset, replace]);
 
-
-
-
-
   // Transform industry data for dropdown using the same pattern as organizations component
   const industryOptions = useSelectOptions<{
     industryId: string;
@@ -262,21 +260,18 @@ export default function AddCustomerPage({
     valueKey: "roleId",
   });
 
-  // Remove the setPrimaryContact function that enforces only one primary contact
-  const togglePrimaryContact = (id: number) => {
-    const contactIndex = fields.findIndex((field) => field.id === id);
-    if (contactIndex !== -1) {
-      const contactValues = getValues(`contacts.${contactIndex}`);
-      const updatedContact = {
-        ...contactValues,
-        id,
-        userRole: "",
-        assignedRep: "",
-        isPrimary: !contactValues.isPrimary,
-      };
-      console.log("hasdasello", updatedContact);
-      update(contactIndex, updatedContact);
-    }
+  const togglePrimaryContact = (selectedIndex: number) => {
+    const currentContact = getValues(`contacts.${selectedIndex}`);
+    const isBecomingNonPrimary = currentContact.isPrimary;
+
+    // Update the specific contact that was clicked
+    update(selectedIndex, {
+      ...currentContact,
+      isPrimary: !currentContact.isPrimary,
+      // If it's being switched OFF, clear the role and rep
+      userRole: isBecomingNonPrimary ? "" : currentContact.userRole,
+      assignedRep: isBecomingNonPrimary ? "" : currentContact.assignedRep,
+    });
   };
 
   // Update the onSubmitForm function to use the mutation
@@ -827,342 +822,353 @@ export default function AddCustomerPage({
                   </CardHeader>
                   <CardContent className="pt-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {fields.map((contact, index) => (
-                        <div
-                          key={contact.id}
-                          className="border rounded-lg p-4 space-y-3 bg-gray-50 relative"
-                          style={{ minHeight: 260 }}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center space-x-2">
-                              <span className="font-medium">
-                                Contact {index + 1}
-                              </span>
-                              {contact.isPrimary && (
-                                <span className="bg-black text-white text-xs px-2 py-1 rounded">
-                                  Primary Contact
+                      {fields.map((contact, index) => {
+                        const isToggleDisabled =
+                          isAnyContactPrimary && !contact.isPrimary;
+                        return (
+                          <div
+                            key={contact.id}
+                            className="border rounded-lg p-4 space-y-3 bg-gray-50 relative"
+                            style={{ minHeight: 260 }}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center space-x-2">
+                                <span className="font-medium">
+                                  Contact {index + 1}
                                 </span>
-                              )}
-                            </div>
-                            <div className="flex items-center space-x-2">
-                              <label className="flex items-center gap-2 cursor-pointer">
-                                <span className="font-medium text-sm">
-                                  Primary
-                                </span>
-                                <div className="relative inline-block">
-                                  <input
-                                    type="checkbox"
-                                    id={`primary-contact-${contact.id}`}
-                                    name={`primary-contact-${contact.id}`}
-                                    checked={contact.isPrimary}
-                                    onChange={() =>
-                                      togglePrimaryContact(contact.id)
-                                    }
-                                    className="sr-only peer"
-                                    tabIndex={-1}
-                                    aria-label="Primary"
-                                  />
-                                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
-                                </div>
-                              </label>
-                              {fields.length > 1 && (
-                                <Button
-                                  type="button"
-                                  onClick={() => remove(index)}
-                                  variant="ghost"
-                                  size="icon"
-                                  className="text-red-500 hover:bg-red-50"
+                                {contact.isPrimary && (
+                                  <span className="bg-black text-white text-xs px-2 py-1 rounded">
+                                    Primary Contact
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center space-x-2">
+                                <label
+                                  className={`flex items-center gap-2 ${
+                                    isToggleDisabled
+                                      ? "cursor-not-allowed opacity-50"
+                                      : "cursor-pointer"
+                                  }`}
                                 >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              )}
+                                  <span className="font-medium text-sm">
+                                    Primary
+                                  </span>
+                                  <div className="relative inline-block">
+                                    <input
+                                      type="checkbox"
+                                      id={`primary-contact-${contact.id}`}
+                                      name={`primary-contact-${contact.id}`}
+                                      checked={contact.isPrimary}
+                                      onChange={() =>
+                                        togglePrimaryContact(index)
+                                      }
+                                      disabled={isToggleDisabled}
+                                      className="sr-only peer"
+                                      tabIndex={-1}
+                                      aria-label="Primary"
+                                    />
+                                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-black"></div>
+                                  </div>
+                                </label>
+                                {fields.length > 1 && (
+                                  <Button
+                                    type="button"
+                                    onClick={() => remove(index)}
+                                    variant="ghost"
+                                    size="icon"
+                                    className="text-red-500 hover:bg-red-50"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                          <div className="border-t border-gray-200 -mx-4 max-w-m" />
-                          {contact.isPrimary && (
-                            <div className="rounded mb-4">
-                              <Label htmlFor={`userRole-${index}`}>
-                                Assigned Sales Rep
-                              </Label>
-                              <div className="flex gap-4 mt-2">
-                                <Controller
-                                  name={`contacts.${index}.userRole`}
-                                  control={control}
-                                  render={({ field }) => (
-                                    <Select
-                                      value={field.value || ""}
-                                      onValueChange={(val) => {
-                                        if (val) {
-                                          console.log('Role selected:', val, 'for contact:', contact.id);
-                                          field.onChange(val);
-                                          setSelectedRoleIds((prev) => ({
-                                            ...prev,
-                                            [contact.id]: val,
-                                          }));
-                                          const assignedRepField =
-                                            form.getValues(
-                                              `contacts.${index}.assignedRep`
-                                            );
-                                          if (assignedRepField) {
-                                            form.setValue(
-                                              `contacts.${index}.assignedRep`,
-                                              ""
-                                            );
-                                          }
-                                        }
-                                      }}
-                                    >
-                                      <SelectTrigger
-                                        className="w-full max-w-m"
-                                        id={`userRole-${index}`}
-                                      >
-                                        <SelectValue placeholder="User Role" />
-                                      </SelectTrigger>
-                                      <SelectContent
-                                        id={`userRole-content-${index}`}
-                                        className="w-full"
-                                      >
-                                        {roleOptions.length > 0 ? (
-                                          roleOptions.map((option) => (
-                                            <SelectItem
-                                              key={option.value}
-                                              value={String(option.value)}
-                                            >
-                                              {option.label}
-                                            </SelectItem>
-                                          ))
-                                        ) : (
-                                          <div className="px-4 py-2 text-gray-500">
-                                            No roles found
-                                          </div>
-                                        )}
-                                      </SelectContent>
-                                    </Select>
-                                  )}
-                                />
-                                <Controller
-                                  name={`contacts.${index}.assignedRep`}
-                                  control={control}
-                                  render={({ field }) => {
-                                    const { data: users, isLoading, error } = useGetUsersByRole(
-                                      selectedRoleIds[contact.id] || "",
-                                      !!selectedRoleIds[contact.id]
-                                    );
-                                    
-                                    const [searchTerm, setSearchTerm] = useState("");
-                                    
-                                    // Filter users based on search term
-                                    const filteredUsers = users?.filter((user: any) =>
-                                      `${user.firstName} ${user.lastName}`
-                                        .toLowerCase()
-                                        .includes(searchTerm.toLowerCase())
-                                    ) || [];
-                                    
-                                    return (
+                            <div className="border-t border-gray-200 -mx-4 max-w-m" />
+                            {contact.isPrimary && (
+                              <div className="rounded mb-4">
+                                <Label htmlFor={`userRole-${index}`}>
+                                  Assigned Sales Rep
+                                </Label>
+                                <div className="flex gap-4 mt-2">
+                                  <Controller
+                                    name={`contacts.${index}.userRole`}
+                                    control={control}
+                                    render={({ field }) => (
                                       <Select
                                         value={field.value || ""}
                                         onValueChange={(val) => {
                                           if (val) {
+                                          console.log('Role selected:', val, 'for contact:', contact.id);
                                             field.onChange(val);
+                                            setSelectedRoleIds((prev) => ({
+                                              ...prev,
+                                              [contact.id]: val,
+                                            }));
+                                            const assignedRepField =
+                                              form.getValues(
+                                                `contacts.${index}.assignedRep`
+                                              );
+                                            if (assignedRepField) {
+                                              form.setValue(
+                                                `contacts.${index}.assignedRep`,
+                                                ""
+                                              );
+                                            }
                                           }
                                         }}
-                                        disabled={!selectedRoleIds[contact.id] || isLoading}
                                       >
                                         <SelectTrigger
-                                          className="w-full max-w-m bg-white border border-gray-300 hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                          id={`assignedRep-${index}`}
+                                          className="w-full max-w-m"
+                                          id={`userRole-${index}`}
                                         >
-                                          <SelectValue
-                                            placeholder={
-                                              isLoading
-                                                ? "Loading..."
-                                                : "User Assign"
-                                            }
-                                          />
+                                          <SelectValue placeholder="User Role" />
                                         </SelectTrigger>
                                         <SelectContent
-                                          id={`assignedRep-content-${index}`}
-                                          className="w-full min-w-[200px]"
-                                          position="popper"
+                                          id={`userRole-content-${index}`}
+                                          className="w-full"
                                         >
-                                          {/* Search Input */}
-                                          <div className="flex items-center px-3 py-2 border-b border-gray-200">
-                                            <Search className="h-4 w-4 text-gray-400 mr-2" />
-                                            <input
-                                              className="flex h-9 w-full rounded-md border-0 bg-transparent px-0 py-1 text-sm shadow-none transition-colors placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-0"
-                                              placeholder="Search..."
-                                              value={searchTerm}
-                                              onChange={(e) => setSearchTerm(e.target.value)}
-                                              onClick={(e) => e.stopPropagation()}
-                                              autoFocus
-                                            />
-                                          </div>
-                                          
-                                          {/* Users List */}
-                                          <div className="max-h-60 overflow-y-auto">
-                                            {filteredUsers.length > 0 ? (
-                                              filteredUsers.map((user: any) => (
-                                                <SelectItem
-                                                  key={user.id}
-                                                  value={String(user.id)}
-                                                  className="cursor-pointer hover:bg-gray-50 px-3 py-2 text-sm"
-                                                >
-                                                  {user.firstName} {user.lastName}
-                                                </SelectItem>
-                                              ))
-                                            ) : (
-                                              <div className="px-3 py-2 text-sm text-gray-500">
-                                                {searchTerm 
-                                                  ? "No users found matching your search"
-                                                  : isLoading
-                                                    ? "Loading users..."
-                                                    : error 
-                                                      ? `Error: ${error.message}` 
-                                                      : "No users found for this role"}
-                                              </div>
-                                            )}
-                                          </div>
+                                          {roleOptions.length > 0 ? (
+                                            roleOptions.map((option) => (
+                                              <SelectItem
+                                                key={option.value}
+                                                value={String(option.value)}
+                                              >
+                                                {option.label}
+                                              </SelectItem>
+                                            ))
+                                          ) : (
+                                            <div className="px-4 py-2 text-gray-500">
+                                              No roles found
+                                            </div>
+                                          )}
                                         </SelectContent>
                                       </Select>
-                                    );
-                                  }}
-                                />
-                              </div>
-                              {errors.contacts?.[index]?.userRole && (
-                                <p className="flex items-center gap-1 text-xs text-red-500">
-                                  <AlertCircle className="h-3 w-3" />
-                                  {errors.contacts[index].userRole.message}
-                                </p>
-                                )}
-                            </div>
-                          )}
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                              <Label htmlFor={`contact-name-${index}`}>
-                                Contact Name <span className="text-red-500">*</span>
-                              </Label>
-                              <Controller
-                                name={`contacts.${index}.name`}
-                                control={control}
-                                render={({ field }) => (
-                                  <Input
-                                    {...field}
-                                    id={`contact-name-${index}`}
-                                    placeholder="Enter Contact Name"
-                                    aria-describedby={
-                                      errors.contacts?.[index]?.name
-                                        ? `contact-name-${index}-error`
-                                        : undefined
-                                    }
+                                    )}
                                   />
-                                )}
-                              />
-                              {errors.contacts?.[index]?.name && (
-                                <p
-                                  id={`contact-name-${index}-error`}
-                                  className="flex items-center gap-1 text-xs text-red-500"
-                                >
-                                  <AlertCircle className="h-3 w-3" />
-                                  {errors.contacts[index].name.message}
-                                </p>
-                              )}
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor={`contact-designation-${index}`}>
-                                Designation
-                              </Label>
-                              <Controller
-                                name={`contacts.${index}.designation`}
-                                control={control}
-                                render={({ field }) => (
-                                  <Input
-                                    {...field}
-                                    id={`contact-designation-${index}`}
-                                    placeholder="Enter Designation"
-                                    aria-describedby={
-                                      errors.contacts?.[index]?.designation
-                                        ? `contact-designation-${index}-error`
-                                        : undefined
-                                    }
-                                  />
-                                )}
-                              />
-                              {errors.contacts?.[index]?.designation && (
-                                <p
-                                  id={`contact-designation-${index}-error`}
-                                  className="flex items-center gap-1 text-xs text-red-500"
-                                >
-                                  <AlertCircle className="h-3 w-3" />
-                                  {errors.contacts[index].designation.message}
-                                </p>
-                              )}
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor={`contact-email-${index}`}>
-                                Email Address <span className="text-red-500">*</span>
-                              </Label>
-                              <Controller
-                                name={`contacts.${index}.email`}
-                                control={control}
-                                render={({ field }) => (
-                                  <Input
-                                    {...field}
-                                    id={`contact-email-${index}`}
-                                    type="email"
-                                    placeholder="Enter Email Address"
-                                    aria-describedby={
-                                      errors.contacts?.[index]?.email
-                                        ? `contact-email-${index}-error`
-                                        : undefined
-                                    }
-                                  />
-                                )}
-                              />
-                              {errors.contacts?.[index]?.email && (
-                                <p
-                                  id={`contact-email-${index}-error`}
-                                  className="flex items-center gap-1 text-xs text-red-500"
-                                >
-                                  <AlertCircle className="h-3 w-3" />
-                                  {errors.contacts[index].email.message}
-                                </p>
-                              )}
-                            </div>
-                            <div className="space-y-2">
-                              <Label htmlFor={`contact-phone-${index}`}>
-                                Phone Number <span className="text-red-500">*</span>
-                              </Label>
+                                  <Controller
+                                    name={`contacts.${index}.assignedRep`}
+                                    control={control}
+                                    render={({ field }) => {
+                                    const { data: users, isLoading, error } = useGetUsersByRole(
+                                        selectedRoleIds[contact.id] || "",
+                                        !!selectedRoleIds[contact.id]
+                                      );
 
-                              <Controller
-                                name={`contacts.${index}.phone`}
-                                control={control}
-                                render={({ field }) => (
-                                  <Input
-                                    {...field}
-                                    id={`contact-phone-${index}`}
-                                    type="tel"
-                                    placeholder="Enter Phone Number"
-                                    aria-describedby={
-                                      errors.contacts?.[index]?.phone
-                                        ? `contact-phone-${index}-error`
-                                        : undefined
-                                    }
+                                    const [searchTerm, setSearchTerm] = useState("");
+
+                                      // Filter users based on search term
+                                    const filteredUsers = users?.filter((user: any) =>
+                                          `${user.firstName} ${user.lastName}`
+                                            .toLowerCase()
+                                            .includes(searchTerm.toLowerCase())
+                                        ) || [];
+
+                                      return (
+                                        <Select
+                                          value={field.value || ""}
+                                          onValueChange={(val) => {
+                                            if (val) {
+                                              field.onChange(val);
+                                            }
+                                          }}
+                                        disabled={!selectedRoleIds[contact.id] || isLoading}
+                                        >
+                                          <SelectTrigger
+                                            className="w-full max-w-m bg-white border border-gray-300 hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            id={`assignedRep-${index}`}
+                                          >
+                                            <SelectValue
+                                              placeholder={
+                                                isLoading
+                                                  ? "Loading..."
+                                                  : "User Assign"
+                                              }
+                                            />
+                                          </SelectTrigger>
+                                          <SelectContent
+                                            id={`assignedRep-content-${index}`}
+                                            className="w-full min-w-[200px]"
+                                            position="popper"
+                                          >
+                                            {/* Search Input */}
+                                            <div className="flex items-center px-3 py-2 border-b border-gray-200">
+                                              <Search className="h-4 w-4 text-gray-400 mr-2" />
+                                              <input
+                                                className="flex h-9 w-full rounded-md border-0 bg-transparent px-0 py-1 text-sm shadow-none transition-colors placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-0"
+                                                placeholder="Search..."
+                                                value={searchTerm}
+                                              onChange={(e) => setSearchTerm(e.target.value)}
+                                              onClick={(e) => e.stopPropagation()}
+                                                autoFocus
+                                              />
+                                            </div>
+
+                                            {/* Users List */}
+                                            <div className="max-h-60 overflow-y-auto">
+                                              {filteredUsers.length > 0 ? (
+                                              filteredUsers.map((user: any) => (
+                                                    <SelectItem
+                                                      key={user.id}
+                                                      value={String(user.id)}
+                                                      className="cursor-pointer hover:bg-gray-50 px-3 py-2 text-sm"
+                                                    >
+                                                  {user.firstName} {user.lastName}
+                                                    </SelectItem>
+                                              ))
+                                              ) : (
+                                                <div className="px-3 py-2 text-sm text-gray-500">
+                                                  {searchTerm
+                                                    ? "No users found matching your search"
+                                                    : isLoading
+                                                      ? "Loading users..."
+                                                      : error
+                                                        ? `Error: ${error.message}`
+                                                        : "No users found for this role"}
+                                                </div>
+                                              )}
+                                            </div>
+                                          </SelectContent>
+                                        </Select>
+                                      );
+                                    }}
                                   />
+                                </div>
+                                {errors.contacts?.[index]?.userRole && (
+                                  <p className="flex items-center gap-1 text-xs text-red-500">
+                                    <AlertCircle className="h-3 w-3" />
+                                    {errors.contacts[index].userRole.message}
+                                  </p>
                                 )}
-                              />
-                              {errors.contacts?.[index]?.phone && (
-                                <p
-                                  id={`contact-phone-${index}-error`}
-                                  className="flex items-center gap-1 text-xs text-red-500"
-                                >
-                                  <AlertCircle className="h-3 w-3" />
-                                  {errors.contacts[index].phone.message}
-                                </p>
-                              )}
+                              </div>
+                            )}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="space-y-2">
+                                <Label htmlFor={`contact-name-${index}`}>
+                                Contact Name <span className="text-red-500">*</span>
+                                </Label>
+                                <Controller
+                                  name={`contacts.${index}.name`}
+                                  control={control}
+                                  render={({ field }) => (
+                                    <Input
+                                      {...field}
+                                      id={`contact-name-${index}`}
+                                      placeholder="Enter Contact Name"
+                                      aria-describedby={
+                                        errors.contacts?.[index]?.name
+                                          ? `contact-name-${index}-error`
+                                          : undefined
+                                      }
+                                    />
+                                  )}
+                                />
+                                {errors.contacts?.[index]?.name && (
+                                  <p
+                                    id={`contact-name-${index}-error`}
+                                    className="flex items-center gap-1 text-xs text-red-500"
+                                  >
+                                    <AlertCircle className="h-3 w-3" />
+                                    {errors.contacts[index].name.message}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor={`contact-designation-${index}`}>
+                                  Designation
+                                </Label>
+                                <Controller
+                                  name={`contacts.${index}.designation`}
+                                  control={control}
+                                  render={({ field }) => (
+                                    <Input
+                                      {...field}
+                                      id={`contact-designation-${index}`}
+                                      placeholder="Enter Designation"
+                                      aria-describedby={
+                                        errors.contacts?.[index]?.designation
+                                          ? `contact-designation-${index}-error`
+                                          : undefined
+                                      }
+                                    />
+                                  )}
+                                />
+                                {errors.contacts?.[index]?.designation && (
+                                  <p
+                                    id={`contact-designation-${index}-error`}
+                                    className="flex items-center gap-1 text-xs text-red-500"
+                                  >
+                                    <AlertCircle className="h-3 w-3" />
+                                    {errors.contacts[index].designation.message}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor={`contact-email-${index}`}>
+                                Email Address <span className="text-red-500">*</span>
+                                </Label>
+                                <Controller
+                                  name={`contacts.${index}.email`}
+                                  control={control}
+                                  render={({ field }) => (
+                                    <Input
+                                      {...field}
+                                      id={`contact-email-${index}`}
+                                      type="email"
+                                      placeholder="Enter Email Address"
+                                      aria-describedby={
+                                        errors.contacts?.[index]?.email
+                                          ? `contact-email-${index}-error`
+                                          : undefined
+                                      }
+                                    />
+                                  )}
+                                />
+                                {errors.contacts?.[index]?.email && (
+                                  <p
+                                    id={`contact-email-${index}-error`}
+                                    className="flex items-center gap-1 text-xs text-red-500"
+                                  >
+                                    <AlertCircle className="h-3 w-3" />
+                                    {errors.contacts[index].email.message}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="space-y-2">
+                                <Label htmlFor={`contact-phone-${index}`}>
+                                Phone Number <span className="text-red-500">*</span>
+                                </Label>
+
+                                <Controller
+                                  name={`contacts.${index}.phone`}
+                                  control={control}
+                                  render={({ field }) => (
+                                    <Input
+                                      {...field}
+                                      id={`contact-phone-${index}`}
+                                      type="tel"
+                                      placeholder="Enter Phone Number"
+                                      aria-describedby={
+                                        errors.contacts?.[index]?.phone
+                                          ? `contact-phone-${index}-error`
+                                          : undefined
+                                      }
+                                    />
+                                  )}
+                                />
+                                {errors.contacts?.[index]?.phone && (
+                                  <p
+                                    id={`contact-phone-${index}-error`}
+                                    className="flex items-center gap-1 text-xs text-red-500"
+                                  >
+                                    <AlertCircle className="h-3 w-3" />
+                                    {errors.contacts[index].phone.message}
+                                  </p>
+                                )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                     <div className="flex justify-end gap-2 pt-6">
                       <Button
