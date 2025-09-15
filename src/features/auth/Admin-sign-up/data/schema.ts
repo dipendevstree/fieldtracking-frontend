@@ -39,10 +39,10 @@ export const step2Schema = z.object({
   organizationName: z.string().nonempty('Organization name is required'),
   organizationTypes: z.string().nonempty('Organization type is required'),
   website: z
-    .string()
-    .refine((val) => val === '' || z.string().url().safeParse(val).success, {
-      message: 'Website must be a valid URL',
-    }),
+    .string().optional(),
+    // .refine((val) => val === '' || z.string().url().safeParse(val).success, {
+    //   message: 'Website must be a valid URL',
+    // }),
   description: z.string().optional(),
   timeZone: z.string().optional(),
 })

@@ -47,6 +47,18 @@ export default function DailyExpenseDetails() {
   const user = dailyExpanse?.salesRepresentativeUser;
   const isApprovalLevel = dailyExpanse?.isApprovalLevel;
 
+  // --- per-item/action loading state ---
+  const [processingActions, setProcessingActions] = useState<
+    Record<string, boolean>
+  >({});
+  const [updatingReviewKeys, setUpdatingReviewKeys] = useState<
+    Record<string, boolean>
+  >({});
+
+  const setProcessing = (key: string, value: boolean) =>
+    setProcessingActions((prev) => ({ ...prev, [key]: value }));
+
+  // --- Parent action handlers ---
   const handleExpenseReviewAndApproval = ({
     parentId,
     status,
@@ -65,7 +77,12 @@ export default function DailyExpenseDetails() {
         ? { travelLumpSumId: parentId }
         : { travelRouteId: parentId }),
     };
-    expenseReviewAndApproval(payload);
+
+    const actionKey = `${parentId}-${status}`;
+    setProcessing(actionKey, true);
+    expenseReviewAndApproval(payload, {
+      onSettled: () => setProcessing(actionKey, false),
+    });
   };
 
   const handleDailyAllowanseReviewAndApproval = ({
@@ -87,7 +104,12 @@ export default function DailyExpenseDetails() {
       dailyAllowanceId,
       dailyAllowanceDetailsId,
     };
-    expenseReviewAndApproval(payload);
+
+    const actionKey = `${dailyAllowanceDetailsId}-${status}`;
+    setProcessing(actionKey, true);
+    expenseReviewAndApproval(payload, {
+      onSettled: () => setProcessing(actionKey, false),
+    });
   };
 
   const handleUpdateExpanseDetails = ({
@@ -100,12 +122,16 @@ export default function DailyExpenseDetails() {
     comment: string;
   }) => {
     setUpdateId(id);
-    const payload = {
-      status,
-      comment,
-      isApprovalLevel,
-    };
-    expenseReviewAndApprovalUpdate(payload);
+    const actionKey = `${id}-${status}`;
+    setUpdatingReviewKeys((prev) => ({ ...prev, [actionKey]: true }));
+    const payload = { status, comment, isApprovalLevel };
+
+    expenseReviewAndApprovalUpdate(payload, {
+      onSettled: () => {
+        setUpdatingReviewKeys((prev) => ({ ...prev, [actionKey]: false }));
+        setUpdateId(null);
+      },
+    });
   };
 
   const getUserLevelLabel = useMemo(
@@ -283,7 +309,6 @@ export default function DailyExpenseDetails() {
           </CardContent>
         </Card>
 
-        {/* Side Cards */}
         <Card className="pl-4">
           {dailyExpanse?.expenseType === "daily" ? (
             <DailyAllowanceDetailsCard
@@ -293,6 +318,8 @@ export default function DailyExpenseDetails() {
               dailyExpanse={dailyExpanse}
               onExpenseReviewAndApproval={handleDailyAllowanseReviewAndApproval}
               onUpdateExpanseDetails={handleUpdateExpanseDetails}
+              loadingIds={processingActions}
+              updatingReviewKeys={updatingReviewKeys}
             />
           ) : (
             <ExpenseDetailsSideCard
@@ -303,6 +330,8 @@ export default function DailyExpenseDetails() {
               dailyExpanse={dailyExpanse}
               onExpenseReviewAndApproval={handleExpenseReviewAndApproval}
               onUpdateExpanseDetails={handleUpdateExpanseDetails}
+              loadingIds={processingActions}
+              updatingReviewKeys={updatingReviewKeys}
             />
           )}
         </Card>
