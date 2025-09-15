@@ -66,15 +66,9 @@ export const step3Schema = z.object({
 })
 
 export const step4Schema = z.object({
-  terms: z.literal(true, {
-    errorMap: () => ({ message: 'You must agree to the Terms of Service' }),
-  }),
-  privacy: z.literal(true, {
-    errorMap: () => ({ message: 'You must agree to the Privacy Policy' }),
-  }),
-  consent: z.literal(true, {
-    errorMap: () => ({ message: 'You must consent to data processing' }),
-  }),
+  terms: z.boolean().optional(),
+  privacy: z.boolean().optional(),
+  consent: z.boolean().optional(),
 })
 
 // Combined form schema with all validations
