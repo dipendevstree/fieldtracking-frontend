@@ -5,6 +5,12 @@ import usePostData from "@/hooks/use-post-data";
 import useDeleteData from "@/hooks/use-delete-data";
 import { Customer } from "../types";
 
+interface BulkImportResponse {
+  successCount: number
+  errorCount: number
+  errors: string[]
+}
+
 const CUSTOMERS_QUERY = API.customerMain.list;
 const CUSTOMER_STATUS_COUNTS_QUERY = API.customerMain.statusCounts;
 
@@ -217,3 +223,15 @@ export const useDeleteCustomer = (
     },
   });
 };
+
+export const useBulkImportCustomers = (
+  onSuccess?: (data: BulkImportResponse) => void,
+  onError?: (error: Error) => void
+) => {
+  return usePostData<BulkImportResponse, FormData>({
+    url: API.customerMain.importCsv,
+    refetchQueries: [CUSTOMERS_QUERY, CUSTOMER_STATUS_COUNTS_QUERY],
+    onSuccess,
+    onError,
+  })
+}

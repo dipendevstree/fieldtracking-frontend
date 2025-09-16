@@ -1,4 +1,15 @@
 import { useState } from "react";
+import { useDropzone } from "react-dropzone";
+import { CSVLink } from "react-csv";
+import { useBulkImportCustomers } from "../services/Customers.hook";
+import { Button } from "@/components/ui/button";
+import {
+  Loader2,
+  Upload,
+  FileCheck2,
+  AlertCircle,
+  Download,
+} from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -6,108 +17,110 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import {
-  Upload,
-  Download,
-  FileCheck2,
-  AlertCircle,
-  Loader2,
-} from "lucide-react";
-import { CSVLink } from "react-csv";
-// import { useBulkImportCustomers } from "../services/Customers.hook";
-
-// Define the new CSV headers
-const csvHeaders = [
-  { label: "Company Name*", key: "companyName" },
-  { label: "Industry Name", key: "industryName" }, // Changed from ID
-  { label: "Customer Type Name", key: "customerTypeName" }, // Changed from ID
-  { label: "Street Address", key: "address" },
-  { label: "City", key: "city" },
-  { label: "State", key: "state" },
-  { label: "Zip Code", key: "zipCode" },
-  { label: "Country", key: "country" },
-  { label: "Latitude", key: "latitude" },
-  { label: "Longitude", key: "longitude" },
-  { label: "Additional Notes", key: "notes" },
-  { label: "Contact Name*", key: "contactName" },
-  { label: "Contact Email*", key: "contactEmail" },
-  { label: "Contact Phone*", key: "contactPhone" },
-  { label: "Contact Designation", key: "contactDesignation" },
-  { label: "Is Primary Contact* (TRUE/FALSE)", key: "isPrimary" },
-  { label: "Assigned Sales Rep Name", key: "assignedRepName" }, // Changed from ID
-];
-
-// Update the sample data to match the new headers
-const csvSampleData = [
-  {
-    companyName: "Innovate Inc9011.",
-    industryName: "it", // e.g. "Technology"
-    customerTypeName: "Primary", // e.g. "Tier 1"
-    address: "1600 Amphitheatre Parkway",
-    city: "Mountain View",
-    state: "CA",
-    zipCode: "94043",
-    country: "USA",
-    latitude: "12",
-    longitude: "12",
-    notes: "A key account.",
-    contactName: "John Doe",
-    contactEmail: "john.doe@innovate.com",
-    contactPhone: "123-456-7890",
-    contactDesignation: "CEO",
-    isPrimary: "TRUE",
-    assignedRepName: "karan",
-  },
-  {
-    companyName: "Innovate Inc9011.",
-    industryName: "technology",
-    customerTypeName: "tier_1",
-    address: "1600 Amphitheatre Parkway",
-    city: "Mountain View",
-    state: "CA",
-    zipCode: "94043",
-    country: "USA",
-    latitude: "12",
-    longitude: "12",
-    notes: "A key account.",
-    contactName: "Jane Roe",
-    contactEmail: "jane.roe@innovate.com",
-    contactPhone: "987-654-3210",
-    contactDesignation: "CTO",
-    isPrimary: "FALSE",
-    assignedRepName: "", // No assigned rep for this contact
-  },
-];
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 
 export default function BulkImport() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadResult, setUploadResult] = useState<any>(null);
 
-  // const { mutate: uploadFile, isPending, isError, error } = useBulkImportCustomers(
-  //   (data) => {
-  //     setUploadResult(data.data); // Set result from API response
-  //     setSelectedFile(null); // Clear file input on success
-  //   },
-  //   (_error) => {
-  //       // Error is handled by isError and error from useMutation
-  //   }
-  // );
+  // Define the new CSV headers
+  const csvHeaders = [
+    { label: "Company Name*", key: "companyName" },
+    { label: "Industry Name", key: "industryName" }, // Changed from ID
+    { label: "Customer Type Name", key: "customerTypeName" }, // Changed from ID
+    { label: "Street Address", key: "address" },
+    { label: "City", key: "city" },
+    { label: "State", key: "state" },
+    { label: "Zip Code", key: "zipCode" },
+    { label: "Country", key: "country" },
+    { label: "Latitude", key: "latitude" },
+    { label: "Longitude", key: "longitude" },
+    { label: "Additional Notes", key: "notes" },
+    { label: "Contact Name*", key: "contactName" },
+    { label: "Contact Email*", key: "contactEmail" },
+    { label: "Contact Phone*", key: "contactPhone" },
+    { label: "Contact Designation", key: "contactDesignation" },
+    { label: "Is Primary Contact* (TRUE/FALSE)", key: "isPrimary" },
+    { label: "Assigned Sales Rep Name", key: "assignedRepName" }, // Changed from ID
+  ];
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files.length > 0) {
-      setSelectedFile(event.target.files[0]);
-      setUploadResult(null); // Reset previous results
-      console.log(event.target.files[0]);
-    }
+  // Update the sample data to match the new headers
+  const csvSampleData = [
+    {
+      companyName: "Innovate Inc90113.",
+      industryName: "it", // e.g. "Technology"
+      customerTypeName: "Primary", // e.g. "Tier 1"
+      address: "1600 Amphitheatre Parkway",
+      city: "Mountain View",
+      state: "CA",
+      zipCode: "94043",
+      country: "USA",
+      latitude: "12",
+      longitude: "12",
+      notes: "A key account.",
+      contactName: "John Doe",
+      contactEmail: "john.doe@innovate.com",
+      contactPhone: "123-456-7890",
+      contactDesignation: "CEO",
+      isPrimary: "TRUE",
+      assignedRepName: "karan",
+    },
+    {
+      companyName: "Innovate Inc90113.",
+      industryName: "it",
+      customerTypeName: "primary",
+      address: "1600 Amphitheatre Parkway",
+      city: "Mountain View",
+      state: "CA",
+      zipCode: "94043",
+      country: "USA",
+      latitude: "12",
+      longitude: "12",
+      notes: "A key account.",
+      contactName: "Jane Roe",
+      contactEmail: "jane.roe@innovate.com",
+      contactPhone: "987-654-3210",
+      contactDesignation: "CTO",
+      isPrimary: "FALSE",
+      assignedRepName: "", // No assigned rep for this contact
+    },
+  ];
+
+  const {
+    mutate: uploadFile,
+    isPending,
+    isError,
+    error,
+  } = useBulkImportCustomers(
+    (data) => {
+      setUploadResult(data);
+      setSelectedFile(null);
+    },
+    (_error) => {}
+  );
+
+  const handleFileChange = (file: File) => {
+    setSelectedFile(file);
+    setUploadResult(null);
   };
 
-  // const handleBulkUpload = () => {
-  //   if (selectedFile) {
-  //     uploadFile(selectedFile);
-  //   }
-  // };
+  // ⬇️ react-dropzone setup
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: { "text/csv": [".csv"] },
+    multiple: false,
+    onDrop: (acceptedFiles: any) => {
+      if (acceptedFiles.length > 0) {
+        handleFileChange(acceptedFiles[0]);
+      }
+    },
+  });
+
+  const handleBulkUpload = () => {
+    if (!selectedFile) return;
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+    uploadFile(formData);
+  };
 
   return (
     <div className="space-y-6">
@@ -115,63 +128,75 @@ export default function BulkImport() {
         <CardHeader>
           <CardTitle>Bulk Import Customers</CardTitle>
           <CardDescription>
-            Upload a CSV file to add multiple customers at once. Download the
-            sample file for the required format.
+            Upload a CSV file to add multiple customers at once.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
-            <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          {/* Upload box with drag & drop */}
+          <div
+            {...getRootProps()}
+            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition 
+              ${isDragActive ? "bg-muted/30 border-primary" : "border-muted-foreground/25"}
+            `}
+          >
+            <input {...getInputProps()} />
+            <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             <h3 className="text-lg font-medium mb-2">
-              Upload Customer CSV File
+              {isDragActive
+                ? "Drop the file here..."
+                : "Upload Customer CSV File"}
             </h3>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-sm mb-4 text-muted-foreground">
               {selectedFile
                 ? `Selected file: ${selectedFile.name}`
-                : "Drag and drop your CSV file here, or click to browse"}
+                : "Drag & drop or choose a CSV"}
             </p>
-            <input
-              type="file"
-              id="csv-upload"
-              accept=".csv"
-              onChange={handleFileChange}
-              className="hidden"
-            />
+            {/* Keep your existing button */}
             <label
               htmlFor="csv-upload"
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 cursor-pointer"
+              className="cursor-pointer inline-flex items-center border px-4 py-2 rounded-md"
+              onClick={(e) => e.stopPropagation()} // prevent triggering dropzone
             >
               <Upload className="h-4 w-4 mr-2" />
               Choose File
             </label>
+            <input
+              type="file"
+              id="csv-upload"
+              accept=".csv"
+              onChange={(e) =>
+                e.target.files && handleFileChange(e.target.files[0])
+              }
+              className="hidden"
+            />
           </div>
 
-          <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 justify-end">
+          {/* Actions */}
+          <div className="flex flex-col sm:flex-row justify-end gap-2">
             <CSVLink
               data={csvSampleData}
               headers={csvHeaders}
-              filename={"customer_import_sample.csv"}
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2"
+              filename="customer_import_sample.csv"
+              className="border px-4 py-2 rounded-md inline-flex items-center"
             >
-              <Download className="h-4 w-4 mr-2" />
-              Download Sample CSV
+              <Download className="h-4 w-4 mr-2" /> Download Sample CSV
             </CSVLink>
             <Button
-            // onClick={handleBulkUpload}
-            // disabled={!selectedFile || isPending}
+              onClick={handleBulkUpload}
+              disabled={!selectedFile || isPending}
             >
-              {/* {isPending ? (
-                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              {isPending ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (
                 <Upload className="h-4 w-4 mr-2" />
-              )} */}
+              )}
               Process Upload
             </Button>
           </div>
 
-          {/* Display Results */}
+          {/* Results (same as your code) */}
           {uploadResult && (
-            <Alert variant="default" className="bg-green-50 border-green-200">
+            <Alert className="bg-green-50 border-green-200">
               <FileCheck2 className="h-4 w-4 text-green-600" />
               <AlertTitle className="text-green-800">
                 Upload Processed
@@ -196,15 +221,16 @@ export default function BulkImport() {
               </AlertDescription>
             </Alert>
           )}
-          {/* {isError && (
-              <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Upload Failed</AlertTitle>
-                  <AlertDescription>
-                      {error?.response?.data?.message || error.message || "An unknown error occurred."}
-                  </AlertDescription>
-              </Alert>
-          )} */}
+
+          {isError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Upload Failed</AlertTitle>
+              <AlertDescription>
+                {error?.message || "An unknown error occurred."}
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
     </div>

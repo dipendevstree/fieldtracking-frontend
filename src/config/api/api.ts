@@ -50,6 +50,7 @@ const API = {
     statusCounts: "customer/status-counts",
     pendingList: "customer/status-pending-list",
     updateStatus: "customer/update-status",
+    importCsv: "customer/import/csv",
   },
   merchants: {
     list: "merchant/list",
