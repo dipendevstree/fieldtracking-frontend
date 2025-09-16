@@ -148,7 +148,7 @@ export const useGetAllCompletedVisit = (
   const observerElem = useRef<IntersectionObserver | null>(null);
 
   const lastPostRef = useCallback((node: HTMLDivElement) => {
-    if (query.isFetchingNextPage) return; // donâ€™t trigger while loading
+    if (query.isFetchingNextPage) return; // don’t trigger while loading
     if (observerElem.current) observerElem.current.disconnect(); // clear old
     observerElem.current = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && query.hasNextPage) {
@@ -166,4 +166,11 @@ export const useGetAllCompletedVisit = (
     allData: infiniteData?.pages?.flatMap((page: any) => page.list) ?? [],
     totalCount: infiniteData?.pages[0]?.totalCount ?? 0
   }
+}export const useGetVisitEmployeeAnalytics = (
+  options?: { enabled?: boolean }
+) => {
+  return useFetchData({
+    url: `${API.calendar.visitEmployeeAnalytics}`,
+    enabled: options?.enabled ?? true,
+  })
 }

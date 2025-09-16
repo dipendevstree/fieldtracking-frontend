@@ -128,6 +128,7 @@ const API = {
     getVisitByID: "visit",
     delete: "visit/delete",
     visitFeedBack: "visit/visitFeedBack",
+    visitEmployeeAnalytics: "visit/visitEmployeeAnalytics"
   },
   dailyExpenses: {
     list: "expenses/list",

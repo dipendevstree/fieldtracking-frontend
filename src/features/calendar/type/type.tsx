@@ -51,3 +51,22 @@ export interface DeleteVisitDialogProps {
   isOpen: boolean;
   onClose: () => void;
 }
+
+export interface TopUsers {
+  id: string,
+  name: string,
+  profileUrl: string,
+  visitCount: number
+}
+
+export interface VisitEmployeeAnalytics {
+  avgSatisfaction: string
+  avgVisitDuration: string
+  conversionRate: string
+  followupRate: string
+  rescheduledVisits: number
+  successRate: string
+  successVisits: number
+  topUsers: TopUsers[]
+  totalVisitsCount: number
+}
