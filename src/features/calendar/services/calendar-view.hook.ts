@@ -118,3 +118,11 @@ export const useDeleteVisits = (id: string, onSuccess?: () => void) => {
     },
   })
 }
+export const useGetVisitEmployeeAnalytics = (
+  options?: { enabled?: boolean }
+) => {
+  return useFetchData({
+    url: `${API.calendar.visitEmployeeAnalytics}`,
+    enabled: options?.enabled ?? true,
+  })
+}
