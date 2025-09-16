@@ -1,8 +1,12 @@
 import API from '@/config/api/api'
 import useDeleteData from '@/hooks/use-delete-data'
 import useFetchData from '@/hooks/use-fetch-data'
+import useFetchInfiniteData, { PaginatedResponse } from '@/hooks/use-fetch-Infinite-data'
 import usePatchData from '@/hooks/use-patch-data'
 import usePostData from '@/hooks/use-post-data'
+import { InfiniteData } from '@tanstack/react-query'
+import { UseInfiniteQueryResult } from '@tanstack/react-query'
+import { useCallback, useRef } from 'react'
 
 const CALENDAR_QUERY = API.calendar.visitList
 const ANALYTICS_QUERY = API.calendar.analytics
@@ -116,5 +120,59 @@ export const useDeleteVisits = (id: string, onSuccess?: () => void) => {
         onSuccess()
       }
     },
+  })
+}
+
+type UseGetAllCompletedVisit = UseInfiniteQueryResult<
+  PaginatedResponse<any>,
+  Error
+> & {
+  allData: any[],
+  totalCount: number;
+  lastPostRef: (node: HTMLDivElement) => void;
+}
+
+export const useGetAllCompletedVisit = (
+  params: IListParams,
+  options?: { enabled?: boolean }
+): UseGetAllCompletedVisit => {
+  const query = useFetchInfiniteData<any>({
+    url: `${CALENDAR_QUERY}`,
+    params: { 
+      status: "completed", 
+      ...params 
+    },
+    enabled: options?.enabled ?? true,
+  })
+
+  const observerElem = useRef<IntersectionObserver | null>(null);
+
+  const lastPostRef = useCallback((node: HTMLDivElement) => {
+    if (query.isFetchingNextPage) return; // don’t trigger while loading
+    if (observerElem.current) observerElem.current.disconnect(); // clear old
+    observerElem.current = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && query.hasNextPage) {
+        query.fetchNextPage();
+      }
+    });
+    if (node) observerElem.current.observe(node);
+  }, [query.isFetchingNextPage, query.fetchNextPage, query.hasNextPage]);
+
+  const infiniteData = query.data as InfiniteData<PaginatedResponse<any>> | undefined
+
+  return {
+    ...query,
+    lastPostRef,
+    allData: infiniteData?.pages?.flatMap((page: any) => page.list) ?? [],
+    totalCount: infiniteData?.pages[0]?.totalCount ?? 0
+  }
+}
+
+export const useGetVisitEmployeeAnalytics = (
+  options?: { enabled?: boolean }
+) => {
+  return useFetchData({
+    url: `${API.calendar.visitEmployeeAnalytics}`,
+    enabled: options?.enabled ?? true,
   })
 }
