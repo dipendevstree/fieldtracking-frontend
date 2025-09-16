@@ -9,8 +9,8 @@ interface UserTableProps {
   loading?: boolean
   paginationCallbacks: PaginationCallbacks
   currentPage?: number
-  
   hideActions?: boolean
+  defaultPageSize?:number
 }
 
 const RolesTable = ({
@@ -20,6 +20,7 @@ const RolesTable = ({
   paginationCallbacks,
   currentPage,
   hideActions = false,
+  defaultPageSize
 }: UserTableProps) => {
   const filteredColumns = hideActions
   ? columns.filter((column) => column.id !== 'actions')
@@ -34,6 +35,7 @@ const RolesTable = ({
         currentPage={currentPage}
         columns={filteredColumns as ColumnDef<unknown>[]}
         totalCount={totalCount}
+        defaultPageSize={defaultPageSize}
         key={'roles'}
       />
     </div>

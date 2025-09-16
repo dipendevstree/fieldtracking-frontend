@@ -69,8 +69,8 @@ const Roles = () => {
     });
   }, [allRoles, filters.search, filters.roleId]);
 
-  const displayRoles = filteredRoles;
-  const displayTotalCount = filteredRoles.length;
+  // const displayRoles = filteredRoles;
+  // const displayTotalCount = filteredRoles.length;
 
   // Debug: Log filtering results
   console.log("Filtering results:", {
@@ -170,11 +170,12 @@ const Roles = () => {
             
             {/* Table */}
             <RolesTable
-              data={displayRoles}
-              totalCount={displayTotalCount}
+              data={allRoles}
+              totalCount={totalCount}
               loading={isLoading}
               currentPage={pagination.page}
               paginationCallbacks={{ onPaginationChange }}
+              defaultPageSize={pagination.limit}
             />
             
           </div>
