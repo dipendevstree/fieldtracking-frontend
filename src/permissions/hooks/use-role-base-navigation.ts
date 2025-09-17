@@ -15,33 +15,33 @@ export function useRoleBasedNavigation(
       return { ...fullSidebarData, navGroups: [] };
     }
 
-    let filteredSidebar = filterSidebarByPermissions(
-      fullSidebarData,
-      hasAccess,
-      backendPermissions?.permissions
-    );
+    // let filteredSidebar = filterSidebarByPermissions(
+    //   fullSidebarData,
+    //   hasAccess,
+    //   backendPermissions?.permissions
+    // );
 
-    // ✅ Extra filtering based on org settings flags
-    if (!options?.allowAddUsersBasedOnTerritories) {
-      filteredSidebar = {
-        ...filteredSidebar,
-        navGroups: filteredSidebar.navGroups.map((group) => ({
-          ...group,
-          items: group.items.map((item) =>
-            item.menuKey === "User_Management"
-              ? {
-                  ...item,
-                  items: item.items?.filter(
-                    (sub) => sub.menuKey !== "user_territory"
-                  ),
-                }
-              : item
-          ),
-        })),
-      };
-    }
+    // // ✅ Extra filtering based on org settings flags
+    // if (!options?.allowAddUsersBasedOnTerritories) {
+    //   filteredSidebar = {
+    //     ...filteredSidebar,
+    //     navGroups: filteredSidebar.navGroups.map((group) => ({
+    //       ...group,
+    //       items: group.items.map((item) =>
+    //         item.menuKey === "User_Management"
+    //           ? {
+    //               ...item,
+    //               items: item.items?.filter(
+    //                 (sub) => sub.menuKey !== "user_territory"
+    //               ),
+    //             }
+    //           : item
+    //       ),
+    //     })),
+    //   };
+    // }
 
-    return filteredSidebar;
+    return fullSidebarData;
   }, [hasAccess, isAuthenticated, backendPermissions]);
 
   return {
