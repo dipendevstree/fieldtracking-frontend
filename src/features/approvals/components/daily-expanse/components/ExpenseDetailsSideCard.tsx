@@ -164,13 +164,26 @@ export function ExpenseDetailsSideCard(
       (lvl: any) => lvl.level < approvalLevel.level
     );
 
-    const allReviewed = (lvls: any[]) =>
-      lvls.every((lvl: any) =>
-        (dailyExpanse?.expenseReviewAndApproval || []).some(
+    const allReviewed = (lvls: any[]) => {
+      const id = isLumpSum
+        ? (item as TravelLumpSum).travelLumpSumId
+        : (item as TravelRoute).travelRouteId;
+
+      return lvls.every((lvl: any) => {
+        // Find the specific review for THIS item by the lower-level user
+        const itemSpecificReview = (
+          dailyExpanse?.expenseReviewAndApproval || []
+        ).find(
           (rev: any) =>
-            rev.reviewerUserId === lvl.userId && rev.status === "reviewed"
-        )
-      );
+            rev.reviewerUserId === lvl.userId &&
+            (isLumpSum ? rev.travelLumpSumId === id : rev.travelRouteId === id)
+        );
+
+        // A review must exist and its status must be 'reviewed'.
+        // If it's 'rejected' or still pending, this will return false.
+        return itemSpecificReview && itemSpecificReview.status === "reviewed";
+      });
+    };
 
     const buildResult = (isApprover: boolean, blockers: any[]) => {
       const ready = !blockers.length || allReviewed(blockers);
