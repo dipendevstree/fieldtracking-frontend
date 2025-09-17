@@ -282,30 +282,21 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
   };
 
   const onSubmit = (values: TRoleFormSchema) => {
-    const payloadMenuIds = isEdit
-      ? values.menuIds?.map((menu) => ({
-          id: menu.id,
-          permissionId: menu.permissionId || undefined,
-          add: !!menu.add,
-          viewGlobal: !!menu.viewGlobal,
-          viewOwn: !!menu.viewOwn,
-          edit: !!menu.edit,
-          deleteValue: !!menu.deleteValue,
-        }))
-      : values.menuIds?.filter(
-          (menu) =>
-            menu.add ||
-            menu.viewGlobal ||
-            menu.viewOwn ||
-            menu.edit ||
-            menu.deleteValue
-        );
-
+    const payloadMenuIds = values.menuIds?.map((menu) => ({
+      id: menu.id,
+      permissionId: isEdit ? menu.permissionId || undefined : undefined,
+      add: !!menu.add,
+      viewGlobal: !!menu.viewGlobal,
+      viewOwn: !!menu.viewOwn,
+      edit: !!menu.edit,
+      deleteValue: !!menu.deleteValue,
+    }));
+  
     const payload = {
       ...values,
       menuIds: payloadMenuIds,
     };
-
+  
     if (isEdit) {
       updateRole(payload);
     } else {
