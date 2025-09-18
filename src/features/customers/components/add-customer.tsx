@@ -24,7 +24,7 @@ import {
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Form } from "@/components/ui/form";
 import BulkImport from "./bulk-import";
-import UploadHistory from "./upload-history";
+// import UploadHistory from "./upload-history";
 import {
   useGetCustomerById,
   useGetIndustry,
@@ -402,14 +402,14 @@ export default function AddCustomerPage({
         onValueChange={setSelectedTab}
         className="space-y-4"
       >
-        <TabsList className="grid w-auto grid-cols-3">
+        <TabsList className="grid w-auto grid-cols-2">
           <TabsTrigger value="individual">Add Individual</TabsTrigger>
           <TabsTrigger value="bulk">Bulk Import</TabsTrigger>
-          <TabsTrigger value="uploads">Upload History</TabsTrigger>
+          {/* <TabsTrigger value="uploads">Upload History</TabsTrigger> */}
         </TabsList>
 
         <TabsContent value="individual" className="space-y-4">
-          <CardContent>
+          <CardContent className="px-0">
             <Form {...form}>
               <form
                 ref={formRef}
@@ -442,7 +442,9 @@ export default function AddCustomerPage({
                       </h4>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
-                          <Label htmlFor="companyName">Company Name <span className="text-red-500">*</span></Label>
+                          <Label htmlFor="companyName">
+                            Company Name <span className="text-red-500">*</span>
+                          </Label>
                           <Controller
                             name="companyName"
                             control={control}
@@ -470,7 +472,9 @@ export default function AddCustomerPage({
                           )}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="industry">Industry <span className="text-red-500">*</span></Label>
+                          <Label htmlFor="industry">
+                            Industry <span className="text-red-500">*</span>
+                          </Label>
                           <Controller
                             name="industry"
                             control={control}
@@ -522,7 +526,10 @@ export default function AddCustomerPage({
                           )}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="customerType">Customer Type <span className="text-red-500">*</span> </Label>
+                          <Label htmlFor="customerType">
+                            Customer Type
+                            <span className="text-red-500">*</span>
+                          </Label>
                           <Controller
                             name="customerType"
                             control={control}
@@ -637,7 +644,10 @@ export default function AddCustomerPage({
                           </RadioGroup>
                         </div>
                         <div className="space-y-2">
-                          <Label>Find Location <span className="text-red-500">*</span></Label>
+                          <Label>
+                            Find Location
+                            <span className="text-red-500">*</span>
+                          </Label>
                           {locationInputMode === "search" ? (
                             <Input
                               type="text"
@@ -672,7 +682,10 @@ export default function AddCustomerPage({
                         </div>
 
                         <div className="space-y-2 col-span-2">
-                          <Label>Street Address <span className="text-red-500">*</span></Label>
+                          <Label>
+                            Street Address
+                            <span className="text-red-500">*</span>
+                          </Label>
                           <Controller
                             name="address"
                             control={control}
@@ -697,7 +710,9 @@ export default function AddCustomerPage({
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="city">City <span className="text-red-500">*</span></Label>
+                          <Label htmlFor="city">
+                            City <span className="text-red-500">*</span>
+                          </Label>
                           <Controller
                             name="city"
                             control={control}
@@ -723,7 +738,10 @@ export default function AddCustomerPage({
                           )}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="state">State/Province <span className="text-red-500">*</span></Label>
+                          <Label htmlFor="state">
+                            State/Province
+                            <span className="text-red-500">*</span>
+                          </Label>
                           <Controller
                             name="state"
                             control={control}
@@ -749,7 +767,10 @@ export default function AddCustomerPage({
                           )}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="zipCode">ZIP/Postal Code <span className="text-red-500">*</span></Label>
+                          <Label htmlFor="zipCode">
+                            ZIP/Postal Code
+                            <span className="text-red-500">*</span>
+                          </Label>
                           <Controller
                             name="zipCode"
                             control={control}
@@ -775,7 +796,9 @@ export default function AddCustomerPage({
                           )}
                         </div>
                         <div className="space-y-3">
-                          <Label htmlFor="country">Country <span className="text-red-500">*</span></Label>
+                          <Label htmlFor="country">
+                            Country <span className="text-red-500">*</span>
+                          </Label>
                           <Controller
                             name="country"
                             control={control}
@@ -898,7 +921,12 @@ export default function AddCustomerPage({
                                         value={field.value || ""}
                                         onValueChange={(val) => {
                                           if (val) {
-                                          console.log('Role selected:', val, 'for contact:', contact.id);
+                                            console.log(
+                                              "Role selected:",
+                                              val,
+                                              "for contact:",
+                                              contact.id
+                                            );
                                             field.onChange(val);
                                             setSelectedRoleIds((prev) => ({
                                               ...prev,
@@ -949,15 +977,21 @@ export default function AddCustomerPage({
                                     name={`contacts.${index}.assignedRep`}
                                     control={control}
                                     render={({ field }) => {
-                                    const { data: users, isLoading, error } = useGetUsersByRole(
+                                      const {
+                                        data: users,
+                                        isLoading,
+                                        error,
+                                      } = useGetUsersByRole(
                                         selectedRoleIds[contact.id] || "",
                                         !!selectedRoleIds[contact.id]
                                       );
 
-                                    const [searchTerm, setSearchTerm] = useState("");
+                                      const [searchTerm, setSearchTerm] =
+                                        useState("");
 
                                       // Filter users based on search term
-                                    const filteredUsers = users?.filter((user: any) =>
+                                      const filteredUsers =
+                                        users?.filter((user: any) =>
                                           `${user.firstName} ${user.lastName}`
                                             .toLowerCase()
                                             .includes(searchTerm.toLowerCase())
@@ -971,7 +1005,10 @@ export default function AddCustomerPage({
                                               field.onChange(val);
                                             }
                                           }}
-                                        disabled={!selectedRoleIds[contact.id] || isLoading}
+                                          disabled={
+                                            !selectedRoleIds[contact.id] ||
+                                            isLoading
+                                          }
                                         >
                                           <SelectTrigger
                                             className="w-full max-w-m bg-white border border-gray-300 hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -997,8 +1034,12 @@ export default function AddCustomerPage({
                                                 className="flex h-9 w-full rounded-md border-0 bg-transparent px-0 py-1 text-sm shadow-none transition-colors placeholder:text-gray-500 focus-visible:outline-none focus-visible:ring-0"
                                                 placeholder="Search..."
                                                 value={searchTerm}
-                                              onChange={(e) => setSearchTerm(e.target.value)}
-                                              onClick={(e) => e.stopPropagation()}
+                                                onChange={(e) =>
+                                                  setSearchTerm(e.target.value)
+                                                }
+                                                onClick={(e) =>
+                                                  e.stopPropagation()
+                                                }
                                                 autoFocus
                                               />
                                             </div>
@@ -1006,15 +1047,18 @@ export default function AddCustomerPage({
                                             {/* Users List */}
                                             <div className="max-h-60 overflow-y-auto">
                                               {filteredUsers.length > 0 ? (
-                                              filteredUsers.map((user: any) => (
+                                                filteredUsers.map(
+                                                  (user: any) => (
                                                     <SelectItem
                                                       key={user.id}
                                                       value={String(user.id)}
                                                       className="cursor-pointer hover:bg-gray-50 px-3 py-2 text-sm"
                                                     >
-                                                  {user.firstName} {user.lastName}
+                                                      {user.firstName}
+                                                      {user.lastName}
                                                     </SelectItem>
-                                              ))
+                                                  )
+                                                )
                                               ) : (
                                                 <div className="px-3 py-2 text-sm text-gray-500">
                                                   {searchTerm
@@ -1044,7 +1088,8 @@ export default function AddCustomerPage({
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                               <div className="space-y-2">
                                 <Label htmlFor={`contact-name-${index}`}>
-                                Contact Name <span className="text-red-500">*</span>
+                                  Contact Name
+                                  <span className="text-red-500">*</span>
                                 </Label>
                                 <Controller
                                   name={`contacts.${index}.name`}
@@ -1104,7 +1149,8 @@ export default function AddCustomerPage({
                               </div>
                               <div className="space-y-2">
                                 <Label htmlFor={`contact-email-${index}`}>
-                                Email Address <span className="text-red-500">*</span>
+                                  Email Address
+                                  <span className="text-red-500">*</span>
                                 </Label>
                                 <Controller
                                   name={`contacts.${index}.email`}
@@ -1135,7 +1181,8 @@ export default function AddCustomerPage({
                               </div>
                               <div className="space-y-2">
                                 <Label htmlFor={`contact-phone-${index}`}>
-                                Phone Number <span className="text-red-500">*</span>
+                                  Phone Number
+                                  <span className="text-red-500">*</span>
                                 </Label>
 
                                 <Controller
@@ -1245,11 +1292,11 @@ export default function AddCustomerPage({
           </CardContent>
         </TabsContent>
 
-        <TabsContent value="uploads" className="space-y-4">
+        {/* <TabsContent value="uploads" className="space-y-4">
           <CardContent>
             <UploadHistory />
           </CardContent>
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
     </div>
   );
