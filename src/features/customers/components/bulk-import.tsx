@@ -26,13 +26,13 @@ export default function BulkImport() {
   // Define the new CSV headers
   const csvHeaders = [
     { label: "Company Name*", key: "companyName" },
-    { label: "Industry Name", key: "industryName" }, // Changed from ID
-    { label: "Customer Type Name", key: "customerTypeName" }, // Changed from ID
-    { label: "Street Address", key: "address" },
-    { label: "City", key: "city" },
-    { label: "State", key: "state" },
-    { label: "Zip Code", key: "zipCode" },
-    { label: "Country", key: "country" },
+    { label: "Industry Name*", key: "industryName" }, // Changed from ID
+    { label: "Customer Type Name*", key: "customerTypeName" }, // Changed from ID
+    { label: "Street Address*", key: "address" },
+    { label: "City*", key: "city" },
+    { label: "State*", key: "state" },
+    { label: "Zip Code*", key: "zipCode" },
+    { label: "Country*", key: "country" },
     { label: "Latitude", key: "latitude" },
     { label: "Longitude", key: "longitude" },
     { label: "Additional Notes", key: "notes" },
@@ -47,42 +47,23 @@ export default function BulkImport() {
   // Update the sample data to match the new headers
   const csvSampleData = [
     {
-      companyName: "Innovate Inc90113.",
-      industryName: "it", // e.g. "Technology"
-      customerTypeName: "Primary", // e.g. "Tier 1"
-      address: "1600 Amphitheatre Parkway",
-      city: "Mountain View",
-      state: "CA",
-      zipCode: "94043",
-      country: "USA",
-      latitude: "12",
-      longitude: "12",
-      notes: "A key account.",
-      contactName: "John Doe",
-      contactEmail: "john.doe@innovate.com",
-      contactPhone: "123-456-7890",
-      contactDesignation: "CEO",
-      isPrimary: "TRUE",
-      assignedRepName: "karan",
-    },
-    {
-      companyName: "Innovate Inc90113.",
-      industryName: "it",
+      companyName: "first comapny",
+      industryName: "IT",
       customerTypeName: "primary",
       address: "1600 Amphitheatre Parkway",
       city: "Mountain View",
       state: "CA",
       zipCode: "94043",
       country: "USA",
-      latitude: "12",
-      longitude: "12",
+      latitude: "23.113563325826405",
+      longitude: "72.53813946660878",
       notes: "A key account.",
-      contactName: "Jane Roe",
-      contactEmail: "jane.roe@innovate.com",
-      contactPhone: "987-654-3210",
-      contactDesignation: "CTO",
-      isPrimary: "FALSE",
-      assignedRepName: "", // No assigned rep for this contact
+      contactName: "john",
+      contactEmail: "john.doe@innovate.com",
+      contactPhone: "1234567890",
+      contactDesignation: "CEO",
+      isPrimary: "false",
+      assignedRepName: "karan",
     },
   ];
 
@@ -165,9 +146,12 @@ export default function BulkImport() {
               type="file"
               id="csv-upload"
               accept=".csv"
-              onChange={(e) =>
-                e.target.files && handleFileChange(e.target.files[0])
-              }
+              onChange={(e) => {
+                if (e.target.files?.[0]) {
+                  handleFileChange(e.target.files[0]);
+                  e.target.value = "";
+                }
+              }}
               className="hidden"
             />
           </div>
