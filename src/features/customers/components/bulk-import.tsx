@@ -9,6 +9,8 @@ import {
   FileCheck2,
   AlertCircle,
   Download,
+  FileText,
+  X,
 } from "lucide-react";
 import {
   Card,
@@ -104,6 +106,12 @@ export default function BulkImport() {
     uploadFile(formData);
   };
 
+  const handleRemoveFile = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedFile(null);
+    setUploadResult(null);
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -118,8 +126,8 @@ export default function BulkImport() {
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition 
-              ${isDragActive ? "bg-muted/30 border-primary" : "border-muted-foreground/25"}
-            `}
+    ${isDragActive ? "bg-muted/30 border-primary" : "border-muted-foreground/25"}
+  `}
           >
             <input {...getInputProps()} />
             <Upload className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
@@ -128,32 +136,53 @@ export default function BulkImport() {
                 ? "Drop the file here..."
                 : "Upload Customer CSV File"}
             </h3>
-            <p className="text-sm mb-4 text-muted-foreground">
-              {selectedFile
-                ? `Selected file: ${selectedFile.name}`
-                : "Drag & drop or choose a CSV"}
-            </p>
-            {/* Keep your existing button */}
-            <label
-              htmlFor="csv-upload"
-              className="cursor-pointer inline-flex items-center border px-4 py-2 rounded-md"
-              onClick={(e) => e.stopPropagation()} // prevent triggering dropzone
-            >
-              <Upload className="h-4 w-4 mr-2" />
-              Choose File
-            </label>
-            <input
-              type="file"
-              id="csv-upload"
-              accept=".csv"
-              onChange={(e) => {
-                if (e.target.files?.[0]) {
-                  handleFileChange(e.target.files[0]);
-                  e.target.value = "";
-                }
-              }}
-              className="hidden"
-            />
+
+            {selectedFile ? (
+              // If a file IS selected, show the file info pill
+              <div className="mt-4 inline-flex items-center gap-3 text-sm rounded-md border p-2 shadow-sm bg-background">
+                <FileText className="h-5 w-5 text-primary" />
+                <span className="font-medium truncate max-w-xs">
+                  {selectedFile.name}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                  onClick={handleRemoveFile} // Ensure you have this handler
+                  disabled={isPending}
+                  aria-label="Remove file"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              // If NO file is selected, show the prompt and the button
+              <>
+                <p className="text-sm mb-4 text-muted-foreground">
+                  Drag & drop or choose a CSV
+                </p>
+                <label
+                  htmlFor="csv-upload"
+                  className="cursor-pointer inline-flex items-center border bg-background px-4 py-2 rounded-md text-sm font-medium hover:bg-accent"
+                  onClick={(e) => e.stopPropagation()} // prevent triggering dropzone
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Choose File
+                </label>
+                <input
+                  type="file"
+                  id="csv-upload"
+                  accept=".csv"
+                  onChange={(e) => {
+                    if (e.target.files?.[0]) {
+                      handleFileChange(e.target.files[0]);
+                      e.target.value = "";
+                    }
+                  }}
+                  className="hidden"
+                />
+              </>
+            )}
           </div>
 
           {/* Actions */}
