@@ -50,7 +50,7 @@ export default function BulkImport() {
   const csvSampleData = [
     {
       companyName: "first comapny",
-      industryName: "IT",
+      industryName: "technology",
       customerTypeName: "primary",
       address: "1600 Amphitheatre Parkway",
       city: "Mountain View",
