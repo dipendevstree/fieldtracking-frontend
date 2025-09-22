@@ -27,6 +27,7 @@ export interface CreateCustomerPayload {
   latitude?: number;
   longitude?: number;
   country?: string;
+  additionalNotes?:string;
   customerContacts: Array<{
     customerName: string;
     email: string;
