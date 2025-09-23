@@ -64,6 +64,11 @@ export interface PermissionGroup {
 // User data from login response
 export interface LoginUser {
   id:string;
+  readonly firstName: string;
+  readonly lastName: string;
+  readonly phoneNumber: string;
+  readonly countryCode: string;
+  readonly departmentId: string;
   readonly user_id: string;
   readonly name: string;
   readonly email: string;

@@ -8,6 +8,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
+import { useAuth } from '@/stores/use-auth-store'
 
 export function TeamSwitcher({
   teams,
@@ -19,6 +20,7 @@ export function TeamSwitcher({
   }[]
 }) {
   const activeTeam = teams[0]
+  const { user } = useAuth();
 
   return (
     <SidebarMenu>
@@ -34,9 +36,9 @@ export function TeamSwitcher({
               </div>
               <div className='grid flex-1 text-left text-sm leading-tight'>
                 <span className='truncate font-semibold'>
-                  {activeTeam.name}
+                  {user?.organization?.organizationName || activeTeam.name}
                 </span>
-                <span className='truncate text-xs'>{activeTeam.plan}</span>
+                <span className='truncate text-xs'>{user?.organization?.organizationType?.organizationTypeName || activeTeam.plan}</span>
               </div>
             </SidebarMenuButton>
           </DropdownMenuTrigger>

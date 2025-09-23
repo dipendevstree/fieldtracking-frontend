@@ -9,7 +9,12 @@ import { useState, useEffect } from "react"
 // import { useGetGeneralSettings, useGetCompanyInfo } from '../services/Generalhook'
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAuth } from '@/stores/use-auth-store'
-import { useGetOrganizationTypes } from '@/features/auth/Admin-sign-up/services/sign-up-services'
+import { useGetDepartment, useGetOrganizationTypes } from '@/features/auth/Admin-sign-up/services/sign-up-services'
+import currency from "../data/currency/currency.data";
+import PhoneInput from "react-phone-number-input"
+import "react-phone-number-input/style.css";
+import { useSelectOptions } from "@/hooks/use-select-option"
+import parsePhoneNumberFromString from "libphonenumber-js"
 
 interface GeneralApplicationSettingsProps {
   onDataChange?: (data: any) => void
@@ -24,6 +29,7 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
     organizationType: "",
     industryId: "",   
     timezone: "",
+    currency: "",
     website: "",
     description: "",
     streetAddress: "",
@@ -31,7 +37,6 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
     state: "",
     zipCode: "",
     country: "",
-    defaultCurrency: "",
     dateFormat: "",
     distanceUnit: "",
     ratePerKm: "30"
@@ -51,6 +56,13 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
     }
   }, [orgTypeList])
 
+  const { data: departmentList } = useGetDepartment();
+  const department = useSelectOptions<any>({
+    listData: departmentList ?? [],
+    labelKey: "departmentName",
+    valueKey: "departmentId",
+  });
+  
   const isLoading = !user
   const hasError = false 
 
@@ -65,6 +77,7 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
         organizationType: org.organizationTypeId || "",
         industryId: org.industryId || "",
         timezone: org.time_zone || "",
+        currency: org.currency || "",
         website: org.website || "",
         description: org.description || "",
         streetAddress: org.address || "",
@@ -72,7 +85,6 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
         state: org.state || "",
         zipCode: org.zipCode || "",
         country: org.country || "",
-        defaultCurrency: "inr", 
         dateFormat: "dd-mm-yyyy", 
         distanceUnit: "kilometers", 
         ratePerKm: org.rsPerKm?.toString() || ""
@@ -160,7 +172,8 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
                 />
             </div>
               
-            <div className="space-y-2">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-2">
                 <Label htmlFor="timezone" className="text-sm font-medium text-gray-700">
                   Default Timezone <span className="text-red-500">*</span>
                 </Label>
@@ -169,7 +182,7 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
                   value={formData.timezone}
                   onValueChange={(value) => handleInputChange('timezone', value)}
                 >
-                  <SelectTrigger className="h-10">
+                  <SelectTrigger className="h-10 w-full">
                     <SelectValue placeholder="Select your system timezone" />
                   </SelectTrigger>
                   <SelectContent>
@@ -185,6 +198,26 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
                     <SelectItem value="Australia/Sydney">AEDT (Sydney)</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="timezone" className="text-sm font-medium text-gray-700">
+                  Default Currency <span className="text-red-500">*</span>
+                </Label>
+                {/* Set form user system timezone */}
+                <Select
+                  value={formData.currency}
+                  onValueChange={(value) => handleInputChange('currency', value)}
+                >
+                  <SelectTrigger className="h-10 w-full">
+                    <SelectValue placeholder="Select your system currency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {currency.map((c: any, index: number) => (
+                      <SelectItem key={index} value={c.currency.code}>{`${c.currency.name} (${c.currency.symbol})`}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
               <div className="space-y-2">
@@ -229,6 +262,7 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
               </div>
             </div>
 
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="description" className="text-sm font-medium text-gray-700">
                 Organization Description 
@@ -241,9 +275,16 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
                 className="min-h-[80px] resize-none"
               />
             </div>
+            {/* Organization Icon Upload Section */}
+            <div className="space-y-2">
+              <Label htmlFor="org-icon" className="text-sm font-medium text-gray-700">Organization Icon</Label>
+              <p className="text-sm text-gray-600">Upload your organization logo/icon (PNG, JPG, SVG)</p>
+              <Input id="org-icon" type="file" accept="image/png, image/jpeg, image/svg+xml" className="h-10" />
+            </div>
+            </div>
           </div>
 
-          <Separator className="my-8" />
+        <Separator className="my-8" />
 
           {/* Address Information Section */}
           <div className="space-y-6 mb-10">
@@ -323,6 +364,125 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
           </div>
         </div>
 
+        <Separator className="my-8" />
+
+          {/* Personal Information Section */}
+          <div className="space-y-6 mb-10">
+            <div className="space-y-2">
+              <h3 className="text-lg font-medium text-gray-900">Personal Information</h3>
+            </div>
+            
+            {/* Row 1: First Name & Last Name */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">
+                    First Name <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="firstName"
+                    placeholder="Enter first name"
+                    value={user?.firstName}
+                    name="firstName"
+                    onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">
+                    Last Name <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="lastName"
+                    placeholder="Enter last name"
+                    value={user?.lastName}
+                    name="lastName"
+                    onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Row 2: Email Address & Phone Number */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="email">
+                    Email Address <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="email"
+                    placeholder="user@company.com"
+                    type="email"
+                    name="email"
+                    value={user?.email}
+                    onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="phoneNumber">Phone</Label>
+                    <PhoneInput
+                      international
+                      countryCallingCodeEditable={false}
+                      defaultCountry="IN"
+                      name="phoneNumber"
+                      value={(user?.countryCode + user?.phoneNumber) || ""}
+                      onChange={(value) => {
+                        // field.onChange(value || "");
+                        const phoneNumber = parsePhoneNumberFromString(
+                          value || ""
+                        );
+                        if (phoneNumber) {
+                          handleInputChange("countryCode", phoneNumber.countryCallingCode)
+                          handleInputChange("phoneNumber", phoneNumber.nationalNumber)
+                        //   setValue(
+                        //     "countryCode",
+                        //     `+${phoneNumber.countryCallingCode}`,
+                        //     {
+                        //       shouldValidate: true,
+                        //       shouldDirty: true,
+                        //     }
+                        //   );
+                        } else {
+                        //   setValue("countryCode", "+91", {
+                        //     shouldValidate: true,
+                        //     shouldDirty: true,
+                        //   });
+                        }
+                      }}
+                      className="w-full rounded-md border border-gray-300 px-3 py-2"
+                    />
+                </div>
+              </div>
+            
+
+            {/* Work Information Section */}
+            <div className="space-y-4">
+              {/* Row 3: Department & User Role */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="departmentId">Department</Label>
+                    <Select
+                      value={user?.departmentId}
+                      // onValueChange={field.onChange}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select department..." />
+                      </SelectTrigger>
+                      <SelectContent className="!w-full">
+                        {department.map((option) => (
+                          <SelectItem
+                            key={option.value}
+                            value={String(option.value)}
+                          >
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                </div>
+              </div>
+            </div>
+        </div>
+        
           <Separator className="my-8" />
 
           {/* Allow to add Users based on Territories Section */}

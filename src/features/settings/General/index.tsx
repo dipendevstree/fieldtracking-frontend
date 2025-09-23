@@ -79,6 +79,7 @@ const GeneralSettingsPage = () => {
         isAutoExpense: currentSettingsData.autoExpenseApproval,
         rsPerKm: currentSettingsData.autoExpenseApproval ? parseFloat(currentSettingsData.ratePerKm) || 0 : 0,
         allowAddUsersBasedOnTerritories: currentSettingsData.allowAddUsersBasedOnTerritories,
+        currency: currentSettingsData.currency || ""
       }
 
       console.log('Organization update payload:', organizationUpdatePayload)
