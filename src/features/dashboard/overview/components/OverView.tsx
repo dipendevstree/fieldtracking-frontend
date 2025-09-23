@@ -26,6 +26,8 @@ import LongText from "@/components/long-text";
 import { formatAuditChanges } from "../data/helperFunction";
 import { DateRangeFilter } from "@/features/reports/components/DateRangeFilter";
 import { DateRange } from "react-day-picker";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "@tanstack/react-router";
 
 interface OverviewProps {
   salesReps: SalesRep[];
@@ -35,6 +37,7 @@ interface OverviewProps {
 
 export default function Overview({ salesReps: _salesReps }: OverviewProps) {
   // Pagination state for Today's Schedule with proper API params
+  const navigate = useNavigate();
   const [schedulePagination, setSchedulePagination] = useState({
     page: 1,
     limit: 5,
@@ -456,6 +459,10 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
     },
   ];
 
+  const handleNavigation = (path: string) => {
+    navigate({ to: path });
+  };
+
   return (
     <div className="space-y-4">
       {/* KPI Cards */}
@@ -499,35 +506,38 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
             <div>
               <CardTitle>Today's Schedule</CardTitle>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search..."
-                  onChange={(e) => handleScheduleSearchChange(e.target.value)}
-                  className="pl-8 w-[300px]"
-                />
-              </div>
-              <Select
-                value={
-                  schedulePagination.status
-                    ? schedulePagination.status.charAt(0).toUpperCase() +
-                      schedulePagination.status.slice(1)
-                    : "All Status"
-                }
-                onValueChange={handleStatusFilterChange}
-              >
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All Status">All Status</SelectItem>
-                  <SelectItem value="Scheduled">Scheduled</SelectItem>
-                  <SelectItem value="Completed">Completed</SelectItem>
-                  <SelectItem value="Pending">Pending</SelectItem>
-                </SelectContent>
-              </Select>
+            <Button onClick={() => handleNavigation("/calendar")}>
+              View All
+            </Button>
+          </div>
+          <div className="flex items-center space-x-2 mt-1">
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search..."
+                onChange={(e) => handleScheduleSearchChange(e.target.value)}
+                className="pl-8 w-[300px]"
+              />
             </div>
+            <Select
+              value={
+                schedulePagination.status
+                  ? schedulePagination.status.charAt(0).toUpperCase() +
+                    schedulePagination.status.slice(1)
+                  : "All Status"
+              }
+              onValueChange={handleStatusFilterChange}
+            >
+              <SelectTrigger className="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All Status">All Status</SelectItem>
+                <SelectItem value="Scheduled">Scheduled</SelectItem>
+                <SelectItem value="Completed">Completed</SelectItem>
+                <SelectItem value="Pending">Pending</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent>
@@ -535,16 +545,16 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
             data={mappedScheduleData}
             columns={scheduleColumns}
             totalCount={scheduleTotalCount}
-            currentPage={schedulePagination.page}
-            paginationCallbacks={{
-              onPaginationChange: (page: number, pageSize: number) => {
-                setSchedulePagination((prev) => ({
-                  ...prev,
-                  page,
-                  limit: pageSize,
-                }));
-              },
-            }}
+            // currentPage={schedulePagination.page}
+            // paginationCallbacks={{
+            //   onPaginationChange: (page: number, pageSize: number) => {
+            //     setSchedulePagination((prev) => ({
+            //       ...prev,
+            //       page,
+            //       limit: pageSize,
+            //     }));
+            //   },
+            // }}
             loading={scheduleLoading}
             key="schedule-table"
           />
@@ -558,35 +568,38 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
             <div>
               <CardTitle>Customer List</CardTitle>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search..."
-                  onChange={(e) => handleCustomerSearchChange(e.target.value)}
-                  className="pl-8 w-[300px]"
-                />
-              </div>
-              <Select
-                value={getCurrentIndustryFilterValue()}
-                onValueChange={handleIndustryFilterChange}
-              >
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="All Industries">All Industries</SelectItem>
-                  {industryList.map((industry) => (
-                    <SelectItem
-                      key={industry.industryId}
-                      value={industry.industryName}
-                    >
-                      {industry.industryName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <Button onClick={() => handleNavigation("/customers")}>
+              View All
+            </Button>
+          </div>
+          <div className="flex items-center space-x-2 mt-1">
+            <div className="relative">
+              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search..."
+                onChange={(e) => handleCustomerSearchChange(e.target.value)}
+                className="pl-8 w-[300px]"
+              />
             </div>
+            <Select
+              value={getCurrentIndustryFilterValue()}
+              onValueChange={handleIndustryFilterChange}
+            >
+              <SelectTrigger className="w-[140px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="All Industries">All Industries</SelectItem>
+                {industryList.map((industry) => (
+                  <SelectItem
+                    key={industry.industryId}
+                    value={industry.industryName}
+                  >
+                    {industry.industryName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </CardHeader>
         <CardContent>
@@ -594,16 +607,16 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
             data={customers}
             columns={customerColumns}
             totalCount={customerTotalCount}
-            currentPage={customerPagination.page}
-            paginationCallbacks={{
-              onPaginationChange: (page: number, pageSize: number) => {
-                setCustomerPagination((prev) => ({
-                  ...prev,
-                  page,
-                  limit: pageSize,
-                }));
-              },
-            }}
+            // currentPage={customerPagination.page}
+            // paginationCallbacks={{
+            //   onPaginationChange: (page: number, pageSize: number) => {
+            //     setCustomerPagination((prev) => ({
+            //       ...prev,
+            //       page,
+            //       limit: pageSize,
+            //     }));
+            //   },
+            // }}
             loading={customersLoading}
             key="customer-table"
           />
