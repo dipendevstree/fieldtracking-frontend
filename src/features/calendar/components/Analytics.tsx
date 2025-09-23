@@ -84,8 +84,8 @@ export default function Analytics() {
                   <span className='font-bold'>{analyticsData?.followupRate}</span>
                 </div>
                 <div className='flex justify-between'>
-                  <span className='text-sm'>Conversion Rate</span>
-                  <span className='font-bold'>{analyticsData?.conversionRate}</span>
+                  <span className='text-sm'>Cancelled Visits</span>
+                  <span className='font-bold'>{analyticsData?.cancelledVisits}</span>
                 </div>
                 <div className='flex justify-between'>
                   <span className='text-sm'>Rescheduled Visits</span>
