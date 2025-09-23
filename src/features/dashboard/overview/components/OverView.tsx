@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import debounce from "lodash.debounce";
 import { CustomDataTable } from "@/components/shared/custom-data-table";
-import { useGetAuditLogs } from "../services/OverView.hook";
+import { useGetAuditLogs, useGetStats } from "../services/OverView.hook";
 import { endOfDay, format, startOfDay } from "date-fns";
 import StatusBadge from "@/components/shared/common-status-badge";
 import {
@@ -92,6 +92,9 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
   // Extract customers list from response
   const customers = customersResponse?.list || [];
 
+  // Get stats data for filter
+  const { data: stats, isLoading: isStatsLoading } = useGetStats();
+
   // Get schedule/visit data from API with proper parameters
   const {
     data: scheduleData = [],
@@ -100,12 +103,11 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
   } = useGetAllVisit(schedulePagination);
 
   // Get live tracking users data to count active users
-  const { listData: liveTrackingUsers = [], isLoading: liveTrackingLoading } =
-    useGetUsers({
-      page: 1,
-      limit: 1000, // Get all users to count them
-      includeLatLong: true,
-    });
+  const { listData: liveTrackingUsers = [] } = useGetUsers({
+    page: 1,
+    limit: 1000, // Get all users to count them
+    includeLatLong: true,
+  });
 
   // Get customerType data for filter
   const { data: customerTypeList = [] } = useGetCustomerType();
@@ -124,36 +126,36 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
   const auditLogsList = auditLogsResponse.list || [];
 
   // Calculate dashboard metrics
-  const dashboardMetrics = useMemo(() => {
-    // Calculate Total Sales Reps from schedule data
-    const uniqueSalesReps = new Set();
-    scheduleData.forEach((visit: any) => {
-      if (visit.salesRepresentativeUser?.id) {
-        uniqueSalesReps.add(visit.salesRepresentativeUser.id);
-      } else if (visit.salesRepresentativeUserId) {
-        uniqueSalesReps.add(visit.salesRepresentativeUserId);
-      }
-    });
+  // const dashboardMetrics = useMemo(() => {
+  //   // Calculate Total Sales Reps from schedule data
+  //   const uniqueSalesReps = new Set();
+  //   scheduleData.forEach((visit: any) => {
+  //     if (visit.salesRepresentativeUser?.id) {
+  //       uniqueSalesReps.add(visit.salesRepresentativeUser.id);
+  //     } else if (visit.salesRepresentativeUserId) {
+  //       uniqueSalesReps.add(visit.salesRepresentativeUserId);
+  //     }
+  //   });
 
-    // Calculate Active in Field from live tracking data
-    const activeUsers = liveTrackingUsers.filter(
-      (user: any) => user.isOnline
-    ).length;
+  //   // Calculate Active in Field from live tracking data
+  //   const activeUsers = liveTrackingUsers.filter(
+  //     (user: any) => user.isOnline
+  //   ).length;
 
-    // Debug logging
-    console.log("Dashboard Metrics Calculation:", {
-      scheduleDataCount: scheduleData.length,
-      uniqueSalesRepsCount: uniqueSalesReps.size,
-      liveTrackingUsersCount: liveTrackingUsers.length,
-      activeUsersCount: activeUsers,
-      uniqueSalesRepsArray: Array.from(uniqueSalesReps),
-    });
+  //   // Debug logging
+  //   console.log("Dashboard Metrics Calculation:", {
+  //     scheduleDataCount: scheduleData.length,
+  //     uniqueSalesRepsCount: uniqueSalesReps.size,
+  //     liveTrackingUsersCount: liveTrackingUsers.length,
+  //     activeUsersCount: activeUsers,
+  //     uniqueSalesRepsArray: Array.from(uniqueSalesReps),
+  //   });
 
-    return {
-      totalSalesReps: uniqueSalesReps.size,
-      activeInField: activeUsers,
-    };
-  }, [scheduleData, liveTrackingUsers]);
+  //   return {
+  //     totalSalesReps: uniqueSalesReps.size,
+  //     activeInField: activeUsers,
+  //   };
+  // }, [scheduleData, liveTrackingUsers]);
 
   // Utility function to truncate location text
   const truncateLocation = (location: string, maxLength: number = 50) => {
@@ -514,32 +516,32 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
     <div className="space-y-4">
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="gap-2">
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-sm font-medium">
               Total Sales Reps
             </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {scheduleLoading ? "..." : dashboardMetrics.totalSalesReps}
+            <div className="text-2xl font-bold mb-1">
+              {isStatsLoading ? "..." : stats.totalUsers}
             </div>
             <p className="text-xs text-muted-foreground">
               From today's schedule
             </p>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <Card className="gap-2">
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-sm font-medium">
               Active in Field
             </CardTitle>
             <MapPin className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {liveTrackingLoading ? "..." : dashboardMetrics.activeInField}
+            <div className="text-2xl font-bold mb-1">
+              {isStatsLoading ? "..." : stats.onlineUsers}
             </div>
             <p className="text-xs text-muted-foreground">Currently online</p>
           </CardContent>
