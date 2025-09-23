@@ -314,6 +314,7 @@ export default function AddCustomerPage({
         latitude: data.latitude,
         longitude: data.longitude,
         country: data.country || "",
+        additionalNotes: data.notes || "",
         customerContacts: data.contacts.map((contact) => ({
           customerName: contact.name,
           email: contact.email,

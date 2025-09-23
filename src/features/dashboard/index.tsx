@@ -91,7 +91,7 @@ export default function DashboardPage() {
         <TabsList className="grid w-full grid-cols-3">
           {DASHBOARD_TABS.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value}>
-              {tab.label}.
+              {tab.label}
             </TabsTrigger>
           ))}
         </TabsList>
