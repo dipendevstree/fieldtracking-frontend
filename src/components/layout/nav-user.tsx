@@ -46,7 +46,7 @@ export function NavUser({
             >
               <Avatar className='h-8 w-8 rounded-lg'>
                 <AvatarImage
-                  src={user?.name?.split(' ')[0][0] || '/avatars/01.png'}
+                  src={user?.profileUrl || user?.name?.split(' ')[0][0] || '/avatars/01.png'}
                   alt={user?.name || 'User'}
                 />
                 <AvatarFallback className='rounded-lg'>SN</AvatarFallback>
@@ -70,7 +70,7 @@ export function NavUser({
               <div className='flex items-center gap-2 px-1 py-1.5 text-left text-sm'>
                 <Avatar className='h-8 w-8 rounded-lg'>
                   <AvatarImage
-                    src={user?.name?.split(' ')[0][0]}
+                    src={user?.profileUrl || user?.name?.split(' ')[0][0]}
                     alt={user?.name}
                   />
                   <AvatarFallback className='rounded-lg'>SN</AvatarFallback>

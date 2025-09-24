@@ -64,29 +64,35 @@ const GeneralSettingsPage = () => {
 
     try {
       // Prepare payload that matches your API structure
-      const organizationUpdatePayload = {
-        organizationName: currentSettingsData.organizationName,
-        industryId: currentSettingsData.industryId || "", // You may need to add this field
-        organizationTypeId: currentSettingsData.organizationType,
-        website: currentSettingsData.website,
-        description: currentSettingsData.description,
-        address: currentSettingsData.streetAddress,
-        country: currentSettingsData.country,
-        city: currentSettingsData.city,
-        zipCode: currentSettingsData.zipCode,
-        state: currentSettingsData.state,
-        isActive: true,
-        isAutoExpense: currentSettingsData.autoExpenseApproval,
-        rsPerKm: currentSettingsData.autoExpenseApproval ? parseFloat(currentSettingsData.ratePerKm) || 0 : 0,
-        allowAddUsersBasedOnTerritories: currentSettingsData.allowAddUsersBasedOnTerritories,
-        currency: currentSettingsData.currency || ""
-      }
-
-      console.log('Organization update payload:', organizationUpdatePayload)
+      const formData = new FormData();
+      formData.append("organizationName", currentSettingsData.organizationName);
+      formData.append("industryId", currentSettingsData.industryId || ""); // You may need to add this fiel);
+      formData.append("organizationTypeId", currentSettingsData.organizationType);
+      formData.append("website", currentSettingsData.website);
+      formData.append("description", currentSettingsData.description);
+      formData.append("address", currentSettingsData.streetAddress);
+      formData.append("country", currentSettingsData.country);
+      formData.append("city", currentSettingsData.city);
+      formData.append("zipCode", currentSettingsData.zipCode);
+      formData.append("state", currentSettingsData.state);
+      formData.append("isActive", String(true));
+      formData.append("isAutoExpense", currentSettingsData.autoExpenseApproval ? "true": "");
+      formData.append("rsPerKm", currentSettingsData.autoExpenseApproval ? currentSettingsData.ratePerKm || 0 : 0);
+      formData.append("allowAddUsersBasedOnTerritories", currentSettingsData.allowAddUsersBasedOnTerritories ? "true": "");
+      formData.append("currency", currentSettingsData.currency || "");
+      formData.append("orgIcon", currentSettingsData.orgIcon || null);
+      formData.append("profileImage", currentSettingsData.profileImage || null);
+      formData.append("userFirstName", currentSettingsData.userFirstName || null);
+      formData.append("userLastName", currentSettingsData.userLastName || null);
+      formData.append("userEmail", currentSettingsData.userEmail || null);
+      formData.append("userPhoneNumber", currentSettingsData.userPhoneNumber || null);
+      formData.append("userPhoneCode", currentSettingsData.userPhoneCode || null);
+      formData.append("userDepartment", currentSettingsData.userDepartment || null);
+      // console.log('Organization update payload:', organizationUpdatePayload)
 
       // Update organization data
       await new Promise((resolve, reject) => {
-        updateGeneralSettings(organizationUpdatePayload, {
+        updateGeneralSettings(formData, {
           onSuccess: () => {
             // Update the user data in the auth store with the new organization data
             if (user && user.organization) {
@@ -105,10 +111,18 @@ const GeneralSettingsPage = () => {
                 isAutoExpense: currentSettingsData.autoExpenseApproval,
                 rsPerKm: currentSettingsData.autoExpenseApproval ? parseFloat(currentSettingsData.ratePerKm) || 0 : 0,
                 allowAddUsersBasedOnTerritories: currentSettingsData.allowAddUsersBasedOnTerritories,
+                currency: currentSettingsData.currency || "",
               }
 
               console.log('Updating organization in auth store:', updatedOrganization)
               updateUser({
+                ...user,
+                firstName: currentSettingsData.userFirstName || "",
+                lastName: currentSettingsData.userLastName || "",
+                email: currentSettingsData.userEmail || "",
+                phoneNumber: currentSettingsData.userPhoneNumber || "",
+                countryCode: currentSettingsData.userPhoneCode || "",
+                departmentId: currentSettingsData.userDepartment || "",
                 organization: updatedOrganization
               })
               console.log('Organization updated in auth store successfully')

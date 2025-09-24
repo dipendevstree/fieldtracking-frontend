@@ -75,6 +75,7 @@ export interface LoginUser {
   readonly isSuperAdmin: boolean;
   readonly mobile: string | null;
   readonly access_token: string;
+  readonly profileUrl?: string | null;
   role: any;
   readonly permissions: readonly PermissionGroup[];
   organizationID:string;

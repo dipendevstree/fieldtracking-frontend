@@ -5,7 +5,7 @@ import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 // import { useGetGeneralSettings, useGetCompanyInfo } from '../services/Generalhook'
 import { Skeleton } from "@/components/ui/skeleton"
 import { useAuth } from '@/stores/use-auth-store'
@@ -39,9 +39,20 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
     country: "",
     dateFormat: "",
     distanceUnit: "",
-    ratePerKm: "30"
+    ratePerKm: "30",
+    orgIcon: null,
+    profileImage: null,
+    userFirstName: "",
+    userLastName: "",
+    userEmail: "",
+    userPhoneNumber: "",
+    userPhoneCode: "",
+    userDepartment: ""
   })
-
+  const [fileError, setFileError] = useState<Record<string, string>>({});
+  const [fileName, setFileName] = useState<Record<string, string>>({});
+  const orgIconInputRef = useRef<HTMLInputElement>(null);
+  const profileImageInputRef = useRef<HTMLInputElement>(null);
   // Fetch organization types from API
   const { 
     data: orgTypeList, 
@@ -87,8 +98,21 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
         country: org.country || "",
         dateFormat: "dd-mm-yyyy", 
         distanceUnit: "kilometers", 
-        ratePerKm: org.rsPerKm?.toString() || ""
+        ratePerKm: org.rsPerKm?.toString() || "",
+        orgIcon: null,
+        profileImage: null,
+        userFirstName: user?.firstName || "",
+        userLastName: user?.lastName || "",
+        userEmail: user?.email || "",
+        userPhoneNumber: user?.phoneNumber || "",
+        userPhoneCode: user?.countryCode || "",
+        userDepartment: user?.departmentId || "",
       }
+      setFileName((prev) => ({
+        ...prev,
+        userProfile: user?.profileUrl ? (user?.profileUrl).split("/")?.pop() as string: "",
+        orgIconFileName: user?.organization.organizationIcon ? (user?.organization.organizationIcon).split("/")?.pop() as string: ""
+      }))
       console.log('Form data being set:', newFormData)
       setFormData(newFormData)
       setAutoExpenseApproval(org.isAutoExpense || false)
@@ -107,7 +131,7 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
     }
   }, [formData, autoExpenseApproval, allowAddUsersBasedOnTerritories, onDataChange])
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = (field: string, value: File | string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -155,7 +179,7 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
           {/* Company Information Section */}
           <div className="space-y-6 mb-10">
             <div className="space-y-2">
-              <h3 className="text-lg font-medium text-gray-900">Company Information</h3>
+              <h3 className="text-lg font-medium text-gray-900">Organization Information</h3>
              
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -278,8 +302,58 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
             {/* Organization Icon Upload Section */}
             <div className="space-y-2">
               <Label htmlFor="org-icon" className="text-sm font-medium text-gray-700">Organization Icon</Label>
+              <input
+                ref={orgIconInputRef}
+                id="org-icon"
+                type="file"
+                accept="image/png, image/jpeg, image/svg+xml"
+                className="h-10 block w-full border border-gray-300 rounded-md px-3 py-2"
+                style={{ display: "none" }}
+                onChange={e => {
+                  setFileError((prev) => ({
+                    ...prev,
+                    orgIcon: ""
+                  }));
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    const validTypes = ["image/png", "image/jpeg", "image/svg+xml"];
+                    if (!validTypes.includes(file.type)) {
+                      setFileError((prev) => ({
+                        ...prev,
+                        orgIcon: "Invalid file type. Please upload PNG, JPG, or SVG."
+                      }));
+                      e.target.value = "";
+                      setFileName((prev) => ({
+                        ...prev,
+                        orgIconFileName: ""
+                      }))
+                    } else {
+                      setFileName((prev) => ({
+                        ...prev,
+                        orgIconFileName: file.name
+                      }))
+                      handleInputChange("orgIcon", file);
+                    }
+                  } else {
+                    setFileName((prev) => ({
+                      ...prev,
+                      orgIconFileName: ""
+                    }))
+                  }
+                }}
+              />
+              <button
+                type="button"
+                className="h-10 block w-full border border-gray-300 rounded-md px-3 py-2 text-left truncate"
+                onClick={() => orgIconInputRef.current?.click()}
+                title={`${fileName?.orgIconFileName || "No file chosen"}`}
+              >
+                Choose file {fileName?.orgIconFileName || "No file chosen"}
+              </button>
               <p className="text-sm text-gray-600">Upload your organization logo/icon (PNG, JPG, SVG)</p>
-              <Input id="org-icon" type="file" accept="image/png, image/jpeg, image/svg+xml" className="h-10" />
+              {fileError?.orgIcon && (
+                <p className="text-sm text-red-500">{fileError.orgIcon}</p>
+              )}
             </div>
             </div>
           </div>
@@ -375,28 +449,28 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
             {/* Row 1: First Name & Last Name */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">
-                    First Name <span className="text-red-500">*</span>
+                  <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">
+                    First Name
                   </Label>
                   <Input
                     id="firstName"
                     placeholder="Enter first name"
-                    value={user?.firstName}
+                    value={formData?.userFirstName}
                     name="firstName"
-                    onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                    onChange={(e) => handleInputChange("userFirstName", e.target.value)}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">
-                    Last Name <span className="text-red-500">*</span>
+                  <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">
+                    Last Name
                   </Label>
                   <Input
                     id="lastName"
                     placeholder="Enter last name"
-                    value={user?.lastName}
+                    value={formData?.userLastName}
                     name="lastName"
-                    onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                    onChange={(e) => handleInputChange("userLastName", e.target.value)}
                   />
                 </div>
               </div>
@@ -404,35 +478,35 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
               {/* Row 2: Email Address & Phone Number */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="email">
-                    Email Address <span className="text-red-500">*</span>
+                  <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                    Email Address
                   </Label>
                   <Input
                     id="email"
                     placeholder="user@company.com"
                     type="email"
                     name="email"
-                    value={user?.email}
-                    onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                    value={formData?.userEmail}
+                    onChange={(e) => handleInputChange("userEmail", e.target.value)}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phoneNumber">Phone</Label>
+                  <Label htmlFor="phoneNumber" className="text-sm font-medium text-gray-700">Phone</Label>
                     <PhoneInput
                       international
                       countryCallingCodeEditable={false}
                       defaultCountry="IN"
                       name="phoneNumber"
-                      value={(user?.countryCode + user?.phoneNumber) || ""}
+                      value={(formData?.userPhoneCode + formData?.userPhoneNumber) || ""}
                       onChange={(value) => {
                         // field.onChange(value || "");
                         const phoneNumber = parsePhoneNumberFromString(
                           value || ""
                         );
                         if (phoneNumber) {
-                          handleInputChange("countryCode", phoneNumber.countryCallingCode)
-                          handleInputChange("phoneNumber", phoneNumber.nationalNumber)
+                          handleInputChange("userPhoneCode", `+${phoneNumber.countryCallingCode}`)
+                          handleInputChange("userPhoneNumber", phoneNumber.nationalNumber)
                         //   setValue(
                         //     "countryCode",
                         //     `+${phoneNumber.countryCallingCode}`,
@@ -459,15 +533,15 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
               {/* Row 3: Department & User Role */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="departmentId">Department</Label>
+                  <Label htmlFor="departmentId" className="text-sm font-medium text-gray-700">Department</Label>
                     <Select
-                      value={user?.departmentId}
-                      // onValueChange={field.onChange}
+                      value={formData?.userDepartment}
+                      onValueChange={(value) => handleInputChange("userDepartment", value)}
                     >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select department..." />
                       </SelectTrigger>
-                      <SelectContent className="!w-full">
+                      <SelectContent className="w-full">
                         {department.map((option) => (
                           <SelectItem
                             key={option.value}
@@ -478,6 +552,61 @@ export default function GeneralApplicationSettings({ onDataChange }: GeneralAppl
                         ))}
                       </SelectContent>
                     </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="org-icon" className="text-sm font-medium text-gray-700">Profile Image</Label>
+                  <input
+                    ref={profileImageInputRef}
+                    id="org-icon"
+                    type="file"
+                    accept="image/png, image/jpeg, image/svg+xml"
+                    className="h-10 block w-full border border-gray-300 rounded-md px-3 py-2"
+                    style={{ display: "none" }}
+                    onChange={e => {
+                      setFileError((prev) => ({
+                        ...prev,
+                        userProfile: ""
+                      }));
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const validTypes = ["image/png", "image/jpeg", "image/svg+xml"];
+                        if (!validTypes.includes(file.type)) {
+                          setFileError((prev) => ({
+                            ...prev,
+                            userProfile: "Invalid file type. Please upload PNG, JPG, or SVG."
+                          }));
+                          e.target.value = "";
+                          setFileName((prev) => ({
+                            ...prev,
+                            userProfile: ""
+                          }))
+                        } else {
+                          setFileName((prev) => ({
+                            ...prev,
+                            userProfile: file.name
+                          }))
+                          handleInputChange("profileImage", file);
+                        }
+                      } else {
+                        setFileName((prev) => ({
+                          ...prev,
+                          userProfile: ""
+                        }))
+                      }
+                    }}
+                  />
+                  <button
+                    type="button"
+                    className="h-10 block w-full border border-gray-300 rounded-md px-3 py-2 text-left truncate"
+                    onClick={() => profileImageInputRef.current?.click()}
+                    title={`${fileName?.userProfile || "No file chosen"}`}
+                  >
+                    Choose file {fileName?.userProfile || "No file chosen"}
+                  </button>
+                  <p className="text-sm text-gray-600">Upload your organization logo/icon (PNG, JPG, SVG)</p>
+                  {fileError?.userProfile && (
+                    <p className="text-sm text-red-500">{fileError.userProfile}</p>
+                  )}
                 </div>
               </div>
             </div>
