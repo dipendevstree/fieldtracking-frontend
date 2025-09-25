@@ -525,7 +525,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold mb-1">
-              {isStatsLoading ? "..." : stats.totalUsers}
+              {isStatsLoading ? "..." : stats?.totalUsers}
             </div>
             <p className="text-xs text-muted-foreground">
               From today's schedule
@@ -541,7 +541,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold mb-1">
-              {isStatsLoading ? "..." : stats.onlineUsers}
+              {isStatsLoading ? "..." : stats?.onlineUsers}
             </div>
             <p className="text-xs text-muted-foreground">Currently online</p>
           </CardContent>
