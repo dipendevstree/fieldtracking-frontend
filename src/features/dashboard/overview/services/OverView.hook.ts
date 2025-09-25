@@ -179,3 +179,16 @@ export const useGetAuditLogs = (
     error: query.error,
   };
 };
+
+export const useGetStats = () => {
+  const query = useFetchData<any>({
+    url: API.users.stats,
+  });
+  return {
+    ...query,
+    data: query.data,
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};

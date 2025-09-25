@@ -1,12 +1,11 @@
-import { formatName } from "@/utils/commonFunction";
 import { format, isValid } from "date-fns";
 
 const EntityKeyMap: Record<string, string[]> = {
   customer: ["companyName"],
-  customerContact: ["customerName", "email", "phoneNumber"],
+  customerContact: ["customerName"],
   customerType: ["typeName"],
   expensesCategory: ["categoryName"],
-  user: ["email", "firstName", "lastName"],
+  user: ["email"],
   dailyAllowance: ["status", "tripType", "amount"],
   dailyAllowanceDetails: [
     "status",
@@ -44,9 +43,10 @@ const EntityKeyMap: Record<string, string[]> = {
     "country",
   ],
   userTerritory: ["name"],
-  role: ["roleName", "isActive"],
+  role: ["roleName"],
   organizationType: ["organizationTypeName", "organizationTypeKey", "isActive"],
   permission: [
+    "roleName",
     "roleId",
     "organizationId",
     "organizationMenuId",
@@ -56,6 +56,7 @@ const EntityKeyMap: Record<string, string[]> = {
     "edit",
     "delete",
   ],
+  organization: ["organizationName"],
   // add more entities here...
 };
 
@@ -108,30 +109,22 @@ export const formatAuditChanges = (
     return "Entry Created";
   }
 
-  // UPDATE
   if (action === "UPDATE") {
-    const changes: string[] = [];
-    if (oldValue && newValue) {
-      for (const key in newValue) {
-        if (
-          ["createdDate", "modifiedDate", "updatedBy", "deletedDate"].includes(
-            key
-          )
-        ) {
-          continue;
-        }
-        if (oldValue[key] !== newValue[key]) {
-          changes.push(
-            `${formatName(key)} changed from "${tryFormatValue(
-              oldValue[key]
-            )}" to "${tryFormatValue(newValue[key])}"`
-          );
-        }
-      }
+    // This gives us a complete object with the latest data.
+    const referenceObject = { ...oldValue, ...newValue };
+
+    if (Object.keys(referenceObject).length > 0) {
+      // Now, we can reliably get the identifying fields from our complete object.
+      const fields = keysToShow
+        .map((k) => tryFormatValue(referenceObject[k]))
+        .filter(Boolean)
+        .join(", ");
+
+      return fields ? `Updated ${entity}: ${fields}` : `Updated ${entity}`;
     }
-    return changes.length > 0
-      ? `Updated ${entity}: ${changes.join(", ")}`
-      : `No significant changes in ${entity}`;
+
+    // Fallback if both old and new values are empty
+    return `Updated ${entity}`;
   }
 
   // LOGIN

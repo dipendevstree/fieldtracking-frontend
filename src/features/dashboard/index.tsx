@@ -41,7 +41,7 @@ const DASHBOARD_TABS = [
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  
+
   // If user is super admin, show super admin dashboard
   if (user?.isSuperAdmin) {
     return <SuperAdminDashboard />;
@@ -86,9 +86,9 @@ export default function DashboardPage() {
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
-        className="mt-4 space-y-5"
+        className="mt-2 space-y-5"
       >
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-3 h-10 !mb-2">
           {DASHBOARD_TABS.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value}>
               {tab.label}
@@ -98,13 +98,18 @@ export default function DashboardPage() {
 
         {/* Render tab content with mock data */}
         <TabsContent value="/dashboard/overview" className="space-y-4">
-          <OverviewPage salesReps={[]} kpis={{
-            totalSalesReps: 0,
-           
-          }} />
+          <OverviewPage
+            salesReps={[]}
+            kpis={{
+              totalSalesReps: 0,
+            }}
+          />
         </TabsContent>
-          <TabsContent value="/dashboard/dash-live-tracking" className="space-y-4">
-            <LiveTrackingPage />
+        <TabsContent
+          value="/dashboard/dash-live-tracking"
+          className="space-y-4"
+        >
+          <LiveTrackingPage />
         </TabsContent>
         <TabsContent value="/dashboard/approvals" className="space-y-4">
           <ApprovalsPage />
