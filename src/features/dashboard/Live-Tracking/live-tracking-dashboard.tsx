@@ -250,7 +250,7 @@ export default function LiveTrackingDashboard() {
   };
 
   return (
-    <Main className={cn("flex flex-col p-4")}>
+    <Main className={cn("flex flex-col p-0")}>
       <GlobalFilterSection
         key="calendar-view-filters"
         filters={filters}

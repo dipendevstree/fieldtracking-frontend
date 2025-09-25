@@ -69,4 +69,5 @@ export interface AuditPagination {
   action?: string;
   startDate?: string;
   endDate?: string;
+  userId?:string
 }

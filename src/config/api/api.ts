@@ -95,6 +95,7 @@ const API = {
     create: "users/create",
     update: "users/patch",
     delete: "users/delete",
+    stats:"users/stats"
   },
   roles: {
     list: "role/list",

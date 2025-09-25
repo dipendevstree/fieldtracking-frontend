@@ -28,8 +28,8 @@ export default function BulkImport() {
   // Define the new CSV headers
   const csvHeaders = [
     { label: "Company Name*", key: "companyName" },
-    { label: "Industry Name*", key: "industryName" }, // Changed from ID
-    { label: "Customer Type Name*", key: "customerTypeName" }, // Changed from ID
+    { label: "Industry Name*", key: "industryName" },
+    { label: "Customer Type Name*", key: "customerTypeName" },
     { label: "Street Address*", key: "address" },
     { label: "City*", key: "city" },
     { label: "State*", key: "state" },
@@ -38,34 +38,43 @@ export default function BulkImport() {
     { label: "Latitude", key: "latitude" },
     { label: "Longitude", key: "longitude" },
     { label: "Additional Notes", key: "notes" },
-    { label: "Contact Name*", key: "contactName" },
-    { label: "Contact Email*", key: "contactEmail" },
-    { label: "Contact Phone*", key: "contactPhone" },
-    { label: "Contact Designation", key: "contactDesignation" },
-    { label: "Is Primary Contact* (TRUE/FALSE)", key: "isPrimary" },
-    { label: "Assigned Sales Rep Name", key: "assignedRepName" }, // Changed from ID
+    { label: "Primary Contact Name*", key: "primaryContactName" },
+    { label: "Primary Contact Email*", key: "primaryContactEmail" },
+    { label: "Primary Contact Phone*", key: "primaryContactPhone" },
+    { label: "Primary Contact Designation", key: "primaryContactDesignation" },
+    { label: "Primary Assigned Sales Rep Name", key: "primaryAssignedRepName" },
+    { label: "Secondary Contact Name", key: "secondaryContactName" },
+    { label: "Secondary Contact Email", key: "secondaryContactEmail" },
+    { label: "Secondary Contact Phone", key: "secondaryContactPhone" },
+    {
+      label: "Secondary Contact Designation",
+      key: "secondaryContactDesignation",
+    },
   ];
 
   // Update the sample data to match the new headers
   const csvSampleData = [
     {
-      companyName: "first comapny",
-      industryName: "technology",
-      customerTypeName: "primary",
+      companyName: "Innovate Corp",
+      industryName: "Technology",
+      customerTypeName: "Enterprise",
       address: "1600 Amphitheatre Parkway",
       city: "Mountain View",
       state: "CA",
       zipCode: "94043",
       country: "USA",
-      latitude: "23.113563325826405",
-      longitude: "72.53813946660878",
-      notes: "A key account.",
-      contactName: "john",
-      contactEmail: "john.doe@innovate.com",
-      contactPhone: "1234567890",
-      contactDesignation: "CEO",
-      isPrimary: "false",
-      assignedRepName: "karan",
+      latitude: "37.422",
+      longitude: "-122.084",
+      notes: "A key account for Q3.",
+      primaryContactName: "Jane Doe",
+      primaryContactEmail: "jane.doe@innovate.com",
+      primaryContactPhone: "1234567890",
+      primaryContactDesignation: "CEO",
+      primaryAssignedRepName: "John Smith",
+      secondaryContactName: "Peter Jones",
+      secondaryContactEmail: "peter.jones@innovate.com",
+      secondaryContactPhone: "0987654321",
+      secondaryContactDesignation: "CTO",
     },
   ];
 
