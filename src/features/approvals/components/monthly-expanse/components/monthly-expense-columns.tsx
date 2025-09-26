@@ -1,7 +1,7 @@
 import { ColumnDef } from '@tanstack/react-table'
 import { CustomDataTableColumnHeader } from '@/components/shared/custom-table-header-column'
 
-export const columns: ColumnDef<any>[] = [
+export const columns = (currency: string): ColumnDef<any>[] => [
   {
     accessorKey: 'salesRepName',
     header: ({ column }) => (
@@ -37,7 +37,7 @@ export const columns: ColumnDef<any>[] = [
       const amount = row.original.dailyExpenseTotal || 0
       // Convert to number and handle both string and number types
       const numericAmount = typeof amount === 'string' ? parseFloat(amount) || 0 : Number(amount) || 0
-      const formattedAmount = `$${numericAmount.toFixed(0)}`
+      const formattedAmount = `${currency}${numericAmount.toFixed(0)}`
       
       // Debug log to see the data
       console.log('Daily Expense Data:', {
@@ -63,7 +63,7 @@ export const columns: ColumnDef<any>[] = [
       const amount = row.original.travelExpenseTotal || 0
       // Convert to number and handle both string and number types
       const numericAmount = typeof amount === 'string' ? parseFloat(amount) || 0 : Number(amount) || 0
-      const formattedAmount = `$${numericAmount.toFixed(0)}`
+      const formattedAmount = `${currency}${numericAmount.toFixed(0)}`
       
       // Debug log to see the data
       console.log('Travel Expense Data:', {
@@ -86,7 +86,7 @@ export const columns: ColumnDef<any>[] = [
       const amount = row.original.grandTotal || 0
       // Convert to number and handle both string and number types
       const numericAmount = typeof amount === 'string' ? parseFloat(amount) || 0 : Number(amount) || 0
-      const formattedAmount = `$${numericAmount.toFixed(0)}`
+      const formattedAmount = `${currency}${numericAmount.toFixed(0)}`
       
       // Debug log to see the data
       console.log('Grand Total Data:', {

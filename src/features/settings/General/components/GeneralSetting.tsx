@@ -277,7 +277,7 @@ export default function GeneralApplicationSettings({
                   </SelectTrigger>
                   <SelectContent>
                     {currency.map((c: any, index: number) => (
-                      <SelectItem key={index} value={c.currency.code}>{`${c.currency.name} (${c.currency.symbol})`}</SelectItem>
+                      <SelectItem key={index} value={c.currency.symbol}>{`${c.currency.name} (${c.currency.symbol})`}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
