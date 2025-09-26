@@ -45,8 +45,8 @@ const UserTrackingTimeline = ({
   // Destructure isLoading state from custom hooks
   const { user, isLoading: isUserLoading } = userDetailsById(userId ?? "");
   const { data: visits } = useGetAllVisit({
-    startDate: new Date().toISOString().split("T")[0],
-    endDate: new Date().toISOString().split("T")[0],
+    startDate: selectedDate,
+    endDate: selectedDate,
     status: "completed",
     salesRepresentativeUserId: userId ?? "",
   });
@@ -139,7 +139,7 @@ const UserTrackingTimeline = ({
         });
       }
     }
-  }, [selectedDate, isFetched,trackingData.length]); // Dependencies are complete
+  }, [selectedDate, isFetched, trackingData.length]); // Dependencies are complete
 
   // MODIFIED: Socket effect now efficiently updates the distance.
   useEffect(() => {
