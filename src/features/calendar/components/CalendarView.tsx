@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "@tanstack/react-router";
-import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
+import {
+  DEFAULT_PAGE_NUMBER,
+  DEFAULT_PAGE_SIZE,
+  Priority,
+} from "@/data/app.data";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import debounce from "lodash.debounce";
 import { CalendarIcon, Clock, Edit, Eye, Trash2 } from "lucide-react";
@@ -33,9 +37,11 @@ import { useGetAllRolesForDropdown } from "@/features/UserManagement/services/Ro
 import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
 import {
   useDeleteVisits,
+  useGetAllCustomer,
   useGetAllVisit,
   useGetAnalytics,
 } from "../services/calendar-view.hook";
+import { formatDropDownLabel } from "@/utils/commonFunction";
 
 interface Visit {
   id: string;
@@ -142,6 +148,8 @@ export default function CalendarView() {
     searchFor: "",
     roleId: "",
     salesRepresentativeUserId: "",
+    customerId: "",
+    status: "pending",
   });
 
   // State to manage which visit is targeted for deletion
@@ -159,14 +167,18 @@ export default function CalendarView() {
 
   const roleId = watch("roleId");
   const selectedRep = watch("salesRep");
+  const customerId = watch("customerId");
+  const priority = watch("priority");
 
   useEffect(() => {
     setPagination((prev) => ({
       ...prev,
       roleId,
       salesRepresentativeUserId: selectedRep,
+      customerId,
+      priority,
     }));
-  }, [roleId, selectedRep]);
+  }, [roleId, selectedRep, customerId, priority]);
 
   const { data: analytics } = useGetAnalytics(analyticsPagination) as {
     data: Analytics | undefined;
@@ -263,6 +275,21 @@ export default function CalendarView() {
     valueKey: "id",
   }).map((option) => ({ ...option, value: String(option.value) }));
 
+  const { data: customers } = useGetAllCustomer();
+  const customerOptions = useSelectOptions({
+    listData: customers ?? [],
+    labelKey: "companyName",
+    valueKey: "customerId",
+  }).map((option) => ({
+    ...option,
+    value: String(option.value),
+  }));
+
+  const priorityOptions = Object.entries(Priority).map(([key, value]) => ({
+    label: formatDropDownLabel(key),
+    value,
+  }));
+
   const filters: FilterConfig[] = [
     {
       key: "date",
@@ -293,6 +320,22 @@ export default function CalendarView() {
       placeholder: "Select salesRep",
       value: selectedRep,
       options: users,
+    },
+    {
+      key: "customerId",
+      type: "select",
+      onChange: (value) => setValue("customerId", value ?? ""),
+      placeholder: "Select customer",
+      value: customerId,
+      options: customerOptions,
+    },
+    {
+      key: "priority",
+      type: "select",
+      onChange: (value) => setValue("priority", value ?? ""),
+      placeholder: "Select priority",
+      value: priority,
+      options: priorityOptions,
     },
   ];
 
