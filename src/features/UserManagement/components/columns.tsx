@@ -69,6 +69,21 @@ export const columns: ColumnDef<any>[] = [
     enableSorting: false,
   },
   {
+    accessorKey: "tierkey",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Tier" />
+    ),
+    cell: ({ row }) => {
+      const tier = row.original.tierkey || "-";
+      return (
+        <div className="text-sm">
+          {tier ? tier.replace(/^tier_/, "Tier ") : "-"}
+        </div>
+      );
+    },
+    enableSorting: false,
+  },
+  {
     accessorKey: 'territory',
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title='Territory' />

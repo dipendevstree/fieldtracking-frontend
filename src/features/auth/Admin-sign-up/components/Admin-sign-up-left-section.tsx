@@ -26,7 +26,7 @@ const SignUpLeftSection = () => {
                 alt='Vite'
             /> */}
       <h1 className="relative z-20 mt-auto text-center text-4xl font-bold">
-        FieldFieldTrack360
+        FieldTrack360
       </h1>
 
       <div className="relative z-20 mt-auto">
