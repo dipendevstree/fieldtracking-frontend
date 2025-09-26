@@ -1,4 +1,5 @@
 import API from "@/config/api/api"
+import useFetchData from "@/hooks/use-fetch-data"
 import useFetchInfiniteData, { PaginatedResponse } from "@/hooks/use-fetch-Infinite-data"
 import { InfiniteData, UseInfiniteQueryResult } from "@tanstack/react-query"
 import { useCallback, useRef } from "react"
@@ -43,4 +44,24 @@ export const useGetNotifications = (params: IListParams): UseInfiniteQueryResult
     allData: infiniteData?.pages?.flatMap((page: any) => page.list) ?? [],
     totalCount: infiniteData?.pages[0]?.totalCount ?? 0
   }
+}
+
+export const useGetAllNotifications = (
+  params?: any,
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<any>({
+    url: API.notifications.list,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    data: query.data,
+    list: query.data?.list ?? [],
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
 }

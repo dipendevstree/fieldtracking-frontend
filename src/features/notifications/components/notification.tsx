@@ -1,24 +1,27 @@
 import moment from "moment-timezone"
+import React from "react"
 
 export default function Notification({
-    notification
+    notification,
+    ref = null
 }: {
-    notification: any
+    notification: any,
+    ref?: React.Ref<HTMLDivElement>
 }) {
     return (
-        <div className='flex items-center gap-3'>
-            <div className='truncate w-12'>
+        <div className={`flex items-center gap-3`} ref={ref}>
+            <div className={`truncate`}>
                 {notification?.createdByData && (
-                <img
-                    src={
-                    notification.createdByData.profileUrl ||
-                    `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        (notification.createdByData.firstName + " " + notification.createdByData.lastName)
-                    )}`
-                    }
-                    alt={notification.createdByData.fullName}
-                    className="h-12 w-12 rounded-full object-cover"
-                />
+                    <img
+                        src={
+                            notification.createdByData.profileUrl ||
+                            `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                (notification.createdByData.firstName + " " + notification.createdByData.lastName)
+                            )}`
+                        }
+                        alt={notification.createdByData.fullName}
+                        className="h-12 w-12 rounded-full object-cover"
+                    />
                 )}
             </div>
             <div className="w-77 truncate">
