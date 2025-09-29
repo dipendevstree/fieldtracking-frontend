@@ -2,66 +2,83 @@ import { Main } from "@/components/layout/main";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import { cn } from "@/lib/utils";
 import { useGetAllNotifications } from "./services/notifications.hook";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import { FilterConfig } from "@/components/global-filter-section";
 import { CustomDataTable } from "@/components/shared/custom-data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { formatName, getFullName } from "@/utils/commonFunction";
 import moment from "moment-timezone";
+import { DateRange } from "react-day-picker";
+import { format } from "date-fns";
+import { useGetUsers } from "../livetracking/services/live-tracking-services";
 
 export default function Notifications() {
-    const [filterData, setFilterData] = useState<Record<string, string>>({})
+    const initialDateRange: DateRange = {
+        from: undefined,
+        to: undefined,
+    };
+    const [dateRange, setDateRange] = useState<DateRange | undefined>(
+        initialDateRange
+    );
     const [pagination, setPagination] = useState({
         page: DEFAULT_PAGE_NUMBER,
         limit: DEFAULT_PAGE_SIZE,
-        isMobile: true
+        sort: "desc",
+        isMobile: true,
+        search: undefined,
+        fromUser: undefined
     });
     const notifications = useGetAllNotifications(pagination);
     const notificationData = notifications?.list ?? [];
-    console.log("notificationData", notificationData)
-    const durationOptions = [
-        {
-            label: "This Month",
-            value: "this_month"
-        },
-        {
-            label: "Last Month",
-            value: "last_month"
-        }
-    ];
-    const handleDateChange = (name: string, value: string | undefined) => {
-        setFilterData((prev) => ({
+    const { listData } = useGetUsers({
+        page: 1,
+        limit: 1000, // Get all users to count them
+        includeLatLong: true,
+    });
+    
+    const usersList = useMemo(() => listData.map((user: any) => ({ value: user.id, label: `${user.firstName} ${user.lastName}` })), [listData]);
+    const handleDataChange = (name: string, value: string | undefined) => {
+        setPagination((prev) => ({
             ...prev,
             [name]: value || ""
         }));
     }
 
+    const handleDateRangeChange = (newRange: DateRange | undefined) => {
+        setDateRange(newRange);
+        setPagination((prev) => ({
+            ...prev,
+            page: 1,
+            startDate: newRange?.from ? format(newRange.from, "yyyy-MM-dd") : "",
+            endDate: newRange?.to ? format(newRange.to, "yyyy-MM-dd") : "",
+        }));
+    };
+
     const filters: FilterConfig[] = [
         {
             key: "search",
             type: "search",
-            onChange: value => handleDateChange("search", value),
+            onChange: value => handleDataChange("search", value),
             placeholder: "Search By Title, Message",
-            value: filterData.search
+            value: pagination.search
         },
         {
             key: "user",
             type: "select",
-            onChange: value => handleDateChange("fromUser", value),
+            onChange: value => handleDataChange("fromUser", value),
             placeholder: "Select From User",
-            options: durationOptions,
-            value: filterData.fromUser,
+            options: usersList,
+            value: pagination.fromUser,
             onCancelPress: () => { }
         },
         {
-            key: "duration",
-            type: "select",
-            onChange: value => handleDateChange("duration", value),
-            placeholder: "Select Duration",
-            options: durationOptions,
-            value: filterData.duration,
-            onCancelPress: () => { }
+            key: "date-range",
+            type: "date-range",
+            placeholder: "Filter by date",
+            dateRangeValue: dateRange,
+            onDateRangeChange: handleDateRangeChange,
+            dataRangeClassName: "w-full max-w-xs",
         },
     ];
     const toTitleCase = (str: string) => str.replace(/_/g, " ").toLowerCase().split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
