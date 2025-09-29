@@ -304,7 +304,7 @@ export default function LiveTrackingDashboard() {
                         <CardContent className="flex items-center gap-2 p-0">
                           <img
                             src={
-                              user.avatar ||
+                              user.profileUrl ||
                               `https://ui-avatars.com/api/?name=${encodeURIComponent(
                                 user.fullName
                               )}`

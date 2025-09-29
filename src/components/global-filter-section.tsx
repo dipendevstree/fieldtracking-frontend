@@ -115,6 +115,7 @@ export function DataTableToolbarCompact({
           if (filter.type === "date-range") {
             return (
               <div
+                key={filter.key}
                 className={`${filter.dataRangeClassName ?? "w-full max-w-md"}`}
               >
                 <DateRangeFilter

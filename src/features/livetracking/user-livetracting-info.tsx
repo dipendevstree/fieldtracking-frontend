@@ -342,11 +342,24 @@ const UserTrackingTimeline = ({
         {/* User Info */}
         <div className="border-b border-gray-100 p-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-600 font-bold text-white">
-              {/* Gracefully handle user initials */}
-              {user?.firstName?.[0]}
-              {user?.lastName?.[0]}
-            </div>
+            {user.profileUrl ? (
+              <img
+                src={
+                  user.profileUrl ||
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    user.fullName
+                  )}`
+                }
+                alt={user.fullName}
+                className="h-12 w-12 rounded-full object-cover"
+              />
+            ): (
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-600 font-bold text-white">
+                {/* Gracefully handle user initials */}
+                {user?.firstName?.[0]}
+                {user?.lastName?.[0]}
+              </div>
+            )}
             <div className="flex-1">
               <div className="font-semibold text-gray-900">
                 {/* Handle case where user is not yet loaded */}

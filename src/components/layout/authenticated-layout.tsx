@@ -10,6 +10,7 @@ import { ProfileDropdown } from "../profile-dropdown";
 import { Search } from "../search";
 import { Header } from "./header";
 import { ThemeSelector } from "../theme-selector";
+import { NotificationList } from "../../features/notifications/components/notification-list";
 
 export function AuthenticatedLayout({
   children,
@@ -49,6 +50,7 @@ export function AuthenticatedLayout({
           <Header fixed className="shadow">
             <div className="ml-auto flex items-center space-x-2">
               <Search />
+              <NotificationList />
               <ThemeSelector />
               <ProfileDropdown user={user} avatarSize="md" />
             </div>

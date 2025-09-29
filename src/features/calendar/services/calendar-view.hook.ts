@@ -173,6 +173,7 @@ export const useGetVisitEmployeeAnalytics = (
 ) => {
   return useFetchData({
     url: `${API.calendar.visitEmployeeAnalytics}`,
+    params: options,
     enabled: options?.enabled ?? true,
   })
 }
