@@ -50,7 +50,7 @@ export default function LimitsControls({
     <div className="space-y-6">
       
       {/* Header, Search, and Add Button Card */}
-      <div className="bg-white rounded-lg border p-6 shadow-sm">
+      <div className="bg-white rounded-lg border p-6 shadow-sm mb-2">
         <div className="flex items-center justify-between">
           <div className="flex flex-col">
             <h1 className="text-2xl font-bold">Expense Limits & Controls</h1>

@@ -5,7 +5,10 @@ import { cn } from "@/lib/utils";
 import { Main } from "@/components/layout/main";
 import LimitsControls from "./components/LimitsControls";
 import { LimitsControlsActionModal } from "./components/action-form-modal";
-import { useGetLimitsControlsData, IListParams } from "./services/LImits&Controlshook";
+import {
+  useGetLimitsControlsData,
+  IListParams,
+} from "./services/LImits&Controlshook";
 import debounce from "lodash.debounce";
 import { FilterConfig } from "@/components/global-filter-section";
 
@@ -28,10 +31,10 @@ const LimitsControlsPage = () => {
   } = useGetLimitsControlsData(pagination);
 
   // Debug: Log the data to understand the mismatch
-  console.log('Pagination params:', pagination);
-  console.log('Expense limits data:', expenseLimits);
-  console.log('Total count:', totalCount);
-  console.log('Actual records received:', expenseLimits.length);
+  console.log("Pagination params:", pagination);
+  console.log("Expense limits data:", expenseLimits);
+  console.log("Total count:", totalCount);
+  console.log("Actual records received:", expenseLimits.length);
 
   const debouncedSearch = useCallback(
     debounce((value: string) => {
@@ -45,10 +48,10 @@ const LimitsControlsPage = () => {
   );
 
   const handleGlobalSearchChange = (value: string | undefined) => {
-    const searchValue = value ?? ''
-    setValue('search', searchValue)
-    debouncedSearch(searchValue)
-  }
+    const searchValue = value ?? "";
+    setValue("search", searchValue);
+    debouncedSearch(searchValue);
+  };
 
   // Handle pagination change
   const handlePaginationChange = useCallback(
@@ -68,29 +71,27 @@ const LimitsControlsPage = () => {
 
   const filters: FilterConfig[] = [
     {
-      key: 'search',
-      type: 'search',
+      key: "search",
+      type: "search",
       onChange: handleGlobalSearchChange,
-      placeholder: 'Search by tier, category...',
-      value: watch('search'),
+      placeholder: "Search by tier, category...",
+      value: watch("search"),
     },
   ];
 
   return (
-    <Main className={cn("flex flex-col gap-2 p-4")}>
+    <Main className={cn("flex flex-col p-0")}>
       {/* Limits Controls Configuration Section */}
-      <div className="mt-6">
-        <LimitsControls
-          expenseLimits={expenseLimits}
-          totalCount={totalCount}
-          loading={isLoading}
-          paginationCallbacks={{
-            onPaginationChange: handlePaginationChange,
-          }}
-          currentPage={pagination.page}
-          filters={filters}
-        />
-      </div>
+      <LimitsControls
+        expenseLimits={expenseLimits}
+        totalCount={totalCount}
+        loading={isLoading}
+        paginationCallbacks={{
+          onPaginationChange: handlePaginationChange,
+        }}
+        currentPage={pagination.page}
+        filters={filters}
+      />
 
       <LimitsControlsActionModal key={"limits-controls-action-modal"} />
     </Main>

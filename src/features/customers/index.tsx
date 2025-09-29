@@ -166,7 +166,7 @@ const Customers = () => {
         onValueChange={setSelectedTab}
         className="mt-4 space-y-4"
       >
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-3 h-10">
           <TabsTrigger value="customers">Customers</TabsTrigger>
           <TabsTrigger value="pending-admins">Pending Admins</TabsTrigger>
           <TabsTrigger value="system-logs">All Users</TabsTrigger>

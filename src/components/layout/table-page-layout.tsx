@@ -39,7 +39,7 @@ const TablePageLayout = ({
   modulePermission,
 }: TablePageLayoutProps) => {
   return (
-    <Main className={cn('flex flex-col gap-2 p-4', className)}>
+    <Main className={cn('flex flex-col p-4', className)}>
       {showHeader && (
         <div
           className={cn(
