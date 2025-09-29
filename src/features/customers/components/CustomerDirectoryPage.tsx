@@ -17,6 +17,14 @@ import { useSelectOptions } from "@/hooks/use-select-option";
 import { FilterConfig } from "@/components/global-filter-section";
 import debounce from "lodash.debounce";
 import GlobalFilterSection from "@/components/global-table-filter-section";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useExportFile } from "@/hooks/useExportFile";
+import API from "@/config/api/api";
 
 // Define error response type
 interface ErrorResponse {
@@ -47,6 +55,16 @@ export const CustomerDirectoryPage = () => {
     [pagination, filters]
   );
 
+  const exportQueryParams = useMemo(
+    () => ({
+      searchFor: filters.search || "",
+      industryId: filters.industryId || "",
+      customerTypeId: filters.customerTypeId || "",
+      sort: "desc",
+    }),
+    [filters]
+  );
+
   // Get customer data
   const {
     Customer: customers = [],
@@ -57,6 +75,7 @@ export const CustomerDirectoryPage = () => {
 
   const { data: industryList = [] } = useGetIndustry();
   const { data: customerList = [] } = useGetCustomerFilter();
+  const { exportFile, isLoading: isExportLoading } = useExportFile();
 
   const industryOptions = useSelectOptions({
     listData: industryList ?? [],
@@ -164,10 +183,42 @@ export const CustomerDirectoryPage = () => {
           Customer Directory
         </h2>
         <div className="flex items-center space-x-2">
-          <Button variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Export Report
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Export Report
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onClick={() =>
+                  exportFile({
+                    url: API.customerMain.exportCsv,
+                    type: "csv",
+                    queryParams: exportQueryParams,
+                    filename: "customers",
+                  })
+                }
+                disabled={isExportLoading}
+              >
+                Export Csv
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() =>
+                  exportFile({
+                    url: API.customerMain.exportExcel,
+                    type: "xlsx",
+                    queryParams: exportQueryParams,
+                    filename: "customers",
+                  })
+                }
+                disabled={isLoading}
+              >
+                Export Excel
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button onClick={handleAddCustomerClick}>
             <Plus className="h-4 w-4 mr-2" />
             Add Customer

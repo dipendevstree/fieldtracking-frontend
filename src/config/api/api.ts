@@ -51,6 +51,8 @@ const API = {
     pendingList: "customer/status-pending-list",
     updateStatus: "customer/update-status",
     importCsv: "customer/import/csv",
+    exportCsv: "customer/export/csv",
+    exportExcel: "customer/export/xlsx",
   },
   merchants: {
     list: "merchant/list",
@@ -95,7 +97,7 @@ const API = {
     create: "users/create",
     update: "users/patch",
     delete: "users/delete",
-    stats:"users/stats"
+    stats: "users/stats",
   },
   roles: {
     list: "role/list",
@@ -130,7 +132,7 @@ const API = {
     getVisitByID: "visit",
     delete: "visit/delete",
     visitFeedBack: "visit/visitFeedBack",
-    visitEmployeeAnalytics: "visit/visitEmployeeAnalytics"
+    visitEmployeeAnalytics: "visit/visitEmployeeAnalytics",
   },
   dailyExpenses: {
     list: "expenses/list",
