@@ -225,7 +225,7 @@ export default function Approvers() {
         <form onSubmit={handleSubmit(onSubmit)}>
           <Card className="p-4 mb-6">
             <div className="flex justify-between items-center">
-              <div>
+              <div className="mb-1">
                 <h2 className="text-2xl font-bold">
                   Expense Approvers Configuration
                 </h2>
