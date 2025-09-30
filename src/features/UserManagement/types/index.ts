@@ -148,7 +148,7 @@ export interface SearchFilterConfig extends FilterConfig {
 }
 
 export interface SelectFilterConfig extends FilterConfig {
-  type: "select";
+  type: any;
   placeholder: string;
   value: string | undefined;
   onChange: (value: string | undefined) => void;
