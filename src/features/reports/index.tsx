@@ -27,18 +27,12 @@ export default function Reports() {
 
   return (
     <Main className={cn("flex flex-col gap-2 p-4")}>
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">
-          Reports & Analytics
-        </h2>
-      </div>
-
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
-        className="mt-4 space-y-5"
+        className="space-y-5"
       >
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-5 mb-2 h-10">
           <TabsTrigger value="/reports">Expense Reports</TabsTrigger>
           <TabsTrigger value="/reports/performance">Performance</TabsTrigger>
           <TabsTrigger value="/reports/field-activity">

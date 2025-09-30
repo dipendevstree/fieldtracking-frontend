@@ -8,6 +8,7 @@ import {
   useGetNotificationData,
   useUpdateNotifications,
 } from "../services/notifications.hook";
+import { Card } from "@/components/ui/card";
 
 const activityNotifications = [
   "Notify me when the Sales Rep reaches to the visit location",
@@ -88,25 +89,26 @@ export default function Notifications() {
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}
-      className="bg-white rounded-lg p-6 space-y-6"
+      className="bg-white rounded-lg space-y-6"
     >
-      <h2 className="text-xl font-semibold">Activity Monitoring</h2>
-
-      <div className="divide-y divide-gray-200">
-        {activityNotifications.map((label, idx) => (
-          <div key={idx} className="flex items-center justify-between py-4">
-            <span className="text-base font-normal">{label}</span>
-            <Switch
-              checked={form.watch(`notifications.${idx}`)}
-              onCheckedChange={(val) =>
-                form.setValue(`notifications.${idx}`, val, {
-                  shouldDirty: true,
-                })
-              }
-            />
-          </div>
-        ))}
-      </div>
+      <Card className="text-xl font-semibold p-4">Activity Monitoring</Card>
+      <Card className="p-4">
+        <div className="divide-y divide-gray-200">
+          {activityNotifications.map((label, idx) => (
+            <div key={idx} className="flex items-center justify-between py-4">
+              <span className="text-base font-normal">{label}</span>
+              <Switch
+                checked={form.watch(`notifications.${idx}`)}
+                onCheckedChange={(val) =>
+                  form.setValue(`notifications.${idx}`, val, {
+                    shouldDirty: true,
+                  })
+                }
+              />
+            </div>
+          ))}
+        </div>
+      </Card>
 
       <div className="flex justify-end">
         <Button type="submit" disabled={isPending}>

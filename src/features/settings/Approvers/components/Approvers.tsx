@@ -223,30 +223,41 @@ export default function Approvers() {
     <>
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="flex justify-end mb-6">
-            <Button
-              variant="default"
-              className="bg-primary text-white"
-              type="button"
-              disabled={isAddLevelButtonDisabled}
-              onClick={() =>
-                addLevel({
-                  user: "", // User is now empty by default
-                  expenseCategories: [
-                    {
-                      expensesCategoryId:
-                        expenseCategoryOptions?.[0]?.value ?? "",
-                      tier: TIER.TIER_1,
-                      minAmount: "0",
-                      maxAmount: "0",
-                    },
-                  ],
-                })
-              }
-            >
-              + Add New Level
-            </Button>
-          </div>
+          <Card className="p-4 mb-6">
+            <div className="flex justify-between items-center">
+              <div className="mb-1">
+                <h2 className="text-2xl font-bold">
+                  Expense Approvers Configuration
+                </h2>
+                <p className="text-muted-foreground ">
+                  Configure approval hierarchy and default approvers for
+                  different scenarios
+                </p>
+              </div>
+              <Button
+                variant="default"
+                className="bg-primary text-white"
+                type="button"
+                disabled={isAddLevelButtonDisabled}
+                onClick={() =>
+                  addLevel({
+                    user: "", // User is now empty by default
+                    expenseCategories: [
+                      {
+                        expensesCategoryId:
+                          expenseCategoryOptions?.[0]?.value ?? "",
+                        tier: TIER.TIER_1,
+                        minAmount: "0",
+                        maxAmount: "0",
+                      },
+                    ],
+                  })
+                }
+              >
+                + Add New Level
+              </Button>
+            </div>
+          </Card>
 
           {errors.levels && !errors.levels.root && (
             <FieldError error={errors.levels} />
