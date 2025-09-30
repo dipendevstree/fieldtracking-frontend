@@ -51,9 +51,7 @@ export const useExportFile = (options?: UseExportFileOptions) => {
           ])
         ).toString();
 
-        // const baseUrl = options?.baseUrl || "http://localhost:4001/api/v1/";
-        const baseUrl =
-          options?.baseUrl || "https://fieldtrack360-api.devstree.in/api/v1/";
+        const baseUrl = options?.baseUrl || import.meta.env.VITE_API_URL;
         const response = await fetch(`${baseUrl}${url}?${query}`, {
           method: "GET",
           headers: {
