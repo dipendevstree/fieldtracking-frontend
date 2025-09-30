@@ -8,8 +8,7 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import { StorageEnum } from "@/types";
 import { setItem } from "@/utils/storage";
 
-export const LIVE_BASE_URL =
-  "https://userfieldtrack360-api.devstree.in/api/v1/";
+export const LIVE_BASE_URL = import.meta.env.VITE_LIVE_TRACKING_API_URL;
 
 const liveTrackingInstance = axios.create({
   baseURL: LIVE_BASE_URL,
