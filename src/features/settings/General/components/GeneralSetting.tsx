@@ -22,13 +22,16 @@ import PhoneInput from "react-phone-number-input"
 import "react-phone-number-input/style.css";
 import { useSelectOptions } from "@/hooks/use-select-option"
 import parsePhoneNumberFromString from "libphonenumber-js"
+import FixedDayExpenses from "./FixedDayExpenses";
 
 interface GeneralApplicationSettingsProps {
   onDataChange?: (data: any) => void;
+  setSubmitFixedExpenseForm: Function;
 }
 
 export default function GeneralApplicationSettings({
   onDataChange,
+  setSubmitFixedExpenseForm
 }: GeneralApplicationSettingsProps) {
   const { user } = useAuth();
   const [autoExpenseApproval, setAutoExpenseApproval] = useState(false);
@@ -829,8 +832,8 @@ export default function GeneralApplicationSettings({
                 </Label>
                 <p className="text-sm text-gray-600">
                   {fixedDayExpense
-                    ? "Automatically approve expenses (Enter At Least One Fixed Expense)"
-                    : "Daily Fixed Expense"}
+                    ? "Fixed Daily Expense (Enter At Least One Fixed Expense)"
+                    : "No Fixed Daily Expense"}
                 </p>
               </div>
               <Switch
@@ -841,14 +844,7 @@ export default function GeneralApplicationSettings({
             </div>
 
             {fixedDayExpense && (
-              <div className="space-y-2 mt-4">
-                <Label
-                  htmlFor="rate-per-km"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Working On Progress
-                </Label>
-              </div>
+              <FixedDayExpenses setSubmitFixedExpenseForm={setSubmitFixedExpenseForm} />
             )}
           </div>
           <ConfirmDialog

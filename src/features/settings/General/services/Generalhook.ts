@@ -3,6 +3,7 @@ import useFetchData from '@/hooks/use-fetch-data'
 import usePatchData from '@/hooks/use-patch-data'
 import usePostData from '@/hooks/use-post-data'
 import { GeneralSettings, CompanyInfo, SystemPreferences } from '../type/type'
+import useDeleteData from '@/hooks/use-delete-data'
 
 const GENERAL_SETTINGS_QUERY = API.generalSettings.list
 
@@ -133,7 +134,7 @@ export const useGetGeneralSettings = (options?: { enabled?: boolean }) => {
 export const useGetCompanyInfo = (options?: { enabled?: boolean }) => {
   const query = useFetchData<any>({
     url: API.generalSettings.companyInfo,
-    enabled: options?.enabled ?? true, 
+    enabled: options?.enabled ?? true,
   })
 
   return {
@@ -194,3 +195,53 @@ export const useGetGeneralSettingsData = (
     error: query.error,
   }
 }
+
+export const useGetAllFixedDayExpense = (params: any = {}) => {
+  const query = useFetchData<any>({
+    url: API.fixedDayExpense.list,
+    params,
+  });
+
+  return {
+    ...query,
+    data: query.data,
+    list: query.data?.list ?? [],
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+export const useCreateFixedDayExpense = (onSuccess?: () => void) => {
+  return usePostData({
+    url: API.fixedDayExpense.create,
+    refetchQueries: [API.fixedDayExpense.list],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};
+export const useUpdateFixedDayExpense = (onSuccess?: () => void) => {
+  return usePatchData({
+    url: API.fixedDayExpense.update,
+    refetchQueries: [API.fixedDayExpense.list],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};
+export const useDeleteFixedDayExpense = (onSuccess?: () => void) => {
+  return useDeleteData({
+    url: API.fixedDayExpense.delete,
+    refetchQueries: [API.fixedDayExpense.list],
+
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};
