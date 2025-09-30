@@ -1,8 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
-import { ColumnDef } from "@tanstack/react-table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Users, MapPin, Search } from "lucide-react";
 import { SalesRep, DashboardKPI, AuditPagination } from "../type/type";
 import {
@@ -22,20 +20,20 @@ import {
 import debounce from "lodash.debounce";
 import { CustomDataTable } from "@/components/shared/custom-data-table";
 import { useGetAuditLogs, useGetStats } from "../services/OverView.hook";
-import { endOfDay, format, startOfDay } from "date-fns";
-import StatusBadge from "@/components/shared/common-status-badge";
+import { endOfDay, startOfDay } from "date-fns";
 import {
   formatDropDownLabel,
   formatName,
   getFullName,
 } from "@/utils/commonFunction";
-import LongText from "@/components/long-text";
-import { formatAuditChanges } from "../data/helperFunction";
 import { DateRangeFilter } from "@/features/reports/components/DateRangeFilter";
 import { DateRange } from "react-day-picker";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "@tanstack/react-router";
 import { PRIORITY } from "@/data/app.data";
+import { scheduleColumns } from "./columns/scheduleColumns";
+import { customerColumns } from "./columns/customerColumns";
+import { auditLogColumns } from "./columns/auditLogColumns";
 
 interface OverviewProps {
   salesReps: SalesRep[];
@@ -44,12 +42,9 @@ interface OverviewProps {
 }
 
 export default function Overview({ salesReps: _salesReps }: OverviewProps) {
-  // Pagination state for Today's Schedule with proper API params
   const navigate = useNavigate();
   const limit = 5;
   const [schedulePagination, setSchedulePagination] = useState({
-    // page: 1,
-    // limit: 5,
     startDate: new Date().toISOString().split("T")[0],
     endDate: new Date().toISOString().split("T")[0],
     searchFor: "",
@@ -60,10 +55,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
     priority: "",
   });
 
-  // Pagination state for Customer List
   const [customerPagination, setCustomerPagination] = useState({
-    // page: 1,
-    // limit: 5,
     searchFor: "",
     sort: "desc",
     industryId: "",
@@ -124,45 +116,6 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
   } = useGetAuditLogs(auditPagination);
 
   const auditLogsList = auditLogsResponse.list || [];
-
-  // Calculate dashboard metrics
-  // const dashboardMetrics = useMemo(() => {
-  //   // Calculate Total Sales Reps from schedule data
-  //   const uniqueSalesReps = new Set();
-  //   scheduleData.forEach((visit: any) => {
-  //     if (visit.salesRepresentativeUser?.id) {
-  //       uniqueSalesReps.add(visit.salesRepresentativeUser.id);
-  //     } else if (visit.salesRepresentativeUserId) {
-  //       uniqueSalesReps.add(visit.salesRepresentativeUserId);
-  //     }
-  //   });
-
-  //   // Calculate Active in Field from live tracking data
-  //   const activeUsers = liveTrackingUsers.filter(
-  //     (user: any) => user.isOnline
-  //   ).length;
-
-  //   // Debug logging
-  //   console.log("Dashboard Metrics Calculation:", {
-  //     scheduleDataCount: scheduleData.length,
-  //     uniqueSalesRepsCount: uniqueSalesReps.size,
-  //     liveTrackingUsersCount: liveTrackingUsers.length,
-  //     activeUsersCount: activeUsers,
-  //     uniqueSalesRepsArray: Array.from(uniqueSalesReps),
-  //   });
-
-  //   return {
-  //     totalSalesReps: uniqueSalesReps.size,
-  //     activeInField: activeUsers,
-  //   };
-  // }, [scheduleData, liveTrackingUsers]);
-
-  // Utility function to truncate location text
-  const truncateLocation = (location: string, maxLength: number = 50) => {
-    if (!location) return "N/A";
-    if (location.length <= maxLength) return location;
-    return location.substring(0, maxLength) + "...";
-  };
 
   // Debounced search for schedule
   const debouncedScheduleSearch = useCallback(
@@ -339,175 +292,6 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
     }
   }, [selectedDateRange]);
 
-  // Define column types for schedule data
-  const scheduleColumns: ColumnDef<unknown>[] = [
-    {
-      accessorKey: "salesRepName",
-      header: "Sales Rep",
-      cell: ({ row }) => (
-        <div className="font-medium">{(row.original as any).salesRepName}</div>
-      ),
-    },
-    {
-      accessorKey: "customerName",
-      header: "Customer",
-      cell: ({ row }) => <div>{(row.original as any).customerName}</div>,
-    },
-    {
-      accessorKey: "formattedDateTime",
-      header: "Date & Time",
-      cell: ({ row }) => <div>{(row.original as any).formattedDateTime}</div>,
-    },
-    {
-      accessorKey: "purpose",
-      header: "Purpose",
-      cell: ({ row }) => <div>{(row.original as any).purpose || "N/A"}</div>,
-    },
-    {
-      accessorKey: "location",
-      header: "Location",
-      cell: ({ row }) => (
-        <div title={(row.original as any).location}>
-          {truncateLocation((row.original as any).location)}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "displayStatus",
-      header: "Status",
-      cell: ({ row }) => (
-        <Badge
-          variant={
-            (row.original as any).displayStatus.toLowerCase() === "completed"
-              ? "default"
-              : "secondary"
-          }
-        >
-          {(row.original as any).displayStatus}
-        </Badge>
-      ),
-    },
-    {
-      accessorKey: "displayPriority",
-      header: "Priority",
-      cell: ({ row }) => (
-        <Badge variant="outline">{(row.original as any).displayPriority}</Badge>
-      ),
-    },
-  ];
-
-  // Define column types for customer data
-  const customerColumns: ColumnDef<unknown>[] = [
-    {
-      accessorKey: "companyName",
-      header: "Company Name",
-      cell: ({ row }) => (
-        <div className="font-medium">
-          {(row.original as any).companyName ||
-            (row.original as any).CustomerName ||
-            "N/A"}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "customerType.typeName",
-      header: "Customer Type",
-      cell: ({ row }) => (
-        <div>{(row.original as any).customerType?.typeName || "N/A"}</div>
-      ),
-    },
-    {
-      accessorKey: "streetAddress",
-      header: "Location",
-      cell: ({ row }) => (
-        <div
-          title={
-            (row.original as any).streetAddress ||
-            (row.original as any).adminName ||
-            "N/A"
-          }
-        >
-          {truncateLocation(
-            (row.original as any).streetAddress ||
-              (row.original as any).adminName ||
-              "N/A"
-          )}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "industry.industryName",
-      header: "Industry",
-      cell: ({ row }) => (
-        <div>{(row.original as any).industry?.industryName || "N/A"}</div>
-      ),
-    },
-  ];
-
-  // Define column types for Audit log Activities data
-  const auditLogColumns: ColumnDef<any>[] = [
-    {
-      accessorKey: "user",
-      header: "User",
-      cell: ({ row }) => (
-        <div className="font-medium">
-          {row.original?.user?.firstName
-            ? formatName(
-                getFullName(
-                  row.original?.user?.firstName,
-                  row.original?.user?.lastName
-                )
-              )
-            : "System"}
-        </div>
-      ),
-    },
-    {
-      accessorKey: "action",
-      header: "Action",
-      cell: ({ row }) => (
-        <div className="font-medium">{formatName(row.original.action)}</div>
-      ),
-    },
-
-    {
-      accessorKey: "entity",
-      header: "Entity",
-      cell: ({ row }) => (
-        <div className="font-medium">{formatName(row.original.entity)}</div>
-      ),
-    },
-
-    {
-      accessorKey: "timestamp",
-      header: "Date",
-      cell: ({ row }) => (
-        <div>{format(row.original.timestamp, "dd-MM-yyyy, hh:mm a")}</div>
-      ),
-    },
-    {
-      accessorKey: "resource",
-      header: "Resource",
-      cell: ({ row }) => (
-        <LongText className="text-sm max-w-sm">
-          {formatAuditChanges(
-            row.original.oldValue,
-            row.original.newValue,
-            row.original.action,
-            row.original.entity
-          )}
-        </LongText>
-      ),
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => (
-        <StatusBadge status={row.original.status.toLowerCase()} />
-      ),
-    },
-  ];
-
   const handleNavigation = (path: string) => {
     navigate({ to: path });
   };
@@ -649,16 +433,6 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
             data={(mappedScheduleData ?? []).slice(0, limit)}
             columns={scheduleColumns}
             totalCount={scheduleTotalCount}
-            // currentPage={schedulePagination.page}
-            // paginationCallbacks={{
-            //   onPaginationChange: (page: number, pageSize: number) => {
-            //     setSchedulePagination((prev) => ({
-            //       ...prev,
-            //       page,
-            //       limit: pageSize,
-            //     }));
-            //   },
-            // }}
             loading={scheduleLoading}
             key="schedule-table"
           />
@@ -732,16 +506,6 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
             data={(customers ?? []).slice(0, limit)}
             columns={customerColumns}
             totalCount={customerTotalCount}
-            // currentPage={customerPagination.page}
-            // paginationCallbacks={{
-            //   onPaginationChange: (page: number, pageSize: number) => {
-            //     setCustomerPagination((prev) => ({
-            //       ...prev,
-            //       page,
-            //       limit: pageSize,
-            //     }));
-            //   },
-            // }}
             loading={customersLoading}
             key="customer-table"
           />
