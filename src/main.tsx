@@ -92,7 +92,7 @@ if (!rootElement.innerHTML) {
         <ThemeProvider defaultTheme='light' storageKey='vite-ui-theme'>
           <FontProvider>
             <LoadScript
-              googleMapsApiKey='AIzaSyCEkQ_KW66M2BjP03QiJ3R4dyzPWcOfuvw'
+              googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAP_API_KEY}
               libraries={['places']}
             >
               <RouterProvider router={router} />
