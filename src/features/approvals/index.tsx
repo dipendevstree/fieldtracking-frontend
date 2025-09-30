@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Main } from "@/components/layout/main";
 
-
 import CategoryExpanses from "./components/category/expenses-category";
 import DailyExpenses from "./components/daily-expanse/daily-expenses";
 import MonthlyExpenses from "./components/monthly-expanse/monthly-expenses";
@@ -27,16 +26,12 @@ export default function ExpenseApprovalsPage() {
 
   return (
     <Main className={cn("flex flex-col gap-2 p-4")}>
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight">Expense Approvals</h2>
-      </div>
-
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
-        className="mt-4 space-y-5"
+        className="space-y-5"
       >
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-3 mb-2 h-10">
           <TabsTrigger value="/approvals">Daily Expenses</TabsTrigger>
           <TabsTrigger value="/approvals/monthly-consolidated">
             Monthly Consolidated
@@ -49,15 +44,18 @@ export default function ExpenseApprovalsPage() {
         <TabsContent value="/approvals" className="space-y-4">
           <DailyExpenses />
         </TabsContent>
-        <TabsContent value="/approvals/monthly-consolidated" className="space-y-4">
+        <TabsContent
+          value="/approvals/monthly-consolidated"
+          className="space-y-4"
+        >
           <MonthlyExpenses />
         </TabsContent>
         <TabsContent value="/approvals/expense-category" className="space-y-4">
           <CategoryExpanses />
         </TabsContent>
-        <TabsContent value='/approvals/reports-analytics' className='space-y-4'>
+        <TabsContent value="/approvals/reports-analytics" className="space-y-4">
           <ReportsAnalytics />
-        </TabsContent> 
+        </TabsContent>
       </Tabs>
     </Main>
   );

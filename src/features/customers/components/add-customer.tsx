@@ -403,7 +403,7 @@ export default function AddCustomerPage({
         onValueChange={setSelectedTab}
         className="space-y-4"
       >
-        <TabsList className="grid w-auto grid-cols-2">
+        <TabsList className="grid w-auto grid-cols-2 h-10">
           <TabsTrigger value="individual">Add Individual</TabsTrigger>
           <TabsTrigger value="bulk">Bulk Import</TabsTrigger>
           {/* <TabsTrigger value="uploads">Upload History</TabsTrigger> */}

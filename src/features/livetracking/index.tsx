@@ -26,7 +26,7 @@ const AHMEDABAD_CENTER = { lat: 23.0225, lng: 72.5714 };
 
 const containerStyle = {
   width: "100%",
-  height: "60vh",
+  height: "100%",
   borderRadius: "7px",
   overflow: "hidden",
 };
@@ -293,7 +293,7 @@ export default function Livetracking() {
       {!isLoading && enhancedUserList.length > 0 && (
         <Card>
           <CardContent className="flex gap-4 p-0">
-            <div className="w-100 space-y-2 overflow-y-auto p-2">
+            <div className="w-100 space-y-2 overflow-y-auto px-2">
               {selectedUserId && (selectedUser || enhancedSingleUser) ? (
                 <UserTrackingTimeline
                   key={selectedUserId}
@@ -341,7 +341,7 @@ export default function Livetracking() {
                       </Card>
                     ))}
                   </div>
-                  <div className="flex justify-end p-2 gap-2">
+                  <div className="flex justify-end p-2 pb-0 gap-2">
                     <Button
                       onClick={handlePreviousPage}
                       disabled={pagination.page === 1}
@@ -365,7 +365,7 @@ export default function Livetracking() {
               )}
             </div>
 
-            <div className="flex-1 pr-4">
+            <div className="flex-1 pr-4  maxHeight: 60vh">
               {mapCenter && (
                 <GoogleMap
                   key={selectedUserId}

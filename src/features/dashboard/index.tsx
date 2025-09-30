@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { Main } from "@/components/layout/main";
 import { cn } from "@/lib/utils";
-import { Users, Download } from "lucide-react";
-import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/stores/use-auth-store";
 
 // Import the actual page components
@@ -56,37 +53,12 @@ export default function DashboardPage() {
     setActiveTab(value as DashboardTabValue);
   };
 
-  const handleExportReport = () => {
-    // TODO: Implement report export functionality
-    // console.log('Exporting dashboard report...')
-  };
-
   return (
     <Main className={cn("flex flex-col gap-2 p-4")}>
-      <div className="flex items-center justify-between space-y-2">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">
-            Field Sales Dashboard
-          </h2>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={handleExportReport}>
-            <Download className="h-4 w-4 mr-2" />
-            Export Report
-          </Button>
-          <Button asChild>
-            <Link to="/user-management">
-              <Users className="h-4 w-4 mr-2" />
-              Add Sales Rep
-            </Link>
-          </Button>
-        </div>
-      </div>
-
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
-        className="mt-2 space-y-5"
+        className="space-y-5"
       >
         <TabsList className="grid w-full grid-cols-3 h-10 !mb-2">
           {DASHBOARD_TABS.map((tab) => (
