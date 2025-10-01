@@ -1,3 +1,4 @@
+import { TIER } from '@/data/app.data';
 import { z } from 'zod'
 
 // Schema for general settings
@@ -39,6 +40,21 @@ export const systemPreferencesFormSchema = z.object({
   }),
 })
 
+const singleFixedDayTierExpenseSchema = z
+  .object({
+    fixedDayExpenseId: z.string().optional(),
+    tierKey: z.nativeEnum(TIER),
+    dailyExpense: z.string().min(1, "Amount is required.")
+  });
+
+// Schema for a single approval level
+export const fixedDayTierExpenseSchema = z.object({
+  fixedDayTierExpenseList: z
+    .array(singleFixedDayTierExpenseSchema)
+    .min(1, "At least one fixed day expense is required."),
+});
+
+export type FixedDayExpenseForm = z.infer<typeof fixedDayTierExpenseSchema>;
 export type TGeneralSettingsFormSchema = z.infer<typeof generalSettingsFormSchema>
 export type TCompanyInfoFormSchema = z.infer<typeof companyInfoFormSchema>
 export type TSystemPreferencesFormSchema = z.infer<typeof systemPreferencesFormSchema>

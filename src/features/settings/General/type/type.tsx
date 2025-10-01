@@ -40,3 +40,30 @@ export interface SystemPreferences {
   createdAt?: string
   updatedAt?: string
 }
+
+export interface DeletionState {
+  onConfirm: () => void;
+  itemName: string;
+  itemIdentifierValue: string;
+}
+
+export type FixedDayExpensesProps = {
+  setSubmitFixedExpenseForm: Function
+}
+
+export type FixedDayTierExpenseRowProps = {
+  levelIdx: number;
+  removeFixedDayTierExpense: (index: number) => void;
+  canDelete: boolean;
+  tierOptions: { label: string; value: string }[];
+  isDeleting: boolean;
+  initiateDelete: (state: DeletionState) => void;
+  deleteApprovalLevel: any;
+  isFirstLevel: boolean
+}
+
+export type FixedDayExpense = {
+  id: string;
+  tierKey: string;
+  dailyExpense: string;
+}

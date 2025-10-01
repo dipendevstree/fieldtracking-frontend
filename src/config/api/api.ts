@@ -187,6 +187,12 @@ const API = {
     delete: "expenseApprovalLevel/multi-delete",
     organizationCreate: "organization/patch",
   },
+  fixedDayExpense: {
+    list: "fixedDayExpense/list",
+    create: "fixedDayExpense/create-multiple",
+    update: "fixedDayExpense/update-multiple",
+    delete: "fixedDayExpense/delete-multiple",
+  },
   generalSettings: {
     list: "generalSettings/list",
     get: "generalSettings/get",

@@ -25,7 +25,7 @@ export default function Notifications() {
         page: DEFAULT_PAGE_NUMBER,
         limit: DEFAULT_PAGE_SIZE,
         sort: "desc",
-        isMobile: true,
+        isMobile: false,
         search: undefined,
         fromUser: undefined
     });

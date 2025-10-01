@@ -15,7 +15,7 @@ const GeneralSettingsPage = () => {
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
   });
-
+  const [submitFixedExpenseForm, setSubmitFixedExpenseForm] = useState<Function | null>();
   const [currentSettingsData, setCurrentSettingsData] = useState<any>(null);
 
   // API hooks for updating data
@@ -71,6 +71,11 @@ const GeneralSettingsPage = () => {
       return;
     }
 
+    if (submitFixedExpenseForm) {
+      const result = await submitFixedExpenseForm();
+      if (!result) return;
+    }
+
     try {
       // Prepare payload that matches your API structure
       const formData = new FormData();
@@ -91,6 +96,10 @@ const GeneralSettingsPage = () => {
       formData.append(
         "isAutoExpense",
         currentSettingsData.autoExpenseApproval ? "true" : ""
+      );
+      formData.append(
+        "isFixedDayExpense",
+        currentSettingsData.fixedDayExpense ? "true" : ""
       );
       formData.append(
         "rsPerKm",
@@ -197,7 +206,7 @@ const GeneralSettingsPage = () => {
 
       {/* Settings Configuration */}
       <div className="mb-2">
-        <GeneralSettings onDataChange={handleDataChange} />
+        <GeneralSettings onDataChange={handleDataChange} setSubmitFixedExpenseForm={setSubmitFixedExpenseForm}/>
       </div>
 
       {/* Action Buttons */}

@@ -22,16 +22,20 @@ import PhoneInput from "react-phone-number-input"
 import "react-phone-number-input/style.css";
 import { useSelectOptions } from "@/hooks/use-select-option"
 import parsePhoneNumberFromString from "libphonenumber-js"
+import FixedDayExpenses from "./FixedDayExpenses";
 
 interface GeneralApplicationSettingsProps {
   onDataChange?: (data: any) => void;
+  setSubmitFixedExpenseForm: Function;
 }
 
 export default function GeneralApplicationSettings({
   onDataChange,
+  setSubmitFixedExpenseForm
 }: GeneralApplicationSettingsProps) {
   const { user } = useAuth();
   const [autoExpenseApproval, setAutoExpenseApproval] = useState(false);
+  const [fixedDayExpense, setFixedDayExpense] = useState<boolean>(false);
   const [allowAddUsersBasedOnTerritories, setAllowAddUsersBasedOnTerritories] =
     useState(false);
   const [showTerritoryConfirm, setShowTerritoryConfirm] = useState(false);
@@ -63,6 +67,7 @@ export default function GeneralApplicationSettings({
   })
   const [fileError, setFileError] = useState<Record<string, string>>({});
   const [fileName, setFileName] = useState<Record<string, string>>({});
+  const [filePreview, setFilePreview] = useState<Record<string, string>>({});
   const orgIconInputRef = useRef<HTMLInputElement>(null);
   const profileImageInputRef = useRef<HTMLInputElement>(null);
   // Fetch organization types from API
@@ -125,9 +130,15 @@ export default function GeneralApplicationSettings({
         userProfile: user?.profileUrl ? (user?.profileUrl).split("/")?.pop() as string: "",
         orgIconFileName: user?.organization.organizationIcon ? (user?.organization.organizationIcon).split("/")?.pop() as string: ""
       }))
+      setFilePreview((prev) => ({
+        ...prev,
+        orgIconFileName: user?.organization.organizationIcon || "",
+        userProfile: user?.profileUrl || "",
+      }))
       console.log('Form data being set:', newFormData)
       setFormData(newFormData)
       setAutoExpenseApproval(org.isAutoExpense || false)
+      setFixedDayExpense(!(org.isAutoExpense || false))
       setAllowAddUsersBasedOnTerritories(org.allowAddUsersBasedOnTerritories || false)
     }
   }, [user]); // Removed refreshTrigger dependency
@@ -138,15 +149,35 @@ export default function GeneralApplicationSettings({
       onDataChange({
         ...formData,
         autoExpenseApproval,
+        fixedDayExpense,
         allowAddUsersBasedOnTerritories,
       });
     }
   }, [
     formData,
     autoExpenseApproval,
+    fixedDayExpense,
     allowAddUsersBasedOnTerritories,
     onDataChange,
   ]);
+
+  const toggleApprovalCheckBox = (name: string, value: boolean) => {
+    if (name === "autoExpenseApproval") {
+      if (value || fixedDayExpense) {
+        setAutoExpenseApproval(true);
+        setFixedDayExpense(false);
+        return;
+      }
+    } else if (name === "fixedDayExpense") {
+      if (value || autoExpenseApproval) {
+        setFixedDayExpense(true);
+        setAutoExpenseApproval(false);
+        return;
+      }
+    }
+    setAutoExpenseApproval(false);
+    setFixedDayExpense(false);
+  }
 
   const handleInputChange = (field: string, value: File | string) => {
     setFormData((prev) => ({
@@ -360,61 +391,75 @@ export default function GeneralApplicationSettings({
               />
             </div>
             {/* Organization Icon Upload Section */}
-            <div className="space-y-2">
-              <Label htmlFor="org-icon" className="text-sm font-medium text-gray-700">Organization Icon</Label>
-              <input
-                ref={orgIconInputRef}
-                id="org-icon"
-                type="file"
-                accept="image/png, image/jpeg, image/svg+xml"
-                className="h-10 block w-full border border-gray-300 rounded-md px-3 py-2"
-                style={{ display: "none" }}
-                onChange={e => {
-                  setFileError((prev) => ({
-                    ...prev,
-                    orgIcon: ""
-                  }));
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    const validTypes = ["image/png", "image/jpeg", "image/svg+xml"];
-                    if (!validTypes.includes(file.type)) {
-                      setFileError((prev) => ({
-                        ...prev,
-                        orgIcon: "Invalid file type. Please upload PNG, JPG, or SVG."
-                      }));
-                      e.target.value = "";
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="org-icon" className="text-sm font-medium text-gray-700">Organization Icon</Label>
+                <input
+                  ref={orgIconInputRef}
+                  id="org-icon"
+                  type="file"
+                  accept="image/png, image/jpeg, image/svg+xml"
+                  className="h-10 block w-full border border-gray-300 rounded-md px-3 py-2"
+                  style={{ display: "none" }}
+                  onChange={e => {
+                    setFileError((prev) => ({
+                      ...prev,
+                      orgIcon: ""
+                    }));
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const validTypes = ["image/png", "image/jpeg", "image/svg+xml"];
+                      if (!validTypes.includes(file.type)) {
+                        setFileError((prev) => ({
+                          ...prev,
+                          orgIcon: "Invalid file type. Please upload PNG, JPG, or SVG."
+                        }));
+                        e.target.value = "";
+                        setFileName((prev) => ({
+                          ...prev,
+                          orgIconFileName: ""
+                        }))
+                      } else {
+                        if (filePreview.orgIconFileName) URL.revokeObjectURL(filePreview.orgIconFileName)
+                        setFileName((prev) => ({
+                          ...prev,
+                          orgIconFileName: file.name
+                        }))
+                        setFilePreview((prev) => ({
+                          ...prev,
+                          orgIconFileName: URL.createObjectURL(file)
+                        }))
+                        handleInputChange("orgIcon", file);
+                      }
+                    } else {
                       setFileName((prev) => ({
                         ...prev,
                         orgIconFileName: ""
                       }))
-                    } else {
-                      setFileName((prev) => ({
-                        ...prev,
-                        orgIconFileName: file.name
-                      }))
-                      handleInputChange("orgIcon", file);
                     }
-                  } else {
-                    setFileName((prev) => ({
-                      ...prev,
-                      orgIconFileName: ""
-                    }))
-                  }
-                }}
-              />
-              <button
-                type="button"
-                className="h-10 block w-full border border-gray-300 rounded-md px-3 py-2 text-left truncate"
-                onClick={() => orgIconInputRef.current?.click()}
-                title={`${fileName?.orgIconFileName || "No file chosen"}`}
-              >
-                Choose file {fileName?.orgIconFileName || "No file chosen"}
-              </button>
-              <p className="text-sm text-gray-600">Upload your organization logo/icon (PNG, JPG, SVG)</p>
-              {fileError?.orgIcon && (
-                <p className="text-sm text-red-500">{fileError.orgIcon}</p>
-              )}
-            </div>
+                  }}
+                />
+                <button
+                  type="button"
+                  className="h-10 block w-full border border-gray-300 rounded-md px-3 py-2 text-left truncate"
+                  onClick={() => orgIconInputRef.current?.click()}
+                  title={`${fileName?.orgIconFileName || "No file chosen"}`}
+                >
+                  Choose file {fileName?.orgIconFileName || "No file chosen"}
+                </button>
+                <p className="text-sm text-gray-600">Upload your organization logo/icon (PNG, JPG, SVG)</p>
+                {fileError?.orgIcon && (
+                  <p className="text-sm text-red-500">{fileError.orgIcon}</p>
+                )}
+              </div>
+              <div className="space-y-2 flex flex-col justify-center items-center">
+                {filePreview?.orgIconFileName ? (
+                  <img src={filePreview?.orgIconFileName} alt={fileName?.orgIconFileName} className="size-25 border rounded-xl" />
+                ): (
+                  "No Preview Availble"
+                )}
+              </div>
+              </div>
             </div>
           </div>
 
@@ -636,60 +681,74 @@ export default function GeneralApplicationSettings({
                       </SelectContent>
                     </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="org-icon" className="text-sm font-medium text-gray-700">Profile Image</Label>
-                  <input
-                    ref={profileImageInputRef}
-                    id="org-icon"
-                    type="file"
-                    accept="image/png, image/jpeg, image/svg+xml"
-                    className="h-10 block w-full border border-gray-300 rounded-md px-3 py-2"
-                    style={{ display: "none" }}
-                    onChange={e => {
-                      setFileError((prev) => ({
-                        ...prev,
-                        userProfile: ""
-                      }));
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const validTypes = ["image/png", "image/jpeg", "image/svg+xml"];
-                        if (!validTypes.includes(file.type)) {
-                          setFileError((prev) => ({
-                            ...prev,
-                            userProfile: "Invalid file type. Please upload PNG, JPG, or SVG."
-                          }));
-                          e.target.value = "";
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="org-icon" className="text-sm font-medium text-gray-700">Profile Image</Label>
+                    <input
+                      ref={profileImageInputRef}
+                      id="org-icon"
+                      type="file"
+                      accept="image/png, image/jpeg, image/svg+xml"
+                      className="h-10 block w-full border border-gray-300 rounded-md px-3 py-2"
+                      style={{ display: "none" }}
+                      onChange={e => {
+                        setFileError((prev) => ({
+                          ...prev,
+                          userProfile: ""
+                        }));
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const validTypes = ["image/png", "image/jpeg", "image/svg+xml"];
+                          if (!validTypes.includes(file.type)) {
+                            setFileError((prev) => ({
+                              ...prev,
+                              userProfile: "Invalid file type. Please upload PNG, JPG, or SVG."
+                            }));
+                            e.target.value = "";
+                            setFileName((prev) => ({
+                              ...prev,
+                              userProfile: ""
+                            }))
+                          } else {
+                            if (filePreview.userProfile) URL.revokeObjectURL(filePreview.userProfile)
+                            setFilePreview((prev) => ({
+                              ...prev,
+                              userProfile: URL.createObjectURL(file)
+                            }))
+                            setFileName((prev) => ({
+                              ...prev,
+                              userProfile: file.name
+                            }))
+                            handleInputChange("profileImage", file);
+                          }
+                        } else {
                           setFileName((prev) => ({
                             ...prev,
                             userProfile: ""
                           }))
-                        } else {
-                          setFileName((prev) => ({
-                            ...prev,
-                            userProfile: file.name
-                          }))
-                          handleInputChange("profileImage", file);
                         }
-                      } else {
-                        setFileName((prev) => ({
-                          ...prev,
-                          userProfile: ""
-                        }))
-                      }
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="h-10 block w-full border border-gray-300 rounded-md px-3 py-2 text-left truncate"
-                    onClick={() => profileImageInputRef.current?.click()}
-                    title={`${fileName?.userProfile || "No file chosen"}`}
-                  >
-                    Choose file {fileName?.userProfile || "No file chosen"}
-                  </button>
-                  <p className="text-sm text-gray-600">Upload your organization logo/icon (PNG, JPG, SVG)</p>
-                  {fileError?.userProfile && (
-                    <p className="text-sm text-red-500">{fileError.userProfile}</p>
-                  )}
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="h-10 block w-full border border-gray-300 rounded-md px-3 py-2 text-left truncate"
+                      onClick={() => profileImageInputRef.current?.click()}
+                      title={`${fileName?.userProfile || "No file chosen"}`}
+                    >
+                      Choose file {fileName?.userProfile || "No file chosen"}
+                    </button>
+                    <p className="text-sm text-gray-600">Upload your organization logo/icon (PNG, JPG, SVG)</p>
+                    {fileError?.userProfile && (
+                      <p className="text-sm text-red-500">{fileError.userProfile}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2 flex flex-col justify-center items-center">
+                    {filePreview?.userProfile ? (
+                      <img src={filePreview?.userProfile} alt={fileName.userProfile} className="size-25 border rounded-xl" />
+                    ): (
+                      "No Preview Availble"
+                    )}
+                  </div>
                 </div>
                 </div>
               </div>
@@ -738,7 +797,7 @@ export default function GeneralApplicationSettings({
               <Switch
                 id="auto-expense"
                 checked={autoExpenseApproval}
-                onCheckedChange={setAutoExpenseApproval}
+                onCheckedChange={(value: boolean) => toggleApprovalCheckBox("autoExpenseApproval", value)}
               />
             </div>
 
@@ -761,6 +820,31 @@ export default function GeneralApplicationSettings({
                   type="number"
                 />
               </div>
+            )}
+          </div>
+
+          {/* Fixed Day Expense Section */}
+          <div className="space-y-4 mb-8">
+            <div className="flex items-center justify-between">
+              <div className="space-y-1">
+                <Label className="text-lg font-medium text-gray-900">
+                  Fixed Day Expense
+                </Label>
+                <p className="text-sm text-gray-600">
+                  {fixedDayExpense
+                    ? "Fixed Daily Expense (Enter At Least One Fixed Expense)"
+                    : "No Fixed Daily Expense"}
+                </p>
+              </div>
+              <Switch
+                id="auto-expense"
+                checked={fixedDayExpense}
+                onCheckedChange={(value: boolean) => toggleApprovalCheckBox("fixedDayExpense", value)}
+              />
+            </div>
+
+            {fixedDayExpense && (
+              <FixedDayExpenses setSubmitFixedExpenseForm={setSubmitFixedExpenseForm} />
             )}
           </div>
           <ConfirmDialog
