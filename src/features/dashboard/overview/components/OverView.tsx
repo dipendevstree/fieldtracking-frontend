@@ -191,14 +191,10 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
 
   // Industry filter handler
   const handleIndustryFilterChange = (value: string) => {
-    const selectedIndustry = industryList.find(
-      (industry) => industry.industryName === value
-    );
     setCustomerPagination((prev) => ({
       ...prev,
-      industryId:
-        value === "All Industries" ? "" : selectedIndustry?.industryId || "",
-      page: 1, // Reset to first page when filtering
+      industryId: value === "All Industries" ? "" : value,
+      page: 1,
     }));
   };
 
@@ -223,15 +219,6 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
 
   // Get industry data for filter
   const { data: industryList = [] } = useGetIndustry();
-
-  // Get current industry filter display value
-  const getCurrentIndustryFilterValue = () => {
-    if (!customerPagination.industryId) return "All Industries";
-    const selectedIndustry = industryList.find(
-      (industry) => industry.industryId === customerPagination.industryId
-    );
-    return selectedIndustry?.industryName || "All Industries";
-  };
 
   const debouncedAuditSearch = useCallback(
     debounce((value: string) => {
@@ -389,7 +376,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
         : "All Status",
       options: statusOptions,
       onCancelPress: () => handleStatusFilterChange("All Status"),
-      searchableSelectClassName: "w-[140px]",
+      searchableSelectClassName: "w-full sm:w-[180px]",
     },
     {
       key: "priority",
@@ -399,7 +386,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
       value: schedulePagination.priority,
       options: priorityOptions,
       onCancelPress: () => handlePriorityFilterChange("All Priorities"),
-      searchableSelectClassName: "w-full sm:w-[140px]",
+      searchableSelectClassName: "w-full sm:w-[180px]",
     },
   ];
 
@@ -419,17 +406,17 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
       value: customerPagination.customerTypeId,
       options: customerTypeOptions,
       onCancelPress: () => handleCustomerTypeFilterChange("All Customer Types"),
-      searchableSelectClassName: "w-[180px]",
+      searchableSelectClassName: "w-full sm:w-[180px]",
     },
     {
       key: "industryId",
       type: "searchable-select",
       onChange: (value: any) => handleIndustryFilterChange(String(value)),
       placeholder: "Select Industry",
-      value: getCurrentIndustryFilterValue(),
+      value: customerPagination.industryId,
       options: industryOptions,
       onCancelPress: () => handleIndustryFilterChange("All Industries"),
-      searchableSelectClassName: "w-[140px]",
+      searchableSelectClassName: "w-full sm:w-[180px]",
     },
   ];
 
@@ -457,7 +444,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
       value: auditPagination.userId,
       options: usersOptions,
       onCancelPress: () => handleUserFilterChange("ALL USERS"),
-      searchableSelectClassName: "w-[180px]",
+      searchableSelectClassName: "w-full sm:w-[180px]",
     },
     {
       key: "action",
@@ -467,7 +454,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
       value: auditPagination.action ?? "ALL ACTION",
       options: auditActionOptions,
       onCancelPress: () => handleActionFilterChange("ALL ACTION"),
-      searchableSelectClassName: "w-[140px]",
+      searchableSelectClassName: "w-full sm:w-[180px]",
     },
   ];
 
@@ -510,7 +497,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
       {/* Today's Schedule */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <div>
               <CardTitle>Today's Schedule</CardTitle>
             </div>
@@ -519,14 +506,12 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
             </Button>
           </div>
 
-          <div className="flex items-center space-x-2 mt-1">
-            <div className="w-full">
-              <GlobalFilterSection
-                key={"overview-schedule-filters"}
-                filters={scheduleSelectFilters}
-                className={"mb-0"}
-              />
-            </div>
+          <div className="w-full">
+            <GlobalFilterSection
+              key={"overview-schedule-filters"}
+              filters={scheduleSelectFilters}
+              className={"mb-0"}
+            />
           </div>
         </CardHeader>
         <CardContent>
@@ -543,7 +528,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
       {/* Customer List */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <div>
               <CardTitle>Customer List</CardTitle>
             </div>
@@ -551,14 +536,13 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
               View All
             </Button>
           </div>
-          <div className="flex items-center space-x-2 mt-1">
-            <div className="w-full">
-              <GlobalFilterSection
-                key={"overview-customer-filters"}
-                filters={customerSelectFilters}
-                className={"mb-0"}
-              />
-            </div>
+
+          <div className="w-full">
+            <GlobalFilterSection
+              key={"overview-customer-filters"}
+              filters={customerSelectFilters}
+              className={"mb-0"}
+            />
           </div>
         </CardHeader>
         <CardContent>
@@ -573,19 +557,17 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
       </Card>
 
       {/* Audit Log  */}
-      <Card>
+      <Card className="gap-0">
         <CardHeader>
-          <div>
+          <div className="mb-4">
             <CardTitle>Audit Logs</CardTitle>
           </div>
-          <div className="relative flex mt-4">
-            <div className="w-full">
-              <GlobalFilterSection
-                key={"overview-audit-filters"}
-                filters={auditSelectFilters}
-                className={"mb-0"}
-              />
-            </div>
+          <div className="w-full">
+            <GlobalFilterSection
+              key={"overview-audit-filters"}
+              filters={auditSelectFilters}
+              className={"mb-0"}
+            />
           </div>
         </CardHeader>
         <CardContent>
