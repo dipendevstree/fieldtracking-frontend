@@ -128,7 +128,7 @@ const UserTerritory = () => {
   }
 
   return (
-    <Main className={cn('flex flex-col gap-2 p-4')}>
+    <Main className={cn('flex flex-col gap-2')}>
       <TablePageLayout
         title="All Territories"
         description="Manage territory assignments and coverage areas"
@@ -136,6 +136,7 @@ const UserTerritory = () => {
         addButtonText="Add Territory"
         modulePermission="user_territory"
         moduleAction="add"
+        className='p-0'
       >
         <div className="space-y-4">
           {/* Filter Section - Only Search */}
@@ -143,6 +144,7 @@ const UserTerritory = () => {
             key="territories-management-filters"
             filters={filtersConfig}
             onCancelPress={clearFilters}
+            className={"mb-0 mt-2"}
           />
           
           {/* Table */}

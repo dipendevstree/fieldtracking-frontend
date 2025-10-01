@@ -185,7 +185,7 @@ export default function UpcomingVisits() {
 
   return (
     <>
-      <GlobalFilterSection key={"calender-view-filters"} filters={filters} />
+      <GlobalFilterSection key={"calender-view-filters"} filters={filters} className={"mb-0"}/>
 
       <UpcomingVisitsTable
         data={visits}
