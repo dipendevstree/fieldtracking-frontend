@@ -42,7 +42,7 @@ export default function Approvals() {
     expenseType: "",
     status: "",
     expenseSubType: "",
-    sort:"desc"
+    sort: "desc",
   });
 
   const {
@@ -129,27 +129,33 @@ export default function Approvals() {
     },
     {
       key: "expenseType",
-      type: "select",
+      type: "searchable-select",
       onChange: (value) => handleFilterChange("expenseType", String(value)),
+      onCancelPress: () => handleFilterChange("expenseType", ""),
       placeholder: "Select Type",
       value: pagination.expenseType,
       options: expanseTypeOptions,
+      searchableSelectClassName: "w-full max-w-[180px]",
     },
     {
       key: "status",
-      type: "select",
+      type: "searchable-select",
       onChange: (value) => handleFilterChange("status", String(value)),
+      onCancelPress: () => handleFilterChange("status", ""),
       placeholder: "Select Status",
       value: pagination.status,
       options: expanseStatusOptions,
+      searchableSelectClassName: "w-full max-w-[180px]",
     },
     {
       key: "expenseSubType",
-      type: "select",
+      type: "searchable-select",
       onChange: (value) => handleFilterChange("expenseSubType", String(value)),
+      onCancelPress: () => handleFilterChange("expenseSubType", ""),
       placeholder: "Select Sub Type",
       value: pagination.expenseSubType,
       options: expanseSubTypeOptions,
+      searchableSelectClassName: "w-full max-w-[180px]",
     },
   ];
 

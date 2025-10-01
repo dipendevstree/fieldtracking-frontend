@@ -105,21 +105,25 @@ const AllUsers = () => {
       ? [
           {
             key: "territoryId",
-            type: "select",
+            type: "searchable-select",
             placeholder: "Territory",
             value: filters.territoryId,
             onChange: (value) => setFilters({ territoryId: value ?? "" }),
+            onCancelPress: () => setFilters({ territoryId: "" }),
             options: territoryOptions,
+            searchableSelectClassName: "w-full max-w-[180px]",
           } as SelectFilterConfig,
         ]
       : []),
     {
       key: "roleId",
-      type: "select",
+      type: "searchable-select",
       placeholder: "Role",
       value: filters.roleId,
       onChange: (value) => setFilters({ roleId: value ?? "" }),
+      onCancelPress: () => setFilters({ roleId: "" }),
       options: roleOptions,
+      searchableSelectClassName: "w-full max-w-[180px]",
     } as SelectFilterConfig,
   ];
 
