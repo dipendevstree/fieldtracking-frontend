@@ -1,7 +1,6 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Users, MapPin, Search } from "lucide-react";
+import { Users, MapPin } from "lucide-react";
 import { SalesRep, DashboardKPI, AuditPagination } from "../type/type";
 import {
   useGetCustomers,
@@ -10,13 +9,6 @@ import {
 import { useGetAllVisit } from "@/features/calendar/services/calendar-view.hook";
 import { useGetIndustry } from "@/features/customers/services/Customers.hook";
 import { useGetUsers } from "@/features/livetracking/services/live-tracking-services";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import debounce from "lodash.debounce";
 import { CustomDataTable } from "@/components/shared/custom-data-table";
 import { useGetAuditLogs, useGetStats } from "../services/OverView.hook";
@@ -26,7 +18,6 @@ import {
   formatName,
   getFullName,
 } from "@/utils/commonFunction";
-import { DateRangeFilter } from "@/features/reports/components/DateRangeFilter";
 import { DateRange } from "react-day-picker";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "@tanstack/react-router";
@@ -34,6 +25,8 @@ import { PRIORITY } from "@/data/app.data";
 import { scheduleColumns } from "./columns/scheduleColumns";
 import { customerColumns } from "./columns/customerColumns";
 import { auditLogColumns } from "./columns/auditLogColumns";
+import { FilterConfig } from "@/components/global-filter-section";
+import GlobalFilterSection from "@/components/global-table-filter-section";
 
 interface OverviewProps {
   salesReps: SalesRep[];
@@ -96,8 +89,8 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
 
   // Get live tracking users data to count active users
   const { listData: liveTrackingUsers = [] } = useGetUsers({
-    page: 1,
-    limit: 1000, // Get all users to count them
+    // page: 1,
+    // limit: 1000, // Get all users to count them
     includeLatLong: true,
   });
 
@@ -296,6 +289,188 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
     navigate({ to: path });
   };
 
+  const usersOptions = useMemo(
+    () =>
+      (liveTrackingUsers || []).map((user: any) => ({
+        label: formatName(getFullName(user.firstName, user.lastName)),
+        value: String(user.id),
+      })),
+    [liveTrackingUsers]
+  );
+
+  const customersOptions = useMemo(
+    () =>
+      (customers || []).map((c: any) => ({
+        label: c.companyName,
+        value: c.customerId,
+      })),
+    [customers]
+  );
+
+  const statusOptions = useMemo(
+    () => [
+      { label: "Scheduled", value: "Scheduled" },
+      { label: "Completed", value: "Completed" },
+      { label: "Pending", value: "Pending" },
+    ],
+    []
+  );
+
+  const priorityOptions = useMemo(
+    () => Object.values(PRIORITY).map((p) => ({ label: p, value: p })),
+    []
+  );
+
+  const customerTypeOptions = useMemo(
+    () =>
+      (customerTypeList || []).map((t: any) => ({
+        label: formatDropDownLabel(t.typeName),
+        value: t.customerTypeId,
+      })),
+    [customerTypeList]
+  );
+
+  const industryOptions = useMemo(
+    () =>
+      (industryList || []).map((i: any) => ({
+        label: i.industryName,
+        value: i.industryId,
+      })),
+    [industryList]
+  );
+
+  const auditActionOptions = useMemo(
+    () =>
+      ["CREATE", "UPDATE", "DELETE", "USER LOGIN", "ADMIN LOGIN"].map((a) => ({
+        label: a,
+        value: a,
+      })),
+    []
+  );
+
+  const scheduleSelectFilters: FilterConfig[] = [
+    {
+      key: "search",
+      type: "search",
+      placeholder: "Search By Purpose...",
+      value: schedulePagination.searchFor,
+      onChange: (value: any) => handleScheduleSearchChange(value),
+    },
+    {
+      key: "salesRepresentativeUserId",
+      type: "searchable-select",
+      onChange: (value: any) =>
+        handleScheduleSalesRepFilterChange(String(value)),
+      placeholder: "Select Sales Rep",
+      value: schedulePagination.salesRepresentativeUserId,
+      options: usersOptions,
+      onCancelPress: () => handleScheduleSalesRepFilterChange("All Sales Reps"),
+      searchableSelectClassName: "w-full sm:w-[180px]",
+    },
+    {
+      key: "customerId",
+      type: "searchable-select",
+      onChange: (value: any) =>
+        handleScheduleCustomerFilterChange(String(value)),
+      placeholder: "Select Customer",
+      value: schedulePagination.customerId,
+      options: customersOptions,
+      onCancelPress: () => handleScheduleCustomerFilterChange("All Customers"),
+      searchableSelectClassName: "w-full sm:w-[180px]",
+    },
+    {
+      key: "status",
+      type: "searchable-select",
+      onChange: (value: any) => handleStatusFilterChange(String(value)),
+      placeholder: "Select Status",
+      value: schedulePagination.status
+        ? schedulePagination.status.charAt(0).toUpperCase() +
+          schedulePagination.status.slice(1)
+        : "All Status",
+      options: statusOptions,
+      onCancelPress: () => handleStatusFilterChange("All Status"),
+      searchableSelectClassName: "w-[140px]",
+    },
+    {
+      key: "priority",
+      type: "searchable-select",
+      onChange: (value: any) => handlePriorityFilterChange(String(value)),
+      placeholder: "Select Priority",
+      value: schedulePagination.priority,
+      options: priorityOptions,
+      onCancelPress: () => handlePriorityFilterChange("All Priorities"),
+      searchableSelectClassName: "w-full sm:w-[140px]",
+    },
+  ];
+
+  const customerSelectFilters: FilterConfig[] = [
+    {
+      key: "search",
+      type: "search",
+      placeholder: "Search By Customer...",
+      value: customerPagination.searchFor,
+      onChange: (value: any) => handleCustomerSearchChange(value),
+    },
+    {
+      key: "customerTypeId",
+      type: "searchable-select",
+      onChange: (value: any) => handleCustomerTypeFilterChange(String(value)),
+      placeholder: "Select Customer Type",
+      value: customerPagination.customerTypeId,
+      options: customerTypeOptions,
+      onCancelPress: () => handleCustomerTypeFilterChange("All Customer Types"),
+      searchableSelectClassName: "w-[180px]",
+    },
+    {
+      key: "industryId",
+      type: "searchable-select",
+      onChange: (value: any) => handleIndustryFilterChange(String(value)),
+      placeholder: "Select Industry",
+      value: getCurrentIndustryFilterValue(),
+      options: industryOptions,
+      onCancelPress: () => handleIndustryFilterChange("All Industries"),
+      searchableSelectClassName: "w-[140px]",
+    },
+  ];
+
+  const auditSelectFilters: FilterConfig[] = [
+    {
+      key: "date-range",
+      type: "date-range",
+      placeholder: "Filter by date",
+      dateRangeValue: selectedDateRange,
+      onDateRangeChange: setSelectedDateRange,
+      dataRangeClassName: "w-full max-w-xs",
+    },
+    {
+      key: "search",
+      type: "search",
+      placeholder: "Search By Entity...",
+      value: auditPagination.entity,
+      onChange: (value: any) => handleAuditSearchChange(value),
+    },
+    {
+      key: "userId",
+      type: "searchable-select",
+      onChange: (value: any) => handleUserFilterChange(String(value)),
+      placeholder: "Select User",
+      value: auditPagination.userId,
+      options: usersOptions,
+      onCancelPress: () => handleUserFilterChange("ALL USERS"),
+      searchableSelectClassName: "w-[180px]",
+    },
+    {
+      key: "action",
+      type: "searchable-select",
+      onChange: (value: any) => handleActionFilterChange(String(value)),
+      placeholder: "Select Action",
+      value: auditPagination.action ?? "ALL ACTION",
+      options: auditActionOptions,
+      onCancelPress: () => handleActionFilterChange("ALL ACTION"),
+      searchableSelectClassName: "w-[140px]",
+    },
+  ];
+
   return (
     <div className="space-y-4">
       {/* KPI Cards */}
@@ -343,89 +518,15 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
               View All
             </Button>
           </div>
+
           <div className="flex items-center space-x-2 mt-1">
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search By Purpose..."
-                onChange={(e) => handleScheduleSearchChange(e.target.value)}
-                className="pl-8 w-[300px]"
+            <div className="w-full">
+              <GlobalFilterSection
+                key={"overview-schedule-filters"}
+                filters={scheduleSelectFilters}
+                className={"mb-0"}
               />
             </div>
-            <Select
-              value={
-                schedulePagination.salesRepresentativeUserId || "All Sales Reps"
-              }
-              onValueChange={handleScheduleSalesRepFilterChange}
-            >
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="All Sales Reps" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All Sales Reps">All Sales Reps</SelectItem>
-                {liveTrackingUsers.map((user: any) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {formatName(getFullName(user.firstName, user.lastName))}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              value={schedulePagination.customerId || "All Customers"}
-              onValueChange={handleScheduleCustomerFilterChange}
-            >
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder="All Customers" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All Customers">All Customers</SelectItem>
-                {customers.map((customer: any) => (
-                  <SelectItem
-                    key={customer.customerId}
-                    value={customer.customerId}
-                  >
-                    {customer.companyName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={
-                schedulePagination.status
-                  ? schedulePagination.status.charAt(0).toUpperCase() +
-                    schedulePagination.status.slice(1)
-                  : "All Status"
-              }
-              onValueChange={handleStatusFilterChange}
-            >
-              <SelectTrigger className="w-[140px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All Status">All Status</SelectItem>
-                <SelectItem value="Scheduled">Scheduled</SelectItem>
-                <SelectItem value="Completed">Completed</SelectItem>
-                <SelectItem value="Pending">Pending</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={schedulePagination.priority || "All Priorities"}
-              onValueChange={handlePriorityFilterChange}
-            >
-              <SelectTrigger className="w-full sm:w-[140px]">
-                <SelectValue placeholder="All Priorities" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All Priorities">All Priorities</SelectItem>
-                {Object.values(PRIORITY).map((p) => (
-                  <SelectItem key={p} value={p}>
-                    {p}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </CardHeader>
         <CardContent>
@@ -451,54 +552,13 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
             </Button>
           </div>
           <div className="flex items-center space-x-2 mt-1">
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search By Customer..."
-                onChange={(e) => handleCustomerSearchChange(e.target.value)}
-                className="pl-8 w-[300px]"
+            <div className="w-full">
+              <GlobalFilterSection
+                key={"overview-customer-filters"}
+                filters={customerSelectFilters}
+                className={"mb-0"}
               />
             </div>
-            <Select
-              value={customerPagination.customerTypeId || "All Customer Types"}
-              onValueChange={handleCustomerTypeFilterChange}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Customer Types" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All Customer Types">
-                  All Customer Types
-                </SelectItem>
-                {customerTypeList.map((type: any) => (
-                  <SelectItem
-                    key={type.customerTypeId}
-                    value={type.customerTypeId}
-                  >
-                    {formatDropDownLabel(type.typeName)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              value={getCurrentIndustryFilterValue()}
-              onValueChange={handleIndustryFilterChange}
-            >
-              <SelectTrigger className="w-[140px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All Industries">All Industries</SelectItem>
-                {industryList.map((industry) => (
-                  <SelectItem
-                    key={industry.industryId}
-                    value={industry.industryName}
-                  >
-                    {industry.industryName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </CardHeader>
         <CardContent>
@@ -518,52 +578,14 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
           <div>
             <CardTitle>Audit Logs</CardTitle>
           </div>
-          <div className="relative flex gap-2 mt-4">
-            <div>
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search By Entity..."
-                className="pl-8 w-[300px]"
-                onChange={(e) => handleAuditSearchChange(e.target.value)}
+          <div className="relative flex mt-4">
+            <div className="w-full">
+              <GlobalFilterSection
+                key={"overview-audit-filters"}
+                filters={auditSelectFilters}
+                className={"mb-0"}
               />
             </div>
-            <DateRangeFilter
-              dateRange={selectedDateRange}
-              setDateRange={setSelectedDateRange}
-              className="w-full max-w-xs"
-            />
-            <Select
-              value={auditPagination.userId || "ALL USERS"}
-              onValueChange={handleUserFilterChange}
-            >
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Users" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL USERS">All Users</SelectItem>
-                {liveTrackingUsers.map((user: any) => (
-                  <SelectItem key={user.id} value={user.id}>
-                    {formatName(getFullName(user.firstName, user.lastName))}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              value={auditPagination.action ?? "ALL ACTION"}
-              onValueChange={handleActionFilterChange}
-            >
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="All Action" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL ACTION">All Action</SelectItem>
-                <SelectItem value="CREATE">Create</SelectItem>
-                <SelectItem value="UPDATE">Update</SelectItem>
-                <SelectItem value="DELETE">Delete</SelectItem>
-                <SelectItem value="USER LOGIN">User Login</SelectItem>
-                <SelectItem value="ADMIN LOGIN">Admin Login</SelectItem>
-              </SelectContent>
-            </Select>
           </div>
         </CardHeader>
         <CardContent>
