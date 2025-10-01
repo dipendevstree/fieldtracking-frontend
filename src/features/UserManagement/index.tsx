@@ -149,7 +149,7 @@ const AllUsers = () => {
   };
 
   return (
-    <Main className={cn("flex flex-col gap-2 p-4")}>
+    <Main className={cn("flex flex-col gap-2")}>
       <TablePageLayout
         title="All Users"
         description="Manage user accounts and permissions"
@@ -157,12 +157,14 @@ const AllUsers = () => {
         addButtonText="Add User"
         modulePermission="all_users"
         moduleAction="add"
+        className="p-0"
       >
         <div className="space-y-4">
           {/* Filter Section */}
           <GlobalFilterSection
             key="user-management-filters"
             filters={filtersConfig}
+            className={"mb-0 mt-2"}
           />
 
           {/* Table */}

@@ -391,13 +391,6 @@ export default function AddCustomerPage({
         onLocationSelect={handleMapLocationSelect}
         latLng={latLng}
       />
-
-      <div className="flex items-center justify-between space-y-0">
-        <h2 className="text-3xl font-bold tracking-tight">
-          {"Customer Management"}
-        </h2>
-      </div>
-
       <Tabs
         value={selectedTab}
         onValueChange={setSelectedTab}

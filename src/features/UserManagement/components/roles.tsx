@@ -152,7 +152,7 @@ const Roles = () => {
   };
 
   return (
-    <Main className={cn("flex flex-col gap-2 p-4")}>
+    <Main className={cn("flex flex-col gap-2")}>
       {/* User Directory Section */}
       <TablePageLayout
         title="All Roles"
@@ -161,6 +161,7 @@ const Roles = () => {
         addButtonText="Add Roles"
         modulePermission="roles_permission"
         moduleAction="add"
+        className="p-0"
       >
         <div className="space-y-4">
           {/* Filter Section */}
@@ -168,6 +169,7 @@ const Roles = () => {
             key="roles-management-filters"
             filters={filtersConfig}
             onCancelPress={clearFilters}
+            className={"mb-0 mt-2"}
           />
 
           {/* Table */}
