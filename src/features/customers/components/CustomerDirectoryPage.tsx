@@ -117,19 +117,23 @@ export const CustomerDirectoryPage = () => {
     },
     {
       key: "customerId",
-      type: "select",
+      type: "searchable-select",
       placeholder: "Customer Type",
       value: filters.customerTypeId,
       onChange: (value) => setFilters({ customerTypeId: value ?? "" }),
+      onCancelPress: () => setFilters({ customerTypeId: "" }),
       options: customerOptions,
+      searchableSelectClassName: "w-full max-w-[180px]",
     },
     {
       key: "industryId",
-      type: "select",
+      type: "searchable-select",
       placeholder: "Industry Type",
       value: filters.industryId,
       onChange: (value) => setFilters({ industryId: value ?? "" }),
+      onCancelPress: () => setFilters({ industryId: "" }),
       options: industryOptions,
+      searchableSelectClassName: "w-full max-w-[180px]",
     },
   ];
 

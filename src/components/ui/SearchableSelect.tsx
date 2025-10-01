@@ -60,44 +60,49 @@ export function SearchableSelect({
           <ChevronDownIcon className="size-4 opacity-50" />
         </div>
       </PopoverPrimitive.Trigger>
-      <PopoverPrimitive.Content
-        className={cn(
-          "bg-popover text-popover-foreground relative z-50 max-h-64 w-[var(--radix-popover-trigger-width)] min-w-[8rem] overflow-x-hidden overflow-y-auto rounded-md border p-1 shadow-md"
-        )}
-        align="start"
-        sideOffset={4}
-      >
-        <input
-          type="text"
-          placeholder="Search..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="mb-1 w-full rounded-md border px-2 py-1 text-sm focus:outline-none"
-        />
-        {filteredOptions.length > 0 ? (
-          filteredOptions.map((opt) => (
-            <div
-              key={opt.value}
-              onClick={() => {
-                onChange(opt.value);
-                setOpen(false);
-                setSearch("");
-              }}
-              className={cn(
-                "focus:bg-accent focus:text-accent-foreground hover:bg-accent hover:text-accent-foreground relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm select-none",
-                value === opt.value && "bg-accent text-accent-foreground"
-              )}
-            >
-              <span className="flex-1">{opt.label}</span>
-              {value === opt.value && <CheckIcon className="size-4 shrink-0" />}
+      <PopoverPrimitive.Portal>
+        <PopoverPrimitive.Content
+          className={cn(
+            "bg-popover text-popover-foreground relative z-50 max-h-64 w-[var(--radix-popover-trigger-width)] min-w-[8rem] overflow-x-hidden overflow-y-auto rounded-md border p-1 shadow-md"
+          )}
+          align="start"
+          sideOffset={4}
+          collisionPadding={8}
+        >
+          <input
+            type="text"
+            placeholder="Search..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="mb-1 w-full rounded-md border px-2 py-1 text-sm focus:outline-none"
+          />
+          {filteredOptions.length > 0 ? (
+            filteredOptions.map((opt) => (
+              <div
+                key={opt.value}
+                onClick={() => {
+                  onChange(opt.value);
+                  setOpen(false);
+                  setSearch("");
+                }}
+                className={cn(
+                  "focus:bg-accent focus:text-accent-foreground hover:bg-accent hover:text-accent-foreground relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm select-none",
+                  value === opt.value && "bg-accent text-accent-foreground"
+                )}
+              >
+                <span className="flex-1">{opt.label}</span>
+                {value === opt.value && (
+                  <CheckIcon className="size-4 shrink-0" />
+                )}
+              </div>
+            ))
+          ) : (
+            <div className="text-muted-foreground p-2 text-sm">
+              No options found.
             </div>
-          ))
-        ) : (
-          <div className="text-muted-foreground p-2 text-sm">
-            No options found.
-          </div>
-        )}
-      </PopoverPrimitive.Content>
+          )}
+        </PopoverPrimitive.Content>
+      </PopoverPrimitive.Portal>
     </PopoverPrimitive.Root>
   );
 }
