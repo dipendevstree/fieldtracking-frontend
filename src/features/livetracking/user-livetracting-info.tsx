@@ -205,18 +205,20 @@ const UserTrackingTimeline = ({
     if (!sessions || sessions.length === 0) return [];
 
     return sessions.flatMap((session, index) => {
-      const timeline: any[] = [];
+      const items: any[] = [];
+
       // Punch In
-      timeline.push({
+      items.push({
         id: session.workDaySessionId + "_in",
         type: "punch_in",
         title: "Punch In",
         location: session.dayStartAddress ?? "Location not provided",
         time: format(new Date(session.startTime), "hh:mm a"),
+        rawTime: new Date(session.startTime).getTime(),
         color: "bg-teal-500",
       });
 
-      // Tasks (if any)
+      // Visits
       if (visits && visits.length > 0) {
         visits.forEach((task: any) => {
           const visitTime = new Date(task.visitCheckOutTime);
@@ -225,15 +227,14 @@ const UserTrackingTimeline = ({
             ? new Date(session.endTime)
             : new Date();
           if (visitTime >= sessionStart && visitTime <= sessionEnd) {
-            timeline.push({
+            items.push({
               id: task.visitId,
               type: "task",
               title: `Visit - ${task.purpose}`,
               description: task?.customer?.companyName,
               location: task?.checkoutAddress,
-              time: task.visitCheckOutTime
-                ? format(new Date(task.visitCheckOutTime), "hh:mm a")
-                : undefined,
+              time: format(visitTime, "hh:mm a"),
+              rawTime: visitTime.getTime(),
               color: "bg-gray-400",
             });
           }
@@ -243,16 +244,17 @@ const UserTrackingTimeline = ({
       // Breaks
       if (session.breaks && session.breaks.length > 0) {
         session.breaks.forEach((brk: any) => {
-          const start = format(new Date(brk.breakStartTime), "hh:mm a");
-          const end = brk.breakEndTime
-            ? format(new Date(brk.breakEndTime), "hh:mm a")
-            : "Ongoing";
-          timeline.push({
+          const startDate = new Date(brk.breakStartTime);
+          const endDate = brk.breakEndTime ? new Date(brk.breakEndTime) : null;
+          items.push({
             id: brk.workBreakSessionId,
             type: "break",
             title: "Break",
             subtitle: brk.breakType,
-            description: `${start} - ${end}`,
+            description: `${format(startDate, "hh:mm a")} - ${
+              endDate ? format(endDate, "hh:mm a") : "Ongoing"
+            }`,
+            rawTime: startDate.getTime(),
             color: "bg-yellow-400",
           });
         });
@@ -260,23 +262,29 @@ const UserTrackingTimeline = ({
 
       // Punch Out
       if (session.endTime) {
-        timeline.push({
+        const endDate = new Date(session.endTime);
+        items.push({
           id: session.workDaySessionId + "_out",
           type: "punch_out",
           title: "Punch Out",
           location: session.dayEndAddress ?? "Location not provided",
-          time: format(new Date(session.endTime), "hh:mm a"),
+          time: format(endDate, "hh:mm a"),
+          rawTime: endDate.getTime(),
           color: "bg-red-500",
         });
       }
 
+      // ✅ Sort events by time inside each session
+      items.sort((a, b) => (a.rawTime ?? 0) - (b.rawTime ?? 0));
+
       if (index < sessions.length - 1) {
-        timeline.push({
+        items.push({
           id: `separator_${session.workDaySessionId}`,
           type: "separator",
         });
       }
-      return timeline;
+
+      return items;
     });
   };
 
@@ -353,7 +361,7 @@ const UserTrackingTimeline = ({
                 alt={user.fullName}
                 className="h-12 w-12 rounded-full object-cover"
               />
-            ): (
+            ) : (
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-600 font-bold text-white">
                 {/* Gracefully handle user initials */}
                 {user?.firstName?.[0]}
