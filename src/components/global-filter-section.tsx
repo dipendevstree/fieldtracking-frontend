@@ -87,6 +87,7 @@ export function DataTableToolbarCompact({
           if (filter.type === "searchable-select") {
             return (
               <div
+                key={filter.key}
                 className={`${filter.searchableSelectClassName ?? "w-full max-w-md"}`}
               >
                 <SearchableSelect

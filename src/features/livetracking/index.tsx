@@ -92,7 +92,11 @@ export default function Livetracking() {
   });
   const enhancedSingleUser = user ? enhanceUser(user) : null;
 
-  const enhancedUserList = (data?.list ?? []).map(enhanceUser);
+  const enhancedUserList = (data?.list ?? [])
+    .map(enhanceUser)
+    .sort((a: any, b: any) =>
+      a.isOnline === b.isOnline ? 0 : a.isOnline ? -1 : 1
+    );
 
   const { data: territoriesList } = useGetAllTerritoriesForDropdown();
   const territories = useSelectOptions<any>({
