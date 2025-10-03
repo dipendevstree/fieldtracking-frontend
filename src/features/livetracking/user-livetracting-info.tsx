@@ -45,7 +45,7 @@ const UserTrackingTimeline = ({
 
   // Destructure isLoading state from custom hooks
   const { user, isLoading: isUserLoading } = userDetailsById(userId ?? "");
-  const { data: visits } = useGetAllVisit({
+  const { data: visits, isFetched: isVisitsFetched } = useGetAllVisit({
     startDate: selectedDate,
     endDate: selectedDate,
     status: "completed",
@@ -60,6 +60,7 @@ const UserTrackingTimeline = ({
   );
 
   const [liveUserSession, setLiveUserSession] = useState(userSession);
+  const [liveVisits, setLiveVisits] = useState<any[]>([]);
 
   const { analytics, isLoading: isAnalyticsLoading } = useVisitAnalytics(
     userId,
@@ -146,6 +147,22 @@ const UserTrackingTimeline = ({
       }
     }
   }, [selectedDate, isFetched, trackingData.length]); // Dependencies are complete
+
+  useEffect(() => {
+    if (userSession) {
+      setLiveUserSession(userSession);
+    } else {
+      setLiveUserSession({ sessions: [] });
+    }
+  }, [userSession, selectedDate]);
+
+  useEffect(() => {
+    if (isVisitsFetched && visits) {
+      setLiveVisits(visits);
+    } else {
+      setLiveVisits([]);
+    }
+  }, [visits, isVisitsFetched]);
 
   // MODIFIED: Socket effect now efficiently updates the distance.
   useEffect(() => {
@@ -278,9 +295,29 @@ const UserTrackingTimeline = ({
     };
 
     const handleVisit = (event: any) => {
-      console.log("tewtwetwetwetwetwetwe", event);
-      if (event.userId !== userId) return;
-      console.log("tewtwetwetwetwetwetwe", event);
+      // Guard clauses to ensure the event is for the current user and selected date
+      if (event.salesRepresentativeUserId !== userId) return;
+      if (moment(event.date).format("YYYY-MM-DD") !== selectedDate) return;
+
+      setLiveVisits((prevVisits) => {
+        const visitIndex = prevVisits.findIndex(
+          (v: any) => v.visitId === event.visitId
+        );
+
+        if (visitIndex > -1) {
+          // Visit exists, so we update it in the array
+          const updatedVisits = [...prevVisits];
+          // Merge to preserve any fields not sent in the socket event
+          updatedVisits[visitIndex] = {
+            ...updatedVisits[visitIndex],
+            ...event,
+          };
+          return updatedVisits;
+        } else {
+          // This is a new visit, add it to the start of the array
+          return [event, ...prevVisits];
+        }
+      });
     };
 
     if (socketForVisitOrignal.connected) {
@@ -299,14 +336,6 @@ const UserTrackingTimeline = ({
       socketForVisitOrignal.off("in_visit", handleVisit);
     };
   }, [socketForVisit, userId, selectedDate]);
-
-  useEffect(() => {
-    if (userSession) {
-      setLiveUserSession(userSession);
-    } else {
-      setLiveUserSession({ sessions: [] });
-    }
-  }, [userSession, selectedDate]);
 
   // Dynamic timeline formatter (no changes needed here)
   const formatTimelineData = (sessions: any[]) => {
@@ -327,8 +356,8 @@ const UserTrackingTimeline = ({
       });
 
       // Visits
-      if (visits && visits.length > 0) {
-        visits.forEach((task: any) => {
+      if (liveVisits && liveVisits.length > 0) {
+        liveVisits.forEach((task: any) => {
           const visitTime = new Date(task.visitCheckOutTime);
           const sessionStart = new Date(session.startTime);
           const sessionEnd = session.endTime
@@ -399,7 +428,7 @@ const UserTrackingTimeline = ({
   const timelineData = useMemo(
     () =>
       formatTimelineData((liveUserSession?.sessions ?? []).slice().reverse()),
-    [liveUserSession?.sessions, visits]
+    [liveUserSession?.sessions, liveVisits]
   );
 
   // Loading state UI
