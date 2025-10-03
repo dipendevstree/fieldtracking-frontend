@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { MapPin, Loader2 } from "lucide-react";
 import { format } from "date-fns";
-import { socket } from "../../socket/socket";
+import { socket, socketForVisit } from "../../socket/socket";
 
 import {
   getWorkDaySession,
@@ -16,6 +16,7 @@ import { getHaversineDistance } from "./data/commonFunction";
 import moment from "moment-timezone";
 import { getFormattedAddress } from "@/utils/commonFunction";
 import { useGetAllVisit } from "../calendar/services/calendar-view.hook";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 interface UserTrackingTimelineProps {
   userId: any;
@@ -51,10 +52,15 @@ const UserTrackingTimeline = ({
     salesRepresentativeUserId: userId ?? "",
   });
 
+  const { user: userAuth } = useAuthStore();
+
   const { userSession, isLoading: isSessionLoading } = getWorkDaySession(
     userId ?? "",
     selectedDate
   );
+
+  const [liveUserSession, setLiveUserSession] = useState(userSession);
+
   const { analytics, isLoading: isAnalyticsLoading } = useVisitAnalytics(
     userId,
     selectedDate,
@@ -150,13 +156,6 @@ const UserTrackingTimeline = ({
     };
 
     const handleLiveLocation = (event: any) => {
-      console.log(
-        "event123456",
-        event,
-        moment(event.date).format("YYYY-MM-DD"),
-        selectedDate
-      );
-
       if (
         event?.lat &&
         event?.long &&
@@ -200,6 +199,115 @@ const UserTrackingTimeline = ({
     };
   }, [socket, userId, selectedDate]); // Added props to dependency array
 
+  // Socket listeners
+  useEffect(() => {
+    const socketForVisitOrignal = socketForVisit(userAuth?.access_token);
+    if (!socketForVisit || !userId) return;
+
+    const handleConnect = () => {
+      socketForVisitOrignal.emit("track_user", { userId });
+    };
+
+    const handleWorkSession = (event: any) => {
+      if (event.userId !== userId) return;
+
+      setLiveUserSession((prev: any) => {
+        if (!prev) return null; // Safety check
+        // Deep clone to ensure immutability
+        const updatedSessions = JSON.parse(JSON.stringify(prev.sessions));
+        const sessionIndex = updatedSessions.findIndex(
+          (s: any) => s.workDaySessionId === event.workDaySessionId
+        );
+
+        if (sessionIndex > -1) {
+          // Update existing session (e.g., punch-out event)
+          updatedSessions[sessionIndex] = {
+            ...updatedSessions[sessionIndex],
+            ...event,
+          };
+        } else {
+          // Add new session (e.g., new punch-in event)
+          updatedSessions.unshift(event);
+        }
+
+        const isDayNowStarted = updatedSessions.some(
+          (s: any) => s.status === "in_progress"
+        );
+        return {
+          ...prev,
+          sessions: updatedSessions,
+          isDayStarted: isDayNowStarted,
+        };
+      });
+    };
+
+    // This handler updates nested breaks inside a work session
+    const handleBreakSession = (event: any) => {
+      if (event.userId !== userId) return;
+
+      setLiveUserSession((prev: any) => {
+        if (!prev) return null;
+        const updatedSessions = JSON.parse(JSON.stringify(prev.sessions));
+        const parentSession = updatedSessions.find(
+          (s: any) => s.workDaySessionId === event.workDaySessionId
+        );
+
+        if (parentSession) {
+          if (!parentSession.breaks) parentSession.breaks = []; // Ensure breaks array exists
+          const breakIndex = parentSession.breaks.findIndex(
+            (b: any) => b.workBreakSessionId === event.workBreakSessionId
+          );
+
+          if (breakIndex > -1) {
+            // Update an existing break
+            parentSession.breaks[breakIndex] = {
+              ...parentSession.breaks[breakIndex],
+              ...event,
+            };
+          } else {
+            // Add a new break
+            parentSession.breaks.push(event);
+          }
+          parentSession.isOnBreak = parentSession.breaks.some(
+            (b: any) => b.status !== "completed"
+          );
+        }
+
+        return { ...prev, sessions: updatedSessions };
+      });
+    };
+
+    const handleVisit = (event: any) => {
+      console.log("tewtwetwetwetwetwetwe", event);
+      if (event.userId !== userId) return;
+      console.log("tewtwetwetwetwetwetwe", event);
+    };
+
+    if (socketForVisitOrignal.connected) {
+      handleConnect();
+    } else {
+      socketForVisitOrignal.on("connect", handleConnect);
+    }
+
+    socketForVisitOrignal.on("work_session", handleWorkSession);
+    socketForVisitOrignal.on("break_session", handleBreakSession);
+    socketForVisitOrignal.on("in_visit", handleVisit);
+
+    return () => {
+      socketForVisitOrignal.off("work_session", handleWorkSession);
+      socketForVisitOrignal.off("break_session", handleBreakSession);
+      socketForVisitOrignal.off("in_visit", handleVisit);
+    };
+  }, [socketForVisit, userId, selectedDate]);
+
+  useEffect(() => {
+    if (userSession) {
+      setLiveUserSession(userSession);
+    } else {
+      setLiveUserSession({ sessions: [] });
+    }
+  }, [userSession, selectedDate]);
+
   // Dynamic timeline formatter (no changes needed here)
   const formatTimelineData = (sessions: any[]) => {
     if (!sessions || sessions.length === 0) return [];
@@ -228,7 +336,7 @@ const UserTrackingTimeline = ({
             : new Date();
           if (visitTime >= sessionStart && visitTime <= sessionEnd) {
             items.push({
-              id: task.visitId,
+              id: `${session.workDaySessionId}_visit_${task.visitId}`,
               type: "task",
               title: `Visit - ${task.purpose}`,
               description: task?.customer?.companyName,
@@ -247,7 +355,7 @@ const UserTrackingTimeline = ({
           const startDate = new Date(brk.breakStartTime);
           const endDate = brk.breakEndTime ? new Date(brk.breakEndTime) : null;
           items.push({
-            id: brk.workBreakSessionId,
+            id: `${session.workDaySessionId}_break_${brk.workBreakSessionId}`,
             type: "break",
             title: "Break",
             subtitle: brk.breakType,
@@ -289,8 +397,9 @@ const UserTrackingTimeline = ({
   };
 
   const timelineData = useMemo(
-    () => formatTimelineData((userSession?.sessions ?? []).slice().reverse()),
-    [userSession?.sessions, visits]
+    () =>
+      formatTimelineData((liveUserSession?.sessions ?? []).slice().reverse()),
+    [liveUserSession?.sessions, visits]
   );
 
   // Loading state UI
