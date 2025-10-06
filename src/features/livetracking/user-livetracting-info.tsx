@@ -523,17 +523,17 @@ const UserTrackingTimeline = ({
             </div>
             <span
               className={`flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium ${
-                userSession?.isDayStarted
+                liveUserSession?.isDayStarted
                   ? "bg-green-100 text-green-700"
                   : "bg-red-100 text-red-700"
               }`}
             >
               <div
                 className={`h-2 w-2 rounded-full ${
-                  userSession?.isDayStarted ? "bg-green-500" : "bg-red-500"
+                  liveUserSession?.isDayStarted ? "bg-green-500" : "bg-red-500"
                 }`}
               ></div>
-              {userSession?.isDayStarted ? "Active" : "Offline"}
+              {liveUserSession?.isDayStarted ? "Active" : "Offline"}
             </span>
           </div>
         </div>
