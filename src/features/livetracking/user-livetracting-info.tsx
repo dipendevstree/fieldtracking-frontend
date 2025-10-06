@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { MapPin, Loader2 } from "lucide-react";
 import { format } from "date-fns";
-import { socket } from "../../socket/socket";
+import { socket, socketForVisit } from "../../socket/socket";
 
 import {
   getWorkDaySession,
@@ -16,6 +16,7 @@ import { getHaversineDistance } from "./data/commonFunction";
 import moment from "moment-timezone";
 import { getFormattedAddress } from "@/utils/commonFunction";
 import { useGetAllVisit } from "../calendar/services/calendar-view.hook";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 interface UserTrackingTimelineProps {
   userId: any;
@@ -44,17 +45,23 @@ const UserTrackingTimeline = ({
 
   // Destructure isLoading state from custom hooks
   const { user, isLoading: isUserLoading } = userDetailsById(userId ?? "");
-  const { data: visits } = useGetAllVisit({
+  const { data: visits, isFetched: isVisitsFetched } = useGetAllVisit({
     startDate: selectedDate,
     endDate: selectedDate,
     status: "completed",
     salesRepresentativeUserId: userId ?? "",
   });
 
+  const { user: userAuth } = useAuthStore();
+
   const { userSession, isLoading: isSessionLoading } = getWorkDaySession(
     userId ?? "",
     selectedDate
   );
+
+  const [liveUserSession, setLiveUserSession] = useState(userSession);
+  const [liveVisits, setLiveVisits] = useState<any[]>([]);
+
   const { analytics, isLoading: isAnalyticsLoading } = useVisitAnalytics(
     userId,
     selectedDate,
@@ -141,6 +148,22 @@ const UserTrackingTimeline = ({
     }
   }, [selectedDate, isFetched, trackingData.length]); // Dependencies are complete
 
+  useEffect(() => {
+    if (userSession) {
+      setLiveUserSession(userSession);
+    } else {
+      setLiveUserSession({ sessions: [] });
+    }
+  }, [userSession, selectedDate]);
+
+  useEffect(() => {
+    if (isVisitsFetched && visits) {
+      setLiveVisits(visits);
+    } else {
+      setLiveVisits([]);
+    }
+  }, [visits, isVisitsFetched]);
+
   // MODIFIED: Socket effect now efficiently updates the distance.
   useEffect(() => {
     if (!socket || !userId) return;
@@ -150,13 +173,6 @@ const UserTrackingTimeline = ({
     };
 
     const handleLiveLocation = (event: any) => {
-      console.log(
-        "event123456",
-        event,
-        moment(event.date).format("YYYY-MM-DD"),
-        selectedDate
-      );
-
       if (
         event?.lat &&
         event?.long &&
@@ -200,40 +216,162 @@ const UserTrackingTimeline = ({
     };
   }, [socket, userId, selectedDate]); // Added props to dependency array
 
+  // Socket listeners
+  useEffect(() => {
+    const socketForVisitOrignal = socketForVisit(userAuth?.access_token);
+    if (!socketForVisit || !userId) return;
+
+    const handleConnect = () => {
+      socketForVisitOrignal.emit("track_user", { userId });
+    };
+
+    const handleWorkSession = (event: any) => {
+      if (event.userId !== userId) return;
+
+      setLiveUserSession((prev: any) => {
+        if (!prev) return null; // Safety check
+        // Deep clone to ensure immutability
+        const updatedSessions = JSON.parse(JSON.stringify(prev.sessions));
+        const sessionIndex = updatedSessions.findIndex(
+          (s: any) => s.workDaySessionId === event.workDaySessionId
+        );
+
+        if (sessionIndex > -1) {
+          // Update existing session (e.g., punch-out event)
+          updatedSessions[sessionIndex] = {
+            ...updatedSessions[sessionIndex],
+            ...event,
+          };
+        } else {
+          // Add new session (e.g., new punch-in event)
+          updatedSessions.unshift(event);
+        }
+
+        const isDayNowStarted = updatedSessions.some(
+          (s: any) => s.status === "in_progress"
+        );
+        return {
+          ...prev,
+          sessions: updatedSessions,
+          isDayStarted: isDayNowStarted,
+        };
+      });
+    };
+
+    // This handler updates nested breaks inside a work session
+    const handleBreakSession = (event: any) => {
+      if (event.userId !== userId) return;
+
+      setLiveUserSession((prev: any) => {
+        if (!prev) return null;
+        const updatedSessions = JSON.parse(JSON.stringify(prev.sessions));
+        const parentSession = updatedSessions.find(
+          (s: any) => s.workDaySessionId === event.workDaySessionId
+        );
+
+        if (parentSession) {
+          if (!parentSession.breaks) parentSession.breaks = []; // Ensure breaks array exists
+          const breakIndex = parentSession.breaks.findIndex(
+            (b: any) => b.workBreakSessionId === event.workBreakSessionId
+          );
+
+          if (breakIndex > -1) {
+            // Update an existing break
+            parentSession.breaks[breakIndex] = {
+              ...parentSession.breaks[breakIndex],
+              ...event,
+            };
+          } else {
+            // Add a new break
+            parentSession.breaks.push(event);
+          }
+          parentSession.isOnBreak = parentSession.breaks.some(
+            (b: any) => b.status !== "completed"
+          );
+        }
+
+        return { ...prev, sessions: updatedSessions };
+      });
+    };
+
+    const handleVisit = (event: any) => {
+      // Guard clauses to ensure the event is for the current user and selected date
+      if (event.salesRepresentativeUserId !== userId) return;
+      if (moment(event.date).format("YYYY-MM-DD") !== selectedDate) return;
+
+      setLiveVisits((prevVisits) => {
+        const visitIndex = prevVisits.findIndex(
+          (v: any) => v.visitId === event.visitId
+        );
+
+        if (visitIndex > -1) {
+          // Visit exists, so we update it in the array
+          const updatedVisits = [...prevVisits];
+          // Merge to preserve any fields not sent in the socket event
+          updatedVisits[visitIndex] = {
+            ...updatedVisits[visitIndex],
+            ...event,
+          };
+          return updatedVisits;
+        } else {
+          // This is a new visit, add it to the start of the array
+          return [event, ...prevVisits];
+        }
+      });
+    };
+
+    if (socketForVisitOrignal.connected) {
+      handleConnect();
+    } else {
+      socketForVisitOrignal.on("connect", handleConnect);
+    }
+
+    socketForVisitOrignal.on("work_session", handleWorkSession);
+    socketForVisitOrignal.on("break_session", handleBreakSession);
+    socketForVisitOrignal.on("in_visit", handleVisit);
+
+    return () => {
+      socketForVisitOrignal.off("work_session", handleWorkSession);
+      socketForVisitOrignal.off("break_session", handleBreakSession);
+      socketForVisitOrignal.off("in_visit", handleVisit);
+    };
+  }, [socketForVisit, userId, selectedDate]);
+
   // Dynamic timeline formatter (no changes needed here)
   const formatTimelineData = (sessions: any[]) => {
     if (!sessions || sessions.length === 0) return [];
 
     return sessions.flatMap((session, index) => {
-      const timeline: any[] = [];
+      const items: any[] = [];
+
       // Punch In
-      timeline.push({
+      items.push({
         id: session.workDaySessionId + "_in",
         type: "punch_in",
         title: "Punch In",
         location: session.dayStartAddress ?? "Location not provided",
         time: format(new Date(session.startTime), "hh:mm a"),
+        rawTime: new Date(session.startTime).getTime(),
         color: "bg-teal-500",
       });
 
-      // Tasks (if any)
-      if (visits && visits.length > 0) {
-        visits.forEach((task: any) => {
+      // Visits
+      if (liveVisits && liveVisits.length > 0) {
+        liveVisits.forEach((task: any) => {
           const visitTime = new Date(task.visitCheckOutTime);
           const sessionStart = new Date(session.startTime);
           const sessionEnd = session.endTime
             ? new Date(session.endTime)
             : new Date();
           if (visitTime >= sessionStart && visitTime <= sessionEnd) {
-            timeline.push({
-              id: task.visitId,
+            items.push({
+              id: `${session.workDaySessionId}_visit_${task.visitId}`,
               type: "task",
               title: `Visit - ${task.purpose}`,
               description: task?.customer?.companyName,
               location: task?.checkoutAddress,
-              time: task.visitCheckOutTime
-                ? format(new Date(task.visitCheckOutTime), "hh:mm a")
-                : undefined,
+              time: format(visitTime, "hh:mm a"),
+              rawTime: visitTime.getTime(),
               color: "bg-gray-400",
             });
           }
@@ -243,16 +381,17 @@ const UserTrackingTimeline = ({
       // Breaks
       if (session.breaks && session.breaks.length > 0) {
         session.breaks.forEach((brk: any) => {
-          const start = format(new Date(brk.breakStartTime), "hh:mm a");
-          const end = brk.breakEndTime
-            ? format(new Date(brk.breakEndTime), "hh:mm a")
-            : "Ongoing";
-          timeline.push({
-            id: brk.workBreakSessionId,
+          const startDate = new Date(brk.breakStartTime);
+          const endDate = brk.breakEndTime ? new Date(brk.breakEndTime) : null;
+          items.push({
+            id: `${session.workDaySessionId}_break_${brk.workBreakSessionId}`,
             type: "break",
             title: "Break",
             subtitle: brk.breakType,
-            description: `${start} - ${end}`,
+            description: `${format(startDate, "hh:mm a")} - ${
+              endDate ? format(endDate, "hh:mm a") : "Ongoing"
+            }`,
+            rawTime: startDate.getTime(),
             color: "bg-yellow-400",
           });
         });
@@ -260,29 +399,36 @@ const UserTrackingTimeline = ({
 
       // Punch Out
       if (session.endTime) {
-        timeline.push({
+        const endDate = new Date(session.endTime);
+        items.push({
           id: session.workDaySessionId + "_out",
           type: "punch_out",
           title: "Punch Out",
           location: session.dayEndAddress ?? "Location not provided",
-          time: format(new Date(session.endTime), "hh:mm a"),
+          time: format(endDate, "hh:mm a"),
+          rawTime: endDate.getTime(),
           color: "bg-red-500",
         });
       }
 
+      // ✅ Sort events by time inside each session
+      items.sort((a, b) => (a.rawTime ?? 0) - (b.rawTime ?? 0));
+
       if (index < sessions.length - 1) {
-        timeline.push({
+        items.push({
           id: `separator_${session.workDaySessionId}`,
           type: "separator",
         });
       }
-      return timeline;
+
+      return items;
     });
   };
 
   const timelineData = useMemo(
-    () => formatTimelineData((userSession?.sessions ?? []).slice().reverse()),
-    [userSession?.sessions, visits]
+    () =>
+      formatTimelineData((liveUserSession?.sessions ?? []).slice().reverse()),
+    [liveUserSession?.sessions, liveVisits]
   );
 
   // Loading state UI
@@ -353,7 +499,7 @@ const UserTrackingTimeline = ({
                 alt={user.fullName}
                 className="h-12 w-12 rounded-full object-cover"
               />
-            ): (
+            ) : (
               <div className="flex h-12 w-12 items-center justify-center rounded-full bg-teal-600 font-bold text-white">
                 {/* Gracefully handle user initials */}
                 {user?.firstName?.[0]}
@@ -377,17 +523,17 @@ const UserTrackingTimeline = ({
             </div>
             <span
               className={`flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium ${
-                userSession?.isDayStarted
+                liveUserSession?.isDayStarted
                   ? "bg-green-100 text-green-700"
                   : "bg-red-100 text-red-700"
               }`}
             >
               <div
                 className={`h-2 w-2 rounded-full ${
-                  userSession?.isDayStarted ? "bg-green-500" : "bg-red-500"
+                  liveUserSession?.isDayStarted ? "bg-green-500" : "bg-red-500"
                 }`}
               ></div>
-              {userSession?.isDayStarted ? "Active" : "Offline"}
+              {liveUserSession?.isDayStarted ? "Active" : "Offline"}
             </span>
           </div>
         </div>
