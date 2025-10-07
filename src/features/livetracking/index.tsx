@@ -19,7 +19,8 @@ import {
 import { GoogleMap } from "@react-google-maps/api";
 import { useSearch } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { socket } from "@/socket/socket";
+import { socket, socketForVisit } from "@/socket/socket";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 // Assuming you have a Button component
 const AHMEDABAD_CENTER = { lat: 23.0225, lng: 72.5714 };
@@ -41,8 +42,10 @@ export default function Livetracking() {
     roleId: "",
     territoryId: "",
     includeLatLong: true,
+    sortField: "isOnline",
   });
 
+  const { user: userAuth } = useAuthStore();
   const { userId }: any = useSearch({ from: "/_authenticated/livetracking/" });
 
   const [currentPosition, setCurrentPosition] = useState<{
@@ -57,6 +60,9 @@ export default function Livetracking() {
   const mapRef = useRef<google.maps.Map | null>(null);
 
   const { data, isLoading, totalCount } = useGetUsers(pagination);
+  const [userStatusMap, setUserStatusMap] = useState<Record<string, boolean>>(
+    {}
+  );
 
   const [selectedUserId, setSelectedUserId] = useState(userId);
   const { data: allRoles } = useGetAllRolesForDropdown();
@@ -158,7 +164,7 @@ export default function Livetracking() {
 
   useEffect(() => {
     window.addEventListener("popstate", handlePopState);
-    updateMapCenterFromUserList(enhancedUserList);
+    updateMapCenterFromUserList(enhancedUserListWithStatus);
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
@@ -241,10 +247,6 @@ export default function Livetracking() {
     }
   }, [currentPosition]);
 
-  const selectedUser = enhancedUserList.find(
-    (u: any) => u.id === selectedUserId
-  );
-
   const handleNextPage = () => {
     if (pagination.page * pagination.limit < totalCount) {
       setPagination((prev) => ({
@@ -263,6 +265,49 @@ export default function Livetracking() {
     }
   };
 
+  // Socket listeners
+  useEffect(() => {
+    const userId = userAuth?.id;
+    const socketForVisitOrignal = socketForVisit(userAuth?.access_token);
+    if (!socketForVisitOrignal || !userId) return;
+
+    const handleConnect = () => {
+      socketForVisitOrignal.emit("track_user", { userId });
+    };
+
+    const handleUserStatus = (event: { userId: string; online: boolean }) => {
+      setUserStatusMap((prev) => ({
+        ...prev,
+        [event.userId]: event.online,
+      }));
+    };
+
+    if (socketForVisitOrignal.connected) {
+      handleConnect();
+    } else {
+      socketForVisitOrignal.on("connect", handleConnect);
+    }
+
+    socketForVisitOrignal.on("user_online_status", handleUserStatus);
+
+    return () => {
+      socketForVisitOrignal.off("user_online_status", handleUserStatus);
+    };
+  }, [socketForVisit]);
+
+  const enhancedUserListWithStatus = enhancedUserList
+    .map((user: any) => ({
+      ...user,
+      isOnline: userStatusMap[user.id] ?? user.isOnline,
+    }))
+    .sort((a: any, b: any) =>
+      a.isOnline === b.isOnline ? 0 : a.isOnline ? -1 : 1
+    );
+
+  const selectedUser = enhancedUserListWithStatus.find(
+    (u: any) => u.id === selectedUserId
+  );
+
   return (
     <Main className={cn("flex flex-col p-4")}>
       <GlobalFilterSection
@@ -279,6 +324,7 @@ export default function Livetracking() {
             roleId: "",
             territoryId: "",
             includeLatLong: true,
+            sortField: "isOnline",
           });
         }}
       />
@@ -294,7 +340,7 @@ export default function Livetracking() {
           </CardContent>
         </Card>
       )}
-      {!isLoading && enhancedUserList.length > 0 && (
+      {!isLoading && enhancedUserListWithStatus.length > 0 && (
         <Card>
           <CardContent className="flex gap-4 p-0">
             <div className="w-100 space-y-2 overflow-y-auto px-2">
@@ -309,7 +355,7 @@ export default function Livetracking() {
               ) : (
                 <>
                   <div style={{ maxHeight: "60vh", overflow: "auto" }}>
-                    {enhancedUserList.map((user: any) => (
+                    {enhancedUserListWithStatus.map((user: any) => (
                       <Card
                         key={user.id}
                         className={`cursor-pointer p-2 transition-all hover:shadow-md mb-2`}
@@ -390,7 +436,7 @@ export default function Livetracking() {
                     />
                   ) : (
                     <UserListMap
-                      enhancedUserList={enhancedUserList}
+                      enhancedUserList={enhancedUserListWithStatus}
                       mapRef={mapRef}
                       onMarkerClick={handleUserClick}
                     />
@@ -401,20 +447,22 @@ export default function Livetracking() {
           </CardContent>
         </Card>
       )}
-      {hasFiltersSelected && !isLoading && enhancedUserList.length === 0 && (
-        <Card>
-          <CardContent className="flex items-center justify-center p-8">
-            <div className="text-center">
-              <div className="text-muted-foreground mb-2 text-lg font-medium">
-                No users found
+      {hasFiltersSelected &&
+        !isLoading &&
+        enhancedUserListWithStatus.length === 0 && (
+          <Card>
+            <CardContent className="flex items-center justify-center p-8">
+              <div className="text-center">
+                <div className="text-muted-foreground mb-2 text-lg font-medium">
+                  No users found
+                </div>
+                <p className="text-muted-foreground text-sm">
+                  Try adjusting your filters to find users
+                </p>
               </div>
-              <p className="text-muted-foreground text-sm">
-                Try adjusting your filters to find users
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        )}
     </Main>
   );
 }

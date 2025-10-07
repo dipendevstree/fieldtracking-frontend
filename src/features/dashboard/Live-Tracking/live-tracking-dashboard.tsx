@@ -7,19 +7,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import { FilterConfig, Option } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import { Main } from "@/components/layout/main";
-import { useGetAllRolesForDropdown } from "../../UserManagement/services/Roles.hook";
-import { useGetAllTerritoriesForDropdown } from "../../userterritory/services/user-territory.hook";
-import UserTrackingTimeline from "../../livetracking/user-livetracting-info";
+
 import UserPolylineMap from "./components/UserPolylineMap";
 import UserListMap from "./components/UserListMap";
+
+import { GoogleMap } from "@react-google-maps/api";
+import { Button } from "@/components/ui/button";
+import { socket, socketForVisit } from "@/socket/socket";
+import { useAuthStore } from "@/stores/use-auth-store";
 import {
   useGetUsers,
   userDetailsById,
-} from "../../livetracking/services/live-tracking-services";
-import { GoogleMap } from "@react-google-maps/api";
-// import { useSearch } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
-import { socket } from "@/socket/socket";
+} from "@/features/livetracking/services/live-tracking-services";
+import { useGetAllRolesForDropdown } from "@/features/UserManagement/services/Roles.hook";
+import { useGetAllTerritoriesForDropdown } from "@/features/userterritory/services/user-territory.hook";
+import UserTrackingTimeline from "@/features/livetracking/user-livetracting-info";
 
 // Assuming you have a Button component
 const AHMEDABAD_CENTER = { lat: 23.0225, lng: 72.5714 };
@@ -31,7 +33,7 @@ const containerStyle = {
   overflow: "hidden",
 };
 
-export default function LiveTrackingDashboard() {
+export default function Livetracking() {
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
@@ -41,11 +43,10 @@ export default function LiveTrackingDashboard() {
     roleId: "",
     territoryId: "",
     includeLatLong: true,
+    sortField: "isOnline",
   });
 
-  // const { userId }: any = useSearch({
-  //   from: "",
-  // });
+  const { user: userAuth } = useAuthStore();
 
   const [currentPosition, setCurrentPosition] = useState<{
     lat: number;
@@ -59,6 +60,9 @@ export default function LiveTrackingDashboard() {
   const mapRef = useRef<google.maps.Map | null>(null);
 
   const { data, isLoading, totalCount } = useGetUsers(pagination);
+  const [userStatusMap, setUserStatusMap] = useState<Record<string, boolean>>(
+    {}
+  );
 
   const [selectedUserId, setSelectedUserId] = useState("");
   const { data: allRoles } = useGetAllRolesForDropdown();
@@ -94,7 +98,11 @@ export default function LiveTrackingDashboard() {
   });
   const enhancedSingleUser = user ? enhanceUser(user) : null;
 
-  const enhancedUserList = (data?.list ?? []).map(enhanceUser);
+  const enhancedUserList = (data?.list ?? [])
+    .map(enhanceUser)
+    .sort((a: any, b: any) =>
+      a.isOnline === b.isOnline ? 0 : a.isOnline ? -1 : 1
+    );
 
   const { data: territoriesList } = useGetAllTerritoriesForDropdown();
   const territories = useSelectOptions<any>({
@@ -156,7 +164,7 @@ export default function LiveTrackingDashboard() {
 
   useEffect(() => {
     window.addEventListener("popstate", handlePopState);
-    updateMapCenterFromUserList(enhancedUserList);
+    updateMapCenterFromUserList(enhancedUserListWithStatus);
     return () => {
       window.removeEventListener("popstate", handlePopState);
     };
@@ -226,10 +234,6 @@ export default function LiveTrackingDashboard() {
     }
   }, [currentPosition]);
 
-  const selectedUser = enhancedUserList.find(
-    (u: any) => u.id === selectedUserId
-  );
-
   const handleNextPage = () => {
     if (pagination.page * pagination.limit < totalCount) {
       setPagination((prev) => ({
@@ -248,6 +252,49 @@ export default function LiveTrackingDashboard() {
     }
   };
 
+  // Socket listeners
+  useEffect(() => {
+    const userId = userAuth?.id;
+    const socketForVisitOrignal = socketForVisit(userAuth?.access_token);
+    if (!socketForVisitOrignal || !userId) return;
+
+    const handleConnect = () => {
+      socketForVisitOrignal.emit("track_user", { userId });
+    };
+
+    const handleUserStatus = (event: { userId: string; online: boolean }) => {
+      setUserStatusMap((prev) => ({
+        ...prev,
+        [event.userId]: event.online,
+      }));
+    };
+
+    if (socketForVisitOrignal.connected) {
+      handleConnect();
+    } else {
+      socketForVisitOrignal.on("connect", handleConnect);
+    }
+
+    socketForVisitOrignal.on("user_online_status", handleUserStatus);
+
+    return () => {
+      socketForVisitOrignal.off("user_online_status", handleUserStatus);
+    };
+  }, [socketForVisit]);
+
+  const enhancedUserListWithStatus = enhancedUserList
+    .map((user: any) => ({
+      ...user,
+      isOnline: userStatusMap[user.id] ?? user.isOnline,
+    }))
+    .sort((a: any, b: any) =>
+      a.isOnline === b.isOnline ? 0 : a.isOnline ? -1 : 1
+    );
+
+  const selectedUser = enhancedUserListWithStatus.find(
+    (u: any) => u.id === selectedUserId
+  );
+
   return (
     <Main className={cn("flex flex-col p-0")}>
       <GlobalFilterSection
@@ -264,6 +311,7 @@ export default function LiveTrackingDashboard() {
             roleId: "",
             territoryId: "",
             includeLatLong: true,
+            sortField: "isOnline",
           });
         }}
       />
@@ -279,7 +327,7 @@ export default function LiveTrackingDashboard() {
           </CardContent>
         </Card>
       )}
-      {!isLoading && enhancedUserList.length > 0 && (
+      {!isLoading && enhancedUserListWithStatus.length > 0 && (
         <Card>
           <CardContent className="flex gap-4 p-0">
             <div className="w-100 space-y-2 overflow-y-auto px-2">
@@ -294,7 +342,7 @@ export default function LiveTrackingDashboard() {
               ) : (
                 <>
                   <div style={{ maxHeight: "60vh", overflow: "auto" }}>
-                    {enhancedUserList.map((user: any) => (
+                    {enhancedUserListWithStatus.map((user: any) => (
                       <Card
                         key={user.id}
                         className={`cursor-pointer p-2 transition-all hover:shadow-md mb-2`}
@@ -354,7 +402,7 @@ export default function LiveTrackingDashboard() {
               )}
             </div>
 
-            <div className="flex-1 pr-4 maxHeight: 60vh">
+            <div className="flex-1 pr-4  maxHeight: 60vh">
               {mapCenter && (
                 <GoogleMap
                   key={selectedUserId}
@@ -375,7 +423,7 @@ export default function LiveTrackingDashboard() {
                     />
                   ) : (
                     <UserListMap
-                      enhancedUserList={enhancedUserList}
+                      enhancedUserList={enhancedUserListWithStatus}
                       mapRef={mapRef}
                       onMarkerClick={handleUserClick}
                     />
@@ -386,20 +434,22 @@ export default function LiveTrackingDashboard() {
           </CardContent>
         </Card>
       )}
-      {hasFiltersSelected && !isLoading && enhancedUserList.length === 0 && (
-        <Card>
-          <CardContent className="flex items-center justify-center p-8">
-            <div className="text-center">
-              <div className="text-muted-foreground mb-2 text-lg font-medium">
-                No users found
+      {hasFiltersSelected &&
+        !isLoading &&
+        enhancedUserListWithStatus.length === 0 && (
+          <Card>
+            <CardContent className="flex items-center justify-center p-8">
+              <div className="text-center">
+                <div className="text-muted-foreground mb-2 text-lg font-medium">
+                  No users found
+                </div>
+                <p className="text-muted-foreground text-sm">
+                  Try adjusting your filters to find users
+                </p>
               </div>
-              <p className="text-muted-foreground text-sm">
-                Try adjusting your filters to find users
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        )}
     </Main>
   );
 }

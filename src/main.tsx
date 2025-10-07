@@ -94,6 +94,7 @@ if (!rootElement.innerHTML) {
             <LoadScript
               googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAP_API_KEY}
               libraries={['places']}
+              loadingElement={<div></div>}
             >
               <RouterProvider router={router} />
             </LoadScript>

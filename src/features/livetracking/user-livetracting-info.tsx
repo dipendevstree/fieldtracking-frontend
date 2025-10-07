@@ -91,22 +91,25 @@ const UserTrackingTimeline = ({
       value: selectedDate,
     },
   ];
-  const fetchAddress = async () => {
-    if (trackingData && trackingData.length > 0) {
+  useEffect(() => {
+    if (!trackingData || trackingData.length === 0) {
+      setNearestAddress("No location info available");
+      return;
+    }
+
+    const fetchAddress = async () => {
       const lastPoint = trackingData[0];
+      if (!lastPoint?.lat || !lastPoint?.long) return;
+
       const lat = parseFloat(lastPoint.lat);
       const lng = parseFloat(lastPoint.long);
-
       const address = await getFormattedAddress(lat, lng);
       setNearestAddress(address || "No location info available");
-    } else {
-      setNearestAddress("No location info available");
-    }
-  };
-  // Fetch address for the last tracking data point
-  useEffect(() => {
+    };
+
     fetchAddress();
-  }, [trackingData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(trackingData)]);
 
   useEffect(() => {
     if (isFetched) {
@@ -149,11 +152,20 @@ const UserTrackingTimeline = ({
   }, [selectedDate, isFetched, trackingData.length]); // Dependencies are complete
 
   useEffect(() => {
-    if (userSession) {
-      setLiveUserSession(userSession);
-    } else {
-      setLiveUserSession({ sessions: [] });
+    if (!userSession) {
+      if (liveUserSession?.sessions?.length) {
+        setLiveUserSession({ sessions: [] });
+      }
+      return;
     }
+
+    const newString = JSON.stringify(userSession);
+    const oldString = JSON.stringify(liveUserSession);
+
+    if (newString !== oldString) {
+      setLiveUserSession(userSession);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userSession, selectedDate]);
 
   useEffect(() => {
