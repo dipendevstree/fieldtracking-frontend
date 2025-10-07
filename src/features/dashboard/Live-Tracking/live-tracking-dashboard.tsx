@@ -43,6 +43,7 @@ export default function Livetracking() {
     roleId: "",
     territoryId: "",
     includeLatLong: true,
+    sortField: "isOnline",
   });
 
   const { user: userAuth } = useAuthStore();
@@ -281,10 +282,14 @@ export default function Livetracking() {
     };
   }, [socketForVisit]);
 
-  const enhancedUserListWithStatus = enhancedUserList.map((user: any) => ({
-    ...user,
-    isOnline: userStatusMap[user.id] ?? user.isOnline,
-  }));
+  const enhancedUserListWithStatus = enhancedUserList
+    .map((user: any) => ({
+      ...user,
+      isOnline: userStatusMap[user.id] ?? user.isOnline,
+    }))
+    .sort((a: any, b: any) =>
+      a.isOnline === b.isOnline ? 0 : a.isOnline ? -1 : 1
+    );
 
   const selectedUser = enhancedUserListWithStatus.find(
     (u: any) => u.id === selectedUserId
@@ -306,6 +311,7 @@ export default function Livetracking() {
             roleId: "",
             territoryId: "",
             includeLatLong: true,
+            sortField: "isOnline",
           });
         }}
       />
