@@ -25,7 +25,7 @@ const visitSchema = z.object({
   duration: z
     .string()
     .min(1, "Duration is required")
-    .regex(/^\d+$/, "Duration must be a number"),
+    .regex(/^\d+(\.\d+)?$/, "Duration must be a number"),
   preparationNotes: z.string().optional(),
 });
 
