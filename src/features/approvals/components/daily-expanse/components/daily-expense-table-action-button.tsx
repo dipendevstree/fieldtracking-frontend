@@ -6,8 +6,7 @@ import { DeleteModal } from "@/components/shared/common-delete-modal";
 import Button from "@/components/shared/custom-button";
 import CustomTooltip from "@/components/shared/custom-tooltip";
 import { userUpcomingVisitStoreState } from "@/features/calendar/store/upcoming-visits.store";
-import { useDeleteVisits } from "@/features/calendar/services/calendar-view.hook";
-
+import { useDeleteExpanses } from "@/features/approvals/services/daily-expanses.hook";
 
 type RowProps = {
   row: {
@@ -29,8 +28,8 @@ export function DataTableRowActions({ row }: RowProps) {
     setTimeout(() => setCurrentRow(null), 300);
   };
 
-  const { mutate: deleteDailyExpense } = useDeleteVisits(
-    row.original.visitId,
+  const { mutate: deleteDailyExpense } = useDeleteExpanses(
+    row.original.id,
     closeModal
   );
 
@@ -49,7 +48,7 @@ export function DataTableRowActions({ row }: RowProps) {
   };
 
   const handleDeleteDailyExpense = () => {
-    if (currentRow?.visitId) {
+    if (currentRow?.id) {
       deleteDailyExpense();
     } else {
       closeModal();
