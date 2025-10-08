@@ -1,21 +1,21 @@
-import { Link, Navigate } from '@tanstack/react-router'
-import { BadgeCheck, ChevronsUpDown, LogOut } from 'lucide-react'
-import { useAuthStore } from '@/stores/use-auth-store'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { Navigate } from '@tanstack/react-router'
+// import { BadgeCheck, ChevronsUpDown, LogOut } from 'lucide-react'
+// import { useAuthStore } from '@/stores/use-auth-store'
+// import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuGroup,
+//   DropdownMenuItem,
+//   DropdownMenuLabel,
+//   DropdownMenuSeparator,
+//   DropdownMenuTrigger,
+// } from '@/components/ui/dropdown-menu'
 import {
   SidebarMenu,
-  SidebarMenuButton,
+  // SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
+  // useSidebar,
 } from '@/components/ui/sidebar'
 import { LoginUser } from './types'
 
@@ -24,21 +24,21 @@ export function NavUser({
 }: Readonly<{
   user: LoginUser | null
 }>) {
-  const { isMobile } = useSidebar()
+  // const { isMobile } = useSidebar()
 
-  const { logout } = useAuthStore()
+  // const { logout } = useAuthStore()
 
   if (!user) {
     return <Navigate to='/sign-in' />
   }
-  const handleLogout = () => {
-    logout()
-  }
+  // const handleLogout = () => {
+  //   logout()
+  // }
 
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenu>
+        {/* <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton
               size='lg'
@@ -97,7 +97,7 @@ export function NavUser({
               Log out
             </DropdownMenuItem>
           </DropdownMenuContent>
-        </DropdownMenu>
+        </DropdownMenu> */}
       </SidebarMenuItem>
     </SidebarMenu>
   )
