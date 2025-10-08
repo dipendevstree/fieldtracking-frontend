@@ -383,7 +383,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
   const onSubmit = (data: TFormSchema) => {
     const visitDetails = data.visits.map((visit) => ({
       time: moment(visit.time, "HH:mm").format("h:mm A"),
-      duration: parseInt(visit.duration),
+      duration: Number(visit.duration),
       purpose: visit.purpose,
       customerId: visit.customer,
       priority: visit.priority,
@@ -780,7 +780,8 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                                 <Input
                                   id={`visits.${index}.duration`}
                                   type="number"
-                                  min="1"
+                                  min="0"
+                                  step="0.25"
                                   {...field}
                                 />
                               )}

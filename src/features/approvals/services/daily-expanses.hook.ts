@@ -3,6 +3,7 @@ import { IListParams } from "./calendar-view.hook";
 import API from "@/config/api/api";
 import usePostData from "@/hooks/use-post-data";
 import usePatchData from "@/hooks/use-patch-data";
+import useDeleteData from "@/hooks/use-delete-data";
 
 export const useGetAllDailyExpanses = (
   params: IListParams,
@@ -49,9 +50,24 @@ export const useExpenseReviewAndApproval = (onSuccess?: () => void) => {
   });
 };
 
-export const useExpenseReviewAndApprovalUpdate = (id: string, onSuccess?: () => void) => {
+export const useExpenseReviewAndApprovalUpdate = (
+  id: string,
+  onSuccess?: () => void
+) => {
   return usePatchData({
     url: `${API.dailyExpenses.expenseReviewAndApprovalUpdate}/${id}`,
+    refetchQueries: [API.dailyExpenses.list],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};
+
+export const useDeleteExpanses = (id: string, onSuccess?: () => void) => {
+  return useDeleteData({
+    url: `${API.dailyExpenses.delete}/${id}`,
     refetchQueries: [API.dailyExpenses.list],
     onSuccess: () => {
       if (onSuccess) {
