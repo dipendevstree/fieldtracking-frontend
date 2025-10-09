@@ -73,6 +73,7 @@ const API = {
     updateWorkingHours: "merchant/working-hours",
     statusCounts: "organization/analytics",
     pendingAdmins: "users/all",
+    AllUsers: "users/all",
     updateStatus: "auth/activeDeactivateUserBySuperAdmin",
   },
 

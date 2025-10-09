@@ -8,14 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Main } from "@/components/layout/main";
 import TablePageLayout from "@/components/layout/table-page-layout";
 import { ErrorPage } from "@/components/shared/custom-error";
-import AllUsersTable from "../UserManagement/components/table";
-import { useGetAllUsers } from "../UserManagement/services/AllUsers.hook";
 import { ActionFormModal } from "../driver/components/action-form-modal";
 import { ErrorResponse } from "../merchants/types";
 import { OrganizationsActionModal } from "./components/action-form-modal";
 import PendingUserTable from "./components/pending-user-table";
 import OrganizationsTable from "./components/table";
 import {
+  useGetAllSchemaUsers,
   useGetIndustry,
   useGetOrganizations,
   useGetPendingUsers,
@@ -26,6 +25,7 @@ import GlobalFilterSection from "@/components/global-table-filter-section";
 import { FilterConfig } from "@/components/global-filter-section";
 import debounce from "lodash.debounce";
 import { useSelectOptions } from "@/hooks/use-select-option";
+import AllUsersTable from "./components/all-user-table";
 
 const Organizations = () => {
   const [selectedTab, setSelectedTab] = useState("organizations");
@@ -50,6 +50,11 @@ const Organizations = () => {
     status: "pending",
   });
 
+  const [allUserPagination, setAllUsersPagination] = useState({
+    page: DEFAULT_PAGE_NUMBER,
+    limit: DEFAULT_PAGE_SIZE,
+  });
+
   // Organizations data
   const {
     totalCount: organizationsTotalCount = 0,
@@ -66,7 +71,7 @@ const Organizations = () => {
     allUsers = [],
     isLoading: allUsersLoading,
     error: allUsersError,
-  } = useGetAllUsers(pagination, {
+  } = useGetAllSchemaUsers(allUserPagination, {
     enabled: selectedTab === "system-logs",
   });
 
@@ -108,6 +113,10 @@ const Organizations = () => {
 
   const onUserPaginationChange = (page: number, pageSize: number) => {
     setUserPagination((prev) => ({ ...prev, page, limit: pageSize }));
+  };
+
+  const onAllUserPaginationChange = (page: number, pageSize: number) => {
+    setAllUsersPagination((prev) => ({ ...prev, page, limit: pageSize }));
   };
 
   useEffect(() => {
@@ -338,9 +347,12 @@ const Organizations = () => {
               data={allUsers}
               totalCount={allUsersTotalCount}
               loading={allUsersLoading}
-              currentPage={pagination.page}
-              paginationCallbacks={{ onPaginationChange }}
-              hideActions={true} // Add this prop to hide the actions column
+              currentPage={allUserPagination.page}
+              paginationCallbacks={{
+                onPaginationChange: onAllUserPaginationChange,
+              }}
+              hideActions={true}
+              defaultPageSize={allUserPagination.limit}
             />
           </TablePageLayout>
         </TabsContent>

@@ -6,6 +6,7 @@ import usePostData from "@/hooks/use-post-data";
 const ORGANIZATION_QUERY = API.organizations.list;
 const useUserStatusCounts_QUERY = API.organizations.statusCounts;
 const USEPENDINGUSERS_QUERY = API.organizations.pendingAdmins;
+const USEALLUSERS_QUERY = API.organizations.AllUsers;
 
 export interface IListParams {
   sort?: string;
@@ -46,6 +47,25 @@ export const useGetPendingUsers = (
     ...query,
     data: query.data?.list,
     pendingUser: query.data?.list ?? [],
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+export const useGetAllSchemaUsers = (
+  params: IListParams,
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<any>({
+    url: USEALLUSERS_QUERY,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    data: query.data?.list,
+    allUsers: query.data?.list ?? [],
     totalCount: query.data?.totalCount ?? 0,
     isLoading: query.isLoading,
     error: query.error,
