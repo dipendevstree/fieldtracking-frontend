@@ -25,13 +25,13 @@ const Roles = () => {
   const { filters, setFilters, setCurrentRow } = useRolesStore();
 
   useEffect(() => {
-    setPagination(prev => ({ ...prev, page: DEFAULT_PAGE_NUMBER }));
+    setPagination((prev) => ({ ...prev, page: DEFAULT_PAGE_NUMBER }));
   }, [filters.search, filters.roleId]);
 
   const queryParams = useMemo(
     () => ({
       ...pagination,
-      searchFor: filters.search || "", 
+      searchFor: filters.search || "",
     }),
     [pagination, filters]
   );
@@ -57,11 +57,13 @@ const Roles = () => {
     }
 
     return allRoles.filter((role: any) => {
-      const matchesSearch = !filters.search || 
+      const matchesSearch =
+        !filters.search ||
         role.roleName?.toLowerCase().includes(filters.search.toLowerCase()) ||
         role.name?.toLowerCase().includes(filters.search.toLowerCase());
-      
-      const matchesRoleId = !filters.roleId || 
+
+      const matchesRoleId =
+        !filters.roleId ||
         String(role.roleId) === filters.roleId ||
         String(role.id) === filters.roleId;
 
@@ -78,7 +80,7 @@ const Roles = () => {
     filteredCount: filteredRoles.length,
     searchFilter: filters.search,
     roleIdFilter: filters.roleId,
-    filteredRoles: filteredRoles
+    filteredRoles: filteredRoles,
   });
 
   // Get filter options
@@ -99,7 +101,7 @@ const Roles = () => {
   const debouncedSearch = useCallback(
     debounce((value: string) => {
       setFilters({ search: value });
-      setPagination(prev => ({ ...prev, page: DEFAULT_PAGE_NUMBER })); // Reset to first page when searching
+      setPagination((prev) => ({ ...prev, page: DEFAULT_PAGE_NUMBER })); // Reset to first page when searching
     }, 800),
     []
   );
@@ -113,7 +115,7 @@ const Roles = () => {
   const clearFilters = () => {
     console.log("Clearing all filters");
     setFilters({ search: "" });
-    setPagination(prev => ({ ...prev, page: DEFAULT_PAGE_NUMBER }));
+    setPagination((prev) => ({ ...prev, page: DEFAULT_PAGE_NUMBER }));
   };
 
   const filtersConfig: FilterConfig[] = [
@@ -150,36 +152,37 @@ const Roles = () => {
   };
 
   return (
-    <Main className={cn("flex flex-col gap-2 p-4")}>
+    <Main className={cn("flex flex-col gap-2")}>
       {/* User Directory Section */}
-        <TablePageLayout
-          title="Roles Management"
-          description="Manage roles and permissions"
-          onAddButtonClick={handleAddRole}
-          addButtonText="Add Roles"
-          modulePermission="roles_permission"
-          moduleAction="add"
-        >
-          <div className="space-y-4">
-            {/* Filter Section */}
-            <GlobalFilterSection
-              key="roles-management-filters"
-              filters={filtersConfig}
-              onCancelPress={clearFilters}
-            />
-            
-            {/* Table */}
-            <RolesTable
-              data={allRoles}
-              totalCount={totalCount}
-              loading={isLoading}
-              currentPage={pagination.page}
-              paginationCallbacks={{ onPaginationChange }}
-              defaultPageSize={pagination.limit}
-            />
-            
-          </div>
-        </TablePageLayout>
+      <TablePageLayout
+        title="All Roles"
+        description="Manage roles and permissions"
+        onAddButtonClick={handleAddRole}
+        addButtonText="Add Roles"
+        modulePermission="roles_permission"
+        moduleAction="add"
+        className="p-0"
+      >
+        <div className="space-y-4">
+          {/* Filter Section */}
+          <GlobalFilterSection
+            key="roles-management-filters"
+            filters={filtersConfig}
+            onCancelPress={clearFilters}
+            className={"mb-0 mt-2"}
+          />
+
+          {/* Table */}
+          <RolesTable
+            data={allRoles}
+            totalCount={totalCount}
+            loading={isLoading}
+            currentPage={pagination.page}
+            paginationCallbacks={{ onPaginationChange }}
+            defaultPageSize={pagination.limit}
+          />
+        </div>
+      </TablePageLayout>
     </Main>
   );
 };

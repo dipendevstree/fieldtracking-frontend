@@ -60,7 +60,7 @@ export default function LocationPicker({
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: "AIzaSyCEkQ_KW66M2BjP03QiJ3R4dyzPWcOfuvw",
+    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAP_API_KEY,
     libraries,
   });
 

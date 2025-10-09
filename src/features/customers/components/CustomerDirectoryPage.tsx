@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from "react";
 import { Plus, Download } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardTitle } from "@/components/ui/card";
 import {
   useGetCustomerFilter,
   useGetCustomers,
@@ -17,6 +17,15 @@ import { useSelectOptions } from "@/hooks/use-select-option";
 import { FilterConfig } from "@/components/global-filter-section";
 import debounce from "lodash.debounce";
 import GlobalFilterSection from "@/components/global-table-filter-section";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useExportFile } from "@/hooks/useExportFile";
+import API from "@/config/api/api";
+import { Main } from "@/components/layout/main";
 
 // Define error response type
 interface ErrorResponse {
@@ -47,6 +56,16 @@ export const CustomerDirectoryPage = () => {
     [pagination, filters]
   );
 
+  const exportQueryParams = useMemo(
+    () => ({
+      searchFor: filters.search || "",
+      industryId: filters.industryId || "",
+      customerTypeId: filters.customerTypeId || "",
+      sort: "desc",
+    }),
+    [filters]
+  );
+
   // Get customer data
   const {
     Customer: customers = [],
@@ -57,6 +76,7 @@ export const CustomerDirectoryPage = () => {
 
   const { data: industryList = [] } = useGetIndustry();
   const { data: customerList = [] } = useGetCustomerFilter();
+  const { exportFile, isLoading: isExportLoading } = useExportFile();
 
   const industryOptions = useSelectOptions({
     listData: industryList ?? [],
@@ -98,19 +118,23 @@ export const CustomerDirectoryPage = () => {
     },
     {
       key: "customerId",
-      type: "select",
+      type: "searchable-select",
       placeholder: "Customer Type",
       value: filters.customerTypeId,
       onChange: (value) => setFilters({ customerTypeId: value ?? "" }),
+      onCancelPress: () => setFilters({ customerTypeId: "" }),
       options: customerOptions,
+      searchableSelectClassName: "w-full max-w-[180px]",
     },
     {
       key: "industryId",
-      type: "select",
+      type: "searchable-select",
       placeholder: "Industry Type",
       value: filters.industryId,
       onChange: (value) => setFilters({ industryId: value ?? "" }),
+      onCancelPress: () => setFilters({ industryId: "" }),
       options: industryOptions,
+      searchableSelectClassName: "w-full max-w-[180px]",
     },
   ];
 
@@ -158,58 +182,78 @@ export const CustomerDirectoryPage = () => {
   };
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 mt-12">
-      <div className="flex items-center justify-between">
-        <h2 className="text-3xl font-bold tracking-tight ">
-          Customer Directory
-        </h2>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Export Report
-          </Button>
-          <Button onClick={handleAddCustomerClick}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Customer
-          </Button>
-        </div>
-      </div>
-
+    <Main>
       {/* Customer List Section */}
-      <Card className="relative">
-        <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-xl">Customer List</CardTitle>
-              <p className="text-muted-foreground text-sm mt-1">
-                Manage your customer database and relationships.
-              </p>
-            </div>
+      <Card className="px-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-xl">Customer List</CardTitle>
+            <p className="text-muted-foreground text-sm mt-1">
+              Manage your customer database and relationships.
+            </p>
           </div>
-        </CardHeader>
-        <CardContent>
-          <GlobalFilterSection
-            key="customer-directory-filters"
-            filters={filtersConfig}
-          />
-
-          {/* Table */}
-          <div className="w-full overflow-x-auto">
-            <CustomersTable
-              data={customers}
-              totalCount={totalCount}
-              loading={isLoading}
-              currentPage={pagination.page}
-              paginationCallbacks={{ onPaginationChange }}
-              onEdit={handleEditCustomer}
-            />
+          <div className="flex items-center space-x-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline">
+                  <Download className="h-4 w-4 mr-2" />
+                  Export Report
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem
+                  onClick={() =>
+                    exportFile({
+                      url: API.customerMain.exportCsv,
+                      type: "csv",
+                      queryParams: exportQueryParams,
+                      filename: "customers",
+                    })
+                  }
+                  disabled={isExportLoading}
+                >
+                  Export Csv
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    exportFile({
+                      url: API.customerMain.exportExcel,
+                      type: "xlsx",
+                      queryParams: exportQueryParams,
+                      filename: "customers",
+                    })
+                  }
+                  disabled={isLoading}
+                >
+                  Export Excel
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button onClick={handleAddCustomerClick}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Customer
+            </Button>
           </div>
-
-          {/* Action Modals */}
-          <CustomersActionModal />
-        </CardContent>
+        </div>
       </Card>
-    </div>
+
+      <GlobalFilterSection
+        key="customer-directory-filters"
+        filters={filtersConfig}
+        className={"mb-0 mt-4"}
+      />
+      {/* Table */}
+      <CustomersTable
+        data={customers}
+        totalCount={totalCount}
+        loading={isLoading}
+        currentPage={pagination.page}
+        paginationCallbacks={{ onPaginationChange }}
+        onEdit={handleEditCustomer}
+      />
+      {/* Action Modals */}
+      <CustomersActionModal />
+    </Main>
   );
 };
 

@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { Main } from "@/components/layout/main";
 import { cn } from "@/lib/utils";
-import { Users, Download } from "lucide-react";
-import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/stores/use-auth-store";
 
 // Import the actual page components
@@ -41,7 +38,7 @@ const DASHBOARD_TABS = [
 
 export default function DashboardPage() {
   const { user } = useAuth();
-  
+
   // If user is super admin, show super admin dashboard
   if (user?.isSuperAdmin) {
     return <SuperAdminDashboard />;
@@ -56,55 +53,35 @@ export default function DashboardPage() {
     setActiveTab(value as DashboardTabValue);
   };
 
-  const handleExportReport = () => {
-    // TODO: Implement report export functionality
-    // console.log('Exporting dashboard report...')
-  };
-
   return (
     <Main className={cn("flex flex-col gap-2 p-4")}>
-      <div className="flex items-center justify-between space-y-2">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">
-            Field Sales Dashboard
-          </h2>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={handleExportReport}>
-            <Download className="h-4 w-4 mr-2" />
-            Export Report
-          </Button>
-          <Button asChild>
-            <Link to="/user-management">
-              <Users className="h-4 w-4 mr-2" />
-              Add Sales Rep
-            </Link>
-          </Button>
-        </div>
-      </div>
-
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
-        className="mt-4 space-y-5"
+        className="space-y-5"
       >
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-3 h-10 !mb-2">
           {DASHBOARD_TABS.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value}>
-              {tab.label}.
+              {tab.label}
             </TabsTrigger>
           ))}
         </TabsList>
 
         {/* Render tab content with mock data */}
         <TabsContent value="/dashboard/overview" className="space-y-4">
-          <OverviewPage salesReps={[]} kpis={{
-            totalSalesReps: 0,
-           
-          }} />
+          <OverviewPage
+            salesReps={[]}
+            kpis={{
+              totalSalesReps: 0,
+            }}
+          />
         </TabsContent>
-          <TabsContent value="/dashboard/dash-live-tracking" className="space-y-4">
-            <LiveTrackingPage />
+        <TabsContent
+          value="/dashboard/dash-live-tracking"
+          className="space-y-4"
+        >
+          <LiveTrackingPage />
         </TabsContent>
         <TabsContent value="/dashboard/approvals" className="space-y-4">
           <ApprovalsPage />

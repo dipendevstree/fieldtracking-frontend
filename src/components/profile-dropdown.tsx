@@ -78,7 +78,7 @@ export function ProfileDropdown({
           className={`relative ${avatarSizeClass} rounded-full ${className}`}
         >
           <Avatar className={`${avatarSizeClass} cursor-pointer`} >
-            <AvatarImage src={userName} alt={`@${user?.name}`} />
+            <AvatarImage src={user?.profileUrl || userName} alt={`@${user?.name}`} />
             <AvatarFallback>{userName}</AvatarFallback>
           </Avatar>
         </Button>

@@ -143,41 +143,49 @@ export default function UpcomingVisits() {
     },
     {
       key: "role",
-      type: "select",
+      type: "searchable-select",
       onChange: (value) => setValue("roleId", value ?? ""),
+      onCancelPress: () => setValue("roleId", ""),
       placeholder: "Select role",
       value: roleId,
       options: roles,
+      searchableSelectClassName: "w-full max-w-[180px]",
     },
     {
       key: "salesRep",
-      type: "select",
+      type: "searchable-select",
       onChange: (value) => setValue("salesRep", value ?? ""),
+      onCancelPress: () => setValue("salesRep", ""),
       placeholder: "Select salesRep",
       value: selectedRep,
       options: users,
+      searchableSelectClassName: "w-full max-w-[180px]",
     },
     {
       key: "customerId",
-      type: "select",
+      type: "searchable-select",
       onChange: (value) => setValue("customerId", value ?? ""),
+      onCancelPress: () => setValue("customerId", ""),
       placeholder: "Select customer",
       value: customerId,
       options: customerOptions,
+      searchableSelectClassName: "w-full max-w-[180px]",
     },
     {
       key: "priority",
-      type: "select",
+      type: "searchable-select",
       onChange: (value) => setValue("priority", value ?? ""),
+      onCancelPress: () => setValue("priority", ""),
       placeholder: "Select priority",
       value: priority,
       options: priorityOptions,
+      searchableSelectClassName: "w-full max-w-[180px]",
     },
   ];
 
   return (
     <>
-      <GlobalFilterSection key={"calender-view-filters"} filters={filters} />
+      <GlobalFilterSection key={"calender-view-filters"} filters={filters} className={"mb-0"}/>
 
       <UpcomingVisitsTable
         data={visits}

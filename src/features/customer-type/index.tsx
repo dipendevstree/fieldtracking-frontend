@@ -44,24 +44,26 @@ const CustomerType = () => {
   };
 
   return (
-    <Main className={cn("flex flex-col gap-2 p-4")}>
+    <Main className={cn("flex flex-col gap-2")}>
       {/* Customer Type Management Section */}
-      <div className="mt-6">
-        <TablePageLayout
-          title="All Customer Types"
-          description="Manage customer type assignments and coverage areas"
-          onAddButtonClick={handleAddCustomerType}
-          addButtonText="Add Customer Type"
-        >
-          <CustomerTypeTable
-            data={allCustomerType}
-            totalCount={totalCount}
-            loading={isLoading}
-            currentPage={pagination.page}
-            paginationCallbacks={{ onPaginationChange }}
-          />
-        </TablePageLayout>
-      </div>
+
+      <TablePageLayout
+        title="All Customer Types"
+        description="Manage customer type assignments and coverage areas"
+        onAddButtonClick={handleAddCustomerType}
+        addButtonText="Add Customer Type"
+        modulePermission="customer_type"
+        moduleAction="add"
+        className="p-0"
+      >
+        <CustomerTypeTable
+          data={allCustomerType}
+          totalCount={totalCount}
+          loading={isLoading}
+          currentPage={pagination.page}
+          paginationCallbacks={{ onPaginationChange }}
+        />
+      </TablePageLayout>
     </Main>
   );
 };

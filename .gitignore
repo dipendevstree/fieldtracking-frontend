@@ -14,6 +14,7 @@ node_modules
 package-lock.json
 yarn.lock
 .pnpm-debug.log
+.env
 # Compiled output
 dist
 build

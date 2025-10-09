@@ -50,6 +50,9 @@ const API = {
     statusCounts: "customer/status-counts",
     pendingList: "customer/status-pending-list",
     updateStatus: "customer/update-status",
+    importCsv: "customer/import/csv",
+    exportCsv: "customer/export/csv",
+    exportExcel: "customer/export/xlsx",
   },
   merchants: {
     list: "merchant/list",
@@ -94,6 +97,7 @@ const API = {
     create: "users/create",
     update: "users/patch",
     delete: "users/delete",
+    stats: "users/stats",
   },
   roles: {
     list: "role/list",
@@ -128,13 +132,14 @@ const API = {
     getVisitByID: "visit",
     delete: "visit/delete",
     visitFeedBack: "visit/visitFeedBack",
-    visitEmployeeAnalytics: "visit/visitEmployeeAnalytics"
+    visitEmployeeAnalytics: "visit/visitEmployeeAnalytics",
   },
   dailyExpenses: {
     list: "expenses/list",
     getById: "expenses",
     expenseReviewAndApproval: "expenseReviewAndApproval/create",
     expenseReviewAndApprovalUpdate: "expenseReviewAndApproval/patch",
+    delete: "expenses/delete",
   },
   customer: {
     customerList: "customer/list",
@@ -182,6 +187,12 @@ const API = {
     update: "expenseApprovalLevel/patch",
     delete: "expenseApprovalLevel/multi-delete",
     organizationCreate: "organization/patch",
+  },
+  fixedDayExpense: {
+    list: "fixedDayExpense/list",
+    create: "fixedDayExpense/create-multiple",
+    update: "fixedDayExpense/update-multiple",
+    delete: "fixedDayExpense/delete-multiple",
   },
   generalSettings: {
     list: "generalSettings/list",

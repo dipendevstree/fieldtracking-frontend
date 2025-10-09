@@ -58,3 +58,9 @@ export enum TIER {
   TIER_9 = "tier_9",
   TIER_10 = "tier_10",
 }
+
+export enum PRIORITY {
+  Low = "Low",
+  Medium = "Medium",
+  High = "High",
+}

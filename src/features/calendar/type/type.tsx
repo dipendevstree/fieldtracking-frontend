@@ -62,7 +62,7 @@ export interface TopUsers {
 export interface VisitEmployeeAnalytics {
   avgSatisfaction: string
   avgVisitDuration: string
-  conversionRate: string
+  cancelledVisits: string
   followupRate: string
   rescheduledVisits: number
   successRate: string

@@ -5,6 +5,12 @@ import usePostData from "@/hooks/use-post-data";
 import useDeleteData from "@/hooks/use-delete-data";
 import { Customer } from "../types";
 
+interface BulkImportResponse {
+  successCount: number;
+  errorCount: number;
+  errors: string[];
+}
+
 const CUSTOMERS_QUERY = API.customerMain.list;
 const CUSTOMER_STATUS_COUNTS_QUERY = API.customerMain.statusCounts;
 
@@ -21,6 +27,7 @@ export interface CreateCustomerPayload {
   latitude?: number;
   longitude?: number;
   country?: string;
+  additionalNotes?: string;
   customerContacts: Array<{
     customerName: string;
     email: string;
@@ -33,8 +40,8 @@ export interface CreateCustomerPayload {
 
 export interface IListParams {
   sort?: string;
-  limit: number;
-  page: number;
+  limit?: number;
+  page?: number;
   search?: string;
   status?: string;
   customerTypeId?: string;
@@ -111,6 +118,19 @@ export const useGetEmployeeRange = () => {
 export const useGetIndustry = () => {
   const query = useFetchData<{ list: Industry[]; totalCount: number }>({
     url: API.industry.list,
+  });
+  return {
+    ...query,
+    data: query.data?.list,
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
+export const useGetCustomerType = () => {
+  const query = useFetchData<any>({
+    url: API.customerType.list,
   });
   return {
     ...query,
@@ -215,5 +235,17 @@ export const useDeleteCustomer = (
         onSuccess();
       }
     },
+  });
+};
+
+export const useBulkImportCustomers = (
+  onSuccess?: (data: BulkImportResponse) => void,
+  onError?: (error: Error) => void
+) => {
+  return usePostData<BulkImportResponse, FormData>({
+    url: API.customerMain.importCsv,
+    refetchQueries: [CUSTOMERS_QUERY, CUSTOMER_STATUS_COUNTS_QUERY],
+    onSuccess,
+    onError,
   });
 };

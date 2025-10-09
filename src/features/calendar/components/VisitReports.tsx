@@ -1,6 +1,5 @@
-import { Star, Eye } from 'lucide-react'
+import { Star } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -81,7 +80,7 @@ export default function VisitReports() {
                       Visit Outcome
                     </h4>
                     <p className='rounded-md bg-green-50 p-3 text-sm'>
-                      {(report.meetingOutcomes || []).join(', ')}
+                      {report.meetingOutcomes.length > 0 ? (report.meetingOutcomes || []).join(', '): "-"}
                     </p>
                   </div>
                   <div>
@@ -98,17 +97,17 @@ export default function VisitReports() {
                     Next Actions
                   </h4>
                   <p className='rounded-md bg-purple-50 p-3 text-sm'>
-                    {report.nextActions}
+                    {report.nextActions || "-"}
                   </p>
                 </div>
-                <div className='flex justify-end space-x-2'>
+                {/* <div className='flex justify-end space-x-2'>
                   <Button variant='outline' size='sm'>
                     <Eye className='mr-2 h-4 w-4' /> View Details
                   </Button>
                   <Button variant='outline' size='sm'>
                     Export Report
                   </Button>
-                </div>
+                </div> */}
               </div>
             ))}
           </div>

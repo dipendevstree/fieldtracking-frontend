@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
 import { Main } from "@/components/layout/main";
 import { cn } from "@/lib/utils";
 
@@ -68,32 +67,14 @@ export default function SettingsPage() {
     setActiveTab(value as SettingsTabValue);
   };
 
-  const handleExportSettings = () => {
-    // TODO: Implement settings export functionality
-  };
-
   return (
-    <Main className={cn("flex flex-col gap-2 p-4")}>
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">
-          Settings & Configuration
-        </h2>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={handleExportSettings}>
-            Export Settings
-          </Button>
-          {/* <Button onClick={handleSaveAllChanges}>
-            Save All Changes
-          </Button> */}
-        </div>
-      </div>
-
+    <Main className={cn("flex flex-col")}>
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
-        className="mt-4 space-y-5"
+        className="space-y-5"
       >
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-5 h-10">
           {SETTINGS_TABS.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value}>
               {tab.label}

@@ -4,7 +4,6 @@ import {
   MapPin,
   Settings,
   Shield,
-  Bell,
   FileText,
   UserCircle,
   Calendar1Icon,
@@ -159,12 +158,6 @@ export const sidebarData: SidebarData = {
           url: "/settings",
           icon: Settings,
           menuKey: "settings",
-        },
-        {
-          title: "Notifications",
-          url: "/settings/notifications",
-          icon: Bell,
-          menuKey: "notifications",
         },
         {
           title: "Documentation",
