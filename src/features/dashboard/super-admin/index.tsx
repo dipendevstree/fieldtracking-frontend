@@ -1,7 +1,6 @@
-import { Button } from "@/components/ui/button";
 import { Main } from "@/components/layout/main";
 import { cn } from "@/lib/utils";
-import { Shield, Download } from "lucide-react";
+import { Shield } from "lucide-react";
 import { useAuth } from "@/stores/use-auth-store";
 
 // // Define valid tab values for super admin dashboard
@@ -26,10 +25,10 @@ export default function SuperAdminDashboard() {
     );
   }
 
-  const handleExportSystemReport = () => {
-    // TODO: Implement system-wide report export functionality
-    console.log('Exporting system report...');
-  };
+  // const handleExportSystemReport = () => {
+  //   // TODO: Implement system-wide report export functionality
+  //   console.log('Exporting system report...');
+  // };
 
   return (
     <Main className={cn("flex flex-col gap-2 p-4")}>
@@ -43,12 +42,12 @@ export default function SuperAdminDashboard() {
             System-wide management and monitoring for FieldTrack platform
           </p>
         </div>
-        <div className="flex items-center space-x-2">
+        {/* <div className="flex items-center space-x-2">
           <Button variant="outline" onClick={handleExportSystemReport}>
             <Download className="h-4 w-4 mr-2" />
             Export System Report
           </Button>
-        </div>
+        </div> */}
       </div>
     </Main>
   );

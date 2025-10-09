@@ -41,6 +41,7 @@ const Organizations = () => {
     limit: DEFAULT_PAGE_SIZE,
     searchFor: "",
     industryId: "",
+    isActive: "",
   });
 
   const [userPagination, setUserPagination] = useState({
@@ -96,18 +97,6 @@ const Organizations = () => {
     ...option,
     value: String(option.value),
   }));
-
-  // Consolidated error handling
-  const error = organizationsError || pendingUsersError || allUsersError;
-  if (error) {
-    const errorResponse = (error as ErrorResponse)?.response?.data;
-    return (
-      <ErrorPage
-        errorCode={errorResponse?.statusCode}
-        message={errorResponse?.message}
-      />
-    );
-  }
 
   const handleAddMerchant = () => {
     setOpen("add");
@@ -194,7 +183,32 @@ const Organizations = () => {
       onCancelPress: () => handleFilterChange("industryId", ""),
       searchableSelectClassName: "w-full max-w-[180px]",
     },
+    {
+      key: "isActive",
+      type: "searchable-select",
+      placeholder: "Status",
+      options: [
+        { label: "Active", value: "true" },
+        { label: "Inactive", value: "false" },
+      ],
+      value: pagination.isActive,
+      onChange: (value) => handleFilterChange("isActive", value ?? ""),
+      onCancelPress: () => handleFilterChange("isActive", ""),
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
   ];
+
+  // Consolidated error handling
+  const error = organizationsError || pendingUsersError || allUsersError;
+  if (error) {
+    const errorResponse = (error as ErrorResponse)?.response?.data;
+    return (
+      <ErrorPage
+        errorCode={errorResponse?.statusCode}
+        message={errorResponse?.message}
+      />
+    );
+  }
 
   return (
     <Main className={cn("flex flex-col gap-2 p-4")}>
@@ -209,7 +223,7 @@ const Organizations = () => {
         </div>
       </div>
 
-      <div className="mt-2 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="mt-2 grid gap-4 md:grid-cols-3 lg:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -246,23 +260,6 @@ const Organizations = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{getTotalUsers()}</div>
-            <p className="text-muted-foreground text-xs">
-              Across all organizations
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Verified Organization
-            </CardTitle>
-            <Users className="text-muted-foreground h-4 w-4" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {userStatusCounts?.verified || 0}
-            </div>
             <p className="text-muted-foreground text-xs">
               Across all organizations
             </p>
