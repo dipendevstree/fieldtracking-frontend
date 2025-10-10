@@ -211,17 +211,28 @@ export function OrganizationActionForm({
     }
   }, [isEdit, currentRow, open, reset])
 
-  // Set default menu selection for new organizations
-  useEffect(() => {
-    if (!isEdit && treeData && treeData.length > 0 && open) {
-      const currentMenuIds = getValues('menuIds')
-      if (!currentMenuIds || currentMenuIds.length === 0) {
-        const defaultValue = treeData[0]?.value ? [treeData[0].value] : []
-        console.log('Setting default menu selection:', defaultValue)
-        setValue('menuIds', defaultValue, { shouldValidate: true })
+ // Set default menu selection for new organizations
+ useEffect(() => {
+  if (!isEdit && treeData && treeData.length > 0 && open) {
+    const currentMenuIds = getValues('menuIds')
+    if (!currentMenuIds || currentMenuIds.length === 0) {
+      // Collect all menu IDs from the tree (including children)
+      const getAllMenuIds = (nodes: any[]): string[] => {
+        let ids: string[] = []
+        nodes.forEach(node => {
+          ids.push(node.value)
+          if (node.children && node.children.length > 0) {
+            ids = [...ids, ...getAllMenuIds(node.children)]
+          }
+        })
+        return ids
       }
+      const defaultValue = getAllMenuIds(treeData)
+      console.log('Setting default menu selection:', defaultValue)
+      setValue('menuIds', defaultValue, { shouldValidate: true })
     }
-  }, [treeData, isEdit, open, setValue, getValues])
+  }
+}, [treeData, isEdit, open, setValue, getValues])
 
   const handleDialogOpenChange = (state: boolean) => {
     if (!state) {

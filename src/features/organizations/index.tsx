@@ -1,46 +1,59 @@
-import { useEffect, useState } from 'react'
-import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from '@/data/app.data'
-import { Building2, Clock, Users } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Main } from '@/components/layout/main'
-import TablePageLayout from '@/components/layout/table-page-layout'
-import { ErrorPage } from '@/components/shared/custom-error'
-import AllUsersTable from '../UserManagement/components/table'
-import { useGetAllUsers } from '../UserManagement/services/AllUsers.hook'
-import { ActionFormModal } from '../driver/components/action-form-modal'
-import { ErrorResponse } from '../merchants/types'
-import { OrganizationsActionModal } from './components/action-form-modal'
-import PendingUserTable from './components/pending-user-table'
-import OrganizationsTable from './components/table'
+import { useCallback, useEffect, useState } from "react";
+import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
+import { Building2, Clock, Users } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Main } from "@/components/layout/main";
+import TablePageLayout from "@/components/layout/table-page-layout";
+import { ErrorPage } from "@/components/shared/custom-error";
+import { ActionFormModal } from "../driver/components/action-form-modal";
+import { ErrorResponse } from "../merchants/types";
+import { OrganizationsActionModal } from "./components/action-form-modal";
+import PendingUserTable from "./components/pending-user-table";
+import OrganizationsTable from "./components/table";
 import {
+  useGetAllSchemaUsers,
+  useGetIndustry,
   useGetOrganizations,
   useGetPendingUsers,
   useUserStatusCounts,
-} from './services/organization.hook'
-import { useUsersStore } from './store/organizations.store'
+} from "./services/organization.hook";
+import { useUsersStore } from "./store/organizations.store";
+import GlobalFilterSection from "@/components/global-table-filter-section";
+import { FilterConfig } from "@/components/global-filter-section";
+import debounce from "lodash.debounce";
+import { useSelectOptions } from "@/hooks/use-select-option";
+import AllUsersTable from "./components/all-user-table";
 
 const Organizations = () => {
-  const [selectedTab, setSelectedTab] = useState('organizations')
+  const [selectedTab, setSelectedTab] = useState("organizations");
 
   // Fixed typo: tiltObj -> titleObj
   const [titleObj, setTitleObj] = useState({
-    title: 'Organizations',
-    description: 'Manage all organizations in the system',
-  })
+    title: "Organizations",
+    description: "Manage all organizations in the system",
+  });
 
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
-  })
+    searchFor: "",
+    industryId: "",
+    isActive: "",
+  });
 
   const [userPagination, setUserPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
-    status: 'pending',
-  })
+    status: "pending",
+  });
+
+  const [allUserPagination, setAllUsersPagination] = useState({
+    page: DEFAULT_PAGE_NUMBER,
+    limit: DEFAULT_PAGE_SIZE,
+  });
 
   // Organizations data
   const {
@@ -48,7 +61,9 @@ const Organizations = () => {
     organization = [],
     isLoading: organizationsLoading,
     error: organizationsError,
-  } = useGetOrganizations(pagination)
+  } = useGetOrganizations(pagination, {
+    enabled: selectedTab === "organizations",
+  });
 
   // All users data - fixed variable naming conflict
   const {
@@ -56,7 +71,9 @@ const Organizations = () => {
     allUsers = [],
     isLoading: allUsersLoading,
     error: allUsersError,
-  } = useGetAllUsers(pagination)
+  } = useGetAllSchemaUsers(allUserPagination, {
+    enabled: selectedTab === "system-logs",
+  });
 
   // Pending users data - only call when pending-admins tab is active
   const {
@@ -65,139 +82,194 @@ const Organizations = () => {
     isLoading: pendingUsersLoading,
     error: pendingUsersError,
   } = useGetPendingUsers(userPagination, {
-    enabled: selectedTab === 'pending-admins',
-  })
+    enabled: selectedTab === "pending-admins",
+  });
 
   // User status counts
   const { userStatusCounts, totalOrganizations } = useUserStatusCounts() || {
     userStatusCounts: {},
     totalOrganizations: 0,
-  }
+  };
 
-  const { setOpen, open } = useUsersStore()
+  const { setOpen, open } = useUsersStore();
 
-  // Consolidated error handling
-  const error = organizationsError || pendingUsersError || allUsersError
-  if (error) {
-    const errorResponse = (error as ErrorResponse)?.response?.data
-    return (
-      <ErrorPage
-        errorCode={errorResponse?.statusCode}
-        message={errorResponse?.message}
-      />
-    )
-  }
+  const { data: industryList = [] } = useGetIndustry();
+  const industryOptions = useSelectOptions({
+    listData: industryList ?? [],
+    labelKey: "industryName",
+    valueKey: "industryId",
+  }).map((option) => ({
+    ...option,
+    value: String(option.value),
+  }));
 
   const handleAddMerchant = () => {
-    setOpen('add')
-  }
+    setOpen("add");
+  };
 
   const onPaginationChange = (page: number, pageSize: number) => {
-    setPagination((prev) => ({ ...prev, page, limit: pageSize }))
-  }
+    setPagination((prev) => ({ ...prev, page, limit: pageSize }));
+  };
 
   const onUserPaginationChange = (page: number, pageSize: number) => {
-    setUserPagination((prev) => ({ ...prev, page, limit: pageSize }))
-  }
+    setUserPagination((prev) => ({ ...prev, page, limit: pageSize }));
+  };
+
+  const onAllUserPaginationChange = (page: number, pageSize: number) => {
+    setAllUsersPagination((prev) => ({ ...prev, page, limit: pageSize }));
+  };
 
   useEffect(() => {
-    if (selectedTab === 'organizations') {
+    if (selectedTab === "organizations") {
       setTitleObj({
-        title: 'Organizations',
-        description: 'Manage all organizations in the system',
-      })
-    } else if (selectedTab === 'pending-admins') {
+        title: "Organizations",
+        description: "Manage all organizations in the system",
+      });
+    } else if (selectedTab === "pending-admins") {
       setTitleObj({
-        title: 'Pending Admin',
-        description: 'Review and approve admin registration requests',
-      })
-    } else if (selectedTab === 'system-logs') {
+        title: "Pending Admin",
+        description: "Review and approve admin registration requests",
+      });
+    } else if (selectedTab === "system-logs") {
       setTitleObj({
-        title: 'All Users',
-        description: 'Monitor to all users',
-      })
+        title: "All Users",
+        description: "Monitor to all users",
+      });
     }
-  }, [selectedTab])
+  }, [selectedTab]);
 
   // Helper function to calculate total users safely
   const getTotalUsers = () => {
-    if (!userStatusCounts) return 0
+    if (!userStatusCounts) return 0;
     return (
       (userStatusCounts.created || 0) +
       (userStatusCounts.pending || 0) +
       (userStatusCounts.verified || 0) +
       (userStatusCounts.rejected || 0)
-    )
+    );
+  };
+
+  const debouncedSearch = useCallback(
+    debounce((value: string | undefined) => {
+      setPagination((prev) => ({
+        ...prev,
+        page: 1,
+        searchFor: value ?? "",
+      }));
+    }, 800),
+    []
+  );
+
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
+
+  const handleFilterChange = (key: string, value: string) => {
+    setPagination((prev) => ({
+      ...prev,
+      page: 1,
+      [key]: value,
+    }));
+  };
+
+  const filters: FilterConfig[] = [
+    {
+      key: "search",
+      type: "search",
+      onChange: (value: any) => debouncedSearch(value),
+      placeholder: "Search organizations...",
+      value: pagination.searchFor,
+    },
+    {
+      key: "industryId",
+      type: "searchable-select",
+      placeholder: "Industry Type",
+      options: industryOptions,
+      value: pagination.industryId,
+      onChange: (value) => handleFilterChange("industryId", value ?? ""),
+      onCancelPress: () => handleFilterChange("industryId", ""),
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+    {
+      key: "isActive",
+      type: "searchable-select",
+      placeholder: "Status",
+      options: [
+        { label: "Active", value: "true" },
+        { label: "Inactive", value: "false" },
+      ],
+      value: pagination.isActive,
+      onChange: (value) => handleFilterChange("isActive", value ?? ""),
+      onCancelPress: () => handleFilterChange("isActive", ""),
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+  ];
+
+  // Consolidated error handling
+  const error = organizationsError || pendingUsersError || allUsersError;
+  if (error) {
+    const errorResponse = (error as ErrorResponse)?.response?.data;
+    return (
+      <ErrorPage
+        errorCode={errorResponse?.statusCode}
+        message={errorResponse?.message}
+      />
+    );
   }
 
   return (
-    <Main className={cn('flex flex-col gap-2 p-4')}>
-      <div className='mt-2 flex items-center justify-between space-y-2'>
+    <Main className={cn("flex flex-col gap-2 p-4")}>
+      {/* <div className="mt-2 flex items-center justify-between space-y-2">
         <div>
-          <h2 className='text-3xl font-bold tracking-tight'>
+          <h2 className="text-3xl font-bold tracking-tight">
             Organization Management
           </h2>
-          <p className='text-muted-foreground'>
+          <p className="text-muted-foreground">
             Manage organizations and approve admin registrations
           </p>
         </div>
-      </div>
+      </div> */}
 
-      <div className='mt-2 grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+      <div className="mt-2 grid gap-4 md:grid-cols-3 lg:grid-cols-3">
         <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
               Total Organizations
             </CardTitle>
-            <Building2 className='text-muted-foreground h-4 w-4' />
+            <Building2 className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{totalOrganizations || 0}</div>
+            <div className="text-2xl font-bold">{totalOrganizations || 0}</div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
               Pending Approvals
             </CardTitle>
-            <Clock className='text-muted-foreground h-4 w-4' />
+            <Clock className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>
+            <div className="text-2xl font-bold">
               {userStatusCounts?.pending || 0}
             </div>
-            <p className='text-muted-foreground text-xs'>
+            <p className="text-muted-foreground text-xs">
               Admin registrations awaiting approval
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Total Users</CardTitle>
-            <Users className='text-muted-foreground h-4 w-4' />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <Users className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{getTotalUsers()}</div>
-            <p className='text-muted-foreground text-xs'>
-              Across all organizations
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
-              Verified Organization
-            </CardTitle>
-            <Users className='text-muted-foreground h-4 w-4' />
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>
-              {userStatusCounts?.verified || 0}
-            </div>
-            <p className='text-muted-foreground text-xs'>
+            <div className="text-2xl font-bold">{getTotalUsers()}</div>
+            <p className="text-muted-foreground text-xs">
               Across all organizations
             </p>
           </CardContent>
@@ -207,28 +279,34 @@ const Organizations = () => {
       <Tabs
         value={selectedTab}
         onValueChange={setSelectedTab}
-        className='mt-4 space-y-4'
+        className="mt-4 space-y-4"
       >
-        <TabsList className='grid w-full grid-cols-3'>
-          <TabsTrigger value='organizations'>Organizations</TabsTrigger>
-          <TabsTrigger value='pending-admins'>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="organizations">Organizations</TabsTrigger>
+          <TabsTrigger value="pending-admins">
             Pending Admins
-            <Badge variant='destructive' className='ml-2'>
+            <Badge variant="destructive" className="ml-2">
               {userStatusCounts?.pending || 0}
             </Badge>
           </TabsTrigger>
-          <TabsTrigger value='system-logs'>All Users</TabsTrigger>
+          <TabsTrigger value="system-logs">All Users</TabsTrigger>
         </TabsList>
 
-        <TabsContent value='organizations' className='space-y-4'>
+        <TabsContent value="organizations" className="space-y-4">
           <TablePageLayout
             title={titleObj?.title}
             description={titleObj?.description}
             onAddButtonClick={handleAddMerchant}
-            moduleAction='add'
-            modulePermission='organizations'
+            moduleAction="add"
+            modulePermission="organizations"
             showActionButton={true}
+            className="p-0"
           >
+            <GlobalFilterSection
+              key={"organizations-filters"}
+              filters={filters}
+              className={"mt-4"}
+            />
             <OrganizationsTable
               data={organization}
               totalCount={organizationsTotalCount}
@@ -239,12 +317,13 @@ const Organizations = () => {
           </TablePageLayout>
         </TabsContent>
 
-        <TabsContent value='pending-admins' className='space-y-4'>
+        <TabsContent value="pending-admins" className="space-y-4">
           <TablePageLayout
             title={titleObj?.title}
             description={titleObj?.description}
             onAddButtonClick={handleAddMerchant}
             showActionButton={false}
+            className="p-0"
           >
             <PendingUserTable
               data={pendingUser}
@@ -255,32 +334,36 @@ const Organizations = () => {
                 onPaginationChange: onUserPaginationChange,
               }}
             />
-            <ActionFormModal key={'merchants-action-modal'} />
+            <ActionFormModal key={"merchants-action-modal"} />
           </TablePageLayout>
         </TabsContent>
 
-        <TabsContent value='system-logs' className='space-y-4'>
+        <TabsContent value="system-logs" className="space-y-4">
           <TablePageLayout
             title={titleObj?.title}
             description={titleObj?.description}
             onAddButtonClick={handleAddMerchant}
             showActionButton={false}
+            className="p-0"
           >
             <AllUsersTable
               data={allUsers}
               totalCount={allUsersTotalCount}
               loading={allUsersLoading}
-              currentPage={pagination.page}
-              paginationCallbacks={{ onPaginationChange }}
-              hideActions={true} // Add this prop to hide the actions column
+              currentPage={allUserPagination.page}
+              paginationCallbacks={{
+                onPaginationChange: onAllUserPaginationChange,
+              }}
+              hideActions={true}
+              defaultPageSize={allUserPagination.limit}
             />
           </TablePageLayout>
         </TabsContent>
       </Tabs>
 
-      {open && <OrganizationsActionModal key={'organizations-action-modal'} />}
+      {open && <OrganizationsActionModal key={"organizations-action-modal"} />}
     </Main>
-  )
-}
+  );
+};
 
-export default Organizations
+export default Organizations;

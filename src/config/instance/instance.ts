@@ -28,7 +28,7 @@ interface ApiResponse<T> {
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = useAuthStore.getState().getToken()
-    config.headers.Authorization = `Bearer ${token}`
+      config.headers.Authorization = `Bearer ${token}`
     if (config.data instanceof FormData) {
       config.headers['Content-Type'] = 'multipart/form-data'
     } else if (config.data) {
@@ -58,6 +58,22 @@ axiosInstance.interceptors.response.use(
       useAuthStore.getState().logout()
       window.localStorage.clear()
     }
+
+    // ✅ Handle server down / no response / network issues
+    if (!error.response) {
+      // Backend not reachable or crashed
+      return Promise.reject({
+        response: {
+          data: {
+            statusCode: 500,
+            error: true,
+            message: 'Something went wrong. Please try again later.',
+            data: null,
+          },
+        },
+      })
+    }
+
     return Promise.reject(error)
   }
 )
