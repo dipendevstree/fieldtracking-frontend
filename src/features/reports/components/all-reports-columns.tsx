@@ -8,27 +8,34 @@ export const columns: ColumnDef<any>[] = [
       <CustomDataTableColumnHeader column={column} title="Sales Rep" />
     ),
     enableHiding: false,
-    enableSorting:false
+    enableSorting: false,
   },
   {
-    accessorKey: "attachment",
+    accessorKey: "date",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title="Attachment" />
+      <CustomDataTableColumnHeader column={column} title="Date" />
     ),
-    enableSorting:false
+    enableSorting: false,
   },
   {
     accessorKey: "expense_category",
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Expense Category" />
     ),
-    enableSorting:false
+    enableSorting: false,
+  },
+  {
+    accessorKey: "status",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Status" />
+    ),
+    enableSorting: false,
   },
   {
     accessorKey: "total_amount",
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Total amount" />
     ),
-    enableSorting:false
+    enableSorting: false,
   },
 ];

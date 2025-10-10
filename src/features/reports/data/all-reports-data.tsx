@@ -1,80 +1,45 @@
 type ReportRow = {
   salesRep: string;
-  avatarUrl: string;
-  attachment: string;
+  date?: string;
   expense_category: string;
+  status?: string;
   total_amount: string;
 };
 
 export const dummyReports: ReportRow[] = [
   {
     salesRep: "Jacob Jones",
-    avatarUrl: "https://randomuser.me/api/portraits/men/11.jpg",
-    attachment: "PDF",
+    date: "2025-10-05",
     expense_category: "Food",
-    total_amount: "95 MB",
+    status: "Approved",
+    total_amount: "95.00",
   },
   {
     salesRep: "Bessie Cooper",
-    avatarUrl: "https://randomuser.me/api/portraits/women/12.jpg",
-    attachment: "PDF",
-    expense_category: "Food",
-    total_amount: "5.1 MB",
+    date: "2025-10-06",
+    expense_category: "Travel",
+    status: "Pending",
+    total_amount: "120.50",
   },
   {
     salesRep: "Kristin Watson",
-    avatarUrl: "https://randomuser.me/api/portraits/women/13.jpg",
-    attachment: "PDF",
-    expense_category: "Food",
-    total_amount: "5.1 MB",
+    date: "2025-10-07",
+    expense_category: "Accommodation",
+    status: "Rejected",
+    total_amount: "80.75",
   },
   {
     salesRep: "Ronald Richards",
-    avatarUrl: "https://randomuser.me/api/portraits/men/14.jpg",
-    attachment: "PDF",
-    expense_category: "Food",
-    total_amount: "5.1 MB",
+    date: "2025-10-08",
+    expense_category: "Miscellaneous",
+    status: "Approved",
+    total_amount: "45.20",
   },
   {
     salesRep: "Annette Black",
-    avatarUrl: "https://randomuser.me/api/portraits/women/15.jpg",
-    attachment: "PDF",
-    expense_category: "Food",
-    total_amount: "5.1 MB",
-  },
-  {
-    salesRep: "Jacob Jones",
-    avatarUrl: "https://randomuser.me/api/portraits/men/11.jpg",
-    attachment: "PDF",
-    expense_category: "Food",
-    total_amount: "95 MB",
-  },
-  {
-    salesRep: "Bessie Cooper",
-    avatarUrl: "https://randomuser.me/api/portraits/women/12.jpg",
-    attachment: "PDF",
-    expense_category: "Food",
-    total_amount: "5.1 MB",
-  },
-  {
-    salesRep: "Kristin Watson",
-    avatarUrl: "https://randomuser.me/api/portraits/women/13.jpg",
-    attachment: "PDF",
-    expense_category: "Food",
-    total_amount: "5.1 MB",
-  },
-  {
-    salesRep: "Ronald Richards",
-    avatarUrl: "https://randomuser.me/api/portraits/men/14.jpg",
-    attachment: "PDF",
-    expense_category: "Food",
-    total_amount: "5.1 MB",
-  },
-  {
-    salesRep: "Annette Black",
-    avatarUrl: "https://randomuser.me/api/portraits/women/15.jpg",
-    attachment: "PDF",
-    expense_category: "Food",
-    total_amount: "5.1 MB",
+    date: "2025-10-09",
+    expense_category: "Fuel",
+    status: "Approved",
+    total_amount: "67.30",
   },
 ];
