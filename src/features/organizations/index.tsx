@@ -221,7 +221,7 @@ const Organizations = () => {
 
   return (
     <Main className={cn("flex flex-col gap-2 p-4")}>
-      <div className="mt-2 flex items-center justify-between space-y-2">
+      {/* <div className="mt-2 flex items-center justify-between space-y-2">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">
             Organization Management
@@ -230,7 +230,7 @@ const Organizations = () => {
             Manage organizations and approve admin registrations
           </p>
         </div>
-      </div>
+      </div> */}
 
       <div className="mt-2 grid gap-4 md:grid-cols-3 lg:grid-cols-3">
         <Card>
@@ -300,6 +300,7 @@ const Organizations = () => {
             moduleAction="add"
             modulePermission="organizations"
             showActionButton={true}
+            className="p-0"
           >
             <GlobalFilterSection
               key={"organizations-filters"}
@@ -322,6 +323,7 @@ const Organizations = () => {
             description={titleObj?.description}
             onAddButtonClick={handleAddMerchant}
             showActionButton={false}
+            className="p-0"
           >
             <PendingUserTable
               data={pendingUser}
@@ -342,6 +344,7 @@ const Organizations = () => {
             description={titleObj?.description}
             onAddButtonClick={handleAddMerchant}
             showActionButton={false}
+            className="p-0"
           >
             <AllUsersTable
               data={allUsers}
