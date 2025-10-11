@@ -37,6 +37,10 @@ export interface expanseReportFilters {
 
 export interface CustomeReportFilter {
   dateRange?: DateRange;
-  salesRep?: string;
-  territory?: string;
+  reportType?: string;
+  salesRep: string;
+  customerId: string;
+  category: string;
+  format: string;
+  status: string;
 }

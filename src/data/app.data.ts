@@ -66,9 +66,10 @@ export enum PRIORITY {
 }
 
 export enum REPORT_TYPE {
-  PERFORMANCE_REPORT = "Performance Report",
-  ACTIVITY_REPORT = "Activity Report",
-  CUSTOMER_REPORTS = "Customer Reports",
+  VISIT_REPORTS = "Visit Reports",
+  PRODUCTIVITY_REPORT = "Productivity Report",
+  CUSTOMER_REPORT = "Customer Report",
+  FIELD_ACTIVITY_REPORT = "Field Activity Report",
 }
 
 export enum ReportFormat {

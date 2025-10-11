@@ -214,6 +214,10 @@ const API = {
     get: "notification-configuration",
     update: "notification-configuration",
   },
+  reports: {
+    expanseReport: "expenseReport/generate",
+    customeReport: "customReport/generate",
+  },
 };
 
 Object.freeze(API);

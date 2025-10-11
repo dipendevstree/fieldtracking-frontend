@@ -13,10 +13,9 @@ import {
   ReportFormat,
 } from "@/data/app.data";
 import {
-  useExpenseReports,
-  useReportGeneration,
-} from "../hooks/use-reports-api";
-import { type ReportFilter } from "../services/reports-api";
+  useExpanseReportGeneration,
+  type ReportFilter,
+} from "../services/reports-api";
 import { useGetAllUsers } from "../../UserManagement/services/AllUsers.hook";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { FilterConfig } from "@/components/global-filter-section";
@@ -38,7 +37,43 @@ const ExpanseReport: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE_NUMBER);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
-  const { generateReport, generating } = useReportGeneration();
+  // Convert filters to API format - memoized to prevent infinite re-renders
+  const apiFilters: ReportFilter = useMemo(
+    () => ({
+      expanseDateRange: filters.expanseDateRange
+        ? {
+            from: filters.expanseDateRange.from!,
+            to: filters.expanseDateRange.to!,
+          }
+        : undefined,
+      createdDateRange: filters.createdDateRange
+        ? {
+            from: filters.createdDateRange.from!,
+            to: filters.createdDateRange.to!,
+          }
+        : undefined,
+      salesRep: filters.salesRep || undefined,
+      category: filters.category || undefined,
+    }),
+    [
+      filters.expanseDateRange?.from,
+      filters.expanseDateRange?.to,
+      filters.createdDateRange?.from,
+      filters.createdDateRange?.to,
+      filters.salesRep,
+      filters.category,
+    ]
+  );
+
+  const {
+    reports,
+    isLoading: generating,
+    totalCount,
+    refetch,
+  } = useExpanseReportGeneration(
+    { ...apiFilters, page: currentPage, limit: pageSize },
+    { enabled: false }
+  );
 
   const { data: userListDropDownData = [] } = useGetAllUsers();
   const { expenseCategories: expenseCategoriesData } =
@@ -71,36 +106,6 @@ const ExpanseReport: React.FC = () => {
     value,
   }));
 
-  // Convert filters to API format - memoized to prevent infinite re-renders
-  const apiFilters: ReportFilter = useMemo(
-    () => ({
-      expanseDateRange: filters.expanseDateRange
-        ? {
-            from: filters.expanseDateRange.from!,
-            to: filters.expanseDateRange.to!,
-          }
-        : undefined,
-      createdDateRange: filters.createdDateRange
-        ? {
-            from: filters.createdDateRange.from!,
-            to: filters.createdDateRange.to!,
-          }
-        : undefined,
-      salesRep: filters.salesRep || undefined,
-      category: filters.category || undefined,
-    }),
-    [
-      filters.expanseDateRange?.from,
-      filters.expanseDateRange?.to,
-      filters.createdDateRange?.from,
-      filters.createdDateRange?.to,
-      filters.salesRep,
-      filters.category,
-    ]
-  );
-
-  const { reports, loading: reportsLoading } = useExpenseReports(apiFilters);
-
   // Triggered on any filter change
   const handleFilterChange = (updated: Partial<expanseReportFilters>) => {
     const newFilters = { ...filters, ...updated };
@@ -109,11 +114,7 @@ const ExpanseReport: React.FC = () => {
 
   // Handle generate report
   const handleGenerateReport = async () => {
-    const result = await generateReport("expense-report", apiFilters);
-    if (result.success) {
-      console.log("Report generated:", result.reportId, apiFilters);
-      // You could show a success message here
-    }
+    refetch();
   };
 
   const onPaginationChange = (page: number, pageSize: number) => {
@@ -208,7 +209,7 @@ const ExpanseReport: React.FC = () => {
           title="Expense Reports"
           subtitle="Expense report from 1 May to 2025"
         />
-        {reportsLoading ? (
+        {generating ? (
           <div className="flex items-center justify-center h-48">
             <Loader2 className="h-8 w-8 animate-spin" />
             <span className="ml-2">Loading reports...</span>
@@ -216,10 +217,10 @@ const ExpanseReport: React.FC = () => {
         ) : (
           <CustomDataTable
             paginationCallbacks={{ onPaginationChange }}
-            data={dummyReports}
+            data={dummyReports ?? reports}
             currentPage={currentPage}
             columns={expanseReportsColumns as ColumnDef<unknown>[]}
-            totalCount={reports.length}
+            totalCount={totalCount}
             defaultPageSize={pageSize}
           />
         )}
