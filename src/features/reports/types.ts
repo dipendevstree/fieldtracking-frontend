@@ -32,6 +32,7 @@ export interface expanseReportFilters {
   createdDateRange?: DateRange;
   salesRep: string;
   category: string;
+  format: string;
 }
 
 export interface CustomeReportFilter {
@@ -39,5 +40,3 @@ export interface CustomeReportFilter {
   salesRep?: string;
   territory?: string;
 }
-
-

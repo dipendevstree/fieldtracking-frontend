@@ -7,7 +7,11 @@ import ReportsHead from "./ReportsHead";
 import { CustomDataTable } from "@/components/shared/custom-data-table";
 import { expanseReportsColumns } from "./expanseReportsColumns";
 import { ColumnDef } from "@tanstack/react-table";
-import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
+import {
+  DEFAULT_PAGE_NUMBER,
+  DEFAULT_PAGE_SIZE,
+  ReportFormat,
+} from "@/data/app.data";
 import {
   useExpenseReports,
   useReportGeneration,
@@ -20,6 +24,7 @@ import GlobalFilterSection from "@/components/global-table-filter-section";
 import { useGetExpenseCategoriesDropDownList } from "../../settings/Approvers/services/approvers.hook";
 import { dummyReports } from "../data/all-reports-data";
 import { expanseReportFilters } from "../types";
+import { formatDropDownLabel } from "@/utils/commonFunction";
 
 const ExpanseReport: React.FC = () => {
   const [filters, setFilters] = useState<expanseReportFilters>({
@@ -27,6 +32,7 @@ const ExpanseReport: React.FC = () => {
     createdDateRange: undefined,
     salesRep: "",
     category: "",
+    format: "",
   });
 
   const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE_NUMBER);
@@ -58,6 +64,11 @@ const ExpanseReport: React.FC = () => {
   }).map((option) => ({
     ...option,
     value: String(option.value),
+  }));
+
+  const formatOptions = Object.entries(ReportFormat).map(([key, value]) => ({
+    label: formatDropDownLabel(key),
+    value,
   }));
 
   // Convert filters to API format - memoized to prevent infinite re-renders
@@ -147,6 +158,16 @@ const ExpanseReport: React.FC = () => {
       options: expenseCategoryOptions,
       value: filters.category,
       onCancelPress: () => handleFilterChange({ category: "" }),
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+    {
+      key: "format",
+      type: "searchable-select",
+      onChange: (value: any) => handleFilterChange({ format: value }),
+      placeholder: "Select Format",
+      options: formatOptions,
+      value: filters.format,
+      onCancelPress: () => handleFilterChange({ format: "" }),
       searchableSelectClassName: "w-full max-w-[180px]",
     },
   ];
