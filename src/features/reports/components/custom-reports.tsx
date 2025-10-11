@@ -74,7 +74,7 @@ const reportHistoryData: ReportHistoryItem[] = [
   },
 ]
 
-export default function ReportHistory() {
+export default function CustomReports() {
   const [sorting, setSorting] = useState<SortingState>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const [globalFilter, setGlobalFilter] = useState("")
