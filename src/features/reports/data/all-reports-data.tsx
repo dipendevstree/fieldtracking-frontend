@@ -1,6 +1,7 @@
-import { ReportRow } from "../types";
+import { CustomReportRow, ExpanseReportRow } from "../types";
 
-export const dummyReports: ReportRow[] = [
+// Mock data for expanse report
+export const dummyReports: ExpanseReportRow[] = [
   {
     salesRep: "Jacob Jones",
     date: "2025-10-05",
@@ -45,5 +46,39 @@ export const dummyReports: ReportRow[] = [
     expense_category: "Fuel",
     status: "Approved",
     total_amount: "67.30",
+  },
+];
+
+// Mock data for custom report
+export const customReportData: CustomReportRow[] = [
+  {
+    id: 1,
+    type: "Expense Report",
+    format: "pdf",
+    generatedBy: "Admin User",
+    date: "2024-01-15",
+    time: "10:30",
+    size: "2.3 MB",
+    status: "completed",
+  },
+  {
+    id: 2,
+    type: "Performance Report",
+    format: "excel",
+    generatedBy: "Manager",
+    date: "2024-01-10",
+    time: "14:45",
+    size: "5.1 MB",
+    status: "completed",
+  },
+  {
+    id: 3,
+    type: "Activity Report",
+    format: "csv",
+    generatedBy: "Admin User",
+    date: "2024-01-08",
+    time: "09:15",
+    size: "1.8 MB",
+    status: "processing",
   },
 ];

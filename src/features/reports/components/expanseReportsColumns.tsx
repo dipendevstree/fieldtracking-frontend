@@ -2,7 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import StatusBadge from "@/components/shared/common-status-badge";
 
-export const columns: ColumnDef<any>[] = [
+export const expanseReportsColumns: ColumnDef<any>[] = [
   {
     accessorKey: "salesRep",
     header: ({ column }) => (

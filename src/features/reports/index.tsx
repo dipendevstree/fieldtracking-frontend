@@ -3,7 +3,7 @@ import { useRouter } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Main } from "@/components/layout/main";
-import AllReports from "./all-reports";
+import ExpanseReport from "./components/expanseReport";
 import CustomReports from "./components/custom-reports";
 
 export type ApprovalsTabValue = "/reports" | "/reports/custom-reports";
@@ -32,7 +32,7 @@ export default function Reports() {
         </TabsList>
 
         <TabsContent value="/reports" className="space-y-4">
-          <AllReports />
+          <ExpanseReport />
         </TabsContent>
 
         <TabsContent value="/reports/custom-reports" className="space-y-4">

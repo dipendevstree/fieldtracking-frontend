@@ -3,33 +3,26 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import ReportsHead from "./components/ReportsHead";
+import ReportsHead from "./ReportsHead";
 import { CustomDataTable } from "@/components/shared/custom-data-table";
-import { columns } from "./components/all-reports-columns";
+import { expanseReportsColumns } from "./expanseReportsColumns";
 import { ColumnDef } from "@tanstack/react-table";
-import { DateRange } from "react-day-picker";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import {
   useExpenseReports,
   useReportGeneration,
-} from "./hooks/use-reports-api";
-import { type ReportFilter } from "./services/reports-api";
-import { useGetAllUsers } from "../UserManagement/services/AllUsers.hook";
+} from "../hooks/use-reports-api";
+import { type ReportFilter } from "../services/reports-api";
+import { useGetAllUsers } from "../../UserManagement/services/AllUsers.hook";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { FilterConfig } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
-import { useGetExpenseCategoriesDropDownList } from "../settings/Approvers/services/approvers.hook";
-import { dummyReports } from "./data/all-reports-data";
+import { useGetExpenseCategoriesDropDownList } from "../../settings/Approvers/services/approvers.hook";
+import { dummyReports } from "../data/all-reports-data";
+import { expanseReportFilters } from "../types";
 
-interface Filters {
-  expanseDateRange?: DateRange;
-  createdDateRange?: DateRange;
-  salesRep: string;
-  category: string;
-}
-
-const AllReports: React.FC = () => {
-  const [filters, setFilters] = useState<Filters>({
+const ExpanseReport: React.FC = () => {
+  const [filters, setFilters] = useState<expanseReportFilters>({
     expanseDateRange: undefined,
     createdDateRange: undefined,
     salesRep: "",
@@ -98,7 +91,7 @@ const AllReports: React.FC = () => {
   const { reports, loading: reportsLoading } = useExpenseReports(apiFilters);
 
   // Triggered on any filter change
-  const handleFilterChange = (updated: Partial<Filters>) => {
+  const handleFilterChange = (updated: Partial<expanseReportFilters>) => {
     const newFilters = { ...filters, ...updated };
     setFilters(newFilters);
   };
@@ -204,7 +197,7 @@ const AllReports: React.FC = () => {
             paginationCallbacks={{ onPaginationChange }}
             data={dummyReports}
             currentPage={currentPage}
-            columns={columns as ColumnDef<unknown>[]}
+            columns={expanseReportsColumns as ColumnDef<unknown>[]}
             totalCount={reports.length}
             defaultPageSize={pageSize}
           />
@@ -214,4 +207,4 @@ const AllReports: React.FC = () => {
   );
 };
 
-export default AllReports;
+export default ExpanseReport;
