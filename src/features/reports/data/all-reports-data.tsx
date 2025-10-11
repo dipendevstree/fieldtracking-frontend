@@ -20,15 +20,6 @@ export const dummyReports: ReportRow[] = [
     total_amount: "120.50",
   },
   {
-    salesRep: "Kristin Watson",
-    date: "2025-10-07",
-    expanse_date: "2025-10-06",
-    created_date: "2025-10-07",
-    expense_category: "Accommodation",
-    status: "Rejected",
-    total_amount: "80.75",
-  },
-  {
     salesRep: "Ronald Richards",
     date: "2025-10-08",
     expanse_date: "2025-10-07",
@@ -36,6 +27,15 @@ export const dummyReports: ReportRow[] = [
     expense_category: "Miscellaneous",
     status: "Approved",
     total_amount: "45.20",
+  },
+  {
+    salesRep: "Kristin Watson",
+    date: "2025-10-07",
+    expanse_date: "2025-10-06",
+    created_date: "2025-10-07",
+    expense_category: "Accommodation",
+    status: "Rejected",
+    total_amount: "80.75",
   },
   {
     salesRep: "Annette Black",

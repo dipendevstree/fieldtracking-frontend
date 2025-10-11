@@ -37,7 +37,7 @@ const AllReports: React.FC = () => {
   });
 
   const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE_NUMBER);
-  const [, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
   const { generateReport, generating } = useReportGeneration();
 
@@ -206,6 +206,7 @@ const AllReports: React.FC = () => {
             currentPage={currentPage}
             columns={columns as ColumnDef<unknown>[]}
             totalCount={reports.length}
+            defaultPageSize={pageSize}
           />
         )}
       </Card>
