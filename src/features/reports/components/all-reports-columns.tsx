@@ -1,5 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
+import StatusBadge from "@/components/shared/common-status-badge";
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -11,9 +12,16 @@ export const columns: ColumnDef<any>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: "date",
+    accessorKey: "expanse_date",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title="Date" />
+      <CustomDataTableColumnHeader column={column} title="Expanse Date" />
+    ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: "created_date",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Created Date" />
     ),
     enableSorting: false,
   },
@@ -29,6 +37,10 @@ export const columns: ColumnDef<any>[] = [
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Status" />
     ),
+    cell: ({ row }) => {
+      const status = row.getValue("status");
+      return <StatusBadge status={status as any} />;
+    },
     enableSorting: false,
   },
   {
