@@ -7,23 +7,31 @@ import ReportsHead from "./components/ReportsHead";
 import { CustomDataTable } from "@/components/shared/custom-data-table";
 import { columns } from "./components/all-reports-columns";
 import { ColumnDef } from "@tanstack/react-table";
-import { SimpleBarChart } from "./components/SimpleBarChart";
 import { DateRange } from "react-day-picker";
-import { DateRangeFilter } from "./components/DateRangeFilter";
-import { SelectFilter } from "./components/SelectFilter";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
-import { useSalesReps, useExpenseCategories, useExpenseReports, useReportGeneration } from "./hooks/use-reports-api";
+import {
+  useExpenseReports,
+  useReportGeneration,
+} from "./hooks/use-reports-api";
 import { type ReportFilter } from "./services/reports-api";
+import { useGetAllUsers } from "../UserManagement/services/AllUsers.hook";
+import { useSelectOptions } from "@/hooks/use-select-option";
+import { FilterConfig } from "@/components/global-filter-section";
+import GlobalFilterSection from "@/components/global-table-filter-section";
+import { useGetExpenseCategoriesDropDownList } from "../settings/Approvers/services/approvers.hook";
+import { dummyReports } from "./data/all-reports-data";
 
 interface Filters {
-  dateRange?: DateRange;
+  expanseDateRange?: DateRange;
+  createdDateRange?: DateRange;
   salesRep: string;
   category: string;
 }
 
 const AllReports: React.FC = () => {
   const [filters, setFilters] = useState<Filters>({
-    dateRange: undefined,
+    expanseDateRange: undefined,
+    createdDateRange: undefined,
     salesRep: "",
     category: "",
   });
@@ -31,20 +39,61 @@ const AllReports: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE_NUMBER);
   const [, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
-  // API hooks
-  const { salesReps, loading: salesRepsLoading } = useSalesReps();
-  const { categories, loading: categoriesLoading } = useExpenseCategories();
   const { generateReport, generating } = useReportGeneration();
 
+  const { data: userListDropDownData = [] } = useGetAllUsers();
+  const { expenseCategories: expenseCategoriesData } =
+    useGetExpenseCategoriesDropDownList({ defaultCategory: true });
+
+  const userListDropDownList = userListDropDownData?.map((user: any) => ({
+    ...user,
+    fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+  }));
+
+  const expenseCategoriesDropDownList = expenseCategoriesData || [];
+
+  const usersOptions = useSelectOptions<any>({
+    listData: userListDropDownList,
+    labelKey: "fullName",
+    valueKey: "id",
+  }).map((option) => ({ ...option, value: String(option.value) }));
+
+  const expenseCategoryOptions = useSelectOptions({
+    listData: expenseCategoriesDropDownList,
+    labelKey: "categoryName",
+    valueKey: "expensesCategoryId",
+  }).map((option) => ({
+    ...option,
+    value: String(option.value),
+  }));
+
   // Convert filters to API format - memoized to prevent infinite re-renders
-  const apiFilters: ReportFilter = useMemo(() => ({
-    dateRange: filters.dateRange ? {
-      from: filters.dateRange.from!,
-      to: filters.dateRange.to!
-    } : undefined,
-    salesRep: filters.salesRep || undefined,
-    category: filters.category || undefined,
-  }), [filters.dateRange?.from, filters.dateRange?.to, filters.salesRep, filters.category]);
+  const apiFilters: ReportFilter = useMemo(
+    () => ({
+      expanseDateRange: filters.expanseDateRange
+        ? {
+            from: filters.expanseDateRange.from!,
+            to: filters.expanseDateRange.to!,
+          }
+        : undefined,
+      createdDateRange: filters.createdDateRange
+        ? {
+            from: filters.createdDateRange.from!,
+            to: filters.createdDateRange.to!,
+          }
+        : undefined,
+      salesRep: filters.salesRep || undefined,
+      category: filters.category || undefined,
+    }),
+    [
+      filters.expanseDateRange?.from,
+      filters.expanseDateRange?.to,
+      filters.createdDateRange?.from,
+      filters.createdDateRange?.to,
+      filters.salesRep,
+      filters.category,
+    ]
+  );
 
   const { reports, loading: reportsLoading } = useExpenseReports(apiFilters);
 
@@ -56,9 +105,9 @@ const AllReports: React.FC = () => {
 
   // Handle generate report
   const handleGenerateReport = async () => {
-    const result = await generateReport('expense-report', apiFilters);
+    const result = await generateReport("expense-report", apiFilters);
     if (result.success) {
-      console.log('Report generated:', result.reportId);
+      console.log("Report generated:", result.reportId, apiFilters);
       // You could show a success message here
     }
   };
@@ -68,41 +117,63 @@ const AllReports: React.FC = () => {
     setPageSize(pageSize);
   };
 
+  const filtersGlob: FilterConfig[] = [
+    {
+      key: "expanse-date-range",
+      type: "date-range",
+      placeholder: "Expanse Date Range",
+      dateRangeValue: filters.expanseDateRange,
+      onDateRangeChange: (range: any) =>
+        handleFilterChange({ expanseDateRange: range }),
+      dataRangeClassName: "w-full max-w-xs",
+    },
+    {
+      key: "created-date-range",
+      type: "date-range",
+      placeholder: "Created Date Range",
+      dateRangeValue: filters.createdDateRange,
+      onDateRangeChange: (range: any) =>
+        handleFilterChange({ createdDateRange: range }),
+      dataRangeClassName: "w-full max-w-xs",
+    },
+    {
+      key: "salesRepresentativeUserId",
+      type: "searchable-select",
+      onChange: (value: any) => handleFilterChange({ salesRep: value }),
+      placeholder: "Select Sales Rep",
+      value: filters.salesRep,
+      options: usersOptions,
+      onCancelPress: () => handleFilterChange({ salesRep: "" }),
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+    {
+      key: "category",
+      type: "searchable-select",
+      onChange: (value: any) => handleFilterChange({ category: value }),
+      placeholder: "Select Category",
+      options: expenseCategoryOptions,
+      value: filters.category,
+      onCancelPress: () => handleFilterChange({ category: "" }),
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+  ];
+
   return (
     <div>
-      <Card className="p-6">
+      <Card className="p-4 gap-0">
         <ReportsHead
           title="Expense Report Generator"
           subtitle="Generate detailed expense reports with customizable filters."
         />
         <Separator className="my-4" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <DateRangeFilter
-            dateRange={filters.dateRange}
-            label="Select Date Range"
-            setDateRange={(range) => handleFilterChange({ dateRange: range })}
-          />
 
-          <SelectFilter
-            label="Sales Representatives"
-            value={filters.salesRep}
-            onChange={(value) => handleFilterChange({ salesRep: value })}
-            placeholder={salesRepsLoading ? "Loading..." : "Select Sales Representatives"}
-            options={salesReps.map(rep => ({ label: rep.name, value: rep.id }))}
-          />
-
-          <SelectFilter
-            label="Expense Categories"
-            value={filters.category}
-            onChange={(value) => handleFilterChange({ category: value })}
-            placeholder={categoriesLoading ? "Loading..." : "Select Expense Categories"}
-            options={categories.map(cat => ({ label: cat.name, value: cat.id }))}
-          />
-        </div>
-        
-        <div className="flex justify-end mt-4">
-          <Button 
-            onClick={handleGenerateReport} 
+        <GlobalFilterSection
+          key={"reports-view-filters"}
+          filters={filtersGlob}
+        />
+        <div className="flex justify-end">
+          <Button
+            onClick={handleGenerateReport}
             disabled={generating}
             className="min-w-[120px]"
           >
@@ -112,38 +183,31 @@ const AllReports: React.FC = () => {
                 Generating...
               </>
             ) : (
-              'Generate Report'
+              "Generate Report"
             )}
           </Button>
         </div>
       </Card>
 
-      <Card className="p-6 mt-6">
+      <Card className="p-4 mt-4 gap-2">
         <ReportsHead
           title="Expense Reports"
           subtitle="Expense report from 1 May to 2025"
         />
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          <div className="lg:col-span-8">
-            {reportsLoading ? (
-              <div className="flex items-center justify-center h-48">
-                <Loader2 className="h-8 w-8 animate-spin" />
-                <span className="ml-2">Loading reports...</span>
-              </div>
-            ) : (
-              <CustomDataTable
-                paginationCallbacks={{ onPaginationChange }}
-                data={reports}
-                currentPage={currentPage}
-                columns={columns as ColumnDef<unknown>[]}
-                totalCount={reports.length}
-              />
-            )}
+        {reportsLoading ? (
+          <div className="flex items-center justify-center h-48">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <span className="ml-2">Loading reports...</span>
           </div>
-          <div className="lg:col-span-4">
-            <SimpleBarChart />
-          </div>
-        </div>
+        ) : (
+          <CustomDataTable
+            paginationCallbacks={{ onPaginationChange }}
+            data={dummyReports}
+            currentPage={currentPage}
+            columns={columns as ColumnDef<unknown>[]}
+            totalCount={reports.length}
+          />
+        )}
       </Card>
     </div>
   );
