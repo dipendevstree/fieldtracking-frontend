@@ -1,220 +1,313 @@
-import { useState } from "react";
-import {
-  useReactTable,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  flexRender,
-  SortingState,
-  ColumnFiltersState,
-} from "@tanstack/react-table";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import React, { useState, useMemo } from "react";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, ChevronLeft, ChevronRight } from "lucide-react";
-import { DateRangeFilter } from "./DateRangeFilter";
-import { CustomeReportFilter } from "../types";
+import { Loader2 } from "lucide-react";
+import ReportsHead from "./ReportsHead";
+import { CustomDataTable } from "@/components/shared/custom-data-table";
+import { ColumnDef } from "@tanstack/react-table";
+import {
+  DEFAULT_PAGE_NUMBER,
+  DEFAULT_PAGE_SIZE,
+  REPORT_TYPE,
+  ReportFormat,
+} from "@/data/app.data";
+import {
+  useCustomReportGeneration,
+  type ReportFilter,
+} from "../services/reports-api";
+import { useGetAllUsers } from "../../UserManagement/services/AllUsers.hook";
+import { useSelectOptions } from "@/hooks/use-select-option";
+import { FilterConfig } from "@/components/global-filter-section";
+import GlobalFilterSection from "@/components/global-table-filter-section";
+import { useGetExpenseCategoriesDropDownList } from "../../settings/Approvers/services/approvers.hook";
 import { customReportData } from "../data/all-reports-data";
+import { CustomeReportFilter } from "../types";
+import { formatDropDownLabel } from "@/utils/commonFunction";
 import { customReportsColumns } from "./customReportsColumns";
+import { useGetAllCustomer } from "@/features/calendar/services/calendar-view.hook";
 
-export default function CustomReports() {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [globalFilter, setGlobalFilter] = useState("");
-  const [filters, setFilters] = useState<CustomeReportFilter>({});
-
-  const handleFilterChange = (newFilters: Partial<CustomeReportFilter>) => {
-    setFilters((prev) => ({ ...prev, ...newFilters }));
-  };
-
-  const table = useReactTable({
-    data: customReportData,
-    columns: customReportsColumns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onGlobalFilterChange: setGlobalFilter,
-    state: {
-      sorting,
-      columnFilters,
-      globalFilter,
-    },
+const CustomReport: React.FC = () => {
+  const [filters, setFilters] = useState<CustomeReportFilter>({
+    dateRange: undefined,
+    reportType: "",
+    salesRep: "",
+    customerId: "",
+    category: "",
+    format: "",
+    status: "",
   });
 
-  // const apiFilters: ReportFilter = useMemo(() => ({
-  //   dateRange: filters.dateRange,
-  //   salesRep: filters.salesRep || undefined,
-  //   territory: filters.territory || undefined,
-  // }), [filters.dateRange, filters.salesRep, filters.territory]);
+  const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE_NUMBER);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+
+  const apiFilters: ReportFilter = useMemo(
+    () => ({
+      dateRange: filters.dateRange
+        ? {
+            from: filters.dateRange.from!,
+            to: filters.dateRange.to!,
+          }
+        : undefined,
+      reportType: filters.reportType || undefined,
+      salesRep: filters.salesRep || undefined,
+      category: filters.category || undefined,
+    }),
+    [
+      filters.dateRange?.from,
+      filters.dateRange?.to,
+      filters.reportType,
+      filters.salesRep,
+      filters.category,
+    ]
+  );
+
+  const {
+    reports,
+    isLoading: generating,
+    totalCount,
+    refetch,
+  } = useCustomReportGeneration(
+    { ...apiFilters, page: currentPage, limit: pageSize },
+    { enabled: false }
+  );
+
+  const { data: userListDropDownData = [] } = useGetAllUsers();
+  const { expenseCategories: expenseCategoriesData } =
+    useGetExpenseCategoriesDropDownList({ defaultCategory: true });
+  const { data: customers } = useGetAllCustomer();
+
+  const userListDropDownList = userListDropDownData?.map((user: any) => ({
+    ...user,
+    fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+  }));
+
+  const expenseCategoriesDropDownList = expenseCategoriesData || [];
+
+  const usersOptions = useSelectOptions<any>({
+    listData: userListDropDownList,
+    labelKey: "fullName",
+    valueKey: "id",
+  }).map((option) => ({ ...option, value: String(option.value) }));
+
+  const expenseCategoryOptions = useSelectOptions({
+    listData: expenseCategoriesDropDownList,
+    labelKey: "categoryName",
+    valueKey: "expensesCategoryId",
+  }).map((option) => ({
+    ...option,
+    value: String(option.value),
+  }));
+
+  const customerOptions = useSelectOptions({
+    listData: customers ?? [],
+    labelKey: "companyName",
+    valueKey: "customerId",
+  }).map((option) => ({
+    ...option,
+    value: String(option.value),
+  }));
+
+  const formatOptions = Object.entries(ReportFormat).map(([key, value]) => ({
+    label: formatDropDownLabel(key),
+    value,
+  }));
+
+  const reportTypeOptions = Object.entries(REPORT_TYPE).map(([key, value]) => ({
+    label: formatDropDownLabel(key),
+    value,
+  }));
+
+  // Triggered on any filter change
+  const handleFilterChange = (updated: Partial<CustomeReportFilter>) => {
+    // If the user changes report type, reset everything else
+    if (updated.reportType !== undefined) {
+      setFilters({
+        dateRange: undefined,
+        reportType: updated.reportType,
+        salesRep: "",
+        customerId: "",
+        category: "",
+        format: "",
+        status: "",
+      });
+    } else {
+      setFilters((prev) => ({ ...prev, ...updated }));
+    }
+  };
+
+  // Handle generate report
+  const handleGenerateReport = async () => {
+    refetch();
+  };
+
+  const onPaginationChange = (page: number, pageSize: number) => {
+    setCurrentPage(page);
+    setPageSize(pageSize);
+  };
+
+  const filtersGlob: FilterConfig[] = [
+    {
+      key: "date-range",
+      type: "date-range",
+      placeholder: "Pick Date Range",
+      dateRangeValue: filters.dateRange,
+      onDateRangeChange: (range: any) =>
+        handleFilterChange({ dateRange: range }),
+      dataRangeClassName: "w-full max-w-xs",
+    },
+    {
+      key: "report-type",
+      type: "searchable-select",
+      onChange: (value: any) => handleFilterChange({ reportType: value }),
+      placeholder: "Select Report Type",
+      options: reportTypeOptions,
+      value: filters.reportType,
+      onCancelPress: () => handleFilterChange({ reportType: "" }),
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+    {
+      key: "salesRepresentativeUserId",
+      type: "searchable-select",
+      onChange: (value: any) => handleFilterChange({ salesRep: value }),
+      placeholder: "Select Sales Rep",
+      value: filters.salesRep,
+      options: usersOptions,
+      onCancelPress: () => handleFilterChange({ salesRep: "" }),
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+    {
+      key: "customerId",
+      type: "searchable-select",
+      onChange: (value) => handleFilterChange({ customerId: value }),
+      onCancelPress: () => handleFilterChange({ customerId: "" }),
+      placeholder: "Select customer",
+      value: filters.customerId,
+      options: customerOptions,
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+    {
+      key: "category",
+      type: "searchable-select",
+      onChange: (value: any) => handleFilterChange({ category: value }),
+      placeholder: "Select Category",
+      options: expenseCategoryOptions,
+      value: filters.category,
+      onCancelPress: () => handleFilterChange({ category: "" }),
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+    {
+      key: "format",
+      type: "searchable-select",
+      onChange: (value: any) => handleFilterChange({ format: value }),
+      placeholder: "Select Format",
+      options: formatOptions,
+      value: filters.format,
+      onCancelPress: () => handleFilterChange({ format: "" }),
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+    {
+      key: "status",
+      type: "searchable-select",
+      onChange: (value: any) => handleFilterChange({ status: value }),
+      placeholder: "Select Status",
+      options: [
+        { label: "Completed", value: "completed" },
+        { label: "Pending", value: "pending" },
+      ],
+      value: filters.status,
+      onCancelPress: () => handleFilterChange({ status: "" }),
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+  ];
+
+  const filterVisibilityMap: Record<string, string[]> = {
+    [REPORT_TYPE.VISIT_REPORTS]: [
+      "date-range",
+      "salesRepresentativeUserId",
+      "customerId",
+      "status",
+      "format",
+    ],
+    [REPORT_TYPE.PRODUCTIVITY_REPORT]: [
+      "date-range",
+      "salesRepresentativeUserId",
+      "format",
+    ],
+    [REPORT_TYPE.CUSTOMER_REPORT]: ["date-range", "customerId", "format"],
+    [REPORT_TYPE.FIELD_ACTIVITY_REPORT]: [
+      "date-range",
+      "salesRepresentativeUserId",
+      "format",
+    ],
+  };
+
+  const visibleFilterKeys =
+    filterVisibilityMap[filters.reportType as REPORT_TYPE] || [];
+
+  const visibleFilters = filtersGlob.filter((f) =>
+    visibleFilterKeys.includes(f.key)
+  );
+
+  const visibleFiltersWithReportType = [
+    filtersGlob.find((f) => f.key === "report-type")!,
+    ...visibleFilters,
+  ];
 
   return (
-    <div className="space-y-4">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Report History</h2>
-        <p className="text-muted-foreground">
-          View and manage previously generated reports.
-        </p>
-      </div>
+    <div>
+      <Card className="p-4 gap-0">
+        <ReportsHead
+          title="Custom Report Generator"
+          subtitle="Generate detailed custom reports with customizable filters."
+        />
+        <Separator className="my-4" />
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            {/* Date Range Filter */}
-            <div className="flex items-center w-full">
-              <DateRangeFilter
-                dateRange={filters.dateRange}
-                label="Date Range"
-                setDateRange={(range) =>
-                  handleFilterChange({ dateRange: range })
-                }
-              />
-            </div>
-            <div className="flex items-center space-x-2">
-              <div className="relative">
-                <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search reports..."
-                  value={globalFilter ?? ""}
-                  onChange={(event) =>
-                    setGlobalFilter(String(event.target.value))
-                  }
-                  className="pl-8 w-64"
-                />
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <table className="w-full">
-              <thead>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <tr key={headerGroup.id} className="border-b border-border">
-                    {headerGroup.headers.map((header) => {
-                      return (
-                        <th
-                          key={header.id}
-                          className="h-12 px-4 text-left align-middle font-medium text-muted-foreground"
-                        >
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                        </th>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </thead>
-              <tbody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <tr
-                      key={row.id}
-                      className="border-b border-border hover:bg-muted/50 transition-colors"
-                      data-state={row.getIsSelected() && "selected"}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <td key={cell.id} className="p-4 align-middle">
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </td>
-                      ))}
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td
-                      colSpan={customReportsColumns.length}
-                      className="h-24 text-center"
-                    >
-                      No results.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+        <GlobalFilterSection
+          key={"reports-view-filters"}
+          filters={visibleFiltersWithReportType}
+        />
+        <div className="flex justify-end">
+          <Button
+            onClick={handleGenerateReport}
+            disabled={generating}
+            className="min-w-[120px]"
+          >
+            {generating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              "Generate Report"
+            )}
+          </Button>
+        </div>
+      </Card>
 
-          {/* Pagination */}
-          <div className="flex items-center justify-between space-x-2 py-4">
-            <div className="flex-1 text-sm text-muted-foreground">
-              {table.getFilteredSelectedRowModel().rows.length} of{" "}
-              {table.getFilteredRowModel().rows.length} row(s) selected.
-            </div>
-            <div className="flex items-center space-x-6 lg:space-x-8">
-              <div className="flex items-center space-x-2">
-                <p className="text-sm font-medium">Rows per page</p>
-                <select
-                  className="h-8 w-[70px] rounded border border-input bg-background px-3 py-1 text-sm"
-                  value={table.getState().pagination.pageSize}
-                  onChange={(e) => {
-                    table.setPageSize(Number(e.target.value));
-                  }}
-                >
-                  {[10, 20, 30, 40, 50].map((pageSize) => (
-                    <option key={pageSize} value={pageSize}>
-                      {pageSize}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                Page {table.getState().pagination.pageIndex + 1} of{" "}
-                {table.getPageCount()}
-              </div>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  className="h-8 w-8 p-0"
-                  onClick={() => table.setPageIndex(0)}
-                  disabled={!table.getCanPreviousPage()}
-                >
-                  <span className="sr-only">Go to first page</span>
-                  <ChevronLeft className="h-4 w-4" />
-                  <ChevronLeft className="h-4 w-4 -ml-2" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-8 w-8 p-0"
-                  onClick={() => table.previousPage()}
-                  disabled={!table.getCanPreviousPage()}
-                >
-                  <span className="sr-only">Go to previous page</span>
-                  <ChevronLeft className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-8 w-8 p-0"
-                  onClick={() => table.nextPage()}
-                  disabled={!table.getCanNextPage()}
-                >
-                  <span className="sr-only">Go to next page</span>
-                  <ChevronRight className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="outline"
-                  className="h-8 w-8 p-0"
-                  onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                  disabled={!table.getCanNextPage()}
-                >
-                  <span className="sr-only">Go to last page</span>
-                  <ChevronRight className="h-4 w-4" />
-                  <ChevronRight className="h-4 w-4 -ml-2" />
-                </Button>
-              </div>
-            </div>
+      <Card className="p-4 mt-4 gap-2">
+        <ReportsHead
+          title="Custom Reports"
+          subtitle="Custom report from 1 May to 2025"
+        />
+        {generating ? (
+          <div className="flex items-center justify-center h-48">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <span className="ml-2">Loading reports...</span>
           </div>
-        </CardContent>
+        ) : (
+          <CustomDataTable
+            paginationCallbacks={{ onPaginationChange }}
+            data={customReportData ?? reports}
+            currentPage={currentPage}
+            columns={customReportsColumns as ColumnDef<unknown>[]}
+            totalCount={totalCount}
+            defaultPageSize={pageSize}
+          />
+        )}
       </Card>
     </div>
   );
-}
+};
+
+export default CustomReport;
