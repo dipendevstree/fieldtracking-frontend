@@ -161,7 +161,7 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "Documentation",
-          url: "/settings",
+          url: "/",
           icon: FileText,
           menuKey: "documentation",
         },
