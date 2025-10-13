@@ -27,7 +27,11 @@ import { formatDropDownLabel } from "@/utils/commonFunction";
 import { customReportsColumns } from "./customReportsColumns";
 import { useGetAllCustomer } from "@/features/calendar/services/calendar-view.hook";
 
+const normalizeOptions = (options: any[]) =>
+  options.map((o) => ({ ...o, value: String(o.value) }));
+
 const CustomReport: React.FC = () => {
+  // -------------------- State --------------------
   const [filters, setFilters] = useState<CustomeReportFilter>({
     dateRange: undefined,
     reportType: "",
@@ -37,17 +41,61 @@ const CustomReport: React.FC = () => {
     format: "",
     status: "",
   });
-
   const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE_NUMBER);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // -------------------- API Hooks --------------------
+  const { data: userListDropDownData = [] } = useGetAllUsers();
+  const { expenseCategories: expenseCategoriesData } =
+    useGetExpenseCategoriesDropDownList({ defaultCategory: true });
+  const { data: customers } = useGetAllCustomer();
+
+  const userListDropDownList = userListDropDownData.map((user: any) => ({
+    ...user,
+    fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+  }));
+
+  // -------------------- Select Options --------------------
+  const usersOptions = normalizeOptions(
+    useSelectOptions({
+      listData: userListDropDownList,
+      labelKey: "fullName",
+      valueKey: "id",
+    })
+  );
+
+  const expenseCategoryOptions = normalizeOptions(
+    useSelectOptions({
+      listData: expenseCategoriesData || [],
+      labelKey: "categoryName",
+      valueKey: "expensesCategoryId",
+    })
+  );
+
+  const customerOptions = normalizeOptions(
+    useSelectOptions({
+      listData: customers ?? [],
+      labelKey: "companyName",
+      valueKey: "customerId",
+    })
+  );
+
+  const formatOptions = Object.entries(ReportFormat).map(([key, value]) => ({
+    label: formatDropDownLabel(key),
+    value,
+  }));
+
+  const reportTypeOptions = Object.entries(REPORT_TYPE).map(([key, value]) => ({
+    label: formatDropDownLabel(key),
+    value,
+  }));
+
+  // -------------------- Filters & API Params --------------------
   const apiFilters: ReportFilter = useMemo(
     () => ({
       dateRange: filters.dateRange
-        ? {
-            from: filters.dateRange.from!,
-            to: filters.dateRange.to!,
-          }
+        ? { from: filters.dateRange.from!, to: filters.dateRange.to! }
         : undefined,
       reportType: filters.reportType || undefined,
       salesRep: filters.salesRep || undefined,
@@ -64,7 +112,7 @@ const CustomReport: React.FC = () => {
 
   const {
     reports,
-    isLoading: generating,
+    isLoading: isGenerating,
     totalCount,
     refetch,
   } = useCustomReportGeneration(
@@ -72,56 +120,10 @@ const CustomReport: React.FC = () => {
     { enabled: false }
   );
 
-  const { data: userListDropDownData = [] } = useGetAllUsers();
-  const { expenseCategories: expenseCategoriesData } =
-    useGetExpenseCategoriesDropDownList({ defaultCategory: true });
-  const { data: customers } = useGetAllCustomer();
-
-  const userListDropDownList = userListDropDownData?.map((user: any) => ({
-    ...user,
-    fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
-  }));
-
-  const expenseCategoriesDropDownList = expenseCategoriesData || [];
-
-  const usersOptions = useSelectOptions<any>({
-    listData: userListDropDownList,
-    labelKey: "fullName",
-    valueKey: "id",
-  }).map((option) => ({ ...option, value: String(option.value) }));
-
-  const expenseCategoryOptions = useSelectOptions({
-    listData: expenseCategoriesDropDownList,
-    labelKey: "categoryName",
-    valueKey: "expensesCategoryId",
-  }).map((option) => ({
-    ...option,
-    value: String(option.value),
-  }));
-
-  const customerOptions = useSelectOptions({
-    listData: customers ?? [],
-    labelKey: "companyName",
-    valueKey: "customerId",
-  }).map((option) => ({
-    ...option,
-    value: String(option.value),
-  }));
-
-  const formatOptions = Object.entries(ReportFormat).map(([key, value]) => ({
-    label: formatDropDownLabel(key),
-    value,
-  }));
-
-  const reportTypeOptions = Object.entries(REPORT_TYPE).map(([key, value]) => ({
-    label: formatDropDownLabel(key),
-    value,
-  }));
-
-  // Triggered on any filter change
+  // -------------------- Handlers --------------------
   const handleFilterChange = (updated: Partial<CustomeReportFilter>) => {
-    // If the user changes report type, reset everything else
     if (updated.reportType !== undefined) {
+      // reset filters if report type changes
       setFilters({
         dateRange: undefined,
         reportType: updated.reportType,
@@ -131,95 +133,142 @@ const CustomReport: React.FC = () => {
         format: "",
         status: "",
       });
+      setErrors({});
     } else {
       setFilters((prev) => ({ ...prev, ...updated }));
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        for (const key of Object.keys(updated)) delete newErrors[key];
+        return newErrors;
+      });
     }
   };
 
-  // Handle generate report
+  const validateFilters = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!filters.reportType) {
+      setErrors({ reportType: "Report type is required" });
+      return false;
+    }
+
+    if (!filters.dateRange?.from || !filters.dateRange?.to) {
+      newErrors.dateRange = "Date range is required";
+    }
+
+    if (!filters.format) {
+      newErrors.format = "Format is required";
+    }
+
+    if (filters.reportType === REPORT_TYPE.PRODUCTIVITY_REPORT) {
+      visibleFiltersWithReportType.forEach(({ key, placeholder }) => {
+        if (["report-type", "date-range", "format"].includes(key)) return;
+
+        const value =
+          key === "salesRepresentativeUserId"
+            ? filters.salesRep
+            : key === "customerId"
+              ? filters.customerId
+              : (filters as any)[key];
+
+        if (!value)
+          newErrors[key] =
+            `${placeholder?.replace("Select ", "") || "Field"} is required`;
+      });
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleGenerateReport = async () => {
+    setErrors({});
+    if (!validateFilters()) return;
     refetch();
   };
 
-  const onPaginationChange = (page: number, pageSize: number) => {
+  const onPaginationChange = (page: number, size: number) => {
     setCurrentPage(page);
-    setPageSize(pageSize);
+    setPageSize(size);
   };
 
-  const filtersGlob: FilterConfig[] = [
-    {
-      key: "date-range",
-      type: "date-range",
-      placeholder: "Pick Date Range",
-      dateRangeValue: filters.dateRange,
-      onDateRangeChange: (range: any) =>
-        handleFilterChange({ dateRange: range }),
-      dataRangeClassName: "w-full max-w-xs",
-    },
-    {
-      key: "report-type",
-      type: "searchable-select",
-      onChange: (value: any) => handleFilterChange({ reportType: value }),
-      placeholder: "Select Report Type",
-      options: reportTypeOptions,
-      value: filters.reportType,
-      onCancelPress: () => handleFilterChange({ reportType: "" }),
-      searchableSelectClassName: "w-full max-w-[180px]",
-    },
-    {
-      key: "salesRepresentativeUserId",
-      type: "searchable-select",
-      onChange: (value: any) => handleFilterChange({ salesRep: value }),
-      placeholder: "Select Sales Rep",
-      value: filters.salesRep,
-      options: usersOptions,
-      onCancelPress: () => handleFilterChange({ salesRep: "" }),
-      searchableSelectClassName: "w-full max-w-[180px]",
-    },
-    {
-      key: "customerId",
-      type: "searchable-select",
-      onChange: (value) => handleFilterChange({ customerId: value }),
-      onCancelPress: () => handleFilterChange({ customerId: "" }),
-      placeholder: "Select customer",
-      value: filters.customerId,
-      options: customerOptions,
-      searchableSelectClassName: "w-full max-w-[180px]",
-    },
-    {
-      key: "category",
-      type: "searchable-select",
-      onChange: (value: any) => handleFilterChange({ category: value }),
-      placeholder: "Select Category",
-      options: expenseCategoryOptions,
-      value: filters.category,
-      onCancelPress: () => handleFilterChange({ category: "" }),
-      searchableSelectClassName: "w-full max-w-[180px]",
-    },
-    {
-      key: "format",
-      type: "searchable-select",
-      onChange: (value: any) => handleFilterChange({ format: value }),
-      placeholder: "Select Format",
-      options: formatOptions,
-      value: filters.format,
-      onCancelPress: () => handleFilterChange({ format: "" }),
-      searchableSelectClassName: "w-full max-w-[180px]",
-    },
-    {
-      key: "status",
-      type: "searchable-select",
-      onChange: (value: any) => handleFilterChange({ status: value }),
-      placeholder: "Select Status",
-      options: [
-        { label: "Completed", value: "completed" },
-        { label: "Pending", value: "pending" },
-      ],
-      value: filters.status,
-      onCancelPress: () => handleFilterChange({ status: "" }),
-      searchableSelectClassName: "w-full max-w-[180px]",
-    },
-  ];
+  // -------------------- Filter Config --------------------
+  const filtersGlob: FilterConfig[] = useMemo(
+    () => [
+      {
+        key: "date-range",
+        type: "date-range",
+        placeholder: "Pick Date Range",
+        dateRangeValue: filters.dateRange,
+        onDateRangeChange: (range) => handleFilterChange({ dateRange: range }),
+        dataRangeClassName: "w-full max-w-xs",
+      },
+      {
+        key: "format",
+        type: "searchable-select",
+        onChange: (v) => handleFilterChange({ format: v }),
+        placeholder: "Select Format",
+        options: formatOptions,
+        value: filters.format,
+        onCancelPress: () => handleFilterChange({ format: "" }),
+        searchableSelectClassName: "w-full max-w-[180px]",
+      },
+      {
+        key: "report-type",
+        type: "searchable-select",
+        onChange: (v) => handleFilterChange({ reportType: v }),
+        placeholder: "Select Report Type",
+        options: reportTypeOptions,
+        value: filters.reportType,
+        onCancelPress: () => handleFilterChange({ reportType: "" }),
+        searchableSelectClassName: "w-full max-w-[180px]",
+      },
+      {
+        key: "salesRepresentativeUserId",
+        type: "searchable-select",
+        onChange: (v) => handleFilterChange({ salesRep: v }),
+        placeholder: "Select Sales Rep",
+        value: filters.salesRep,
+        options: usersOptions,
+        onCancelPress: () => handleFilterChange({ salesRep: "" }),
+        searchableSelectClassName: "w-full max-w-[180px]",
+      },
+      {
+        key: "customerId",
+        type: "searchable-select",
+        onChange: (v) => handleFilterChange({ customerId: v }),
+        onCancelPress: () => handleFilterChange({ customerId: "" }),
+        placeholder: "Select Customer",
+        value: filters.customerId,
+        options: customerOptions,
+        searchableSelectClassName: "w-full max-w-[180px]",
+      },
+      {
+        key: "category",
+        type: "searchable-select",
+        onChange: (v) => handleFilterChange({ category: v }),
+        placeholder: "Select Category",
+        options: expenseCategoryOptions,
+        value: filters.category,
+        onCancelPress: () => handleFilterChange({ category: "" }),
+        searchableSelectClassName: "w-full max-w-[180px]",
+      },
+      {
+        key: "status",
+        type: "searchable-select",
+        onChange: (v) => handleFilterChange({ status: v }),
+        placeholder: "Select Status",
+        options: [
+          { label: "Completed", value: "completed" },
+          { label: "Pending", value: "pending" },
+        ],
+        value: filters.status,
+        onCancelPress: () => handleFilterChange({ status: "" }),
+        searchableSelectClassName: "w-full max-w-[180px]",
+      },
+    ],
+    [filters, usersOptions, expenseCategoryOptions, customerOptions]
+  );
 
   const filterVisibilityMap: Record<string, string[]> = {
     [REPORT_TYPE.VISIT_REPORTS]: [
@@ -249,11 +298,15 @@ const CustomReport: React.FC = () => {
     visibleFilterKeys.includes(f.key)
   );
 
-  const visibleFiltersWithReportType = [
-    filtersGlob.find((f) => f.key === "report-type")!,
-    ...visibleFilters,
-  ];
+  const visibleFiltersWithReportType = useMemo(
+    () => [
+      filtersGlob.find((f) => f.key === "report-type")!,
+      ...visibleFilters,
+    ],
+    [filters.reportType, visibleFilters]
+  );
 
+  // -------------------- UI --------------------
   return (
     <div>
       <Card className="p-4 gap-0">
@@ -264,16 +317,25 @@ const CustomReport: React.FC = () => {
         <Separator className="my-4" />
 
         <GlobalFilterSection
-          key={"reports-view-filters"}
+          key="reports-view-filters"
           filters={visibleFiltersWithReportType}
         />
+
+        {Object.keys(errors).length > 0 && (
+          <div className="text-sm text-red-600 space-y-1">
+            {Object.entries(errors).map(([key, msg]) => (
+              <div key={key}>• {msg}</div>
+            ))}
+          </div>
+        )}
+
         <div className="flex justify-end">
           <Button
             onClick={handleGenerateReport}
-            disabled={generating}
+            disabled={isGenerating}
             className="min-w-[120px]"
           >
-            {generating ? (
+            {isGenerating ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Generating...
@@ -290,7 +352,7 @@ const CustomReport: React.FC = () => {
           title="Custom Reports"
           subtitle="Custom report from 1 May to 2025"
         />
-        {generating ? (
+        {isGenerating ? (
           <div className="flex items-center justify-center h-48">
             <Loader2 className="h-8 w-8 animate-spin" />
             <span className="ml-2">Loading reports...</span>
