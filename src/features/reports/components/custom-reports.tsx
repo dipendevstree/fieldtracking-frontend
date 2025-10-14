@@ -10,7 +10,8 @@ import {
   DEFAULT_PAGE_NUMBER,
   DEFAULT_PAGE_SIZE,
   REPORT_TYPE,
-  ReportFormat,
+  REPORT_FORMAT,
+  VISIT_STATUS,
 } from "@/data/app.data";
 import {
   useCustomReportGeneration,
@@ -81,7 +82,7 @@ const CustomReport: React.FC = () => {
     })
   );
 
-  const formatOptions = Object.entries(ReportFormat).map(([key, value]) => ({
+  const formatOptions = Object.entries(REPORT_FORMAT).map(([key, value]) => ({
     label: formatDropDownLabel(key),
     value,
   }));
@@ -90,6 +91,13 @@ const CustomReport: React.FC = () => {
     label: formatDropDownLabel(key),
     value,
   }));
+
+  const visitStatusOptions = Object.entries(VISIT_STATUS).map(
+    ([key, value]) => ({
+      label: formatDropDownLabel(key),
+      value,
+    })
+  );
 
   // -------------------- Filters & API Params --------------------
   const apiFilters: ReportFilter = useMemo(() => {
@@ -102,29 +110,35 @@ const CustomReport: React.FC = () => {
       endDate: filters.dateRange?.to || undefined,
     };
 
-    if (type === REPORT_TYPE.VISIT_REPORTS) {
-      baseFilters.salesRep = filters.salesRep || undefined;
-      baseFilters.customer = filters.customerId || undefined;
-      baseFilters.status = filters.status || undefined;
-    }
+    const reportSpecificFilters: Record<string, any> = {
+      [REPORT_TYPE.VISIT_REPORTS]: {
+        salesRep: filters.salesRep || undefined,
+        customer: filters.customerId || undefined,
+        status: filters.status || undefined,
+      },
+      [REPORT_TYPE.PRODUCTIVITY_REPORT]: {
+        salesRep: filters.salesRep || undefined,
+      },
+      [REPORT_TYPE.CUSTOMER_REPORT]: {
+        customer: filters.customerId || undefined,
+      },
+      [REPORT_TYPE.FIELD_ACTIVITY_REPORT]: {
+        customer: filters.customerId || undefined,
+      },
+    };
 
-    if (type === REPORT_TYPE.PRODUCTIVITY_REPORT) {
-      baseFilters.salesRep = filters.salesRep || undefined;
+    if (type) {
+      Object.assign(baseFilters, reportSpecificFilters[type] || {});
     }
-
-    if (type === REPORT_TYPE.FIELD_ACTIVITY_REPORT) {
-      baseFilters.customer = filters.customerId || undefined;
-    }
-
     return baseFilters;
   }, [
+    filters.reportType,
+    filters.format,
     filters.dateRange?.from,
     filters.dateRange?.to,
-    filters.reportType,
     filters.salesRep,
     filters.customerId,
     filters.status,
-    filters.format,
   ]);
 
   const { reports, isLoading, totalCount } = useGetCustomReports({
@@ -273,10 +287,7 @@ const CustomReport: React.FC = () => {
         type: "searchable-select",
         onChange: (v) => handleFilterChange({ status: v }),
         placeholder: "Select Status",
-        options: [
-          { label: "Completed", value: "completed" },
-          { label: "Pending", value: "pending" },
-        ],
+        options: visitStatusOptions,
         value: filters.status,
         onCancelPress: () => handleFilterChange({ status: "" }),
         searchableSelectClassName: "w-full max-w-[180px]",
@@ -299,11 +310,7 @@ const CustomReport: React.FC = () => {
       "format",
     ],
     [REPORT_TYPE.CUSTOMER_REPORT]: ["date-range", "customerId", "format"],
-    [REPORT_TYPE.FIELD_ACTIVITY_REPORT]: [
-      "date-range",
-      "salesRepresentativeUserId",
-      "format",
-    ],
+    [REPORT_TYPE.FIELD_ACTIVITY_REPORT]: ["date-range", "customerId", "format"],
   };
 
   const visibleFilterKeys =

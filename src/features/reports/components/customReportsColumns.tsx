@@ -8,25 +8,26 @@ import {
   FileSpreadsheetIcon,
   FileTextIcon,
 } from "lucide-react";
-import { ReportFormat } from "@/data/app.data";
+import { REPORT_FORMAT } from "@/data/app.data";
 import { JSX } from "react";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import { format } from "date-fns";
+import { formatFileSize } from "@/utils/commonFunction";
 
 // Mapping of format → icon + label
 export const formatMap: Record<
-  ReportFormat,
+  REPORT_FORMAT,
   { icon: JSX.Element; label: string }
 > = {
-  [ReportFormat.PDF]: {
+  [REPORT_FORMAT.PDF]: {
     icon: <FileTextIcon className="w-4 h-4 text-red-500" />,
     label: "PDF",
   },
-  [ReportFormat.EXCEL]: {
+  [REPORT_FORMAT.EXCEL]: {
     icon: <FileSpreadsheetIcon className="w-4 h-4 text-green-500" />,
     label: "Excel",
   },
-  [ReportFormat.CSV]: {
+  [REPORT_FORMAT.CSV]: {
     icon: <FileBarChartIcon className="w-4 h-4 text-blue-500" />,
     label: "CSV",
   },
@@ -73,8 +74,7 @@ export const customReportsColumns: ColumnDef<CustomReportRow>[] = [
     enableHiding: false,
     enableSorting: false,
     cell: ({ row }) => {
-      const size = row.original.fileSize;
-      return size ? size : "-";
+      return formatFileSize(Number(row.original.fileSize));
     },
   },
   {
