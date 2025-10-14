@@ -56,7 +56,7 @@ export const useDeleteUser = (id: string, onSuccess?: () => void) => {
 }
 
 export const useGetAllUsers = (
-  params: IListParams,
+  params?: IListParams,
   options?: { enabled?: boolean }
 ) => {
   const query = useFetchData<any>({

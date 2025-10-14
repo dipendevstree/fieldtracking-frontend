@@ -64,3 +64,16 @@ export enum PRIORITY {
   Medium = "Medium",
   High = "High",
 }
+
+export enum REPORT_TYPE {
+  VISIT_REPORTS = "Visit Reports",
+  PRODUCTIVITY_REPORT = "Productivity Report",
+  CUSTOMER_REPORT = "Customer Report",
+  FIELD_ACTIVITY_REPORT = "Field Activity Report",
+}
+
+export enum ReportFormat {
+  PDF = "pdf",
+  EXCEL = "excel",
+  CSV = "csv",
+}

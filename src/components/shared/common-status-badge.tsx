@@ -10,9 +10,9 @@ interface StatusBadgeProps {
 const statusColors: Record<string, { text: string; bg: string; dot: string }> =
   {
     pending: {
-      text: "text-red-600",
-      bg: "bg-red-100",
-      dot: "bg-red-500",
+      text: "text-amber-600",
+      bg: "bg-amber-100",
+      dot: "bg-amber-500",
     },
     partially_approved: {
       text: "text-yellow-600",
@@ -34,12 +34,16 @@ const statusColors: Record<string, { text: string; bg: string; dot: string }> =
       bg: "bg-green-100",
       dot: "bg-green-500",
     },
+    rejected: {
+      text: "text-red-600",
+      bg: "bg-red-100",
+      dot: "bg-red-500",
+    },
     failure: {
       text: "text-red-600",
       bg: "bg-red-100",
       dot: "bg-red-500",
     },
-    // fallback color handled in component
   };
 
 function formatStatusTitle(status: string): string {

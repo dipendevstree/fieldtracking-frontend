@@ -1,0 +1,375 @@
+import React, { useState, useMemo } from "react";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
+import ReportsHead from "./ReportsHead";
+import { CustomDataTable } from "@/components/shared/custom-data-table";
+import { ColumnDef } from "@tanstack/react-table";
+import {
+  DEFAULT_PAGE_NUMBER,
+  DEFAULT_PAGE_SIZE,
+  REPORT_TYPE,
+  ReportFormat,
+} from "@/data/app.data";
+import {
+  useCustomReportGeneration,
+  type ReportFilter,
+} from "../services/reports-api";
+import { useGetAllUsers } from "../../UserManagement/services/AllUsers.hook";
+import { useSelectOptions } from "@/hooks/use-select-option";
+import { FilterConfig } from "@/components/global-filter-section";
+import GlobalFilterSection from "@/components/global-table-filter-section";
+import { useGetExpenseCategoriesDropDownList } from "../../settings/Approvers/services/approvers.hook";
+import { customReportData } from "../data/all-reports-data";
+import { CustomeReportFilter } from "../types";
+import { formatDropDownLabel } from "@/utils/commonFunction";
+import { customReportsColumns } from "./customReportsColumns";
+import { useGetAllCustomer } from "@/features/calendar/services/calendar-view.hook";
+
+const normalizeOptions = (options: any[]) =>
+  options.map((o) => ({ ...o, value: String(o.value) }));
+
+const CustomReport: React.FC = () => {
+  // -------------------- State --------------------
+  const [filters, setFilters] = useState<CustomeReportFilter>({
+    dateRange: undefined,
+    reportType: "",
+    salesRep: "",
+    customerId: "",
+    category: "",
+    format: "",
+    status: "",
+  });
+  const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE_NUMBER);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // -------------------- API Hooks --------------------
+  const { data: userListDropDownData = [] } = useGetAllUsers();
+  const { expenseCategories: expenseCategoriesData } =
+    useGetExpenseCategoriesDropDownList({ defaultCategory: true });
+  const { data: customers } = useGetAllCustomer();
+
+  const userListDropDownList = userListDropDownData.map((user: any) => ({
+    ...user,
+    fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+  }));
+
+  // -------------------- Select Options --------------------
+  const usersOptions = normalizeOptions(
+    useSelectOptions({
+      listData: userListDropDownList,
+      labelKey: "fullName",
+      valueKey: "id",
+    })
+  );
+
+  const expenseCategoryOptions = normalizeOptions(
+    useSelectOptions({
+      listData: expenseCategoriesData || [],
+      labelKey: "categoryName",
+      valueKey: "expensesCategoryId",
+    })
+  );
+
+  const customerOptions = normalizeOptions(
+    useSelectOptions({
+      listData: customers ?? [],
+      labelKey: "companyName",
+      valueKey: "customerId",
+    })
+  );
+
+  const formatOptions = Object.entries(ReportFormat).map(([key, value]) => ({
+    label: formatDropDownLabel(key),
+    value,
+  }));
+
+  const reportTypeOptions = Object.entries(REPORT_TYPE).map(([key, value]) => ({
+    label: formatDropDownLabel(key),
+    value,
+  }));
+
+  // -------------------- Filters & API Params --------------------
+  const apiFilters: ReportFilter = useMemo(
+    () => ({
+      dateRange: filters.dateRange
+        ? { from: filters.dateRange.from!, to: filters.dateRange.to! }
+        : undefined,
+      reportType: filters.reportType || undefined,
+      salesRep: filters.salesRep || undefined,
+      category: filters.category || undefined,
+    }),
+    [
+      filters.dateRange?.from,
+      filters.dateRange?.to,
+      filters.reportType,
+      filters.salesRep,
+      filters.category,
+    ]
+  );
+
+  const {
+    reports,
+    isLoading: isGenerating,
+    totalCount,
+    refetch,
+  } = useCustomReportGeneration(
+    { ...apiFilters, page: currentPage, limit: pageSize },
+    { enabled: false }
+  );
+
+  // -------------------- Handlers --------------------
+  const handleFilterChange = (updated: Partial<CustomeReportFilter>) => {
+    if (updated.reportType !== undefined) {
+      // reset filters if report type changes
+      setFilters({
+        dateRange: undefined,
+        reportType: updated.reportType,
+        salesRep: "",
+        customerId: "",
+        category: "",
+        format: "",
+        status: "",
+      });
+      setErrors({});
+    } else {
+      setFilters((prev) => ({ ...prev, ...updated }));
+      setErrors((prev) => {
+        const newErrors = { ...prev };
+        for (const key of Object.keys(updated)) delete newErrors[key];
+        return newErrors;
+      });
+    }
+  };
+
+  const validateFilters = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!filters.reportType) {
+      setErrors({ reportType: "Report type is required" });
+      return false;
+    }
+
+    if (!filters.dateRange?.from || !filters.dateRange?.to) {
+      newErrors.dateRange = "Date range is required";
+    }
+
+    if (!filters.format) {
+      newErrors.format = "Format is required";
+    }
+
+    if (filters.reportType === REPORT_TYPE.PRODUCTIVITY_REPORT) {
+      visibleFiltersWithReportType.forEach(({ key, placeholder }) => {
+        if (["report-type", "date-range", "format"].includes(key)) return;
+
+        const value =
+          key === "salesRepresentativeUserId"
+            ? filters.salesRep
+            : key === "customerId"
+              ? filters.customerId
+              : (filters as any)[key];
+
+        if (!value)
+          newErrors[key] =
+            `${placeholder?.replace("Select ", "") || "Field"} is required`;
+      });
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleGenerateReport = async () => {
+    setErrors({});
+    if (!validateFilters()) return;
+    refetch();
+  };
+
+  const onPaginationChange = (page: number, size: number) => {
+    setCurrentPage(page);
+    setPageSize(size);
+  };
+
+  // -------------------- Filter Config --------------------
+  const filtersGlob: FilterConfig[] = useMemo(
+    () => [
+      {
+        key: "date-range",
+        type: "date-range",
+        placeholder: "Pick Date Range",
+        dateRangeValue: filters.dateRange,
+        onDateRangeChange: (range) => handleFilterChange({ dateRange: range }),
+        dataRangeClassName: "w-full max-w-xs",
+      },
+      {
+        key: "format",
+        type: "searchable-select",
+        onChange: (v) => handleFilterChange({ format: v }),
+        placeholder: "Select Format",
+        options: formatOptions,
+        value: filters.format,
+        onCancelPress: () => handleFilterChange({ format: "" }),
+        searchableSelectClassName: "w-full max-w-[180px]",
+      },
+      {
+        key: "report-type",
+        type: "searchable-select",
+        onChange: (v) => handleFilterChange({ reportType: v }),
+        placeholder: "Select Report Type",
+        options: reportTypeOptions,
+        value: filters.reportType,
+        onCancelPress: () => handleFilterChange({ reportType: "" }),
+        searchableSelectClassName: "w-full max-w-[180px]",
+      },
+      {
+        key: "salesRepresentativeUserId",
+        type: "searchable-select",
+        onChange: (v) => handleFilterChange({ salesRep: v }),
+        placeholder: "Select Sales Rep",
+        value: filters.salesRep,
+        options: usersOptions,
+        onCancelPress: () => handleFilterChange({ salesRep: "" }),
+        searchableSelectClassName: "w-full max-w-[180px]",
+      },
+      {
+        key: "customerId",
+        type: "searchable-select",
+        onChange: (v) => handleFilterChange({ customerId: v }),
+        onCancelPress: () => handleFilterChange({ customerId: "" }),
+        placeholder: "Select Customer",
+        value: filters.customerId,
+        options: customerOptions,
+        searchableSelectClassName: "w-full max-w-[180px]",
+      },
+      {
+        key: "category",
+        type: "searchable-select",
+        onChange: (v) => handleFilterChange({ category: v }),
+        placeholder: "Select Category",
+        options: expenseCategoryOptions,
+        value: filters.category,
+        onCancelPress: () => handleFilterChange({ category: "" }),
+        searchableSelectClassName: "w-full max-w-[180px]",
+      },
+      {
+        key: "status",
+        type: "searchable-select",
+        onChange: (v) => handleFilterChange({ status: v }),
+        placeholder: "Select Status",
+        options: [
+          { label: "Completed", value: "completed" },
+          { label: "Pending", value: "pending" },
+        ],
+        value: filters.status,
+        onCancelPress: () => handleFilterChange({ status: "" }),
+        searchableSelectClassName: "w-full max-w-[180px]",
+      },
+    ],
+    [filters, usersOptions, expenseCategoryOptions, customerOptions]
+  );
+
+  const filterVisibilityMap: Record<string, string[]> = {
+    [REPORT_TYPE.VISIT_REPORTS]: [
+      "date-range",
+      "salesRepresentativeUserId",
+      "customerId",
+      "status",
+      "format",
+    ],
+    [REPORT_TYPE.PRODUCTIVITY_REPORT]: [
+      "date-range",
+      "salesRepresentativeUserId",
+      "format",
+    ],
+    [REPORT_TYPE.CUSTOMER_REPORT]: ["date-range", "customerId", "format"],
+    [REPORT_TYPE.FIELD_ACTIVITY_REPORT]: [
+      "date-range",
+      "salesRepresentativeUserId",
+      "format",
+    ],
+  };
+
+  const visibleFilterKeys =
+    filterVisibilityMap[filters.reportType as REPORT_TYPE] || [];
+
+  const visibleFilters = filtersGlob.filter((f) =>
+    visibleFilterKeys.includes(f.key)
+  );
+
+  const visibleFiltersWithReportType = useMemo(
+    () => [
+      filtersGlob.find((f) => f.key === "report-type")!,
+      ...visibleFilters,
+    ],
+    [filters.reportType, visibleFilters]
+  );
+
+  // -------------------- UI --------------------
+  return (
+    <div>
+      <Card className="p-4 gap-0">
+        <ReportsHead
+          title="Custom Report Generator"
+          subtitle="Generate detailed custom reports with customizable filters."
+        />
+        <Separator className="my-4" />
+
+        <GlobalFilterSection
+          key="reports-view-filters"
+          filters={visibleFiltersWithReportType}
+        />
+
+        {Object.keys(errors).length > 0 && (
+          <div className="text-sm text-red-600 space-y-1">
+            {Object.entries(errors).map(([key, msg]) => (
+              <div key={key}>• {msg}</div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex justify-end">
+          <Button
+            onClick={handleGenerateReport}
+            disabled={isGenerating}
+            className="min-w-[120px]"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              "Generate Report"
+            )}
+          </Button>
+        </div>
+      </Card>
+
+      <Card className="p-4 mt-4 gap-2">
+        <ReportsHead
+          title="Custom Reports"
+          subtitle="Custom report from 1 May to 2025"
+        />
+        {isGenerating ? (
+          <div className="flex items-center justify-center h-48">
+            <Loader2 className="h-8 w-8 animate-spin" />
+            <span className="ml-2">Loading reports...</span>
+          </div>
+        ) : (
+          <CustomDataTable
+            paginationCallbacks={{ onPaginationChange }}
+            data={customReportData ?? reports}
+            currentPage={currentPage}
+            columns={customReportsColumns as ColumnDef<unknown>[]}
+            totalCount={totalCount}
+            defaultPageSize={pageSize}
+          />
+        )}
+      </Card>
+    </div>
+  );
+};
+
+export default CustomReport;
