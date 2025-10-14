@@ -177,6 +177,7 @@ const API = {
     consolidated: "expenses/monthly-consolidated",
     list: "expenses/monthly-expenses/list",
     getById: "expenses/monthly-expenses",
+    listDetailed: "expenses/list/detailed",
   },
   approvals: {
     lists: "approvals/list",

@@ -30,7 +30,7 @@ export interface CustomReportRow {
 export interface expanseReportFilters {
   expanseDateRange?: DateRange;
   createdDateRange?: DateRange;
-  salesRep: string;
+  salesRepresentativeUserId: string;
   category: string;
   format: string;
 }

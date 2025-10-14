@@ -317,6 +317,25 @@ class ReportsAPI {
   }
 }
 
+export const useGetExpanseReport = (
+  params?: any,
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<any>({
+    url: API.Expenses.listDetailed,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+  return {
+    ...query,
+    reports: query.data?.list ?? [],
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+    refetch: query.refetch,
+  };
+};
+
 export const useExpanseReportGeneration = (
   params?: any,
   options?: { enabled?: boolean }

@@ -1,10 +1,11 @@
 import { ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import StatusBadge from "@/components/shared/common-status-badge";
 
 export const expanseReportsColumns: ColumnDef<any>[] = [
   {
-    accessorKey: "salesRep",
+    accessorKey: "salesRepresentativeName",
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Sales Rep" />
     ),
@@ -12,21 +13,29 @@ export const expanseReportsColumns: ColumnDef<any>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: "expanse_date",
+    accessorFn: (row) => {
+      const date = row.startDate ?? row.date;
+      return date ? format(new Date(date), "dd/MM/yyyy") : "-";
+    },
+    id: "expanseDate",
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Expanse Date" />
     ),
     enableSorting: false,
   },
   {
-    accessorKey: "created_date",
+    accessorFn: (row) => {
+      const date = row.createdDate;
+      return date ? format(new Date(date), "dd/MM/yyyy") : "-";
+    },
+    id: "createdDate",
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Created Date" />
     ),
     enableSorting: false,
   },
   {
-    accessorKey: "expense_category",
+    accessorKey: "expenseCategoryName",
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Expense Category" />
     ),
@@ -44,7 +53,7 @@ export const expanseReportsColumns: ColumnDef<any>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: "total_amount",
+    accessorKey: "amount",
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Total amount" />
     ),

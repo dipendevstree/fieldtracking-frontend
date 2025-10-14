@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -10,81 +10,67 @@ import { ColumnDef } from "@tanstack/react-table";
 import {
   DEFAULT_PAGE_NUMBER,
   DEFAULT_PAGE_SIZE,
+  EXPENSE_STATUS,
   ReportFormat,
 } from "@/data/app.data";
-import {
-  useExpanseReportGeneration,
-  type ReportFilter,
-} from "../services/reports-api";
+import { useGetExpanseReport } from "../services/reports-api";
 import { useGetAllUsers } from "../../UserManagement/services/AllUsers.hook";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { FilterConfig } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import { useGetExpenseCategoriesDropDownList } from "../../settings/Approvers/services/approvers.hook";
-import { dummyReports } from "../data/all-reports-data";
-import { expanseReportFilters } from "../types";
 import { formatDropDownLabel } from "@/utils/commonFunction";
+import { format } from "date-fns";
+
+interface ExpanseReportFilterState {
+  startDate?: string;
+  endDate?: string;
+  createdStartDate?: string;
+  createdEndDate?: string;
+  salesRepresentativeUserId?: string;
+  expenseCategory?: string;
+  format?: string;
+  isWebAdminSide?: boolean;
+  sort?: "asc" | "desc";
+  status?: string;
+}
 
 const ExpanseReport: React.FC = () => {
-  const [filters, setFilters] = useState<expanseReportFilters>({
-    expanseDateRange: undefined,
-    createdDateRange: undefined,
-    salesRep: "",
-    category: "",
+  const [filters, setFilters] = useState<ExpanseReportFilterState>({
+    startDate: undefined,
+    endDate: undefined,
+    createdStartDate: undefined,
+    createdEndDate: undefined,
+    salesRepresentativeUserId: "",
+    expenseCategory: "",
     format: "",
+    isWebAdminSide: true,
+    sort: "desc",
+    status: "",
   });
 
   const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE_NUMBER);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 
-  // Convert filters to API format - memoized to prevent infinite re-renders
-  const apiFilters: ReportFilter = useMemo(
-    () => ({
-      expanseDateRange: filters.expanseDateRange
-        ? {
-            from: filters.expanseDateRange.from!,
-            to: filters.expanseDateRange.to!,
-          }
-        : undefined,
-      createdDateRange: filters.createdDateRange
-        ? {
-            from: filters.createdDateRange.from!,
-            to: filters.createdDateRange.to!,
-          }
-        : undefined,
-      salesRep: filters.salesRep || undefined,
-      category: filters.category || undefined,
-    }),
-    [
-      filters.expanseDateRange?.from,
-      filters.expanseDateRange?.to,
-      filters.createdDateRange?.from,
-      filters.createdDateRange?.to,
-      filters.salesRep,
-      filters.category,
-    ]
-  );
-
   const {
     reports,
     isLoading: generating,
     totalCount,
-    refetch,
-  } = useExpanseReportGeneration(
-    { ...apiFilters, page: currentPage, limit: pageSize },
-    { enabled: false }
-  );
+  } = useGetExpanseReport({
+    ...filters,
+    page: currentPage,
+    limit: pageSize,
+  });
 
   const { data: userListDropDownData = [] } = useGetAllUsers();
   const { expenseCategories: expenseCategoriesData } =
     useGetExpenseCategoriesDropDownList({ defaultCategory: true });
 
-  const userListDropDownList = userListDropDownData?.map((user: any) => ({
+  // Prepare dropdowns
+  const userListDropDownList = userListDropDownData.map((user: any) => ({
     ...user,
     fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
   }));
-
-  const expenseCategoriesDropDownList = expenseCategoriesData || [];
 
   const usersOptions = useSelectOptions<any>({
     listData: userListDropDownList,
@@ -93,30 +79,64 @@ const ExpanseReport: React.FC = () => {
   }).map((option) => ({ ...option, value: String(option.value) }));
 
   const expenseCategoryOptions = useSelectOptions({
-    listData: expenseCategoriesDropDownList,
+    listData: expenseCategoriesData || [],
     labelKey: "categoryName",
-    valueKey: "expensesCategoryId",
-  }).map((option) => ({
-    ...option,
-    value: String(option.value),
-  }));
+    valueKey: "categoryName",
+  }).map((option) => ({ ...option, value: String(option.value) }));
 
   const formatOptions = Object.entries(ReportFormat).map(([key, value]) => ({
     label: formatDropDownLabel(key),
     value,
   }));
 
-  // Triggered on any filter change
-  const handleFilterChange = (updated: Partial<expanseReportFilters>) => {
-    const newFilters = { ...filters, ...updated };
-    setFilters(newFilters);
+  const expanseStatusOptions = Object.entries(EXPENSE_STATUS).map(
+    ([key, value]) => ({
+      label: formatDropDownLabel(key),
+      value,
+    })
+  );
+
+  // Handle date range change
+  const handleDateRangeChange = (
+    key: "expanse" | "created",
+    range: { from?: Date; to?: Date } | undefined
+  ) => {
+    setFilters((prev) => ({
+      ...prev,
+      ...(key === "expanse"
+        ? {
+            startDate: range?.from
+              ? format(range.from, "yyyy-MM-dd")
+              : undefined,
+            endDate: range?.to ? format(range.to, "yyyy-MM-dd") : undefined,
+          }
+        : {
+            createdStartDate: range?.from
+              ? format(range.from, "yyyy-MM-dd")
+              : undefined,
+            createdEndDate: range?.to
+              ? format(range.to, "yyyy-MM-dd")
+              : undefined,
+          }),
+    }));
+    setCurrentPage(1);
   };
 
-  // Handle generate report
-  const handleGenerateReport = async () => {
-    refetch();
+  // Handle other filters
+  const handleFilterChange = (
+    key: keyof ExpanseReportFilterState,
+    value?: string
+  ) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
   };
 
+  // Generate report
+  const handleGenerateReport = () => {
+    // refetch(filters);
+  };
+
+  // Pagination
   const onPaginationChange = (page: number, pageSize: number) => {
     setCurrentPage(page);
     setPageSize(pageSize);
@@ -127,48 +147,67 @@ const ExpanseReport: React.FC = () => {
       key: "expanse-date-range",
       type: "date-range",
       placeholder: "Expanse Date Range",
-      dateRangeValue: filters.expanseDateRange,
-      onDateRangeChange: (range: any) =>
-        handleFilterChange({ expanseDateRange: range }),
+      dateRangeValue: {
+        from: filters.startDate ? new Date(filters.startDate) : undefined,
+        to: filters.endDate ? new Date(filters.endDate) : undefined,
+      },
+      onDateRangeChange: (range) => handleDateRangeChange("expanse", range),
       dataRangeClassName: "w-full max-w-xs",
     },
     {
       key: "created-date-range",
       type: "date-range",
       placeholder: "Created Date Range",
-      dateRangeValue: filters.createdDateRange,
-      onDateRangeChange: (range: any) =>
-        handleFilterChange({ createdDateRange: range }),
+      dateRangeValue: {
+        from: filters.createdStartDate
+          ? new Date(filters.createdStartDate)
+          : undefined,
+        to: filters.createdEndDate
+          ? new Date(filters.createdEndDate)
+          : undefined,
+      },
+      onDateRangeChange: (range) => handleDateRangeChange("created", range),
       dataRangeClassName: "w-full max-w-xs",
     },
     {
       key: "salesRepresentativeUserId",
       type: "searchable-select",
-      onChange: (value: any) => handleFilterChange({ salesRep: value }),
+      onChange: (value: any) =>
+        handleFilterChange("salesRepresentativeUserId", value),
       placeholder: "Select Sales Rep",
-      value: filters.salesRep,
+      value: filters.salesRepresentativeUserId,
       options: usersOptions,
-      onCancelPress: () => handleFilterChange({ salesRep: "" }),
+      onCancelPress: () => handleFilterChange("salesRepresentativeUserId", ""),
       searchableSelectClassName: "w-full max-w-[180px]",
     },
     {
-      key: "category",
+      key: "expenseCategory",
       type: "searchable-select",
-      onChange: (value: any) => handleFilterChange({ category: value }),
+      onChange: (value: any) => handleFilterChange("expenseCategory", value),
       placeholder: "Select Category",
       options: expenseCategoryOptions,
-      value: filters.category,
-      onCancelPress: () => handleFilterChange({ category: "" }),
+      value: filters.expenseCategory,
+      onCancelPress: () => handleFilterChange("expenseCategory", ""),
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+    {
+      key: "status",
+      type: "searchable-select",
+      onChange: (value: any) => handleFilterChange("status", value),
+      placeholder: "Select Status",
+      options: expanseStatusOptions,
+      value: filters.status,
+      onCancelPress: () => handleFilterChange("status", ""),
       searchableSelectClassName: "w-full max-w-[180px]",
     },
     {
       key: "format",
       type: "searchable-select",
-      onChange: (value: any) => handleFilterChange({ format: value }),
+      onChange: (value: any) => handleFilterChange("format", value),
       placeholder: "Select Format",
       options: formatOptions,
       value: filters.format,
-      onCancelPress: () => handleFilterChange({ format: "" }),
+      onCancelPress: () => handleFilterChange("format", ""),
       searchableSelectClassName: "w-full max-w-[180px]",
     },
   ];
@@ -186,7 +225,8 @@ const ExpanseReport: React.FC = () => {
           key={"reports-view-filters"}
           filters={filtersGlob}
         />
-        <div className="flex justify-end">
+
+        <div className="flex justify-end mt-2">
           <Button
             onClick={handleGenerateReport}
             disabled={generating}
@@ -207,7 +247,7 @@ const ExpanseReport: React.FC = () => {
       <Card className="p-4 mt-4 gap-2">
         <ReportsHead
           title="Expense Reports"
-          subtitle="Expense report from 1 May to 2025"
+          subtitle="Expense report results"
         />
         {generating ? (
           <div className="flex items-center justify-center h-48">
@@ -217,7 +257,7 @@ const ExpanseReport: React.FC = () => {
         ) : (
           <CustomDataTable
             paginationCallbacks={{ onPaginationChange }}
-            data={dummyReports ?? reports}
+            data={reports}
             currentPage={currentPage}
             columns={expanseReportsColumns as ColumnDef<unknown>[]}
             totalCount={totalCount}
