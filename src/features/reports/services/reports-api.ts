@@ -1,5 +1,6 @@
 import API from "@/config/api/api";
 import useFetchData from "@/hooks/use-fetch-data";
+import usePostData from "@/hooks/use-post-data";
 
 // API service for reports functionality
 export interface SalesRep {
@@ -355,12 +356,12 @@ export const useExpanseReportGeneration = (
   };
 };
 
-export const useCustomReportGeneration = (
+export const useGetCustomReports = (
   params?: any,
   options?: { enabled?: boolean }
 ) => {
   const query = useFetchData<any>({
-    url: API.reports.customeReport,
+    url: API.reports.list,
     params,
     enabled: options?.enabled ?? true,
   });
@@ -370,8 +371,19 @@ export const useCustomReportGeneration = (
     totalCount: query.data?.totalCount ?? 0,
     isLoading: query.isLoading,
     error: query.error,
-    refetch: query.refetch,
   };
+};
+
+export const useCustomReportGeneration = (onSuccess?: () => void) => {
+  return usePostData({
+    url: API.reports.create,
+    refetchQueries: [API.reports.list],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
 };
 
 export const reportsAPI = new ReportsAPI();
