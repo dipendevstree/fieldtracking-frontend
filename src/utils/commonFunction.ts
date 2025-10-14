@@ -180,3 +180,33 @@ export const isImage = (file: string) => {
   const ext = file.split(".").pop()?.toLowerCase();
   return imageExtensions.includes(ext ?? "");
 };
+
+/**
+ * Convert a file size in bytes into a human-readable string (starting from KB, with decimals).
+ *
+ * Sizes are accurately converted — e.g. 500 bytes → "0.49 KB".
+ *
+ * @param {number} bytes - The size in bytes to format.
+ * @param {number} [decimals=2] - Number of decimal places to include.
+ * @returns {string} The formatted file size string with an appropriate unit.
+ *
+ * @example
+ * formatFileSize(500);          // "0.49 KB"
+ * formatFileSize(2048);         // "2.00 KB"
+ * formatFileSize(1048576);      // "1.00 MB"
+ * formatFileSize(3145728000);   // "2.93 GB"
+ */
+export function formatFileSize(bytes: number, decimals: number = 2): string {
+  if (!bytes || bytes <= 0) return "-";
+
+  const units = ["KB", "MB", "GB", "TB"];
+  let size = bytes / 1024; // Start from KB
+  let index = 0;
+
+  while (size >= 1024 && index < units.length - 1) {
+    size /= 1024;
+    index++;
+  }
+
+  return `${size.toFixed(decimals)} ${units[index]}`;
+}
