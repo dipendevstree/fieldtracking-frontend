@@ -14,10 +14,10 @@ export const expanseReportsColumns: ColumnDef<any>[] = [
   },
   {
     accessorFn: (row) => {
-      const date = row.startDate ?? row.date;
+      const date = row.expenseDate;
       return date ? format(new Date(date), "dd/MM/yyyy") : "-";
     },
-    id: "expanseDate",
+    id: "expenseDate",
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Expanse Date" />
     ),
@@ -42,12 +42,12 @@ export const expanseReportsColumns: ColumnDef<any>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: "status",
+    accessorKey: "parentStatus",
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
-      const status = row.getValue("status");
+      const status = row.getValue("parentStatus");
       return <StatusBadge status={status as any} />;
     },
     enableSorting: false,
