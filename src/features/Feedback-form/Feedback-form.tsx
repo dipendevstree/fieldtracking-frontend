@@ -30,10 +30,14 @@ export default function FeedbackForm() {
   const decoded: { visitId: string; schema: string } = jwtDecode(
     token || ""
   ) as any;
+
   const visitId = decoded?.visitId;
   const schemaName = decoded?.schema || "";
-  console.log("Decoded Token:", schemaName);
-  const { data: visitData, isLoading } = useGetVisitByID(visitId || "", true);
+  const { data: visitData, isLoading } = useGetVisitByID(
+    visitId || "",
+    true,
+    token
+  );
 
   const onSuccess = () => {
     setSubmitted(true);
@@ -47,7 +51,7 @@ export default function FeedbackForm() {
   };
 
   const { mutate: UpdateVisitFeedBack, isPending: isUpdateLoading } =
-    useUpdateVisitFeedBack(visitId || "", onSuccess);
+    useUpdateVisitFeedBack(visitId || "", token, onSuccess);
 
   const validateForm = (): boolean => {
     try {

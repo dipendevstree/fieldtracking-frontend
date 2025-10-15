@@ -98,10 +98,11 @@ export const useUpdateVisits = (id: string, onSuccess?: () => void) => {
   })
 }
 
-export const useGetVisitByID = (visitId: string, IsEditMode: boolean) => {
+export const useGetVisitByID = (visitId: string, IsEditMode: boolean,token?:string) => {
   const query = useFetchData<any>({
     url: visitId ? `${API.calendar.getVisitByID}/${visitId}` : '',
-    enabled: IsEditMode, // Only fetch if visitId is non-empty
+    enabled: IsEditMode, // Only fetch if visitId is non-empty,
+    token
   })
 
   return {
