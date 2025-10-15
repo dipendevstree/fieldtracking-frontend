@@ -337,23 +337,15 @@ export const useGetExpanseReport = (
   };
 };
 
-export const useExpanseReportGeneration = (
-  params?: any,
-  options?: { enabled?: boolean }
-) => {
-  const query = useFetchData<any>({
-    url: API.reports.expanseReport,
-    params,
-    enabled: options?.enabled ?? true,
+export const useExpanseReportGeneration = (onSuccess?: () => void) => {
+  return usePostData({
+    url: API.reports.createExpanseReport,
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
   });
-  return {
-    ...query,
-    reports: query.data?.list ?? [],
-    totalCount: query.data?.totalCount ?? 0,
-    isLoading: query.isLoading,
-    error: query.error,
-    refetch: query.refetch,
-  };
 };
 
 export const useGetCustomReports = (

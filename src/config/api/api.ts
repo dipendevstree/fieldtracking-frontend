@@ -218,8 +218,9 @@ const API = {
   reports: {
     expanseReport: "expenseReport/generate",
     customeReport: "customReport/generate",
-    list:"report/list",
+    list: "report/list",
     create: "report/create",
+    createExpanseReport: "report/expenseReportCreate",
   },
 };
 
