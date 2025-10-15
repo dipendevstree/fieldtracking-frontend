@@ -12,6 +12,7 @@ interface PatchDataOptions<TData, TVariables> {
   url: string
   refetchQueries?: string[]
   headers?: Record<string, string>
+  token?: string
   onSuccess?: (data: TData) => void
   onError?: (error: EnhancedError) => void
   mutationOptions?: UseMutationOptions<TData, Error, TVariables>
@@ -24,12 +25,18 @@ const usePatchData = <TData = unknown, TVariables = unknown>({
   mutationOptions,
   onSuccess,
   onError,
+  token,
 }: PatchDataOptions<TData, TVariables>) => {
   const queryClient = useQueryClient()
 
   return useMutation<TData, Error, TVariables>({
     mutationFn: async (variables: TVariables): Promise<TData> => {
-      const response = await instance.patch({ url, data: variables, headers })
+      const response = await instance.patch({
+        url,
+        data: variables,
+        headers,
+        customToken: token,
+      })
 
       if (response?.statusCode === 200) {
         toast(response?.message || 'Data updated successfully', {
