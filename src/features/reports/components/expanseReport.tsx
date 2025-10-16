@@ -24,20 +24,7 @@ import GlobalFilterSection from "@/components/global-table-filter-section";
 import { useGetExpenseCategoriesDropDownList } from "../../settings/Approvers/services/approvers.hook";
 import { formatDropDownLabel } from "@/utils/commonFunction";
 import { format } from "date-fns";
-
-interface ExpanseReportFilterState {
-  startDate?: string;
-  endDate?: string;
-  createdStartDate?: string;
-  createdEndDate?: string;
-  salesRepresentativeUserId?: string;
-  expenseCategory?: string;
-  isWebAdminSide?: boolean;
-  sort?: "asc" | "desc";
-  status?: string;
-  type?: string;
-  format: string;
-}
+import { ExpanseReportFilterState } from "../types";
 
 const todayStr = format(new Date(), "yyyy-MM-dd");
 
