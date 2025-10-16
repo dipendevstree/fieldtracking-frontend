@@ -24,7 +24,10 @@ export const formSchema = z.object({
 
   jobTitle: z.string().optional(),
   id: z.string().optional(),
-  departmentId: z.string().optional(),
+  departmentId: z.string({
+    required_error: "Department is required",
+    invalid_type_error: "Department is required"
+  }).min(1, "Department is required"),
   isWebUser: z.boolean().optional(),
 });
 

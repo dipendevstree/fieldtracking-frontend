@@ -46,6 +46,7 @@ const GeneralSettingsPage = () => {
       "state",
       "zipCode",
       "country",
+      "userDepartment"
     ];
 
     const missingFields = requiredFields.filter(
@@ -71,7 +72,7 @@ const GeneralSettingsPage = () => {
       return;
     }
 
-    if (submitFixedExpenseForm) {
+    if (currentSettingsData?.fixedDayExpense && submitFixedExpenseForm) {
       const result = await submitFixedExpenseForm();
       if (!result) return;
     }
