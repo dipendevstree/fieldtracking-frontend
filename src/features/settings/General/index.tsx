@@ -138,7 +138,7 @@ const GeneralSettingsPage = () => {
       // Update organization data
       await new Promise((resolve, reject) => {
         updateGeneralSettings(formData, {
-          onSuccess: () => {
+          onSuccess: (updatedData: any) => {
             // Update the user data in the auth store with the new organization data
             if (user && user.organization) {
               const updatedOrganization = {
@@ -160,6 +160,7 @@ const GeneralSettingsPage = () => {
                 allowAddUsersBasedOnTerritories:
                   currentSettingsData.allowAddUsersBasedOnTerritories,
                 currency: currentSettingsData.currency || "",
+                organizationIcon: updatedData.organizationIcon || null
               };
 
               console.log(
@@ -174,6 +175,7 @@ const GeneralSettingsPage = () => {
                 phoneNumber: currentSettingsData.userPhoneNumber || "",
                 countryCode: currentSettingsData.userPhoneCode || "",
                 departmentId: currentSettingsData.userDepartment || "",
+                profileUrl: updatedData?.user?.profileUrl || "",
                 organization: updatedOrganization,
               });
               console.log("Organization updated in auth store successfully");
