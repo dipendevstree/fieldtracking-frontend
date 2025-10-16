@@ -11,9 +11,12 @@ import {
   DEFAULT_PAGE_NUMBER,
   DEFAULT_PAGE_SIZE,
   EXPENSE_STATUS,
-  ReportFormat,
+  REPORT_FORMAT,
 } from "@/data/app.data";
-import { useGetExpanseReport } from "../services/reports-api";
+import {
+  useCustomReportGeneration,
+  useGetExpanseReport,
+} from "../services/reports-api";
 import { useGetAllUsers } from "../../UserManagement/services/AllUsers.hook";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { FilterConfig } from "@/components/global-filter-section";
@@ -21,46 +24,37 @@ import GlobalFilterSection from "@/components/global-table-filter-section";
 import { useGetExpenseCategoriesDropDownList } from "../../settings/Approvers/services/approvers.hook";
 import { formatDropDownLabel } from "@/utils/commonFunction";
 import { format } from "date-fns";
+import { ExpanseReportFilterState } from "../types";
 
-interface ExpanseReportFilterState {
-  startDate?: string;
-  endDate?: string;
-  createdStartDate?: string;
-  createdEndDate?: string;
-  salesRepresentativeUserId?: string;
-  expenseCategory?: string;
-  format?: string;
-  isWebAdminSide?: boolean;
-  sort?: "asc" | "desc";
-  status?: string;
-}
+const todayStr = format(new Date(), "yyyy-MM-dd");
 
 const ExpanseReport: React.FC = () => {
   const [filters, setFilters] = useState<ExpanseReportFilterState>({
     startDate: undefined,
     endDate: undefined,
-    createdStartDate: undefined,
-    createdEndDate: undefined,
+    createdStartDate: todayStr,
+    createdEndDate: todayStr,
     salesRepresentativeUserId: "",
     expenseCategory: "",
-    format: "",
     isWebAdminSide: true,
     sort: "desc",
     status: "",
+    type: "Expenses Report",
+    format: "",
   });
 
   const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE_NUMBER);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
-  const {
-    reports,
-    isLoading: generating,
-    totalCount,
-  } = useGetExpanseReport({
+  const { reports, isLoading, totalCount } = useGetExpanseReport({
     ...filters,
     page: currentPage,
     limit: pageSize,
   });
+
+  const { mutate: generateReport, isPending: isGenerating } =
+    useCustomReportGeneration();
 
   const { data: userListDropDownData = [] } = useGetAllUsers();
   const { expenseCategories: expenseCategoriesData } =
@@ -84,17 +78,17 @@ const ExpanseReport: React.FC = () => {
     valueKey: "categoryName",
   }).map((option) => ({ ...option, value: String(option.value) }));
 
-  const formatOptions = Object.entries(ReportFormat).map(([key, value]) => ({
-    label: formatDropDownLabel(key),
-    value,
-  }));
-
   const expanseStatusOptions = Object.entries(EXPENSE_STATUS).map(
     ([key, value]) => ({
       label: formatDropDownLabel(key),
       value,
     })
   );
+
+  const formatOptions = Object.entries(REPORT_FORMAT).map(([key, value]) => ({
+    label: formatDropDownLabel(key),
+    value,
+  }));
 
   // Handle date range change
   const handleDateRangeChange = (
@@ -120,6 +114,11 @@ const ExpanseReport: React.FC = () => {
           }),
     }));
     setCurrentPage(1);
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors.dateRange;
+      return newErrors;
+    });
   };
 
   // Handle other filters
@@ -129,11 +128,34 @@ const ExpanseReport: React.FC = () => {
   ) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     setCurrentPage(1);
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[key];
+      return newErrors;
+    });
+  };
+
+  // ✅ Validation logic
+  const validateFilters = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!filters.startDate || !filters.endDate) {
+      newErrors.dateRange = "Expense date range is required";
+    }
+
+    if (!filters.format) {
+      newErrors.format = "Format is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   // Generate report
   const handleGenerateReport = () => {
-    // refetch(filters);
+    setErrors({});
+    if (!validateFilters()) return;
+    generateReport(filters);
   };
 
   // Pagination
@@ -226,13 +248,21 @@ const ExpanseReport: React.FC = () => {
           filters={filtersGlob}
         />
 
-        <div className="flex justify-end mt-2">
+        {Object.keys(errors).length > 0 && (
+          <div className="text-sm text-red-600 space-y-1">
+            {Object.entries(errors).map(([key, msg]) => (
+              <div key={key}>• {msg}</div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex justify-end">
           <Button
             onClick={handleGenerateReport}
-            disabled={generating}
+            disabled={isGenerating}
             className="min-w-[120px]"
           >
-            {generating ? (
+            {isGenerating ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Generating...
@@ -249,7 +279,7 @@ const ExpanseReport: React.FC = () => {
           title="Expense Reports"
           subtitle="Expense report results"
         />
-        {generating ? (
+        {isLoading ? (
           <div className="flex items-center justify-center h-48">
             <Loader2 className="h-8 w-8 animate-spin" />
             <span className="ml-2">Loading reports...</span>

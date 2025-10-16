@@ -19,10 +19,10 @@ export interface CustomReportRow {
   id: number;
   type: string;
   format: string;
-  generatedBy: string;
-  date: string;
-  time: string;
-  size: string;
+  createdByData: any;
+  createdDate: string;
+  fileUrl: string;
+  fileSize: string;
   status: string;
   dateRange?: DateRange;
 }
@@ -43,4 +43,18 @@ export interface CustomeReportFilter {
   category: string;
   format: string;
   status: string;
+}
+
+export interface ExpanseReportFilterState {
+  startDate?: string;
+  endDate?: string;
+  createdStartDate?: string;
+  createdEndDate?: string;
+  salesRepresentativeUserId?: string;
+  expenseCategory?: string;
+  isWebAdminSide?: boolean;
+  sort?: "asc" | "desc";
+  status?: string;
+  type?: string;
+  format: string;
 }

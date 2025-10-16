@@ -1,5 +1,6 @@
 import API from "@/config/api/api";
 import useFetchData from "@/hooks/use-fetch-data";
+import usePostData from "@/hooks/use-post-data";
 
 // API service for reports functionality
 export interface SalesRep {
@@ -336,12 +337,23 @@ export const useGetExpanseReport = (
   };
 };
 
-export const useExpanseReportGeneration = (
+export const useExpanseReportGeneration = (onSuccess?: () => void) => {
+  return usePostData({
+    url: API.reports.createExpanseReport,
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};
+
+export const useGetCustomReports = (
   params?: any,
   options?: { enabled?: boolean }
 ) => {
   const query = useFetchData<any>({
-    url: API.reports.expanseReport,
+    url: API.reports.list,
     params,
     enabled: options?.enabled ?? true,
   });
@@ -351,27 +363,19 @@ export const useExpanseReportGeneration = (
     totalCount: query.data?.totalCount ?? 0,
     isLoading: query.isLoading,
     error: query.error,
-    refetch: query.refetch,
   };
 };
 
-export const useCustomReportGeneration = (
-  params?: any,
-  options?: { enabled?: boolean }
-) => {
-  const query = useFetchData<any>({
-    url: API.reports.customeReport,
-    params,
-    enabled: options?.enabled ?? true,
+export const useCustomReportGeneration = (onSuccess?: () => void) => {
+  return usePostData({
+    url: API.reports.create,
+    refetchQueries: [API.reports.list],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
   });
-  return {
-    ...query,
-    reports: query.data?.list ?? [],
-    totalCount: query.data?.totalCount ?? 0,
-    isLoading: query.isLoading,
-    error: query.error,
-    refetch: query.refetch,
-  };
 };
 
 export const reportsAPI = new ReportsAPI();

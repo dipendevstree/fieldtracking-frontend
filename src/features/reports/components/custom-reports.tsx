@@ -10,10 +10,12 @@ import {
   DEFAULT_PAGE_NUMBER,
   DEFAULT_PAGE_SIZE,
   REPORT_TYPE,
-  ReportFormat,
+  REPORT_FORMAT,
+  VISIT_STATUS,
 } from "@/data/app.data";
 import {
   useCustomReportGeneration,
+  useGetCustomReports,
   type ReportFilter,
 } from "../services/reports-api";
 import { useGetAllUsers } from "../../UserManagement/services/AllUsers.hook";
@@ -21,7 +23,6 @@ import { useSelectOptions } from "@/hooks/use-select-option";
 import { FilterConfig } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import { useGetExpenseCategoriesDropDownList } from "../../settings/Approvers/services/approvers.hook";
-import { customReportData } from "../data/all-reports-data";
 import { CustomeReportFilter } from "../types";
 import { formatDropDownLabel } from "@/utils/commonFunction";
 import { customReportsColumns } from "./customReportsColumns";
@@ -81,7 +82,7 @@ const CustomReport: React.FC = () => {
     })
   );
 
-  const formatOptions = Object.entries(ReportFormat).map(([key, value]) => ({
+  const formatOptions = Object.entries(REPORT_FORMAT).map(([key, value]) => ({
     label: formatDropDownLabel(key),
     value,
   }));
@@ -91,34 +92,59 @@ const CustomReport: React.FC = () => {
     value,
   }));
 
-  // -------------------- Filters & API Params --------------------
-  const apiFilters: ReportFilter = useMemo(
-    () => ({
-      dateRange: filters.dateRange
-        ? { from: filters.dateRange.from!, to: filters.dateRange.to! }
-        : undefined,
-      reportType: filters.reportType || undefined,
-      salesRep: filters.salesRep || undefined,
-      category: filters.category || undefined,
-    }),
-    [
-      filters.dateRange?.from,
-      filters.dateRange?.to,
-      filters.reportType,
-      filters.salesRep,
-      filters.category,
-    ]
+  const visitStatusOptions = Object.entries(VISIT_STATUS).map(
+    ([key, value]) => ({
+      label: formatDropDownLabel(key),
+      value,
+    })
   );
 
-  const {
-    reports,
-    isLoading: isGenerating,
-    totalCount,
-    refetch,
-  } = useCustomReportGeneration(
-    { ...apiFilters, page: currentPage, limit: pageSize },
-    { enabled: false }
-  );
+  // -------------------- Filters & API Params --------------------
+  const apiFilters: ReportFilter = useMemo(() => {
+    const type = filters.reportType || undefined;
+
+    const baseFilters: any = {
+      type,
+      format: filters.format || undefined,
+      startDate: filters.dateRange?.from || undefined,
+      endDate: filters.dateRange?.to || undefined,
+    };
+
+    const reportSpecificFilters: Record<string, any> = {
+      [REPORT_TYPE.VISIT_REPORTS]: {
+        salesRep: filters.salesRep || undefined,
+        customer: filters.customerId || undefined,
+        status: filters.status || undefined,
+      },
+      [REPORT_TYPE.PRODUCTIVITY_REPORT]: {
+        salesRep: filters.salesRep || undefined,
+      },
+      [REPORT_TYPE.CUSTOMER_REPORT]: {
+        customer: filters.customerId || undefined,
+      },
+    };
+
+    if (type) {
+      Object.assign(baseFilters, reportSpecificFilters[type] || {});
+    }
+    return baseFilters;
+  }, [
+    filters.reportType,
+    filters.format,
+    filters.dateRange?.from,
+    filters.dateRange?.to,
+    filters.salesRep,
+    filters.customerId,
+    filters.status,
+  ]);
+
+  const { reports, isLoading, totalCount } = useGetCustomReports({
+    page: currentPage,
+    limit: pageSize,
+  });
+
+  const { mutate: generateReport, isPending: isGenerating } =
+    useCustomReportGeneration();
 
   // -------------------- Handlers --------------------
   const handleFilterChange = (updated: Partial<CustomeReportFilter>) => {
@@ -184,7 +210,7 @@ const CustomReport: React.FC = () => {
   const handleGenerateReport = async () => {
     setErrors({});
     if (!validateFilters()) return;
-    refetch();
+    generateReport(apiFilters);
   };
 
   const onPaginationChange = (page: number, size: number) => {
@@ -258,10 +284,7 @@ const CustomReport: React.FC = () => {
         type: "searchable-select",
         onChange: (v) => handleFilterChange({ status: v }),
         placeholder: "Select Status",
-        options: [
-          { label: "Completed", value: "completed" },
-          { label: "Pending", value: "pending" },
-        ],
+        options: visitStatusOptions,
         value: filters.status,
         onCancelPress: () => handleFilterChange({ status: "" }),
         searchableSelectClassName: "w-full max-w-[180px]",
@@ -284,11 +307,6 @@ const CustomReport: React.FC = () => {
       "format",
     ],
     [REPORT_TYPE.CUSTOMER_REPORT]: ["date-range", "customerId", "format"],
-    [REPORT_TYPE.FIELD_ACTIVITY_REPORT]: [
-      "date-range",
-      "salesRepresentativeUserId",
-      "format",
-    ],
   };
 
   const visibleFilterKeys =
@@ -350,9 +368,9 @@ const CustomReport: React.FC = () => {
       <Card className="p-4 mt-4 gap-2">
         <ReportsHead
           title="Custom Reports"
-          subtitle="Custom report from 1 May to 2025"
+          subtitle="Custom report results generated previously"
         />
-        {isGenerating ? (
+        {isLoading ? (
           <div className="flex items-center justify-center h-48">
             <Loader2 className="h-8 w-8 animate-spin" />
             <span className="ml-2">Loading reports...</span>
@@ -360,7 +378,7 @@ const CustomReport: React.FC = () => {
         ) : (
           <CustomDataTable
             paginationCallbacks={{ onPaginationChange }}
-            data={customReportData ?? reports}
+            data={reports}
             currentPage={currentPage}
             columns={customReportsColumns as ColumnDef<unknown>[]}
             totalCount={totalCount}

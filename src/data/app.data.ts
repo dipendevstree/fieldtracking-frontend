@@ -69,11 +69,18 @@ export enum REPORT_TYPE {
   VISIT_REPORTS = "Visit Reports",
   PRODUCTIVITY_REPORT = "Productivity Report",
   CUSTOMER_REPORT = "Customer Report",
-  FIELD_ACTIVITY_REPORT = "Field Activity Report",
 }
 
-export enum ReportFormat {
+export enum REPORT_FORMAT {
   PDF = "pdf",
   EXCEL = "excel",
   CSV = "csv",
+}
+
+export enum VISIT_STATUS {
+  PENDING = "pending",
+  CHECKIN = "checkin",
+  COMPLETED = "completed",
+  PARTIAL_COMPLETED = "partial_completed",
+  CANCEL = "cancel",
 }
