@@ -14,7 +14,7 @@ import {
   REPORT_FORMAT,
 } from "@/data/app.data";
 import {
-  useExpanseReportGeneration,
+  useCustomReportGeneration,
   useGetExpanseReport,
 } from "../services/reports-api";
 import { useGetAllUsers } from "../../UserManagement/services/AllUsers.hook";
@@ -24,12 +24,6 @@ import GlobalFilterSection from "@/components/global-table-filter-section";
 import { useGetExpenseCategoriesDropDownList } from "../../settings/Approvers/services/approvers.hook";
 import { formatDropDownLabel } from "@/utils/commonFunction";
 import { format } from "date-fns";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 interface ExpanseReportFilterState {
   startDate?: string;
@@ -41,6 +35,8 @@ interface ExpanseReportFilterState {
   isWebAdminSide?: boolean;
   sort?: "asc" | "desc";
   status?: string;
+  type?: string;
+  format: string;
 }
 
 const todayStr = format(new Date(), "yyyy-MM-dd");
@@ -56,10 +52,13 @@ const ExpanseReport: React.FC = () => {
     isWebAdminSide: true,
     sort: "desc",
     status: "",
+    type: "Expenses Report",
+    format: "",
   });
 
   const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE_NUMBER);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const { reports, isLoading, totalCount } = useGetExpanseReport({
     ...filters,
@@ -68,7 +67,7 @@ const ExpanseReport: React.FC = () => {
   });
 
   const { mutate: generateReport, isPending: isGenerating } =
-    useExpanseReportGeneration();
+    useCustomReportGeneration();
 
   const { data: userListDropDownData = [] } = useGetAllUsers();
   const { expenseCategories: expenseCategoriesData } =
@@ -99,6 +98,11 @@ const ExpanseReport: React.FC = () => {
     })
   );
 
+  const formatOptions = Object.entries(REPORT_FORMAT).map(([key, value]) => ({
+    label: formatDropDownLabel(key),
+    value,
+  }));
+
   // Handle date range change
   const handleDateRangeChange = (
     key: "expanse" | "created",
@@ -123,6 +127,11 @@ const ExpanseReport: React.FC = () => {
           }),
     }));
     setCurrentPage(1);
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors.dateRange;
+      return newErrors;
+    });
   };
 
   // Handle other filters
@@ -132,11 +141,34 @@ const ExpanseReport: React.FC = () => {
   ) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     setCurrentPage(1);
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[key];
+      return newErrors;
+    });
+  };
+
+  // ✅ Validation logic
+  const validateFilters = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!filters.startDate || !filters.endDate) {
+      newErrors.dateRange = "Expense date range is required";
+    }
+
+    if (!filters.format) {
+      newErrors.format = "Format is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   // Generate report
-  const handleGenerateReport = (format: string) => {
-    generateReport({ format });
+  const handleGenerateReport = () => {
+    setErrors({});
+    if (!validateFilters()) return;
+    generateReport(filters);
   };
 
   // Pagination
@@ -203,6 +235,16 @@ const ExpanseReport: React.FC = () => {
       onCancelPress: () => handleFilterChange("status", ""),
       searchableSelectClassName: "w-full max-w-[180px]",
     },
+    {
+      key: "format",
+      type: "searchable-select",
+      onChange: (value: any) => handleFilterChange("format", value),
+      placeholder: "Select Format",
+      options: formatOptions,
+      value: filters.format,
+      onCancelPress: () => handleFilterChange("format", ""),
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
   ];
 
   return (
@@ -219,38 +261,29 @@ const ExpanseReport: React.FC = () => {
           filters={filtersGlob}
         />
 
-        <div className="flex justify-end mt-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button disabled={isGenerating}>
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  "Generate Report"
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem
-                onClick={() => handleGenerateReport(REPORT_FORMAT.CSV)}
-              >
-                Export Csv
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleGenerateReport(REPORT_FORMAT.EXCEL)}
-              >
-                Export Excel
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleGenerateReport(REPORT_FORMAT.PDF)}
-              >
-                Export Pdf
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        {Object.keys(errors).length > 0 && (
+          <div className="text-sm text-red-600 space-y-1">
+            {Object.entries(errors).map(([key, msg]) => (
+              <div key={key}>• {msg}</div>
+            ))}
+          </div>
+        )}
+
+        <div className="flex justify-end">
+          <Button
+            onClick={handleGenerateReport}
+            disabled={isGenerating}
+            className="min-w-[120px]"
+          >
+            {isGenerating ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              "Generate Report"
+            )}
+          </Button>
         </div>
       </Card>
 
