@@ -121,6 +121,7 @@ export function DataTableToolbarCompact({
               >
                 <DateRangeFilter
                   key={filter.key}
+                  placeholder={filter.placeholder}
                   dateRange={filter.dateRangeValue}
                   setDateRange={filter.onDateRangeChange ?? (() => {})}
                 />

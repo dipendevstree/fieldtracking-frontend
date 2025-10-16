@@ -17,6 +17,7 @@ interface DateRangeFilterProps {
   setDateRange: (range: DateRange | undefined) => void;
   className?: string;
   size?: "sm" | "md" | "lg";
+  placeholder?: string;
 }
 
 export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
@@ -25,6 +26,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
   setDateRange,
   className,
   size = "md",
+  placeholder = "Pick a date range",
 }) => {
   const sizeClasses = {
     sm: "h-8 text-sm",
@@ -40,7 +42,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
         )}`
       : dateRange?.from
         ? format(dateRange.from, "LLL dd, y")
-        : "Pick a date range";
+        : placeholder;
 
   return (
     <div className={cn("flex flex-col gap-2", className)}>
@@ -57,7 +59,11 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
               )}
             >
               <CalendarIcon className="mr-2 h-4 w-4 opacity-50" />
-              <span className={cn(!dateRange?.from && "text-muted-foreground")}>
+              <span
+                className={cn(
+                  !dateRange?.from && "text-muted-foreground text-sm"
+                )}
+              >
                 {formattedRange}
               </span>
             </Button>

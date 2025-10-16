@@ -11,6 +11,7 @@ export interface FetchDataOptions<TData, TParams> {
     'queryKey' | 'queryFn'
   >
   enabled?: boolean
+  token?: string
 }
 
 const useFetchData = <TData = unknown, TParams = Record<string, unknown>>({
@@ -19,12 +20,16 @@ const useFetchData = <TData = unknown, TParams = Record<string, unknown>>({
   queryKey,
   queryOptions = {},
   enabled = true,
+  token,
 }: FetchDataOptions<TData, TParams>) => {
   return useQuery<TData, Error>({
-    queryKey: queryKey ? [queryKey, params] : [url, params],
+    queryKey: queryKey ? [queryKey, params, token] : [url, params, token],
     queryFn: async (): Promise<TData> => {
       const queryString = buildQueryString(params as Record<string, unknown>)
-      const response = await instance.get({ url: `${url}${queryString}` })
+      const response = await instance.get({
+        url: `${url}${queryString}`,
+        customToken: token,
+      })
 
       if (response?.statusCode === 200) {
         return response.data as TData

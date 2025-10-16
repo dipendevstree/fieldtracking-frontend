@@ -177,6 +177,7 @@ const API = {
     consolidated: "expenses/monthly-consolidated",
     list: "expenses/monthly-expenses/list",
     getById: "expenses/monthly-expenses",
+    listDetailed: "expenses/list/detailed",
   },
   approvals: {
     lists: "approvals/list",
@@ -213,6 +214,13 @@ const API = {
   notificationSettings: {
     get: "notification-configuration",
     update: "notification-configuration",
+  },
+  reports: {
+    expanseReport: "expenseReport/generate",
+    customeReport: "customReport/generate",
+    list: "report/list",
+    create: "report/create",
+    createExpanseReport: "report/expenseReportCreate",
   },
 };
 
