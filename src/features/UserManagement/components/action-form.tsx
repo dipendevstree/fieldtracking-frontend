@@ -374,7 +374,7 @@ export function UserActionForm({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phoneNumber">Phone</Label>
+                  <Label htmlFor="phoneNumber">Phone <span className="text-red-500">*</span></Label>
                   <Controller
                     name="phoneNumber"
                     control={control}
@@ -425,7 +425,7 @@ export function UserActionForm({
               {/* Row 3: Department & User Role */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="departmentId">Department</Label>
+                  <Label htmlFor="departmentId">Department<span className="text-red-500">*</span></Label>
                   <Controller
                     name="departmentId"
                     control={control}
