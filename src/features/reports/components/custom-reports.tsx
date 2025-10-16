@@ -122,9 +122,6 @@ const CustomReport: React.FC = () => {
       [REPORT_TYPE.CUSTOMER_REPORT]: {
         customer: filters.customerId || undefined,
       },
-      [REPORT_TYPE.FIELD_ACTIVITY_REPORT]: {
-        customer: filters.customerId || undefined,
-      },
     };
 
     if (type) {
@@ -310,7 +307,6 @@ const CustomReport: React.FC = () => {
       "format",
     ],
     [REPORT_TYPE.CUSTOMER_REPORT]: ["date-range", "customerId", "format"],
-    [REPORT_TYPE.FIELD_ACTIVITY_REPORT]: ["date-range", "customerId", "format"],
   };
 
   const visibleFilterKeys =
