@@ -12,25 +12,19 @@ import { Card } from "@/components/ui/card";
 
 const activityNotifications = [
   "Notify me when the Sales Rep reaches to the visit location",
-  "Notify me when the Sales Rep goes out of the network",
-  "Notify me when the Sales Rep is Idle",
   "Notify me when the Sales Rep's check-in is delayed beyond the scheduled time.",
   "Notify me when the Sales Rep is not able to complete the visit on-time",
   "Notify me when the Sales Rep submits the Expenses",
   "Notify me when a New Customer or Bulk Customers Upload is added in the system",
-  "Notify me when an unauthorized login attempt happens in the system",
   "Notify me when a Visit is rescheduled, cancelled or assigned another Sales Rep",
 ] as const;
 
 const activityNotificationsApiKeys = [
   "notifyWhenSalesRepReachesVisitLocation",
-  "notifyWhenSalesRepGoesOutOfNetwork",
-  "notifyWhenSalesRepIsIdle",
   "notifyWhenSalesRepCheckInDelayedBeyondScheduledTime",
   "notifyWhenSalesRepNotAbleToCompleteVisitOnTime",
   "notifyWhenSalesRepSubmitsExpenses",
   "notifyWhenNewOrBulkCustomersAdded",
-  "notifyWhenUnauthorizedLoginAttempt",
   "notifyWhenVisitRescheduledCancelledOrReassigned",
 ] as const;
 

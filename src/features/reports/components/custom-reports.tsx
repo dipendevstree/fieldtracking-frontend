@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,8 @@ import { CustomeReportFilter } from "../types";
 import { formatDropDownLabel } from "@/utils/commonFunction";
 import { customReportsColumns } from "./customReportsColumns";
 import { useGetAllCustomer } from "@/features/calendar/services/calendar-view.hook";
+import { socketForVisit } from "@/socket/socket";
+import { useAuth } from "@/stores/use-auth-store";
 
 const normalizeOptions = (options: any[]) =>
   options.map((o) => ({ ...o, value: String(o.value) }));
@@ -45,12 +47,14 @@ const CustomReport: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE_NUMBER);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [reportData, setReportData] = useState<any[]>([]);
 
   // -------------------- API Hooks --------------------
   const { data: userListDropDownData = [] } = useGetAllUsers();
   const { expenseCategories: expenseCategoriesData } =
     useGetExpenseCategoriesDropDownList({ defaultCategory: true });
   const { data: customers } = useGetAllCustomer();
+  const { user } = useAuth();
 
   const userListDropDownList = userListDropDownData.map((user: any) => ({
     ...user,
@@ -324,6 +328,53 @@ const CustomReport: React.FC = () => {
     [filters.reportType, visibleFilters]
   );
 
+  useEffect(() => {
+    if (Array.isArray(reports)) {
+      setReportData(reports);
+    }
+  }, [reports]);
+
+  const handleReportGenerated = useCallback((data: any) => {
+    setReportData((prev: any) => {
+      return prev.map((r: any) =>
+        r.id === data.id
+          ? {
+              ...r,
+              status: data.status ?? r.status,
+              fileUrl: data.fileUrl ?? r.fileUrl,
+              fileSize: data.fileSize ?? r.fileSize,
+            }
+          : r
+      );
+    });
+  }, []);
+
+  // Socket listeners
+  useEffect(() => {
+    const socket = socketForVisit(user?.access_token);
+    if (!socket) return;
+
+    const orgId = user?.organizationID;
+
+    const handleConnect = () => {
+      socket.emit("track_reports", { organizationId: orgId });
+    };
+
+    // Listen to events
+    socket.on("connect", handleConnect);
+    socket.on("report_generated", handleReportGenerated);
+
+    return () => {
+      // 1. Leave the report room
+      socket.emit("untrack_reports", { organizationId: orgId });
+      // 2. Remove listeners
+      socket.off("connect", handleConnect);
+      socket.off("report_generated", handleReportGenerated);
+      // 3. Disconnect socket
+      socket.disconnect();
+    };
+  }, [user?.access_token, user?.organizationID, handleReportGenerated]);
+
   // -------------------- UI --------------------
   return (
     <div>
@@ -378,7 +429,7 @@ const CustomReport: React.FC = () => {
         ) : (
           <CustomDataTable
             paginationCallbacks={{ onPaginationChange }}
-            data={reports}
+            data={reportData}
             currentPage={currentPage}
             columns={customReportsColumns as ColumnDef<unknown>[]}
             totalCount={totalCount}
