@@ -50,7 +50,7 @@ export function AuthenticatedLayout({
           <Header fixed className="shadow">
             <div className="ml-auto flex items-center space-x-2">
               <Search />
-              <NotificationList />
+              {!user?.isSuperAdmin && <NotificationList />}
               {/* <ThemeSelector /> */}
               <ProfileDropdown user={user} avatarSize="md" />
             </div>
