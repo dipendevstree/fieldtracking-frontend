@@ -32,7 +32,7 @@ const SignUpLeftSection = () => {
       <div className="relative z-20 mt-auto">
         <blockquote className="space-y-2">
           <p className="text-lg">
-            &ldquo;Net Part has revolutionized our auto parts business. Managing
+            &ldquo;FieldTrack360 has revolutionized our sales business. Managing
             inventory, tracking orders, and serving customers has never been
             this efficient. Our sales have increased by 40% since
             implementation.&rdquo;
