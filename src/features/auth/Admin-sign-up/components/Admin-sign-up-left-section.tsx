@@ -30,14 +30,14 @@ const SignUpLeftSection = () => {
       </h1>
 
       <div className="relative z-20 mt-auto">
-        <blockquote className="space-y-2">
+        {/* <blockquote className="space-y-2">
           <p className="text-lg">
             &ldquo;FieldTrack360 has revolutionized our sales business. Managing
             inventory, tracking orders, and serving customers has never been
             this efficient. Our sales have increased by 40% since
             implementation.&rdquo;
           </p>
-        </blockquote>
+        </blockquote> */}
       </div>
     </div>
   );
