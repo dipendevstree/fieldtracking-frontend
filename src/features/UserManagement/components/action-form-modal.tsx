@@ -111,7 +111,7 @@ export function UsersActionModal() {
 
   const handleDeleteUser = () => {
     if (currentRow?.id) {
-      deleteUser(currentRow?.id);
+      deleteUser();
     } else {
       closeModal();
     }
