@@ -22,7 +22,7 @@ const step1BaseSchema = z.object({
   confirmPassword: z.string().min(1, 'Please confirm your password'),
   phoneNumber: z.string().nonempty('Phone number is required'),
   jobTitle: z.string().nonempty('Job title is required'),
-  department: z.string().optional(),
+  department: z.string().nonempty('Department is required'),
   PhoneCountryCode: z.string().nonempty('PhoneCountryCode is required'),
 })
 
