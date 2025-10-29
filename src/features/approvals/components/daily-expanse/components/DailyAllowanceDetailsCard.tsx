@@ -232,114 +232,161 @@ export function DailyAllowanceDetailsCard({
           </CardHeader>
           <Separator />
           <CardContent className="space-y-4 text-sm">
-            {allowance.dailyAllowancesDetails?.map((detail: any) => {
-              const myReview = getReviewAndApproval(detail.id);
-              const resultObj = gettingButtonText(detail);
+            {!allowance.dailyAllowancesDetails?.length ? (
+              <div className="text-center text-sm text-gray-500 py-6 border rounded-md">
+                No expense available for this day
+              </div>
+            ) : (
+              allowance.dailyAllowancesDetails.map((detail: any) => {
+                const myReview = getReviewAndApproval(detail.id);
+                const resultObj = gettingButtonText(detail);
 
-              // ✅ loader keys
-              const approveKey = `${detail.id}-${resultObj?.status}`;
-              const rejectKey = `${detail.id}-rejected`;
-              const isProcessingApprove = loadingIds[approveKey] ?? false;
-              const isProcessingReject = loadingIds[rejectKey] ?? false;
-              const isUpdatingApprove =
+                // ✅ loader keys
+                const approveKey = `${detail.id}-${resultObj?.status}`;
+                const rejectKey = `${detail.id}-rejected`;
+                const isProcessingApprove = loadingIds[approveKey] ?? false;
+                const isProcessingReject = loadingIds[rejectKey] ?? false;
+                const isUpdatingApprove =
                 myReview?.id && updatingReviewKeys?.[`${myReview.id}-reviewed`];
-              const isUpdatingReject =
+                const isUpdatingReject =
                 myReview?.id && updatingReviewKeys?.[`${myReview.id}-rejected`];
 
-              return (
-                <div key={detail.id} className="border p-4 rounded-md mb-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <Detail
-                      label="Date"
-                      value={format(
-                        new Date(detail.expensesDate),
-                        "dd-MM-yyyy"
-                      )}
-                    />
-                    <Detail label="Amount" value={`₹${detail.amount}`} />
-                    <Detail
-                      label="Category"
-                      value={detail.expensesCategory?.categoryName || "-"}
-                    />
-                    <Detail label="Notes" value={detail.notes || "-"} />
-                  </div>
-
-                  <Separator className="mt-4 mb-2" />
-
-                  <div className="flex flex-col items-center space-y-4 pt-2">
-                    {/* files */}
-                    <div className="grid grid-cols-3 gap-3 w-full">
-                      {detail.filesUrl?.length > 0 &&
-                        detail.filesUrl.map((file: string, idx: number) => {
-                          if (isImage(file)) {
-                            // 🖼️ Image Preview
-                            return (
-                              <Dialog key={idx}>
-                                <DialogTrigger asChild>
-                                  <img
-                                    src={file}
-                                    alt={`Receipt ${idx + 1}`}
-                                    className="h-28 w-full cursor-pointer rounded border object-cover"
-                                  />
-                                </DialogTrigger>
-                                <DialogContent className="max-w-4xl p-0">
-                                  <img
-                                    src={file}
-                                    alt={`Receipt Full ${idx + 1}`}
-                                    className="h-auto w-full rounded"
-                                  />
-                                </DialogContent>
-                              </Dialog>
-                            );
-                          } else {
-                            // 📄 Non-image → Icon + Download Button
-                            return (
-                              <div
-                                key={idx}
-                                className="flex flex-col items-center justify-between h-28 w-full rounded border bg-gray-50 p-2"
-                              >
-                                <div className="flex-1 flex items-center justify-center">
-                                  {getFileIcon(file)}
-                                </div>
-                                <Button
-                                  asChild
-                                  size="sm"
-                                  variant="outline"
-                                  className="w-full mt-2"
-                                >
-                                  <a
-                                    href={file}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                  >
-                                    <FileDown className="h-4 w-4 mr-1" />{" "}
-                                    Download
-                                  </a>
-                                </Button>
-                              </div>
-                            );
-                          }
-                        })}
+                return (
+                  <div key={detail.id} className="border p-4 rounded-md mb-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <Detail
+                        label="Date"
+                        value={format(
+                          new Date(detail.expensesDate),
+                          "dd-MM-yyyy"
+                        )}
+                      />
+                      <Detail label="Amount" value={`₹${detail.amount}`} />
+                      <Detail
+                        label="Category"
+                        value={detail.expensesCategory?.categoryName || "-"}
+                      />
+                      <Detail label="Notes" value={detail.notes || "-"} />
                     </div>
 
-                    <Textarea
-                      placeholder="Add Comment (Optional)"
-                      value={comments[detail.id] ?? ""}
-                      onChange={(e) =>
-                        handleChangeComment(detail.id, e.target.value)
-                      }
-                    />
+                    <Separator className="mt-4 mb-2" />
 
-                    {myReview ? (
-                      myReview.status === "rejected" ? (
-                        <div className="grid w-full grid-cols-2 gap-2">
+                    <div className="flex flex-col items-center space-y-4 pt-2">
+                      {/* files */}
+                      <div className="grid grid-cols-3 gap-3 w-full">
+                        {detail.filesUrl?.length > 0 &&
+                          detail.filesUrl.map((file: string, idx: number) => {
+                            if (isImage(file)) {
+                              // 🖼️ Image Preview
+                              return (
+                                <Dialog key={idx}>
+                                  <DialogTrigger asChild>
+                                    <img
+                                      src={file}
+                                      alt={`Receipt ${idx + 1}`}
+                                      className="h-28 w-full cursor-pointer rounded border object-cover"
+                                    />
+                                  </DialogTrigger>
+                                  <DialogContent className="max-w-4xl p-0">
+                                    <img
+                                      src={file}
+                                      alt={`Receipt Full ${idx + 1}`}
+                                      className="h-auto w-full rounded"
+                                    />
+                                  </DialogContent>
+                                </Dialog>
+                              );
+                            } else {
+                              // 📄 Non-image → Icon + Download Button
+                              return (
+                                <div
+                                  key={idx}
+                                  className="flex flex-col items-center justify-between h-28 w-full rounded border bg-gray-50 p-2"
+                                >
+                                  <div className="flex-1 flex items-center justify-center">
+                                    {getFileIcon(file)}
+                                  </div>
+                                  <Button
+                                    asChild
+                                    size="sm"
+                                    variant="outline"
+                                    className="w-full mt-2"
+                                  >
+                                    <a
+                                      href={file}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      <FileDown className="h-4 w-4 mr-1" />{" "}
+                                      Download
+                                    </a>
+                                  </Button>
+                                </div>
+                              );
+                            }
+                          })}
+                      </div>
+
+                      <Textarea
+                        placeholder="Add Comment (Optional)"
+                        value={comments[detail.id] ?? ""}
+                        onChange={(e) =>
+                          handleChangeComment(detail.id, e.target.value)
+                        }
+                      />
+
+                      {myReview ? (
+                        myReview.status === "rejected" ? (
+                          <div className="grid w-full grid-cols-2 gap-2">
+                            <Button
+                              className="bg-green-600 text-white hover:bg-green-700"
+                            disabled={resultObj.isDisable || isUpdatingApprove}
+                              onClick={() =>
+                                handleUpdateReview(
+                                  myReview.id,
+                                  "reviewed",
+                                  detail.id
+                                )
+                              }
+                            >
+                              {isUpdatingApprove ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                  Processing...
+                                </>
+                              ) : (
+                                "Review Expense"
+                              )}
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              disabled={resultObj.isDisable || isUpdatingReject}
+                              onClick={() =>
+                                handleUpdateReview(
+                                  myReview.id,
+                                  "rejected",
+                                  detail.id
+                                )
+                              }
+                            >
+                              {isUpdatingReject ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                  Processing...
+                                </>
+                              ) : (
+                                "Reject Expense"
+                              )}
+                            </Button>
+                          </div>
+                        ) : (
                           <Button
-                            className="bg-green-600 text-white hover:bg-green-700"
+                            className="bg-green-600 text-white hover:bg-green-700 w-full"
                             disabled={resultObj.isDisable || isUpdatingApprove}
                             onClick={() =>
                               handleUpdateReview(
                                 myReview.id,
-                                "reviewed",
+                                myReview.status,
                                 detail.id
                               )
                             }
@@ -347,113 +394,72 @@ export function DailyAllowanceDetailsCard({
                             {isUpdatingApprove ? (
                               <>
                                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                Processing...
+                                Updating...
                               </>
                             ) : (
-                              "Review Expense"
+                              "Update Review"
                             )}
                           </Button>
-                          <Button
-                            variant="destructive"
-                            disabled={resultObj.isDisable || isUpdatingReject}
-                            onClick={() =>
-                              handleUpdateReview(
-                                myReview.id,
-                                "rejected",
-                                detail.id
-                              )
-                            }
-                          >
-                            {isUpdatingReject ? (
-                              <>
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                Processing...
-                              </>
-                            ) : (
-                              "Reject Expense"
-                            )}
-                          </Button>
-                        </div>
+                        )
                       ) : (
-                        <Button
-                          className="bg-green-600 text-white hover:bg-green-700 w-full"
-                          disabled={resultObj.isDisable || isUpdatingApprove}
-                          onClick={() =>
-                            handleUpdateReview(
-                              myReview.id,
-                              myReview.status,
-                              detail.id
-                            )
-                          }
-                        >
-                          {isUpdatingApprove ? (
-                            <>
-                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              Updating...
-                            </>
-                          ) : (
-                            "Update Review"
+                        <>
+                          {resultObj.reason && (
+                            <p className="text-red-600 text-sm text-center">
+                              {resultObj.reason}
+                            </p>
                           )}
-                        </Button>
-                      )
-                    ) : (
-                      <>
-                        {resultObj.reason && (
-                          <p className="text-red-600 text-sm text-center">
-                            {resultObj.reason}
-                          </p>
-                        )}
-                        <div className="grid w-full grid-cols-2 gap-2">
-                          <Button
-                            className="bg-green-600 text-white hover:bg-green-700"
-                            disabled={
-                              resultObj.isDisable || isProcessingApprove
-                            }
-                            onClick={() =>
-                              handleReviewAction(
-                                allowance.dailyAllowanceId,
-                                detail.id,
-                                resultObj.status as any
-                              )
-                            }
-                          >
-                            {isProcessingApprove ? (
-                              <>
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                Processing...
-                              </>
-                            ) : (
-                              resultObj.buttonText
-                            )}
-                            Expense
-                          </Button>
-                          <Button
-                            variant="destructive"
+                          <div className="grid w-full grid-cols-2 gap-2">
+                            <Button
+                              className="bg-green-600 text-white hover:bg-green-700"
+                              disabled={
+                                resultObj.isDisable || isProcessingApprove
+                              }
+                              onClick={() =>
+                                handleReviewAction(
+                                  allowance.dailyAllowanceId,
+                                  detail.id,
+                                  resultObj.status as any
+                                )
+                              }
+                            >
+                              {isProcessingApprove ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                  Processing...
+                                </>
+                              ) : (
+                                resultObj.buttonText
+                              )}
+                              Expense
+                            </Button>
+                            <Button
+                              variant="destructive"
                             disabled={resultObj.isDisable || isProcessingReject}
-                            onClick={() =>
-                              handleReviewAction(
-                                allowance.dailyAllowanceId,
-                                detail.id,
-                                "rejected"
-                              )
-                            }
-                          >
-                            {isProcessingReject ? (
-                              <>
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                Processing...
-                              </>
-                            ) : (
-                              "Reject Expense"
-                            )}
-                          </Button>
-                        </div>
-                      </>
-                    )}
+                              onClick={() =>
+                                handleReviewAction(
+                                  allowance.dailyAllowanceId,
+                                  detail.id,
+                                  "rejected"
+                                )
+                              }
+                            >
+                              {isProcessingReject ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                                  Processing...
+                                </>
+                              ) : (
+                                "Reject Expense"
+                              )}
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </CardContent>
         </Card>
       ))}
