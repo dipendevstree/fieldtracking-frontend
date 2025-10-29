@@ -26,7 +26,7 @@ import {
   TFormSchema,
   formSchema,
   checkPasswordStrength,
-  passwordSchema, // <-- Add this import
+  passwordSchema,
 } from "../data/schema";
 import {
   useGetDepartment,
@@ -34,6 +34,8 @@ import {
   useGetUserByToken,
   useSingUp,
 } from "../services/sign-up-services";
+import { Country, State, City } from "country-state-city";
+import { ICountry, IState, ICity } from "country-state-city";
 
 const RegistrationForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -44,6 +46,12 @@ const RegistrationForm = () => {
   const { data, isLoading } = useGetUserByToken(token ?? "");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  // <-- ADD: State for country, state, and city data
+  const [countries, setCountries] = useState<ICountry[]>([]);
+  const [states, setStates] = useState<IState[]>([]);
+  const [cities, setCities] = useState<ICity[]>([]);
+
   if (data) {
     if (data.status === "pending") {
       navigate({ to: "/watingforapproval" });
@@ -73,31 +81,6 @@ const RegistrationForm = () => {
     value: timezone,
     label: `${timezone} ${moment.tz(timezone).format("z (Z)")}`,
   }));
-
-  const countryOptions = [
-    { label: "United States", value: "United States" },
-    { label: "United Kingdom", value: "United Kingdom" },
-    { label: "Canada", value: "Canada" },
-    { label: "Australia", value: "Australia" },
-    { label: "Germany", value: "Germany" },
-    { label: "France", value: "France" },
-    { label: "India", value: "India" },
-    { label: "China", value: "China" },
-    { label: "Japan", value: "Japan" },
-    { label: "Brazil", value: "Brazil" },
-    { label: "Russia", value: "Russia" },
-    { label: "Italy", value: "Italy" },
-    { label: "Spain", value: "Spain" },
-    { label: "Mexico", value: "Mexico" },
-    { label: "South Korea", value: "South Korea" },
-    { label: "Netherlands", value: "Netherlands" },
-    { label: "Switzerland", value: "Switzerland" },
-    { label: "Sweden", value: "Sweden" },
-    { label: "Singapore", value: "Singapore" },
-    { label: "United Arab Emirates", value: "United Arab Emirates" },
-  ];
-
-  // Make sure formSchema is imported or defined above this usage:
 
   const {
     control,
@@ -130,6 +113,46 @@ const RegistrationForm = () => {
     },
   });
   const { errors, isSubmitted } = formState;
+
+  // <-- ADD: Watch for changes in country and state fields
+  const watchedCountry = watch("country");
+  const watchedState = watch("state");
+
+  // <-- ADD: Effect to load all countries on component mount
+  useEffect(() => {
+    setCountries(Country.getAllCountries());
+  }, []);
+
+  // <-- ADD: Effect to update states when country changes
+  useEffect(() => {
+    if (watchedCountry) {
+      const countryData = Country.getCountryByCode(watchedCountry);
+      setStates(State.getStatesOfCountry(countryData?.isoCode));
+      // Reset state and city when country changes
+      setValue("state", "");
+      setValue("city", "");
+    } else {
+      setStates([]);
+      setCities([]);
+    }
+  }, [watchedCountry, setValue]);
+
+  // <-- ADD: Effect to update cities when state changes
+  useEffect(() => {
+    if (watchedCountry && watchedState) {
+      const stateData = State.getStateByCodeAndCountry(
+        watchedState,
+        watchedCountry
+      );
+      setCities(
+        City.getCitiesOfState(watchedCountry, stateData?.isoCode ?? "")
+      );
+      // Reset city when state changes
+      setValue("city", "");
+    } else {
+      setCities([]);
+    }
+  }, [watchedCountry, watchedState, setValue]);
 
   useEffect(() => {
     if (data) {
@@ -1098,26 +1121,46 @@ const RegistrationForm = () => {
 
                       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
                         <div>
-                          <Label htmlFor="city">
-                            City <span className="text-red-500">*</span>
+                          <Label htmlFor="country">
+                            Country <span className="text-red-500">*</span>
                           </Label>
                           <Controller
-                            name="city"
+                            name="country"
                             control={control}
                             render={({ field }) => (
-                              <Input
-                                {...field}
-                                className={`mt-1 ${getFieldError("city") ? "border-red-500" : ""}`}
-                                placeholder="Enter city"
-                              />
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                              >
+                                <SelectTrigger
+                                  className={`mt-1 w-full ${
+                                    getFieldError("country")
+                                      ? "border-red-500"
+                                      : ""
+                                  }`}
+                                >
+                                  <SelectValue placeholder="Select country" />
+                                </SelectTrigger>
+                                <SelectContent className="z-50 w-full max-h-60">
+                                  {countries.map((country) => (
+                                    <SelectItem
+                                      key={country.isoCode}
+                                      value={country.isoCode}
+                                    >
+                                      {country.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             )}
                           />
-                          {getFieldError("city") && (
+                          {getFieldError("country") && (
                             <p className="text-sm text-red-500">
-                              {getFieldError("city")}
+                              {getFieldError("country")}
                             </p>
                           )}
                         </div>
+
                         <div>
                           <Label htmlFor="state">
                             State/Province{" "}
@@ -1127,11 +1170,29 @@ const RegistrationForm = () => {
                             name="state"
                             control={control}
                             render={({ field }) => (
-                              <Input
-                                {...field}
-                                className={`mt-1 ${getFieldError("state") ? "border-red-500" : ""}`}
-                                placeholder="Enter state/province"
-                              />
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                                disabled={
+                                  !watchedCountry || states.length === 0
+                                } // <-- ADD: Disable if no country selected
+                              >
+                                <SelectTrigger
+                                  className={`mt-1 w-full ${getFieldError("state") ? "border-red-500" : ""}`}
+                                >
+                                  <SelectValue placeholder="Select state/province" />
+                                </SelectTrigger>
+                                <SelectContent className="z-50 w-full max-h-60">
+                                  {states.map((state) => (
+                                    <SelectItem
+                                      key={state.isoCode}
+                                      value={state.isoCode}
+                                    >
+                                      {state.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
                             )}
                           />
                           {getFieldError("state") && (
@@ -1143,6 +1204,43 @@ const RegistrationForm = () => {
                       </div>
 
                       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+                        <div>
+                          <Label htmlFor="city">
+                            City <span className="text-red-500">*</span>
+                          </Label>
+                          <Controller
+                            name="city"
+                            control={control}
+                            render={({ field }) => (
+                              <Select
+                                value={field.value}
+                                onValueChange={field.onChange}
+                                disabled={!watchedState || cities.length === 0} // <-- ADD: Disable if no state selected
+                              >
+                                <SelectTrigger
+                                  className={`mt-1 w-full ${getFieldError("city") ? "border-red-500" : ""}`}
+                                >
+                                  <SelectValue placeholder="Select city" />
+                                </SelectTrigger>
+                                <SelectContent className="z-50 w-full max-h-60">
+                                  {cities.map((city) => (
+                                    <SelectItem
+                                      key={city.name}
+                                      value={city.name}
+                                    >
+                                      {city.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                          {getFieldError("city") && (
+                            <p className="text-sm text-red-500">
+                              {getFieldError("city")}
+                            </p>
+                          )}
+                        </div>
                         <div>
                           <Label htmlFor="postalCode">
                             ZIP/Postal Code{" "}
@@ -1162,48 +1260,6 @@ const RegistrationForm = () => {
                           {getFieldError("postalCode") && (
                             <p className="text-sm text-red-500">
                               {getFieldError("postalCode")}
-                            </p>
-                          )}
-                        </div>
-
-                        <div>
-                          <Label htmlFor="country">
-                            Country <span className="text-red-500">*</span>
-                          </Label>
-                          <Controller
-                            name="country"
-                            control={control}
-                            render={({ field }) => (
-                              <Select
-                                {...field}
-                                value={field.value}
-                                onValueChange={field.onChange}
-                              >
-                                <SelectTrigger
-                                  className={`mt-1 w-full ${
-                                    getFieldError("country")
-                                      ? "border-red-500"
-                                      : ""
-                                  }`}
-                                >
-                                  <SelectValue placeholder="Select country" />
-                                </SelectTrigger>
-                                <SelectContent className="z-50 w-full">
-                                  {countryOptions.map((option) => (
-                                    <SelectItem
-                                      key={option.value}
-                                      value={String(option.value)}
-                                    >
-                                      {option.label}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            )}
-                          />
-                          {getFieldError("country") && (
-                            <p className="text-sm text-red-500">
-                              {getFieldError("country")}
                             </p>
                           )}
                         </div>
@@ -1291,7 +1347,11 @@ const RegistrationForm = () => {
                           <strong>City:</strong> {watch("city")}
                         </div>
                         <div>
-                          <strong>State/Province:</strong> {watch("state")}
+                          <strong>State/Province:</strong>{" "}
+                          {State.getStateByCodeAndCountry(
+                            watch("state"),
+                            watch("country")
+                          )?.name || watch("state")}
                         </div>
                         <div>
                           <strong>ZIP/Postal Code:</strong>{" "}
@@ -1299,9 +1359,8 @@ const RegistrationForm = () => {
                         </div>
                         <div>
                           <strong>Country:</strong>{" "}
-                          {countryOptions.find(
-                            (c) => c.value === watch("country")
-                          )?.label || "-"}
+                          {Country.getCountryByCode(watch("country"))?.name ||
+                            watch("country")}
                         </div>
                       </div>
                     </div>
