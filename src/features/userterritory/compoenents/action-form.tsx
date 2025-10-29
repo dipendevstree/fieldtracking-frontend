@@ -58,7 +58,7 @@ export function UserTerritoryActionForm({
 
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
-      <DialogContent className='max-h-[80vh] !max-w-md overflow-y-auto'>
+      <DialogContent className='max-h-[80vh] max-w-md! overflow-y-auto'>
         <DialogHeader className='flex flex-row items-center justify-between space-y-0 pb-4'>
           <div>
             <DialogTitle className='text-xl font-semibold'>

@@ -22,7 +22,6 @@ const CustomerActionForm = (_props: {
 export function CustomersActionModal() {
   const navigate = useNavigate()
   const { open, setOpen, currentRow, setCurrentRow } = useCustomersStore()
-  
   const {
     isPending: isUpdateLoading,
     isSuccess: isUpdateSuccess,
@@ -93,7 +92,7 @@ export function CustomersActionModal() {
             onDelete={handleDeleteCustomer}
             key={`customer-delete-${currentRow.customerId}`}
             open={open === 'delete'}
-            itemIdentifier={'customerId'} 
+            itemIdentifier={'companyName' as any} 
             itemName={'Customer'}
             onOpenChange={() => {
               setOpen(null)
