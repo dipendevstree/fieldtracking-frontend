@@ -146,7 +146,7 @@ export default function GeneralApplicationSettings({
       console.log("Form data being set:", newFormData);
       setFormData(newFormData);
       setAutoExpenseApproval(org.isAutoExpense || false);
-      setFixedDayExpense(!(org.isAutoExpense || false));
+      setFixedDayExpense(org.isFixedDayExpense || false);
       setAllowAddUsersBasedOnTerritories(
         org.allowAddUsersBasedOnTerritories || false
       );

@@ -95,10 +95,12 @@ export default function Approvers() {
 
   // Simplified user options generation
   const allUsersOptions = useSelectOptions<any>({
-    listData: allUsersList.map((u: any) => ({
-      ...u,
-      fullName: `${u.firstName || ""} ${u.lastName || ""}`.trim(),
-    })),
+    listData: allUsersList
+      .filter((u: any) => u.isWebUser)
+      .map((u: any) => ({
+        ...u,
+        fullName: `${u.firstName || ""} ${u.lastName || ""}`.trim(),
+      })),
     labelKey: "fullName",
     valueKey: "id",
   }).map((opt) => ({ ...opt, value: String(opt.value) }));

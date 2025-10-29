@@ -160,7 +160,8 @@ const GeneralSettingsPage = () => {
                 allowAddUsersBasedOnTerritories:
                   currentSettingsData.allowAddUsersBasedOnTerritories,
                 currency: currentSettingsData.currency || "",
-                organizationIcon: updatedData.organizationIcon || null
+                organizationIcon: updatedData.organizationIcon || null,
+                isFixedDayExpense:updatedData.isFixedDayExpense || false
               };
 
               console.log(

@@ -8,7 +8,7 @@ import {
 } from "@/data/app.data";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import debounce from "lodash.debounce";
-import { CalendarIcon, Clock, Edit, Eye, Trash2 } from "lucide-react";
+import { CalendarIcon, Clock, Edit, Trash2 } from "lucide-react";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import {
   AlertDialog,
@@ -458,8 +458,8 @@ export default function CalendarView() {
                       Rep: {visit.rep}
                     </p>
                   </div>
-                  <div className="flex space-x-1">
-                    <PermissionGate
+                  <div className="flex space-x-2">
+                    {/* <PermissionGate
                       requiredPermission="calender_view"
                       action="viewOwn"
                     >
@@ -471,7 +471,7 @@ export default function CalendarView() {
                       >
                         <Eye className="h-3 w-3" />
                       </Button>
-                    </PermissionGate>
+                    </PermissionGate> */}
                     <PermissionGate
                       requiredPermission="calender_view"
                       action="edit"
