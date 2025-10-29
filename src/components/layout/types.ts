@@ -80,6 +80,7 @@ export interface LoginUser {
   readonly permissions: readonly PermissionGroup[];
   organizationID:string;
   organization:any,
+  userName:string,
 }
 
 // Complete login response
