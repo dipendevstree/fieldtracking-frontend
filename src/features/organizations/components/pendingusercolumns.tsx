@@ -16,7 +16,7 @@ export const pendingusercolumns: ColumnDef<any>[] = [
       const lastName = row.original.lastName;
       const jobTitle = row.original.jobTitle;
       const initials = `${firstName?.charAt(0) || ""}${lastName?.charAt(0) || ""}`;
-      const userID = row.original.id;
+      // const userID = row.original.id;
       return (
         <div className="flex items-center space-x-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-sm font-medium">
@@ -27,7 +27,7 @@ export const pendingusercolumns: ColumnDef<any>[] = [
               {firstName} {lastName}
             </div>
             <div className="text-muted-foreground text-xs">{jobTitle}</div>
-            <div className="text-muted-foreground text-xs">{userID}</div>
+            {/* <div className="text-muted-foreground text-xs">{userID}</div> */}
           </div>
         </div>
       );
