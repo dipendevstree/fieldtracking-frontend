@@ -90,7 +90,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   return (
     <>
       <div className="flex items-center gap-2">
-        <CustomTooltip title="Verified">
+        <CustomTooltip title="Verify">
           <Button
             variant="outline"
             size="sm"
@@ -144,7 +144,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
                 confirmDialog.type === "verified" ? "default" : "destructive"
               }
             >
-              {confirmDialog.type === "verified" ? "verified" : "Reject"}
+              {confirmDialog.type === "verified" ? "verify" : "Reject"}
             </Button>
           </DialogFooter>
         </DialogContent>
