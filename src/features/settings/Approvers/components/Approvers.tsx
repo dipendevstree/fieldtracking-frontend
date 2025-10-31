@@ -241,20 +241,33 @@ export default function Approvers() {
                 className="bg-primary text-white"
                 type="button"
                 disabled={isAddLevelButtonDisabled}
-                onClick={() =>
-                  addLevel({
-                    user: "", // User is now empty by default
-                    expenseCategories: [
-                      {
-                        expensesCategoryId:
-                          expenseCategoryOptions?.[0]?.value ?? "",
-                        tier: TIER.TIER_1,
-                        minAmount: "0",
+                onClick={() => {
+                  const allLevels = methods.getValues("levels");
+                  const lastLevel = allLevels[allLevels.length - 1];
+
+                  // If there’s at least one existing level, clone its expenseCategories
+                  const clonedCategories = lastLevel
+                    ? lastLevel.expenseCategories.map((ec) => ({
+                        expensesCategoryId: ec.expensesCategoryId,
+                        tier: ec.tier,
+                        minAmount: "0", // reset min/max for next approver
                         maxAmount: "0",
-                      },
-                    ],
-                  })
-                }
+                      }))
+                    : [
+                        {
+                          expensesCategoryId:
+                            expenseCategoryOptions?.[0]?.value ?? "",
+                          tier: TIER.TIER_1,
+                          minAmount: "0",
+                          maxAmount: "0",
+                        },
+                      ];
+
+                  addLevel({
+                    user: "",
+                    expenseCategories: clonedCategories,
+                  });
+                }}
               >
                 + Add New Level
               </Button>
