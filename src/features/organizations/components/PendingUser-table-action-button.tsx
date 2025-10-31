@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
 import CustomTooltip from "@/components/shared/custom-tooltip";
 import { useUpdateStatus } from "../services/organization.hook";
 import { useUsersStore } from "../store/organizations.store";
@@ -34,12 +35,15 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
     description: "",
   });
 
+  const [reason, setReason] = useState("");
+
   const { mutate: updateStatus } = useUpdateStatus();
 
   const handleUpdateStatus = (values: any) => {
     const payload = {
       userId: values.userId,
       status: values.status,
+      reason: values.reason || undefined,
     };
     updateStatus(payload);
   };
@@ -48,10 +52,11 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
     setConfirmDialog({
       isOpen: true,
       type: "verified",
-      title: "verified Item",
+      title: "Verify Item",
       description:
-        "Are you sure you want to verified this item? This action cannot be undone.",
+        "Are you sure you want to verify this request? This action cannot be undone.",
     });
+    setReason("");
   };
 
   const handleReject = () => {
@@ -60,8 +65,9 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
       type: "rejected",
       title: "Reject Item",
       description:
-        "Are you sure you want to reject this item? This action cannot be undone.",
+        "Please provide a reason for rejecting this request. This action cannot be undone.",
     });
+    setReason("");
   };
 
   const handleConfirm = () => {
@@ -69,10 +75,12 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
 
     if (confirmDialog.type === "verified") {
       handleUpdateStatus({ userId: row.original.id, status: "verified" });
-      console.log("Approving row:", row.original);
     } else if (confirmDialog.type === "rejected") {
-      handleUpdateStatus({ userId: row.original.id, status: "rejected" });
-      console.log("Rejecting row:", row.original);
+      handleUpdateStatus({
+        userId: row.original.id,
+        status: "rejected",
+        reason,
+      });
     }
 
     setConfirmDialog({ isOpen: false, type: null, title: "", description: "" });
@@ -80,6 +88,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
 
   const handleCancel = () => {
     setConfirmDialog({ isOpen: false, type: null, title: "", description: "" });
+    setReason("");
   };
 
   // const gotoLivetrackingPage = () => {
@@ -129,11 +138,20 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         open={confirmDialog.isOpen}
         onOpenChange={(open) => !open && handleCancel()}
       >
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px] space-y-2">
           <DialogHeader>
             <DialogTitle>{confirmDialog.title}</DialogTitle>
             <DialogDescription>{confirmDialog.description}</DialogDescription>
           </DialogHeader>
+          {confirmDialog.type === "rejected" && (
+            <Textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Enter reason..."
+              rows={3}
+            />
+          )}
+
           <DialogFooter className="flex gap-2">
             <Button variant="outline" onClick={handleCancel}>
               Cancel
@@ -143,8 +161,11 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
               variant={
                 confirmDialog.type === "verified" ? "default" : "destructive"
               }
+              disabled={
+                confirmDialog.type === "rejected" && reason.trim().length === 0
+              }
             >
-              {confirmDialog.type === "verified" ? "verify" : "Reject"}
+              {confirmDialog.type === "verified" ? "Verify" : "Reject"}
             </Button>
           </DialogFooter>
         </DialogContent>
