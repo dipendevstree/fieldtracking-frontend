@@ -8,6 +8,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRef, useState, useCallback, useEffect } from "react";
+import { X } from "lucide-react";
 import type { Libraries } from "@react-google-maps/api";
 
 const containerStyle = {
@@ -186,14 +187,22 @@ export default function LocationPicker({
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent
-        className="p-4 w-full !max-w-4xl [&>button]:hidden"
-        style={{ overflow: "visible", zIndex: 9999 }}
+        className="p-4 w-full max-w-4xl! max-h-[90vh] overflow-y-auto rounded-lg [&>button]:hidden"
+        style={{ zIndex: 9999 }}
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
         {isLoaded ? (
-          <div>
-            <h3 className="text-lg font-medium">Add Location</h3>
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h3 className="text-lg font-medium">Add Location</h3>
+              <button
+                onClick={() => onOpenChange(false)}
+                className="p-1 hover:bg-gray-100 rounded-md transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
             <Autocomplete
               onLoad={(auto) => (autocompleteRef.current = auto)}
               onPlaceChanged={handlePlaceSelect}
@@ -202,10 +211,10 @@ export default function LocationPicker({
                 ref={inputRef}
                 placeholder="Search for a location..."
                 defaultValue=""
-                className="w-full my-3"
+                className="w-full"
               />
             </Autocomplete>
-            <div className="w-full h-[500px] rounded-md overflow-hidden border">
+            <div className="w-full h-[400px] rounded-md overflow-hidden border">
               <GoogleMap
                 mapContainerStyle={containerStyle}
                 center={marker || defaultCenter}
@@ -218,7 +227,7 @@ export default function LocationPicker({
             </div>
 
             {marker && (
-              <div className="mt-3 p-4 bg-gray-50 rounded-md border text-sm space-y-2">
+              <div className="p-4 bg-gray-50 rounded-md border text-sm space-y-2">
                 <p>
                   <strong>Address:</strong> {address}
                 </p>
@@ -233,7 +242,7 @@ export default function LocationPicker({
               </div>
             )}
 
-            <div className="flex justify-end space-x-2 mt-3">
+            <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>

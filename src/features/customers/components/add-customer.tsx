@@ -40,6 +40,7 @@ import { useCreateCustomer } from "../services/Customers.hook";
 import type { CreateCustomerPayload } from "../services/Customers.hook";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import LocationPicker from "./LocationPicker";
+import { formatDropDownLabel } from "@/utils/commonFunction";
 
 // Define Zod schema
 const customerFormSchema = z.object({
@@ -1048,8 +1049,9 @@ export default function AddCustomerPage({
                                                       value={String(user.id)}
                                                       className="cursor-pointer hover:bg-gray-50 px-3 py-2 text-sm"
                                                     >
-                                                      {user.firstName}
-                                                      {user.lastName}
+                                                      {formatDropDownLabel(
+                                                        `${user.firstName} ${user.lastName}`
+                                                      )}
                                                     </SelectItem>
                                                   )
                                                 )

@@ -1,10 +1,11 @@
-import { ColumnDef } from '@tanstack/react-table'
-import { CustomDataTableColumnHeader } from '@/components/shared/custom-table-header-column'
-import StatusBadge from '@/components/shared/common-status-badge'
+import { ColumnDef } from "@tanstack/react-table";
+import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
+import StatusBadge from "@/components/shared/common-status-badge";
 import {
   formatExpenseSubType,
   formatExpenseType,
-} from '@/utils/commonFormatters'
+} from "@/utils/commonFormatters";
+import { format } from "date-fns";
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -35,14 +36,9 @@ export const columns: ColumnDef<any>[] = [
     ),
     cell: ({ row }) => {
       const date = row.original.createdDate || "";
-      const formattedDate = date
-        ? new Date(date).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-          })
-        : "-";
-      return <div className=" text-sm">{formattedDate}</div>;
+      const formattedDate = date ? format(new Date(date), "dd-MM-yyyy") : "-";
+
+      return <div className="text-sm">{formattedDate}</div>;
     },
     enableSorting: false,
   },
@@ -88,5 +84,4 @@ export const columns: ColumnDef<any>[] = [
     },
     enableSorting: false,
   },
- 
 ];

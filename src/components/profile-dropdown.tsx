@@ -66,8 +66,8 @@ export function ProfileDropdown({
   };
 
   const avatarSizeClass = AVATAR_SIZES[avatarSize];
-  const userName = getProfileName(user?.firstName || "");
-  
+  const userName = getProfileName(user?.firstName || user?.userName || "");
+
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>

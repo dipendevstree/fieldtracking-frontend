@@ -155,7 +155,6 @@ export function UsersActionModal() {
           <DeleteModal
             key={`users-action-delete-${currentRow.createdDate || currentRow.created_at}`}
             open={open === "delete"}
-            itemIdentifier={"id" as keyof typeof currentRow}
             itemName={"User"}
             onDelete={handleDeleteUser}
             onOpenChange={(value) => {
@@ -166,7 +165,11 @@ export function UsersActionModal() {
                 setOpen("delete");
               }
             }}
-            currentRow={currentRow}
+            itemIdentifier={"fullName" as keyof typeof currentRow}
+            currentRow={{
+              ...currentRow,
+              fullName: `${currentRow.firstName} ${currentRow.lastName}`,
+            }}
           />
         </>
       )}

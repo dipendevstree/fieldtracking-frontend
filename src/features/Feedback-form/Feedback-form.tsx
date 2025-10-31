@@ -8,6 +8,7 @@ import { z } from "zod";
 import { feedbackFormSchema, TFeedbackFormSchema } from "./data/schema";
 import { useUpdateVisitFeedBack } from "./services/feedbakckformhook";
 import FeedbackSubmittedScreen from "./FeedbackSubmittedScreen";
+import { format } from "date-fns";
 
 interface ValidationErrors {
   behaviorRating?: string;
@@ -167,13 +168,14 @@ export default function FeedbackForm() {
             <div className="mb-2 text-sm text-gray-700">
               Meeting Date:{" "}
               <span className="font-medium">
-                {visitData?.date && visitData?.time
-                  ? `${new Date(visitData.date).toLocaleDateString("en-IN", {
-                      day: "2-digit",
-                      month: "2-digit",
-                      year: "numeric",
-                    })}`
-                  : "N/A"}
+                {visitData?.date ? (
+                  <>
+                    {format(new Date(visitData.date), "dd-MM-yyyy")}
+                    {visitData?.time && `, ${visitData.time}`}
+                  </>
+                ) : (
+                  "N/A"
+                )}
               </span>
             </div>
 
