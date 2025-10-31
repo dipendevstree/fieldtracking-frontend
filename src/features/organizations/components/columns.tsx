@@ -2,6 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import { DataTableRowActions } from "./table-action-button";
+import { format } from "date-fns";
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -84,7 +85,7 @@ export const columns: ColumnDef<any>[] = [
     ),
     cell: ({ row }) => {
       const rawDate = row.original.createdDate;
-      const formattedDate = new Date(rawDate).toLocaleDateString("en-US");
+      const formattedDate = format(rawDate, "dd/MM/yyyy");
       return <div className="text-muted-foreground">{formattedDate}</div>;
     },
     enableHiding: false,

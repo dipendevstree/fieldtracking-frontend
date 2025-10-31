@@ -100,7 +100,7 @@ export function UserTerritoryActionModal() {
             key='delete-territory'
             open={open === 'delete'}
             currentRow={currentRow}
-            itemIdentifier={'id' as keyof typeof currentRow}
+            itemIdentifier={'name' as keyof typeof currentRow}
             itemName='Territory'
             onDelete={handleDeleteTerritory}
             onOpenChange={(value) => {

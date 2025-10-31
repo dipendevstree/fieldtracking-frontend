@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import { DataTableRowActions } from "./PendingUser-table-action-button";
 import LongText from "@/components/long-text";
+import { format } from "date-fns";
 
 export const pendingusercolumns: ColumnDef<any>[] = [
   {
@@ -15,7 +16,7 @@ export const pendingusercolumns: ColumnDef<any>[] = [
       const lastName = row.original.lastName;
       const jobTitle = row.original.jobTitle;
       const initials = `${firstName?.charAt(0) || ""}${lastName?.charAt(0) || ""}`;
-      const userID = row.original.id;
+      // const userID = row.original.id;
       return (
         <div className="flex items-center space-x-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-sm font-medium">
@@ -26,7 +27,7 @@ export const pendingusercolumns: ColumnDef<any>[] = [
               {firstName} {lastName}
             </div>
             <div className="text-muted-foreground text-xs">{jobTitle}</div>
-            <div className="text-muted-foreground text-xs">{userID}</div>
+            {/* <div className="text-muted-foreground text-xs">{userID}</div> */}
           </div>
         </div>
       );
@@ -92,16 +93,9 @@ export const pendingusercolumns: ColumnDef<any>[] = [
     cell: ({ row }) => {
       const createdAt = row.original.created_at;
       const updatedAt = row.original.updated_at;
-      const formattedCreated = new Date(createdAt).toLocaleDateString("en-US", {
-        month: "numeric",
-        day: "numeric",
-        year: "numeric",
-      });
-      const formattedTime = new Date(createdAt).toLocaleTimeString("en-US", {
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      });
+      const formattedCreated = format(new Date(createdAt), "dd-MM-yyyy");
+      const formattedTime = format(new Date(createdAt), "hh:mm a");
+      const formattedUpdated = format(new Date(updatedAt), "dd-MM-yyyy");
 
       return (
         <div>
@@ -109,7 +103,7 @@ export const pendingusercolumns: ColumnDef<any>[] = [
             {formattedCreated}, {formattedTime}
           </div>
           <div className="text-muted-foreground text-xs">
-            Updated: {new Date(updatedAt).toLocaleDateString("en-US")}
+            Updated: {formattedUpdated}
           </div>
         </div>
       );

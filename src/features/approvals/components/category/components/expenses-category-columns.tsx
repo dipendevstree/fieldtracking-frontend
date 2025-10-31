@@ -1,6 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import { DataTableRowActions } from "./table-action-button";
+import { format } from "date-fns";
 
 export const categoryExpansesColumns: ColumnDef<any>[] = [
   {
@@ -17,13 +18,11 @@ export const categoryExpansesColumns: ColumnDef<any>[] = [
     ),
     cell: ({ row }) => {
       const createdAt = row.original.createdAt || row.original.createdDate;
+
       const formattedDate = createdAt
-        ? new Date(createdAt).toLocaleDateString("en-US", {
-            month: "numeric",
-            day: "numeric",
-            year: "numeric",
-          })
+        ? format(new Date(createdAt), "dd-MM-yyyy")
         : "-";
+
       return (
         <div className="text-muted-foreground text-sm">{formattedDate}</div>
       );
