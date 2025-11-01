@@ -9,7 +9,9 @@ export class PermissionManager {
 
   // Check if user has permission for a specific menu key
   hasMenuAccess(menuKey: string): boolean {
-    return this.findPermissionByKey(menuKey) !== null
+    // return this.findPermissionByKey(menuKey) !== null
+    const has = this.findPermissionByKey(menuKey)
+    return has?.viewOwn || has?.viewGlobal || false
   }
 
   // Check if user can perform specific action

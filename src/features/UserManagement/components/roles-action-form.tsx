@@ -369,7 +369,33 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
     if (!item.add && !item.edit && !item.deleteValue) {
       item.viewOwn = false;
     }
-
+    
+    if (item?.id) {
+      const currentMenu = organizationMenus.find((m: OrganizationMenu) => m.organizationMenuId === item?.id);
+      if (currentMenu?.parentMenuId) {
+        const parentMenu = organizationMenus.find((m: OrganizationMenu) => m.organizationMenuId === currentMenu?.parentMenuId);
+        if (parentMenu) {
+          const parentPermission = updatedMenuIds.find((m) => m.id === parentMenu?.organizationMenuId);
+          if (["add", "edit", "deleteValue", "viewOwn", "viewGlobal"].includes(permissionType) && value) {
+            if (parentPermission) {
+              parentPermission.viewOwn = true;
+              parentPermission.viewGlobal = true;
+              parentPermission.add = true;
+              parentPermission.edit = true;
+              parentPermission.deleteValue = true;
+            }
+          } else {
+            if (parentPermission) {
+              parentPermission.viewOwn = false;
+              parentPermission.viewGlobal = false;
+              parentPermission.add = false;
+              parentPermission.edit = false;
+              parentPermission.deleteValue = false;
+            }
+          }
+        }
+      }
+    }
     updatedMenuIds[permissionIndex] = item;
     setValue("menuIds", updatedMenuIds, {
       shouldDirty: true,
