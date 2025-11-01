@@ -291,12 +291,12 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
       edit: !!menu.edit,
       deleteValue: !!menu.deleteValue,
     }));
-  
+
     const payload = {
       ...values,
       menuIds: payloadMenuIds,
     };
-  
+
     if (isEdit) {
       updateRole(payload);
     } else {
@@ -326,11 +326,13 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
     const permissionIndex = updatedMenuIds.findIndex((m) => m.id === menuId);
     if (permissionIndex === -1) return;
 
+    const originalItem = updatedMenuIds[permissionIndex];
     const item = {
-      ...updatedMenuIds[permissionIndex],
+      ...originalItem,
       [permissionType]: value,
     };
 
+    // If checking 'add', 'edit', or 'delete', ensure 'viewOwn' is also checked
     if (
       (permissionType === "add" ||
         permissionType === "edit" ||
@@ -340,14 +342,65 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
       item.viewOwn = true;
     }
 
-    if (permissionType === "viewOwn" && !value) {
-      item.add = false;
-      item.edit = false;
-      item.deleteValue = false;
+    // Handle the specific logic for the 'viewOwn' checkbox
+    if (permissionType === "viewOwn") {
+      if (!value) {
+        // If unchecking 'viewOwn', uncheck all dependent permissions
+        item.add = false;
+        item.edit = false;
+        item.deleteValue = false;
+      } else {
+        // If checking 'viewOwn', and the other permissions were all off,
+        // re-select them. This acts as a "restore" feature.
+        if (
+          !originalItem.add &&
+          !originalItem.edit &&
+          !originalItem.deleteValue
+        ) {
+          item.add = true;
+          item.edit = true;
+          item.deleteValue = true;
+        }
+      }
     }
 
+    // If 'add', 'edit', AND 'delete' are all unchecked, then 'viewOwn'
+    // should also be unchecked automatically.
+    if (!item.add && !item.edit && !item.deleteValue) {
+      item.viewOwn = false;
+    }
+    
+    if (item?.id) {
+      const currentMenu = organizationMenus.find((m: OrganizationMenu) => m.organizationMenuId === item?.id);
+      if (currentMenu?.parentMenuId) {
+        const parentMenu = organizationMenus.find((m: OrganizationMenu) => m.organizationMenuId === currentMenu?.parentMenuId);
+        if (parentMenu) {
+          const parentPermission = updatedMenuIds.find((m) => m.id === parentMenu?.organizationMenuId);
+          if (["add", "edit", "deleteValue", "viewOwn", "viewGlobal"].includes(permissionType) && value) {
+            if (parentPermission) {
+              parentPermission.viewOwn = true;
+              parentPermission.viewGlobal = true;
+              parentPermission.add = true;
+              parentPermission.edit = true;
+              parentPermission.deleteValue = true;
+            }
+          } else {
+            if (parentPermission) {
+              parentPermission.viewOwn = false;
+              parentPermission.viewGlobal = false;
+              parentPermission.add = false;
+              parentPermission.edit = false;
+              parentPermission.deleteValue = false;
+            }
+          }
+        }
+      }
+    }
     updatedMenuIds[permissionIndex] = item;
-    setValue("menuIds", updatedMenuIds);
+    setValue("menuIds", updatedMenuIds, {
+      shouldDirty: true,
+      shouldTouch: true,
+    });
   };
 
   const renderPermissionCheckbox = (

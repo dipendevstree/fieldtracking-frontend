@@ -1,42 +1,41 @@
-import { ColumnDef } from '@tanstack/react-table'
-import { CustomDataTableColumnHeader } from '@/components/shared/custom-table-header-column'
-import { DataTableRowActions } from './table-action-button'
+import { ColumnDef } from "@tanstack/react-table";
+import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
+import { DataTableRowActions } from "./table-action-button";
+import { format } from "date-fns";
 
 export const columns: ColumnDef<any>[] = [
   {
-    accessorKey: 'categoryName',
+    accessorKey: "categoryName",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Category Name' />
+      <CustomDataTableColumnHeader column={column} title="Category Name" />
     ),
     enableHiding: false,
     enableSorting: false,
   },
   {
-    accessorKey: 'createdDate',
+    accessorKey: "createdDate",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Created Date' />
+      <CustomDataTableColumnHeader column={column} title="Created Date" />
     ),
     cell: ({ row }) => {
-      const createdAt = row.original.createdAt || row.original.createdDate
+      const createdAt = row.original.createdAt || row.original.createdDate;
+
       const formattedDate = createdAt
-        ? new Date(createdAt).toLocaleDateString('en-US', {
-            month: 'numeric',
-            day: 'numeric',
-            year: 'numeric',
-          })
-        : '-'
+        ? format(new Date(createdAt), "dd-MM-yyyy")
+        : "-";
+
       return (
-        <div className='text-muted-foreground text-sm'>{formattedDate}</div>
-      )
+        <div className="text-muted-foreground text-sm">{formattedDate}</div>
+      );
     },
     enableSorting: false,
   },
   {
-    id: 'actions',
+    id: "actions",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Action' />
+      <CustomDataTableColumnHeader column={column} title="Action" />
     ),
     cell: ({ row }) => <DataTableRowActions row={row} />,
     enableSorting: false,
   },
-]
+];

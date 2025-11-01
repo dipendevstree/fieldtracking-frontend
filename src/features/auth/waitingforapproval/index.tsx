@@ -1,23 +1,50 @@
-import { Clock } from 'lucide-react'
+import { Clock } from "lucide-react";
+import { useGetUserByToken } from "../Admin-sign-up/services/sign-up-services";
+import { useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { useEffect } from "react";
 
 export default function WaitingPage() {
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
+  const navigate = useNavigate();
+  const { data } = useGetUserByToken(token ?? "");
+  
+  useEffect(() => {
+    if (data?.status) {
+      if (data.status === "verified") {
+        toast.success("Your Organization Activation Request Has Been Approved.", {
+          description: "You can now log in and start using your organization account.",
+        });
+        navigate({ to: "/sign-in" });
+        return;
+      } else if (data.status === "rejected") {
+        toast.error("Your Organization Activation Request Has Been Rejected", (data?.organization?.reason ? {
+          description: "Reason: " + data?.organization?.reason
+        }: {}));
+        navigate({ to: "/sign-in" });
+        return;
+      }
+    }
+  }, [data, navigate, toast]);
+
   return (
-    <div className='flex min-h-screen items-center justify-center bg-black'>
-      <div className='animate-fade-in-down w-full max-w-md space-y-6 rounded-2xl border border-white/10 bg-white/5 p-10 text-center shadow-2xl backdrop-blur-sm'>
-        <div className='flex justify-center'>
-          <Clock className='h-12 w-12 animate-pulse text-white' />
+    <div className="flex min-h-screen items-center justify-center bg-black">
+      <div className="animate-fade-in-down w-full max-w-md space-y-6 rounded-2xl border border-white/10 bg-white/5 p-10 text-center shadow-2xl backdrop-blur-sm">
+        <div className="flex justify-center">
+          <Clock className="h-12 w-12 animate-pulse text-white" />
         </div>
-        <h2 className='text-2xl font-semibold text-white'>
+        <h2 className="text-2xl font-semibold text-white">
           Waiting for Approval
         </h2>
-        <p className='text-gray-300'>
+        <p className="text-gray-300">
           Your registration has been submitted successfully. Please wait while
           we review your information.
         </p>
-        <div className='text-sm text-gray-500'>
+        <div className="text-sm text-gray-500">
           We’ll notify you once your account is approved.
         </div>
       </div>
     </div>
-  )
+  );
 }
