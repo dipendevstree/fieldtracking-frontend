@@ -14,12 +14,14 @@ interface SimpleDatePickerProps {
   date: string;
   setDate: (date: string) => void;
   className?: string;
+  disablePast?: boolean;
 }
 
 export function SimpleDatePicker({
   date,
   setDate,
   className,
+  disablePast = false,
 }: SimpleDatePickerProps) {
   const [open, setOpen] = useState(false);
   const parsedDate = date ? new Date(date) : undefined;
@@ -48,7 +50,16 @@ export function SimpleDatePicker({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="center">
-        <Calendar mode="single" selected={parsedDate} onSelect={handleSelect} />
+        <Calendar
+          mode="single"
+          selected={parsedDate}
+          onSelect={handleSelect}
+          disabled={
+            disablePast
+              ? (date) => date < new Date(new Date().setHours(0, 0, 0, 0))
+              : undefined
+          }
+        />
       </PopoverContent>
     </Popover>
   );
