@@ -11,6 +11,7 @@ const API = {
     setPassword: "auth/changePassword",
     forgotPassword: "auth/forgot-password",
     resetPassword: "auth/reset-password",
+    getPermissions: "auth/getPermissions",
   },
   category: {
     list: "expensesCategory/list",
