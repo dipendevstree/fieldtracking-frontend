@@ -36,6 +36,7 @@ import {
 } from "../services/sign-up-services";
 import { Country, State, City } from "country-state-city";
 import { ICountry, IState, ICity } from "country-state-city";
+import { toast } from "sonner";
 
 const RegistrationForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -52,15 +53,26 @@ const RegistrationForm = () => {
   const [states, setStates] = useState<IState[]>([]);
   const [cities, setCities] = useState<ICity[]>([]);
 
-  if (data) {
-    if (data.status === "pending") {
-      navigate({ to: "/watingforapproval" });
-    } else if (data.status === "rejected") {
-      navigate({ to: "/watingforapproval" });
-    } else if (data.status === "verified") {
-      navigate({ to: "/sign-in" });
+  useEffect(() => {
+    if (data?.status) {
+      if (data.status === "pending") {
+        navigate({ to: "/watingforapproval", search: { token } });
+        return;
+      } else if (data.status === "verified") {
+        toast.success("Your Organization Activation Request Has Been Approved.", {
+          description: "You can now log in and start using your organization account.",
+        });
+        navigate({ to: "/sign-in" });
+        return;
+      } else if (data.status === "rejected") {
+        toast.error("Your Organization Activation Request Has Been Rejected", (data?.organization?.reason ? {
+          description: "Reason: " + data?.organization?.reason
+        }: {}));
+        navigate({ to: "/sign-in" });
+        return;
+      }
     }
-  }
+  }, [data, navigate, toast]);
 
   const { data: departmentList } = useGetDepartment();
   const department = useSelectOptions<any>({
@@ -202,7 +214,7 @@ const RegistrationForm = () => {
   useEffect(() => {
     if (isSuccess && !isError) {
       // Navigate to waiting for approval page
-      navigate({ to: "/watingforapproval" });
+      navigate({ to: "/watingforapproval", search: { token } });
     }
   }, [isSuccess, isError, navigate]);
 

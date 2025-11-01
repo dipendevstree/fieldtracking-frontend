@@ -13,8 +13,15 @@ import { useUserTerritoryStore } from './store/users-territory.store'
 import { FilterConfig } from '@/components/global-filter-section'
 import GlobalFilterSection from '@/components/global-table-filter-section'
 import debounce from 'lodash.debounce'
+import { useAuthStore } from '@/stores/use-auth-store'
+import NotFoundError from '../errors/not-found-error'
 
 const UserTerritory = () => {
+  const { user } = useAuthStore();
+  if (user && user?.organization && !user?.organization?.allowAddUsersBasedOnTerritories) {
+    return <NotFoundError />
+  }
+  
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
