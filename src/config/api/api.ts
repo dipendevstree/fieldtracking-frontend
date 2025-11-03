@@ -223,6 +223,13 @@ const API = {
     create: "report/create",
     createExpanseReport: "report/expenseReportCreate",
   },
+  termsAndConditions: {
+    list: "termsAndConditions/list",
+    create: "termsAndConditions/create",
+    update: "termsAndConditions/update",
+    delete: "termsAndConditions/delete",
+    getTerms: "termsAndConditions/active",
+  },
 };
 
 Object.freeze(API);
