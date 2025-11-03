@@ -378,3 +378,160 @@ export const ROUTE_PERMISSIONS: Record<
     requireAll: false,
   },
 };
+
+
+export const VIEW_ROUTE_PERMISSIONS: Record<
+  string,
+  {
+    requiredPermissions?: string;
+    requiredPermissionGroups?: string[];
+    requiredRoles?: string[];
+    action?: 'add' | 'edit' | 'viewOwn' | 'viewGlobal' | 'delete';
+    requireAll?: boolean;
+  }
+> = {
+  "/": {
+    requiredPermissions: "dashboard",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/approvals": {
+    requiredPermissions: "approvals",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/approvals/expense-category": {
+    requiredPermissions: "approvals",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/buyers": {
+    requiredPermissions: "buyers",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/calendar": {
+    requiredPermissions: "calendar",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/categories": {
+    requiredPermissions: "categories",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/customers": {
+    requiredPermissions: "customers",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/customer-type": {
+    requiredPermissions: "customer_type",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/drivers": {
+    requiredPermissions: "drivers",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/help-center": {
+    requiredPermissions: "help-center",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/inventory": {
+    requiredPermissions: "inventory",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/livetracking": {
+    requiredPermissions: "live_tracking",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/managements": {
+    requiredPermissions: "managements",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/merchants": {
+    requiredPermissions: "merchants",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/notifications": {
+    requiredPermissions: "notifications",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/organizations": {
+    requiredPermissions: "organizations",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/products": {
+    requiredPermissions: "products",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/reports": {
+    requiredPermissions: "reports",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/setting": {
+    requiredPermissions: "setting",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/settings": {
+    requiredPermissions: "settings",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/user-management": {
+    requiredPermissions: "user-management",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/user-management/roles": {
+    requiredPermissions: "roles_permission",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/users": {
+    requiredPermissions: "users",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/user-territory": {
+    requiredPermissions: "user-territory",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+};
