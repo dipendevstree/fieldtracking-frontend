@@ -38,6 +38,7 @@ import {
 import {
   useGetDepartment,
   useGetOrganizationTypes,
+  useGetTerms,
   useGetUserByToken,
   useSingUp,
 } from "../services/sign-up-services";
@@ -45,24 +46,7 @@ import { Country, State, City } from "country-state-city";
 import { ICountry, IState, ICity } from "country-state-city";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
-
-const policyContent = {
-  terms: {
-    title: "Terms of Service",
-    content:
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit. ... Detailed Terms of Service text goes here. By checking the box, you agree to these terms.",
-  },
-  privacy: {
-    title: "Privacy Policy",
-    content:
-      "Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas. ... Detailed Privacy Policy text goes here. We value your privacy.",
-  },
-  consent: {
-    title: "Data Processing Agreement",
-    content:
-      "Vestibulum tortor quam, feugiat vitae, ultricies eget, tempor sit amet, ante. ... Detailed Data Processing Agreement text goes here.",
-  },
-};
+import { formatDropDownLabel } from "@/utils/commonFunction";
 
 const RegistrationForm = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -76,10 +60,11 @@ const RegistrationForm = () => {
   const [countries, setCountries] = useState<ICountry[]>([]);
   const [states, setStates] = useState<IState[]>([]);
   const [cities, setCities] = useState<ICity[]>([]);
-
   const [activeDialog, setActiveDialog] = useState<
     keyof typeof policyContent | null
   >(null);
+
+  const { data: policyContent } = useGetTerms(activeDialog ?? "");
 
   useEffect(() => {
     if (data?.status) {
@@ -290,24 +275,24 @@ const RegistrationForm = () => {
     if (currentStep === 4 && !isSubmitted) return;
     let hasError = false;
 
-    if (!value.terms) {
-      setError("terms", {
+    if (!value.terms_of_service) {
+      setError("terms_of_service", {
         type: "manual",
         message: "You must agree to the Terms of Service",
       });
       hasError = true;
     }
 
-    if (!value.privacy) {
-      setError("privacy", {
+    if (!value.privacy_policy) {
+      setError("privacy_policy", {
         type: "manual",
         message: "You must agree to the Privacy Policy",
       });
       hasError = true;
     }
 
-    if (!value.consent) {
-      setError("consent", {
+    if (!value.data_processing_agreement) {
+      setError("data_processing_agreement", {
         type: "manual",
         message: "You must consent to data processing",
       });
@@ -1389,7 +1374,7 @@ const RegistrationForm = () => {
                   <div className="space-y-4">
                     <div className="space-y-2">
                       <Controller
-                        name="terms"
+                        name="terms_of_service"
                         control={control}
                         render={({ field }) => (
                           <label className="flex items-center space-x-2 text-sm">
@@ -1403,7 +1388,9 @@ const RegistrationForm = () => {
                               I agree to the{" "}
                               <button
                                 type="button"
-                                onClick={() => setActiveDialog("terms")}
+                                onClick={() =>
+                                  setActiveDialog("terms_of_service")
+                                }
                                 className="text-blue-600 underline"
                               >
                                 Terms of Service
@@ -1412,16 +1399,17 @@ const RegistrationForm = () => {
                           </label>
                         )}
                       />
-                      {getFieldError("terms") && formState.isSubmitted && (
-                        <p className="text-sm text-red-500">
-                          {getFieldError("terms")}
-                        </p>
-                      )}
+                      {getFieldError("terms_of_service") &&
+                        formState.isSubmitted && (
+                          <p className="text-sm text-red-500">
+                            {getFieldError("terms_of_service")}
+                          </p>
+                        )}
                     </div>
 
                     <div className="space-y-2">
                       <Controller
-                        name="privacy"
+                        name="privacy_policy"
                         control={control}
                         render={({ field }) => (
                           <label className="flex items-center space-x-2 text-sm">
@@ -1435,7 +1423,9 @@ const RegistrationForm = () => {
                               I agree to the{" "}
                               <button
                                 type="button"
-                                onClick={() => setActiveDialog("privacy")}
+                                onClick={() =>
+                                  setActiveDialog("privacy_policy")
+                                }
                                 className="text-blue-600 underline"
                               >
                                 Privacy Policy
@@ -1444,16 +1434,17 @@ const RegistrationForm = () => {
                           </label>
                         )}
                       />
-                      {getFieldError("privacy") && formState.isSubmitted && (
-                        <p className="text-sm text-red-500">
-                          {getFieldError("privacy")}
-                        </p>
-                      )}
+                      {getFieldError("privacy_policy") &&
+                        formState.isSubmitted && (
+                          <p className="text-sm text-red-500">
+                            {getFieldError("privacy_policy")}
+                          </p>
+                        )}
                     </div>
 
                     <div className="space-y-2">
                       <Controller
-                        name="consent"
+                        name="data_processing_agreement"
                         control={control}
                         render={({ field }) => (
                           <label className="flex items-center space-x-2 text-sm">
@@ -1467,7 +1458,9 @@ const RegistrationForm = () => {
                               I consent to data processing as described in our{" "}
                               <button
                                 type="button"
-                                onClick={() => setActiveDialog("consent")}
+                                onClick={() =>
+                                  setActiveDialog("data_processing_agreement")
+                                }
                                 className="text-blue-600 underline"
                               >
                                 Data Processing Agreement
@@ -1476,11 +1469,12 @@ const RegistrationForm = () => {
                           </label>
                         )}
                       />
-                      {getFieldError("consent") && formState.isSubmitted && (
-                        <p className="text-sm text-red-500">
-                          {getFieldError("consent")}
-                        </p>
-                      )}
+                      {getFieldError("data_processing_agreement") &&
+                        formState.isSubmitted && (
+                          <p className="text-sm text-red-500">
+                            {getFieldError("data_processing_agreement")}
+                          </p>
+                        )}
                     </div>
                   </div>
                 </div>
@@ -1520,12 +1514,12 @@ const RegistrationForm = () => {
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>
-              {activeDialog ? policyContent[activeDialog].title : ""}
+              {formatDropDownLabel(policyContent?.type ?? "")}{" "}
             </DialogTitle>
           </DialogHeader>
           <ScrollArea className="max-h-[60vh] pr-6">
             <DialogDescription className="text-sm text-gray-600">
-              {activeDialog ? policyContent[activeDialog].content : ""}
+              {policyContent?.content}
             </DialogDescription>
           </ScrollArea>
         </DialogContent>
