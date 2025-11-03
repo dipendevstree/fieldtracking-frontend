@@ -349,24 +349,15 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
         item.add = false;
         item.edit = false;
         item.deleteValue = false;
-      } else {
-        // If checking 'viewOwn', and the other permissions were all off,
-        // re-select them. This acts as a "restore" feature.
-        if (
-          !originalItem.add &&
-          !originalItem.edit &&
-          !originalItem.deleteValue
-        ) {
-          item.add = true;
-          item.edit = true;
-          item.deleteValue = true;
-        }
       }
     }
-
-    // If 'add', 'edit', AND 'delete' are all unchecked, then 'viewOwn'
-    // should also be unchecked automatically.
-    if (!item.add && !item.edit && !item.deleteValue) {
+    if (
+      permissionType !== "viewOwn" &&
+      permissionType !== "viewGlobal" &&
+      !item.add &&
+      !item.edit &&
+      !item.deleteValue
+    ) {
       item.viewOwn = false;
     }
     

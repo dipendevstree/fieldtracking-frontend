@@ -63,6 +63,7 @@ import {
   ScheduleVisitFormProps,
   Visit,
 } from "../type/type";
+import { format, isToday } from "date-fns";
 
 function DeleteVisitDialog({ visit, isOpen, onClose }: DeleteVisitDialogProps) {
   if (!visit) return null;
@@ -530,6 +531,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                             date={field.value || ""}
                             setDate={(date: string) => field.onChange(date)}
                             className={"w-full"}
+                            disablePast
                           />
                         )}
                       />
@@ -753,13 +755,21 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                             <Controller
                               name={`visits.${index}.time`}
                               control={control}
-                              render={({ field }) => (
-                                <Input
-                                  type="time"
-                                  id={`visits.${index}.time`}
-                                  {...field}
-                                />
-                              )}
+                              render={({ field }) => {
+                                const today = new Date();
+                                const selected = new Date(selectedDate);
+                                const todaySelected = isToday(selected);
+                                const currentTime = format(today, "HH:mm");
+                                return (
+                                  <Input
+                                    type="time"
+                                    id={`visits.${index}.time`}
+                                    step="60"
+                                    min={todaySelected ? currentTime : "00:00"}
+                                    {...field}
+                                  />
+                                );
+                              }}
                             />
                             {errors.visits?.[index]?.time && (
                               <p className="text-xs flex items-center gap-1 text-red-500">
@@ -768,6 +778,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                               </p>
                             )}
                           </div>
+
                           <div className="space-y-2">
                             <Label htmlFor={`visits.${index}.duration`}>
                               Duration (hours){" "}

@@ -245,7 +245,7 @@ const TreeSelect: React.FC<TreeSelectProps> = ({
         <button
           type='button'
           onClick={() => setIsOpen(!isOpen)}
-          className='w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-left shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none'
+          className='w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-left shadow-sm focus:border-gray-300 focus:ring-1 focus:ring-gray-300 focus:outline-none'
         >
           <span className='block truncate text-sm'>{getDisplayText()}</span>
           <span className='absolute inset-y-0 right-0 flex items-center pr-2'>

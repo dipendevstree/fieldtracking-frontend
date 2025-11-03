@@ -12,7 +12,6 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { useState, useEffect, useRef } from "react";
-// import { useGetGeneralSettings, useGetCompanyInfo } from '../services/Generalhook'
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/stores/use-auth-store";
 import {
@@ -26,6 +25,8 @@ import "react-phone-number-input/style.css";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import parsePhoneNumberFromString from "libphonenumber-js";
 import FixedDayExpenses from "./FixedDayExpenses";
+import { Country, State, City } from "country-state-city";
+import type { ICountry, IState, ICity } from "country-state-city";
 
 interface GeneralApplicationSettingsProps {
   onDataChange?: (data: any) => void;
@@ -74,19 +75,18 @@ export default function GeneralApplicationSettings({
   const orgIconInputRef = useRef<HTMLInputElement>(null);
   const profileImageInputRef = useRef<HTMLInputElement>(null);
   const [isFixedExpenseDirty, setIsFixedExpenseDirty] = useState(false);
+
+  // State for country, state, and city dropdowns
+  const [countries, setCountries] = useState<ICountry[]>([]);
+  const [states, setStates] = useState<IState[]>([]);
+  const [cities, setCities] = useState<ICity[]>([]);
+
   // Fetch organization types from API
   const {
     data: orgTypeList,
     isLoading: orgTypeLoading,
     error: orgTypeError,
   } = useGetOrganizationTypes();
-
-  // Debug log for organization types
-  useEffect(() => {
-    if (orgTypeList) {
-      console.log("Organization types from API:", orgTypeList);
-    }
-  }, [orgTypeList]);
 
   const { data: departmentList } = useGetDepartment();
   const department = useSelectOptions<any>({
@@ -100,10 +100,8 @@ export default function GeneralApplicationSettings({
 
   // Update form data with organization data from user login
   useEffect(() => {
-    console.log("User data changed in GeneralSetting:", user); // Debug log
     if (user?.organization) {
       const org = user.organization;
-      console.log("Organization data:", org); // Debug log
       const newFormData = {
         organizationName: org.organizationName || "",
         organizationType: org.organizationTypeId || "",
@@ -132,10 +130,10 @@ export default function GeneralApplicationSettings({
       setFileName((prev) => ({
         ...prev,
         userProfile: user?.profileUrl
-          ? ((user?.profileUrl).split("/")?.pop() as string)
+          ? (user?.profileUrl.split("/")?.pop() as string)
           : "",
         orgIconFileName: user?.organization.organizationIcon
-          ? ((user?.organization.organizationIcon).split("/")?.pop() as string)
+          ? (user?.organization.organizationIcon.split("/")?.pop() as string)
           : "",
       }));
       setFilePreview((prev) => ({
@@ -143,7 +141,6 @@ export default function GeneralApplicationSettings({
         orgIconFileName: user?.organization.organizationIcon || "",
         userProfile: user?.profileUrl || "",
       }));
-      console.log("Form data being set:", newFormData);
       setFormData(newFormData);
       setAutoExpenseApproval(org.isAutoExpense || false);
       setFixedDayExpense(org.isFixedDayExpense || false);
@@ -151,7 +148,37 @@ export default function GeneralApplicationSettings({
         org.allowAddUsersBasedOnTerritories || false
       );
     }
-  }, [user]); // Removed refreshTrigger dependency
+  }, [user]);
+
+  // Effect to load all countries on component mount
+  useEffect(() => {
+    setCountries(Country.getAllCountries());
+  }, []);
+
+  // Effect to update states when country changes
+  useEffect(() => {
+    if (formData.country) {
+      const countryData = Country.getCountryByCode(formData.country);
+      setStates(State.getStatesOfCountry(countryData?.isoCode ?? ""));
+    } else {
+      setStates([]);
+    }
+  }, [formData.country]);
+
+  // Effect to update cities when state changes
+  useEffect(() => {
+    if (formData.country && formData.state) {
+      const stateData = State.getStateByCodeAndCountry(
+        formData.state,
+        formData.country
+      );
+      setCities(
+        City.getCitiesOfState(formData.country, stateData?.isoCode ?? "")
+      );
+    } else {
+      setCities([]);
+    }
+  }, [formData.country, formData.state]);
 
   // Notify parent component of data changes
   useEffect(() => {
@@ -195,6 +222,23 @@ export default function GeneralApplicationSettings({
     setFormData((prev) => ({
       ...prev,
       [field]: value,
+    }));
+  };
+
+  const handleCountryChange = (countryCode: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      country: countryCode,
+      state: "", // Reset state
+      city: "", // Reset city
+    }));
+  };
+
+  const handleStateChange = (stateCode: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      state: stateCode,
+      city: "", // Reset city
     }));
   };
 
@@ -535,18 +579,29 @@ export default function GeneralApplicationSettings({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <Label
-                    htmlFor="city"
+                    htmlFor="country"
                     className="text-sm font-medium text-gray-700"
                   >
-                    City <span className="text-red-500">*</span>
+                    Country <span className="text-red-500">*</span>
                   </Label>
-                  <Input
-                    id="city"
-                    value={formData.city}
-                    onChange={(e) => handleInputChange("city", e.target.value)}
-                    placeholder="Enter city name"
-                    className="h-10"
-                  />
+                  <Select
+                    value={formData.country}
+                    onValueChange={handleCountryChange}
+                  >
+                    <SelectTrigger className="h-10 w-full">
+                      <SelectValue placeholder="Select country" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {countries.map((country) => (
+                        <SelectItem
+                          key={country.isoCode}
+                          value={country.isoCode}
+                        >
+                          {country.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
@@ -556,17 +611,51 @@ export default function GeneralApplicationSettings({
                   >
                     State/Province <span className="text-red-500">*</span>
                   </Label>
-                  <Input
-                    id="state"
+                  <Select
                     value={formData.state}
-                    onChange={(e) => handleInputChange("state", e.target.value)}
-                    placeholder="Enter state or province"
-                    className="h-10"
-                  />
+                    onValueChange={handleStateChange}
+                    disabled={!formData.country || states.length === 0}
+                  >
+                    <SelectTrigger className="h-10 w-full">
+                      <SelectValue placeholder="Select state/province" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {states.map((state) => (
+                        <SelectItem key={state.isoCode} value={state.isoCode}>
+                          {state.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="city"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    City <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    value={formData.city}
+                    onValueChange={(value) => handleInputChange("city", value)}
+                    disabled={!formData.state || cities.length === 0}
+                  >
+                    <SelectTrigger className="h-10 w-full">
+                      <SelectValue placeholder="Select city" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cities.map((city) => (
+                        <SelectItem key={city.name} value={city.name}>
+                          {city.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="space-y-2">
                   <Label
                     htmlFor="zip-code"
@@ -581,24 +670,6 @@ export default function GeneralApplicationSettings({
                       handleInputChange("zipCode", e.target.value)
                     }
                     placeholder="Enter ZIP or postal code"
-                    className="h-10"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="country"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Country <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="country"
-                    value={formData.country}
-                    onChange={(e) =>
-                      handleInputChange("country", e.target.value)
-                    }
-                    placeholder="Enter country name"
                     className="h-10"
                   />
                 </div>
