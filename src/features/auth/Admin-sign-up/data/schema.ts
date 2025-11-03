@@ -80,9 +80,9 @@ export const step3Schema = z.object({
 });
 
 export const step4Schema = z.object({
-  terms: z.boolean().optional(),
-  privacy: z.boolean().optional(),
-  consent: z.boolean().optional(),
+  terms_of_service: z.boolean().optional(),
+  privacy_policy: z.boolean().optional(),
+  data_processing_agreement: z.boolean().optional(),
 });
 
 // Combined form schema with all validations

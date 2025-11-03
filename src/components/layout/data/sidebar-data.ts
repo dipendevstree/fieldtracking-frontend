@@ -9,6 +9,7 @@ import {
   Calendar1Icon,
   ShieldCheck,
   ChartPie,
+  FileText,
 } from "lucide-react";
 import { type SidebarData } from "../types";
 
@@ -206,6 +207,12 @@ export const SUPER_ADMIN_SIDEBAR_DATA: SidebarData = {
               menuKey: "organizations",
             },
           ],
+        },
+        {
+          title: "Terms & Conditions",
+          url: "/termsAndConditions",
+          icon: FileText,
+          menuKey: "termsAndConditions",
         },
       ],
     },
