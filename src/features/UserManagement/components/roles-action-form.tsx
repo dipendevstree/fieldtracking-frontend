@@ -351,14 +351,12 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
         item.deleteValue = false;
       }
     }
-
-    // If 'add', 'edit', AND 'delete' are all unchecked, then 'viewOwn'
-    // should also be unchecked automatically (only if user is unchecking viewOwn)
     if (
+      permissionType !== "viewOwn" &&
+      permissionType !== "viewGlobal" &&
       !item.add &&
       !item.edit &&
-      !item.deleteValue &&
-      permissionType !== "viewOwn"
+      !item.deleteValue
     ) {
       item.viewOwn = false;
     }
