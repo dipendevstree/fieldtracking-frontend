@@ -60,7 +60,6 @@ export const Header = ({
     };
 
     const handleLiveRolesAndSettingChange = (data: Record<string, any>) => {
-      if (data.userId === user?.id) return;
       mutate();
     };
 
