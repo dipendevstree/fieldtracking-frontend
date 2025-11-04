@@ -55,6 +55,9 @@ export const useGetTerms = (type: any) => {
   const query = useFetchData<any>({
     url: `${API.termsAndConditions.getTerms}/${type}`,
     enabled: !!type,
+    queryOptions: {
+      placeholderData: undefined,
+    },
   });
 
   return {
