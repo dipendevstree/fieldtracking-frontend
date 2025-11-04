@@ -44,20 +44,20 @@ export const sidebarData: SidebarData = {
           menuKey: "live_tracking",
         },
         {
-          title: "Customers",
+          title: "Customer Management",
           icon: Building2,
-          menuKey: "customers",
+          menuKey: "customer_management",
           items: [
             {
-              title: "Customer Directory",
+              title: "All Customers",
               url: "/customers",
-              menuKey: "customer_directory",
+              menuKey: "all_customers",
             },
-            {
-              title: "Add Customer",
-              url: "/customers/add-customer",
-              menuKey: "add_customer",
-            },
+            // {
+            //   title: "Add Customer",
+            //   url: "/customers/add-customer",
+            //   menuKey: "add_customer",
+            // },
             {
               title: "Customer Type",
               url: "/customer-type",
@@ -141,13 +141,7 @@ export const sidebarData: SidebarData = {
           title: "Reports",
           icon: ChartPie,
           menuKey: "reports",
-          items: [
-            {
-              title: "All Reports",
-              url: "/reports",
-              menuKey: "all_reports",
-            },
-          ],
+          url: "/reports",
         },
       ],
     },
@@ -386,14 +380,13 @@ export const ROUTE_PERMISSIONS: Record<
   },
 };
 
-
 export const VIEW_ROUTE_PERMISSIONS: Record<
   string,
   {
     requiredPermissions?: string;
     requiredPermissionGroups?: string[];
     requiredRoles?: string[];
-    action?: 'add' | 'edit' | 'viewOwn' | 'viewGlobal' | 'delete';
+    action?: "add" | "edit" | "viewOwn" | "viewGlobal" | "delete";
     requireAll?: boolean;
   }
 > = {
