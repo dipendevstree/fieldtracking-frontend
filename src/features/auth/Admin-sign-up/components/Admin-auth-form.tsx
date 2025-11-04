@@ -63,8 +63,23 @@ const RegistrationForm = () => {
   const [activeDialog, setActiveDialog] = useState<
     keyof typeof policyContent | null
   >(null);
+  const [showContent, setShowContent] = useState(false);
 
-  const { data: policyContent } = useGetTerms(activeDialog ?? "");
+  const { data: policyContent, isPending: isTermPending } = useGetTerms(
+    activeDialog ?? ""
+  );
+
+  useEffect(() => {
+    if (activeDialog) {
+      setShowContent(false);
+    }
+  }, [activeDialog]);
+
+  useEffect(() => {
+    if (!isTermPending && policyContent) {
+      setShowContent(true);
+    }
+  }, [isTermPending, policyContent]);
 
   useEffect(() => {
     if (data?.status) {
@@ -1514,14 +1529,21 @@ const RegistrationForm = () => {
         <DialogContent className="sm:max-w-xl">
           <DialogHeader>
             <DialogTitle>
-              {formatDropDownLabel(policyContent?.type ?? "")}{" "}
+              {formatDropDownLabel(String(activeDialog || ""))}
             </DialogTitle>
           </DialogHeader>
-          <ScrollArea className="max-h-[60vh] pr-6">
-            <DialogDescription className="text-sm text-gray-600">
-              {policyContent?.content}
-            </DialogDescription>
-          </ScrollArea>
+
+          {!showContent ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            </div>
+          ) : (
+            <ScrollArea className="max-h-[60vh] pr-6">
+              <DialogDescription className="text-sm text-gray-600 whitespace-pre-line">
+                {policyContent?.content}
+              </DialogDescription>
+            </ScrollArea>
+          )}
         </DialogContent>
       </Dialog>
     </>

@@ -59,7 +59,7 @@ export const Header = ({
       server.emit("track_settings", { organizationId: user?.organizationID });
     };
 
-    const handleLiveRolesAndSettingChange = (data: Record<string, any>) => {
+    const handleLiveRolesAndSettingChange = () => {
       mutate();
     };
 
