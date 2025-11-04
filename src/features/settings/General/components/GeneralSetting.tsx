@@ -27,6 +27,7 @@ import parsePhoneNumberFromString from "libphonenumber-js";
 import FixedDayExpenses from "./FixedDayExpenses";
 import { Country, State, City } from "country-state-city";
 import type { ICountry, IState, ICity } from "country-state-city";
+import { CircleX } from "lucide-react";
 
 interface GeneralApplicationSettingsProps {
   onDataChange?: (data: any) => void;
@@ -68,6 +69,9 @@ export default function GeneralApplicationSettings({
     userPhoneNumber: "",
     userPhoneCode: "",
     userDepartment: "",
+    // Flags to tell backend to remove existing files
+    removeOrgIcon: false,
+    removeProfileImage: false,
   });
   const [fileError, setFileError] = useState<Record<string, string>>({});
   const [fileName, setFileName] = useState<Record<string, string>>({});
@@ -126,6 +130,8 @@ export default function GeneralApplicationSettings({
         userPhoneNumber: user?.phoneNumber || "",
         userPhoneCode: user?.countryCode || "",
         userDepartment: user?.departmentId || "",
+        removeOrgIcon: false,
+        removeProfileImage: false,
       };
       setFileName((prev) => ({
         ...prev,
@@ -218,11 +224,34 @@ export default function GeneralApplicationSettings({
     setFixedDayExpense(false);
   };
 
-  const handleInputChange = (field: string, value: File | string) => {
+  const handleInputChange = (field: string, value: File | string | null) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
+  };
+
+  // Common remove file helper for org icon and profile image
+  const removeFile = (
+    field: "orgIcon" | "profileImage",
+    previewKey: string,
+    fileNameKey: string,
+  inputRef: React.RefObject<HTMLInputElement | null> | null,
+    removeFlagKey: "removeOrgIcon" | "removeProfileImage"
+  ) => {
+    const preview = (filePreview as any)[previewKey] as string | undefined;
+    try {
+      if (preview && preview.startsWith("blob:")) URL.revokeObjectURL(preview);
+    } catch (e) {
+      // ignore
+    }
+    // clear preview and filename
+    setFilePreview((prev) => ({ ...prev, [previewKey]: "" }));
+    setFileName((prev) => ({ ...prev, [fileNameKey]: "" }));
+    // notify form that file is removed
+    handleInputChange(field, null);
+    setFormData((prev) => ({ ...prev, [removeFlagKey]: true }));
+    if (inputRef && inputRef.current) (inputRef.current as HTMLInputElement).value = "";
   };
 
   const handleCountryChange = (countryCode: string) => {
@@ -508,6 +537,8 @@ export default function GeneralApplicationSettings({
                             orgIconFileName: URL.createObjectURL(file),
                           }));
                           handleInputChange("orgIcon", file);
+                          // user selected a new file -> not removing
+                          setFormData((prev) => ({ ...prev, removeOrgIcon: false }));
                         }
                       } else {
                         setFileName((prev) => ({
@@ -534,11 +565,30 @@ export default function GeneralApplicationSettings({
                 </div>
                 <div className="space-y-2 flex flex-col justify-center items-center">
                   {filePreview?.orgIconFileName ? (
-                    <img
-                      src={filePreview?.orgIconFileName}
-                      alt={fileName?.orgIconFileName}
-                      className="size-25 border rounded-xl"
-                    />
+                    <div className="flex items-center space-y-2">
+                      <img
+                        src={filePreview?.orgIconFileName}
+                        alt={fileName?.orgIconFileName}
+                        className="size-25 border rounded-xl"
+                      />
+                      <div className="relative bottom-12 right-4">
+                        <button
+                          type="button"
+                          className="text-sm text-red-600"
+                          onClick={() =>
+                            removeFile(
+                              "orgIcon",
+                              "orgIconFileName",
+                              "orgIconFileName",
+                              orgIconInputRef,
+                              "removeOrgIcon"
+                            )
+                          }
+                        >
+                          <CircleX size={30} />
+                        </button>
+                      </div>
+                    </div>
                   ) : (
                     "No Preview Availble"
                   )}
@@ -876,6 +926,8 @@ export default function GeneralApplicationSettings({
                               userProfile: file.name,
                             }));
                             handleInputChange("profileImage", file);
+                            // user selected a new profile image -> clear remove flag
+                            setFormData((prev) => ({ ...prev, removeProfileImage: false }));
                           }
                         } else {
                           setFileName((prev) => ({
@@ -904,11 +956,30 @@ export default function GeneralApplicationSettings({
                   </div>
                   <div className="space-y-2 flex flex-col justify-center items-center">
                     {filePreview?.userProfile ? (
-                      <img
-                        src={filePreview?.userProfile}
-                        alt={fileName.userProfile}
-                        className="size-25 border rounded-xl"
-                      />
+                      <div className="flex items-center space-y-2">
+                        <img
+                          src={filePreview?.userProfile}
+                          alt={fileName.userProfile}
+                          className="size-25 border rounded-xl"
+                        />
+                        <div className="relative bottom-12 right-4">
+                          <button
+                            type="button"
+                            className="text-sm text-red-600"
+                            onClick={() =>
+                              removeFile(
+                                "profileImage",
+                                "userProfile",
+                                "userProfile",
+                                profileImageInputRef,
+                                "removeProfileImage"
+                              )
+                            }
+                          >
+                            <CircleX size={30} />
+                          </button>
+                        </div>
+                      </div>
                     ) : (
                       "No Preview Availble"
                     )}

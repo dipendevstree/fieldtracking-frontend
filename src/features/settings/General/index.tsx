@@ -8,6 +8,7 @@ import { GeneralSettingsActionModal } from "./components/action-form-modal";
 import { useUpdateGeneralSettings } from "./services/Generalhook";
 import { useAuth } from "@/stores/use-auth-store";
 import { Card } from "@/components/ui/card";
+import { usePermissionData } from "@/hooks/use-permission-data";
 
 const GeneralSettingsPage = () => {
   const { user, updateUser } = useAuth();
@@ -17,7 +18,22 @@ const GeneralSettingsPage = () => {
   });
   const [submitFixedExpenseForm, setSubmitFixedExpenseForm] = useState<Function | null>();
   const [currentSettingsData, setCurrentSettingsData] = useState<any>(null);
-
+  const { mutate } = usePermissionData({
+    onSuccess(data) {
+      updateUser({
+        ...user,
+        ...data,
+        role: {
+          ...user?.role,
+          ...data?.role,
+        },
+        organization: {
+          ...user?.organization,
+          ...data.organization,
+        },
+      });
+    },
+  });
   // API hooks for updating data
   const organizationId = user?.organization?.organizationID;
   const { mutate: updateGeneralSettings, isPending: isGeneralSettingsLoading } =
@@ -133,55 +149,17 @@ const GeneralSettingsPage = () => {
         "userDepartment",
         currentSettingsData.userDepartment || null
       );
+      formData.append("removeOrgIcon", currentSettingsData.removeOrgIcon ? "true" : "");
+      formData.append("removeProfileImage", currentSettingsData.removeProfileImage ? "true" : "");
       // console.log('Organization update payload:', organizationUpdatePayload)
 
       // Update organization data
       await new Promise((resolve, reject) => {
         updateGeneralSettings(formData, {
-          onSuccess: (updatedData: any) => {
-            // Update the user data in the auth store with the new organization data
-            if (user && user.organization) {
-              const updatedOrganization = {
-                ...user.organization,
-                organizationName: currentSettingsData.organizationName,
-                organizationTypeId: currentSettingsData.organizationType,
-                industryId: currentSettingsData.industryId || "",
-                website: currentSettingsData.website,
-                description: currentSettingsData.description,
-                address: currentSettingsData.streetAddress,
-                country: currentSettingsData.country,
-                city: currentSettingsData.city,
-                zipCode: currentSettingsData.zipCode,
-                state: currentSettingsData.state,
-                isAutoExpense: currentSettingsData.autoExpenseApproval,
-                rsPerKm: currentSettingsData.autoExpenseApproval
-                  ? parseFloat(currentSettingsData.ratePerKm) || 0
-                  : 0,
-                allowAddUsersBasedOnTerritories:
-                  currentSettingsData.allowAddUsersBasedOnTerritories,
-                currency: currentSettingsData.currency || "",
-                organizationIcon: updatedData.organizationIcon || null,
-                isFixedDayExpense:updatedData.isFixedDayExpense || false
-              };
-
-              console.log(
-                "Updating organization in auth store:",
-                updatedOrganization
-              );
-              updateUser({
-                ...user,
-                firstName: currentSettingsData.userFirstName || "",
-                lastName: currentSettingsData.userLastName || "",
-                email: currentSettingsData.userEmail || "",
-                phoneNumber: currentSettingsData.userPhoneNumber || "",
-                countryCode: currentSettingsData.userPhoneCode || "",
-                departmentId: currentSettingsData.userDepartment || "",
-                profileUrl: updatedData?.user?.profileUrl || "",
-                organization: updatedOrganization,
-              });
-              console.log("Organization updated in auth store successfully");
-            }
+          onSuccess: () => {
+            mutate();
             resolve(true);
+            return;
           },
           onError: reject,
         });

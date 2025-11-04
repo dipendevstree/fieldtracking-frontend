@@ -25,6 +25,7 @@ export const Header = ({
     onSuccess(data) {
       updateUser({
         ...user,
+        ...data,
         role: {
           ...user?.role,
           ...data?.role,

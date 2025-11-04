@@ -255,14 +255,14 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
     const currentMenuIds = getValues("menuIds");
 
     const updatedMenuIds = currentMenuIds?.map((menuItem) => {
-      const menuDefinition = processMenuItems.find(
-        (m) => m.organizationMenuId === menuItem.id
-      );
+      // const menuDefinition = processMenuItems.find(
+      //   (m) => m.organizationMenuId === menuItem.id
+      // );
 
       // If it's a non-actionable parent row (a header), return it unchanged.
-      if (menuDefinition?.isParent && menuDefinition?.hasChildren) {
-        return menuItem;
-      }
+      // if (menuDefinition?.isParent && menuDefinition?.hasChildren) {
+      //   return menuItem;
+      // }
 
       // Otherwise, update all its permissions to the new state.
       return {
@@ -362,26 +362,58 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
     }
     
     if (item?.id) {
-      const currentMenu = organizationMenus.find((m: OrganizationMenu) => m.organizationMenuId === item?.id);
+      const currentMenu = organizationMenus.find(
+        (m: OrganizationMenu) => m.organizationMenuId === item?.id
+      );
+
       if (currentMenu?.parentMenuId) {
-        const parentMenu = organizationMenus.find((m: OrganizationMenu) => m.organizationMenuId === currentMenu?.parentMenuId);
+        const parentMenu = organizationMenus.find(
+          (m: OrganizationMenu) =>
+            m.organizationMenuId === currentMenu?.parentMenuId
+        );
+
         if (parentMenu) {
-          const parentPermission = updatedMenuIds.find((m) => m.id === parentMenu?.organizationMenuId);
-          if (["add", "edit", "deleteValue", "viewOwn", "viewGlobal"].includes(permissionType) && value) {
-            if (parentPermission) {
-              parentPermission.viewOwn = true;
-              parentPermission.viewGlobal = true;
-              parentPermission.add = true;
-              parentPermission.edit = true;
-              parentPermission.deleteValue = true;
-            }
-          } else {
-            if (parentPermission) {
+          const parentPermission = updatedMenuIds.find(
+            (m) => m.id === parentMenu?.organizationMenuId
+          );
+
+          // find all children of this parent
+          const childPermissionIds = organizationMenus
+            .filter(
+              (m: OrganizationMenu) =>
+                m.parentMenuId === parentMenu?.organizationMenuId
+            )
+            .map((m: OrganizationMenu) => m.organizationMenuId);
+
+          const childMenus = updatedMenuIds.filter((m) =>
+            childPermissionIds.includes(m.id)
+          );
+
+          // true if ALL child permissions are false
+          const allChildFalse = childMenus.every(
+            (m) =>
+              !m.add &&
+              !m.deleteValue &&
+              !m.edit &&
+              !m.viewGlobal &&
+              !m.viewOwn
+          );
+
+          if (parentPermission) {
+            if (allChildFalse) {
+              // all child's permissions are false → set parent to false
               parentPermission.viewOwn = false;
               parentPermission.viewGlobal = false;
               parentPermission.add = false;
               parentPermission.edit = false;
               parentPermission.deleteValue = false;
+            } else {
+              // at least one child has a permission → set parent to true
+              parentPermission.viewOwn = true;
+              parentPermission.viewGlobal = true;
+              parentPermission.add = true;
+              parentPermission.edit = true;
+              parentPermission.deleteValue = true;
             }
           }
         }
