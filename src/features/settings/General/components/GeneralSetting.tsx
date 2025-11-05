@@ -158,7 +158,12 @@ export default function GeneralApplicationSettings({
 
   // Effect to load all countries on component mount
   useEffect(() => {
-    setCountries(Country.getAllCountries());
+    const india = Country.getAllCountries().find(
+      (country) => country.name.toLowerCase() === "india"
+    );
+    if (india) {
+      setCountries([india]);
+    }
   }, []);
 
   // Effect to update states when country changes
@@ -236,7 +241,7 @@ export default function GeneralApplicationSettings({
     field: "orgIcon" | "profileImage",
     previewKey: string,
     fileNameKey: string,
-  inputRef: React.RefObject<HTMLInputElement | null> | null,
+    inputRef: React.RefObject<HTMLInputElement | null> | null,
     removeFlagKey: "removeOrgIcon" | "removeProfileImage"
   ) => {
     const preview = (filePreview as any)[previewKey] as string | undefined;
@@ -251,7 +256,8 @@ export default function GeneralApplicationSettings({
     // notify form that file is removed
     handleInputChange(field, null);
     setFormData((prev) => ({ ...prev, [removeFlagKey]: true }));
-    if (inputRef && inputRef.current) (inputRef.current as HTMLInputElement).value = "";
+    if (inputRef && inputRef.current)
+      (inputRef.current as HTMLInputElement).value = "";
   };
 
   const handleCountryChange = (countryCode: string) => {
@@ -538,7 +544,10 @@ export default function GeneralApplicationSettings({
                           }));
                           handleInputChange("orgIcon", file);
                           // user selected a new file -> not removing
-                          setFormData((prev) => ({ ...prev, removeOrgIcon: false }));
+                          setFormData((prev) => ({
+                            ...prev,
+                            removeOrgIcon: false,
+                          }));
                         }
                       } else {
                         setFileName((prev) => ({
@@ -927,7 +936,10 @@ export default function GeneralApplicationSettings({
                             }));
                             handleInputChange("profileImage", file);
                             // user selected a new profile image -> clear remove flag
-                            setFormData((prev) => ({ ...prev, removeProfileImage: false }));
+                            setFormData((prev) => ({
+                              ...prev,
+                              removeProfileImage: false,
+                            }));
                           }
                         } else {
                           setFileName((prev) => ({
