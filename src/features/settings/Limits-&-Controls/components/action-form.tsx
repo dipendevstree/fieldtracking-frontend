@@ -1,8 +1,7 @@
+import { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { DialogClose, DialogDescription } from "@radix-ui/react-dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle } from "lucide-react";
-import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,6 +9,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogClose,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -29,8 +30,9 @@ import {
 } from "../data/schema";
 import { TIER } from "@/data/app.data";
 import { ExpenseCategory } from "../../Expense-categories/type/type";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
-// Expense Limit Action Form
+// Props
 interface Props {
   currentLimit?: Partial<TExpenseLimitFormSchema>;
   open: boolean;
@@ -50,7 +52,9 @@ export function ExpenseLimitActionForm({
 }: Props) {
   const isEdit = !!currentLimit;
 
-  // Define tier options using the TIER enum from app.data.ts
+  const [limitType, setLimitType] = useState<"daily" | "monthly">("daily");
+
+  // Tier options
   const tiers = Object.values(TIER).map((tierValue) => ({
     label: tierValue.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase()),
     value: tierValue,
@@ -65,20 +69,18 @@ export function ExpenseLimitActionForm({
       monthlyLimit: 0,
       isActive: true,
     },
-    mode: "onChange", // Enable real-time validation
+    mode: "onChange",
   });
-
-  // Debug form state
-  const watchedValues = form.watch();
-  console.log("Form watched values:", watchedValues);
 
   const {
     control,
     handleSubmit,
     reset,
+    getValues,
     formState: { errors },
   } = form;
 
+  // Handle submission
   const onSubmit = (values: TExpenseLimitFormSchema) => {
     try {
       onSubmitValues(values);
@@ -89,40 +91,28 @@ export function ExpenseLimitActionForm({
         monthlyLimit: 0,
         isActive: true,
       });
+      setLimitType("daily"); // reset radio
     } catch (error) {
       console.error("Error during form submission:", error);
     }
   };
 
-  // Reset form values when currentLimit changes (for edit mode)
+  // Reset form when editing or closing
   useEffect(() => {
-    console.log("Form reset triggered:", { currentLimit, isEdit });
     if (currentLimit && isEdit) {
-      const resetValues = {
+      reset({
         tierKey: currentLimit.tierKey || "",
         expenseCategoryId: currentLimit.expenseCategoryId || "",
         dailyLimit: currentLimit.dailyLimit || 0,
         monthlyLimit: currentLimit.monthlyLimit || 0,
         isActive: currentLimit.isActive ?? true,
-      };
-      console.log("Resetting form with values:", resetValues);
-      reset(resetValues);
-    } else if (!currentLimit) {
-      const defaultValues = {
-        tierKey: "",
-        expenseCategoryId: "",
-        dailyLimit: 0,
-        monthlyLimit: 0,
-        isActive: true,
-      };
-      console.log("Resetting form to default values:", defaultValues);
-      reset(defaultValues);
-    }
-  }, [currentLimit, isEdit, reset]);
-
-  const handleDialogChange = (state: boolean) => {
-    if (!state) {
-      // Reset form to default values when closing
+      });
+      // set limit type based on which value exists
+      if (currentLimit.dailyLimit && !currentLimit.monthlyLimit)
+        setLimitType("daily");
+      else if (!currentLimit.dailyLimit && currentLimit.monthlyLimit)
+        setLimitType("monthly");
+    } else {
       reset({
         tierKey: "",
         expenseCategoryId: "",
@@ -130,8 +120,32 @@ export function ExpenseLimitActionForm({
         monthlyLimit: 0,
         isActive: true,
       });
+      setLimitType("daily");
+    }
+  }, [currentLimit, isEdit, reset]);
+
+  const handleDialogChange = (state: boolean) => {
+    if (!state) {
+      reset({
+        tierKey: "",
+        expenseCategoryId: "",
+        dailyLimit: 0,
+        monthlyLimit: 0,
+        isActive: true,
+      });
+      setLimitType("daily");
     }
     onOpenChange(state);
+  };
+
+  // Reset the other field when switching limit type
+  const handleLimitTypeChange = (value: "daily" | "monthly") => {
+    setLimitType(value);
+    if (value === "daily") {
+      reset({ ...getValues(), monthlyLimit: 0 });
+    } else {
+      reset({ ...getValues(), dailyLimit: 0 });
+    }
   };
 
   return (
@@ -148,7 +162,7 @@ export function ExpenseLimitActionForm({
                 : "Create a new expense limit for a designation."}
             </DialogDescription>
           </div>
-          <DialogClose asChild></DialogClose>
+          <DialogClose asChild />
         </DialogHeader>
 
         <Form {...form}>
@@ -191,45 +205,38 @@ export function ExpenseLimitActionForm({
             {/* Category Field */}
             <div className="space-y-2 w-full">
               <Label htmlFor="expenseCategoryId">
-                Category<span className="text-red-500">*</span>
+                Category <span className="text-red-500">*</span>
               </Label>
               <Controller
                 name="expenseCategoryId"
                 control={control}
-                render={({ field }) => {
-                  return (
-                    <Select
-                      key={`category-select-${open}`} // Removed field.value from key
-                      value={field.value || ""}
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                      }}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {expenseCategories?.length > 0 ? (
-                          expenseCategories.map((category: any) => {
-                            return (
-                              <SelectItem
-                                key={category.expensesCategoryId}
-                                value={category.expensesCategoryId}
-                                className="cursor-pointer"
-                              >
-                                {category.categoryName}
-                              </SelectItem>
-                            );
-                          })
-                        ) : (
-                          <SelectItem value="no-categories" disabled>
-                            No categories available
+                render={({ field }) => (
+                  <Select
+                    key={`category-select-${open}`}
+                    value={field.value || ""}
+                    onValueChange={field.onChange}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {expenseCategories.length > 0 ? (
+                        expenseCategories.map((category: any) => (
+                          <SelectItem
+                            key={category.expensesCategoryId}
+                            value={category.expensesCategoryId}
+                          >
+                            {category.categoryName}
                           </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  );
-                }}
+                        ))
+                      ) : (
+                        <SelectItem value="no-categories" disabled>
+                          No categories available
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                )}
               />
               {errors.expenseCategoryId && (
                 <p className="flex items-center gap-1 text-xs text-red-500">
@@ -239,59 +246,81 @@ export function ExpenseLimitActionForm({
               )}
             </div>
 
-            {/* Daily Limit Field */}
-            <div className="space-y-2">
-              <Label htmlFor="dailyLimit">
-                Daily Limit <span className="text-red-500">*</span>
+            {/* Limit Type Radio */}
+            <div className="space-y-2 w-full">
+              <Label className="pb-2">
+                Limit Type <span className="text-red-500">*</span>
               </Label>
-              <Controller
-                name="dailyLimit"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    id="dailyLimit"
-                    type="number"
-                    placeholder="Enter daily limit"
-                    value={field.value || ""}
-                  />
-                )}
-              />
-              {errors.dailyLimit && (
-                <p className="flex items-center gap-1 text-xs text-red-500">
-                  <AlertCircle className="h-3 w-3" />
-                  {errors.dailyLimit.message}
-                </p>
-              )}
+              <RadioGroup
+                value={limitType}
+                onValueChange={handleLimitTypeChange}
+              >
+                <div className="flex gap-4 items-center">
+                  <RadioGroupItem value="daily" id="daily-limit-radio" />
+                  <Label htmlFor="daily-limit-radio">Daily</Label>
+
+                  <RadioGroupItem value="monthly" id="monthly-limit-radio" />
+                  <Label htmlFor="monthly-limit-radio">Monthly</Label>
+                </div>
+              </RadioGroup>
             </div>
 
-            {/* Monthly Limit Field */}
-            <div className="space-y-2">
-              <Label htmlFor="monthlyLimit">
-                Monthly Limit <span className="text-red-500">*</span>
-              </Label>
-              <Controller
-                name="monthlyLimit"
-                control={control}
-                render={({ field }) => (
-                  <Input
-                    {...field}
-                    id="monthlyLimit"
-                    type="number"
-                    placeholder="Enter monthly limit"
-                    value={field.value || ""}
-                  />
+            {/* Conditional Limit Fields */}
+            {limitType === "daily" && (
+              <div className="space-y-2">
+                <Label htmlFor="dailyLimit">
+                  Daily Limit <span className="text-red-500">*</span>
+                </Label>
+                <Controller
+                  name="dailyLimit"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      id="dailyLimit"
+                      type="number"
+                      placeholder="Enter daily limit"
+                      value={field.value || ""}
+                    />
+                  )}
+                />
+                {errors.dailyLimit && (
+                  <p className="flex items-center gap-1 text-xs text-red-500">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.dailyLimit.message}
+                  </p>
                 )}
-              />
-              {errors.monthlyLimit && (
-                <p className="flex items-center gap-1 text-xs text-red-500">
-                  <AlertCircle className="h-3 w-3" />
-                  {errors.monthlyLimit.message}
-                </p>
-              )}
-            </div>
+              </div>
+            )}
 
-            {/* Is Active Field */}
+            {limitType === "monthly" && (
+              <div className="space-y-2">
+                <Label htmlFor="monthlyLimit">
+                  Monthly Limit <span className="text-red-500">*</span>
+                </Label>
+                <Controller
+                  name="monthlyLimit"
+                  control={control}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      id="monthlyLimit"
+                      type="number"
+                      placeholder="Enter monthly limit"
+                      value={field.value || ""}
+                    />
+                  )}
+                />
+                {errors.monthlyLimit && (
+                  <p className="flex items-center gap-1 text-xs text-red-500">
+                    <AlertCircle className="h-3 w-3" />
+                    {errors.monthlyLimit.message}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Is Active */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="isActive">
