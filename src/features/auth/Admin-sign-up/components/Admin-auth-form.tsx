@@ -169,7 +169,12 @@ const RegistrationForm = () => {
 
   // <-- ADD: Effect to load all countries on component mount
   useEffect(() => {
-    setCountries(Country.getAllCountries());
+    const india = Country.getAllCountries().find(
+      (country) => country.name.toLowerCase() === "india"
+    );
+    if (india) {
+      setCountries([india]);
+    }
   }, []);
 
   // <-- ADD: Effect to update states when country changes

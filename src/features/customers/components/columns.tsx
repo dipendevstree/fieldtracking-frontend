@@ -1,73 +1,75 @@
-import { ColumnDef } from '@tanstack/react-table'
-import { CustomDataTableColumnHeader } from '@/components/shared/custom-table-header-column'
-import { DataTableRowActions } from './table-action-button'
-import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip'
+import { ColumnDef } from "@tanstack/react-table";
+import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
+import { DataTableRowActions } from "./table-action-button";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 interface Customer {
-  CustomerName: string
+  CustomerName: string;
   employeeRang?: {
-    employeeRange: string
-  }
+    employeeRange: string;
+  };
   adminData?: {
-    firstName: string
-    lastName: string
-    email: string
-  }
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
   industry?: {
-    industryName: string
-  }
-  companyName: string
-  isActive: boolean
-  createdDate: string
+    industryName: string;
+  };
+  companyName: string;
+  isActive: boolean;
+  createdDate: string;
   customerType?: {
-    typeName: string
-  }
-  location: string
-  assignedRep: string
-  contactPerson: string
-  phoneNumber: string
-  customerId: string
-  streetAddress: string
+    typeName: string;
+  };
+  location: string;
+  assignedRep: string;
+  contactPerson: string;
+  phoneNumber: string;
+  customerId: string;
+  streetAddress: string;
 }
 
 interface GetColumnsProps {
-  onEdit?: (id: string) => void
+  onEdit?: (id: string) => void;
 }
 
-export const getColumns = ({ onEdit }: GetColumnsProps): ColumnDef<Customer>[] => [
+export const getColumns = ({
+  onEdit,
+}: GetColumnsProps): ColumnDef<Customer>[] => [
   {
-    accessorKey: 'companyName',
+    accessorKey: "companyName",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Company Name' />
+      <CustomDataTableColumnHeader column={column} title="Company Name" />
     ),
-    cell: ({ row }) => <div>{row.original.companyName ?? '-'}</div>,
+    cell: ({ row }) => <div>{row.original.companyName ?? "-"}</div>,
     enableSorting: false,
   },
   {
-    accessorKey: 'customerType.typeName',
+    accessorKey: "customerType.typeName",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Customer Type' />
+      <CustomDataTableColumnHeader column={column} title="Customer Type" />
     ),
-    cell: ({ row }) => <div>{row.original.customerType?.typeName ?? '-'}</div>,
+    cell: ({ row }) => <div>{row.original.customerType?.typeName ?? "-"}</div>,
     enableSorting: false,
   },
   {
-    accessorKey: 'streetAddress',
+    accessorKey: "streetAddress",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Location' />
+      <CustomDataTableColumnHeader column={column} title="Location" />
     ),
     cell: ({ row }) => {
-      const address = row.original.streetAddress ?? '-';
-      if (address === '-') return <div>-</div>;
-      
+      const address = row.original.streetAddress ?? "-";
+      if (address === "-") return <div>-</div>;
+
       return (
         <Tooltip>
           <TooltipTrigger asChild>
-            <div 
-              className="max-w-[200px] truncate cursor-help"
-            >
-              {address}
-            </div>
+            <div className="max-w-[200px] truncate cursor-help">{address}</div>
           </TooltipTrigger>
           <TooltipContent>
             <p className="max-w-[300px] text-sm">{address}</p>
@@ -78,22 +80,25 @@ export const getColumns = ({ onEdit }: GetColumnsProps): ColumnDef<Customer>[] =
     enableSorting: false,
   },
   {
-    accessorKey: 'industry.industryName',
+    accessorKey: "industry.industryName",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title='Industry' />
+      <CustomDataTableColumnHeader column={column} title="Industry" />
     ),
     cell: ({ row }) => {
-      return <div>{row.original.industry?.industryName ?? '-'}</div>
+      return <div>{row.original.industry?.industryName ?? "-"}</div>;
     },
     enableSorting: false,
   },
   {
-    id: 'actions',
+    id: "actions",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Action" />
+    ),
     cell: ({ row }) => (
-      <DataTableRowActions 
-        row={row as any} 
+      <DataTableRowActions
+        row={row as any}
         onEdit={onEdit ? () => onEdit(row.original.customerId) : undefined}
       />
     ),
   },
-]
+];

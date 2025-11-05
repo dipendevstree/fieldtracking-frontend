@@ -34,6 +34,11 @@ const statusColors: Record<string, { text: string; bg: string; dot: string }> =
       bg: "bg-green-100",
       dot: "bg-green-500",
     },
+    verified: {
+      text: "text-green-600",
+      bg: "bg-green-100",
+      dot: "bg-green-500",
+    },  
     rejected: {
       text: "text-red-600",
       bg: "bg-red-100",
