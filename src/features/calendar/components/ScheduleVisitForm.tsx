@@ -63,7 +63,7 @@ import {
   ScheduleVisitFormProps,
   Visit,
 } from "../type/type";
-import { format, isToday } from "date-fns";
+import { TimePicker } from "@/components/ui/TimePicker";
 
 function DeleteVisitDialog({ visit, isOpen, onClose }: DeleteVisitDialogProps) {
   if (!visit) return null;
@@ -755,21 +755,15 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                             <Controller
                               name={`visits.${index}.time`}
                               control={control}
-                              render={({ field }) => {
-                                const today = new Date();
-                                const selected = new Date(selectedDate);
-                                const todaySelected = isToday(selected);
-                                const currentTime = format(today, "HH:mm");
-                                return (
-                                  <Input
-                                    type="time"
-                                    id={`visits.${index}.time`}
-                                    step="60"
-                                    min={todaySelected ? currentTime : "00:00"}
-                                    {...field}
-                                  />
-                                );
-                              }}
+                              render={({ field }) => (
+                                <TimePicker
+                                  value={field.value}
+                                  onChange={field.onChange}
+                                  date={selectedDate}
+                                  disablePast={true}
+                                  className="w-full"
+                                />
+                              )}
                             />
                             {errors.visits?.[index]?.time && (
                               <p className="text-xs flex items-center gap-1 text-red-500">
