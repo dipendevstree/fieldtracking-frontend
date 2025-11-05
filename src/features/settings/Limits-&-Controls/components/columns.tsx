@@ -3,6 +3,7 @@ import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-he
 import { Edit, Trash2 } from "lucide-react";
 import { ExpenseLimit } from "../type/type";
 import { Badge } from "@/components/ui/badge";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 // Expense Limit Columns
 export const getExpenseLimitColumns = (
@@ -83,34 +84,38 @@ export const getExpenseLimitColumns = (
     header: "Actions",
     cell: ({ row }) => (
       <div className="flex items-center gap-2">
-        <div
-          className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
-          onClick={() => onEdit(row.original)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              onEdit(row.original);
-            }
-          }}
-        >
-          <Edit className="h-4 w-4 text-green-600" />
-        </div>
-        <div
-          className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
-          onClick={() => onDelete(row.original)}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.preventDefault();
-              onDelete(row.original);
-            }
-          }}
-        >
-          <Trash2 className="h-4 w-4 text-red-600" />
-        </div>
+        <PermissionGate requiredPermission="limits_controls" action="edit">
+          <div
+            className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
+            onClick={() => onEdit(row.original)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onEdit(row.original);
+              }
+            }}
+          >
+            <Edit className="h-4 w-4 text-green-600" />
+          </div>
+        </PermissionGate>
+        <PermissionGate requiredPermission="limits_controls" action="delete">
+          <div
+            className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
+            onClick={() => onDelete(row.original)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onDelete(row.original);
+              }
+            }}
+          >
+            <Trash2 className="h-4 w-4 text-red-600" />
+          </div>
+        </PermissionGate>
       </div>
     ),
     enableSorting: false,

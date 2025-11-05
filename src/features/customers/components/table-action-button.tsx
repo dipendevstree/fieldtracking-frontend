@@ -3,6 +3,7 @@ import CustomTooltip from "@/components/shared/custom-tooltip";
 import { useCustomersStore } from "../store/customers.store";
 import { Customer } from "../types";
 import { Button } from "@/components/ui/button";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 interface DataTableRowActionsProps {
   row: {
@@ -34,25 +35,28 @@ export function DataTableRowActions({ row, onEdit }: DataTableRowActionsProps) {
 
   return (
     <div className="flex items-center space-x-2">
-      <CustomTooltip title="Edit">
-        <Button
-          variant="ghost"
-          className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
-          onClick={handleEdit}
-        >
-          <IconEdit size={16} />
-        </Button>
-      </CustomTooltip>
-
-      <CustomTooltip title="Delete">
-        <Button
-          variant="ghost"
-          onClick={handleDelete}
-          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-        >
-          <IconTrash size={16} />
-        </Button>
-      </CustomTooltip>
+      <PermissionGate requiredPermission="customer_directory" action="edit">
+        <CustomTooltip title="Edit">
+          <Button
+            variant="ghost"
+            className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
+            onClick={handleEdit}
+          >
+            <IconEdit size={16} />
+          </Button>
+        </CustomTooltip>
+      </PermissionGate>
+      <PermissionGate requiredPermission="customer_directory" action="delete">
+        <CustomTooltip title="Delete">
+          <Button
+            variant="ghost"
+            onClick={handleDelete}
+            className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+          >
+            <IconTrash size={16} />
+          </Button>
+        </CustomTooltip>
+      </PermissionGate>
     </div>
   );
 }

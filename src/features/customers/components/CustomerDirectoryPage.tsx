@@ -26,6 +26,7 @@ import {
 import { useExportFile } from "@/hooks/useExportFile";
 import API from "@/config/api/api";
 import { Main } from "@/components/layout/main";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 // Define error response type
 interface ErrorResponse {
@@ -229,10 +230,15 @@ export const CustomerDirectoryPage = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <Button onClick={handleAddCustomerClick}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Customer
-            </Button>
+            <PermissionGate
+              requiredPermission="customer_directory"
+              action="add"
+            >
+              <Button onClick={handleAddCustomerClick}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Customer
+              </Button>
+            </PermissionGate>
           </div>
         </div>
       </Card>
