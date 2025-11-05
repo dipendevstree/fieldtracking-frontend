@@ -44,7 +44,7 @@ export const sidebarData: SidebarData = {
           menuKey: "live_tracking",
         },
         {
-          title: "Customer Management",
+          title: "Customers",
           icon: Building2,
           menuKey: "customer_management",
           items: [
