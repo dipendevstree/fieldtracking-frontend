@@ -1,8 +1,8 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import { DataTableRowActions } from "./table-action-button";
 import { format } from "date-fns";
+import StatusBadge from "@/components/shared/common-status-badge";
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -63,17 +63,14 @@ export const columns: ColumnDef<any>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: "isActive",
+    accessorKey: "adminData.status",
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Status" />
     ),
     cell: ({ row }) => {
-      const isActive = row.original.isActive;
-      return (
-        <Badge variant="default" className="bg-black text-white capitalize">
-          {isActive ? "active" : "inactive"}
-        </Badge>
-      );
+      let status = row.original.adminData?.status || "-";
+      if (status?.toLowerCase() === "created") status = "pending";
+      return <StatusBadge status={status} />;
     },
     enableHiding: false,
     enableSorting: false,
