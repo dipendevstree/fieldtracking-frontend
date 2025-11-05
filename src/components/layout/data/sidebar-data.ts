@@ -46,12 +46,12 @@ export const sidebarData: SidebarData = {
         {
           title: "Customers",
           icon: Building2,
-          menuKey: "customer_management",
+          menuKey: "customers",
           items: [
             {
-              title: "All Customers",
+              title: "Customer Directory",
               url: "/customers",
-              menuKey: "all_customers",
+              menuKey: "customer_directory",
             },
             // {
             //   title: "Add Customer",
@@ -141,7 +141,13 @@ export const sidebarData: SidebarData = {
           title: "Reports",
           icon: ChartPie,
           menuKey: "reports",
-          url: "/reports",
+          items: [
+            {
+              title: "All Reports",
+              url: "/reports",
+              menuKey: "all_reports",
+            },
+          ],
         },
       ],
     },
