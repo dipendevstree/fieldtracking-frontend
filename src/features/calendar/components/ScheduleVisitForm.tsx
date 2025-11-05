@@ -1059,11 +1059,12 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
         <Card className="col-span-4">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Today's Schedule</CardTitle>
               <CardDescription className="mt-2">
                 Visits scheduled for{" "}
-                {moment(selectedDate).format("MMMM D, YYYY")}{" "}
-                {selectedRep ? `for selected representative` : ""}
+                <span className="font-semibold text-primary">
+                  {moment(selectedDate).format("ddd, DD-MM-YYYY")}
+                </span>{" "}
+                {selectedRep ? "for selected representative" : ""}.
               </CardDescription>
             </div>
           </CardHeader>
