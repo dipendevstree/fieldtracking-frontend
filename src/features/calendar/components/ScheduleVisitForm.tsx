@@ -17,7 +17,6 @@ import {
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { SimpleDatePicker } from "@/components/ui/datepicker";
 import { Input } from "@/components/ui/input";
@@ -43,6 +42,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
 import { formSchema, TFormSchema } from "../data/schema";
@@ -149,6 +154,30 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
     control,
     name: "visits",
   });
+
+  // 1. Define the core fields that must be filled before adding a new visit.
+  const requiredFieldsForNewVisit: (keyof TFormSchema["visits"][0])[] = [
+    "purpose",
+    "customer",
+    "time",
+    "address",
+    "duration",
+  ];
+
+  // 2. Watch the values of the last item in the field array.
+  const lastVisitIndex = fields.length - 1;
+  const lastVisitValues = watch(`visits.${lastVisitIndex}`);
+
+  // 3. Determine if the required fields are filled.
+  const areRequiredFieldsFilled = lastVisitValues
+    ? requiredFieldsForNewVisit.every((field) => {
+        const value = lastVisitValues[field];
+        // Ensure the value is not null, undefined, or an empty string.
+        return (
+          value !== null && value !== undefined && String(value).trim() !== ""
+        );
+      })
+    : false; // If lastVisitValues is undefined, they are not filled.
 
   const selectedDate = watch("date");
   const selectedRep = watch("salesRep");
@@ -984,13 +1013,29 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                     ))}
 
                     {!isEditMode && (
-                      <Button
-                        className="mt-3"
-                        type="button"
-                        onClick={addNewVisit}
-                      >
-                        Add Another Visit
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip delayDuration={100}>
+                          <TooltipTrigger asChild>
+                            <span className="inline-block mt-3">
+                              <Button
+                                type="button"
+                                onClick={addNewVisit}
+                                disabled={!areRequiredFieldsFilled}
+                              >
+                                Add Another Visit
+                              </Button>
+                            </span>
+                          </TooltipTrigger>
+                          {!areRequiredFieldsFilled && ( // Show tooltip only when button is disabled
+                            <TooltipContent>
+                              <p>
+                                Please fill all required (*) fields in the
+                                current visit.
+                              </p>
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </TooltipProvider>
                     )}
                   </ScrollArea>
                   <div className="flex justify-end space-x-2 ">
@@ -1013,11 +1058,12 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
         <Card className="col-span-4">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardTitle>Today's Schedule</CardTitle>
               <CardDescription className="mt-2">
                 Visits scheduled for{" "}
-                {moment(selectedDate).format("MMMM D, YYYY")}{" "}
-                {selectedRep ? `for selected representative` : ""}
+                <span className="font-semibold text-primary">
+                  {moment(selectedDate).format("ddd, DD-MM-YYYY")}
+                </span>{" "}
+                {selectedRep ? "for selected representative" : ""}.
               </CardDescription>
             </div>
           </CardHeader>
