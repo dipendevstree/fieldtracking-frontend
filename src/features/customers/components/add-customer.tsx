@@ -209,10 +209,10 @@ export default function AddCustomerPage({
           customer.customerContacts?.map((contact: any) => {
             const contactId = contact.customerContactId || Date.now(); // Use real ID or generate one
             // Pre-populate state for existing contacts
-            if (contact.userRole?.roleId) {
+            if (contact.assignUser?.roleId) {
               setSelectedRoleIds((prev) => ({
                 ...prev,
-                [contactId]: contact.userRole.roleId,
+                [contactId]: contact.assignUser.roleId,
               }));
             }
             return {
@@ -222,7 +222,7 @@ export default function AddCustomerPage({
               phone: contact.phoneNumber,
               designation: contact.designation || "",
               isPrimary: contact.isPrimary,
-              userRole: contact.userRole?.roleId || "",
+              userRole: contact.assignUser?.roleId || "",
               assignedRep: contact.assignUserId || "",
             };
           }) || [],
@@ -915,6 +915,8 @@ export default function AddCustomerPage({
                                       <Select
                                         value={field.value || ""}
                                         onValueChange={(val) => {
+                                          console.log("Role changed:", val);
+                                          console.log("Current selectedRoleIds:", selectedRoleIds, selectedRoleIds[contact.id]);
                                           if (val) {
                                             console.log(
                                               "Role selected:",
@@ -931,6 +933,7 @@ export default function AddCustomerPage({
                                               form.getValues(
                                                 `contacts.${index}.assignedRep`
                                               );
+                                            console.log("Assigned Rep Field:", assignedRepField);
                                             if (assignedRepField) {
                                               form.setValue(
                                                 `contacts.${index}.assignedRep`,
@@ -972,13 +975,16 @@ export default function AddCustomerPage({
                                     name={`contacts.${index}.assignedRep`}
                                     control={control}
                                     render={({ field }) => {
+                                      // Read the currently selected userRole directly from the form
+                                      const userRoleValue = form.watch(`contacts.${index}.userRole`);
+
                                       const {
                                         data: users,
                                         isLoading,
                                         error,
                                       } = useGetUsersByRole(
-                                        selectedRoleIds[contact.id] || "",
-                                        !!selectedRoleIds[contact.id]
+                                        userRoleValue || "",
+                                        !!userRoleValue
                                       );
 
                                       const [searchTerm, setSearchTerm] =
@@ -996,14 +1002,12 @@ export default function AddCustomerPage({
                                         <Select
                                           value={field.value || ""}
                                           onValueChange={(val) => {
+                                            console.log("User selected:", val);
                                             if (val) {
                                               field.onChange(val);
                                             }
                                           }}
-                                          disabled={
-                                            !selectedRoleIds[contact.id] ||
-                                            isLoading
-                                          }
+                                          disabled={!userRoleValue || isLoading}
                                         >
                                           <SelectTrigger
                                             className="w-full max-w-m bg-white border border-gray-300 hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -1042,19 +1046,17 @@ export default function AddCustomerPage({
                                             {/* Users List */}
                                             <div className="max-h-60 overflow-y-auto">
                                               {filteredUsers.length > 0 ? (
-                                                filteredUsers.map(
-                                                  (user: any) => (
-                                                    <SelectItem
-                                                      key={user.id}
-                                                      value={String(user.id)}
-                                                      className="cursor-pointer hover:bg-gray-50 px-3 py-2 text-sm"
-                                                    >
-                                                      {formatDropDownLabel(
-                                                        `${user.firstName} ${user.lastName}`
-                                                      )}
-                                                    </SelectItem>
-                                                  )
-                                                )
+                                                filteredUsers.map((user: any) => (
+                                                  <SelectItem
+                                                    key={user.id}
+                                                    value={String(user.id)}
+                                                    className="cursor-pointer hover:bg-gray-50 px-3 py-2 text-sm"
+                                                  >
+                                                    {formatDropDownLabel(
+                                                      `${user.firstName} ${user.lastName}`
+                                                    )}
+                                                  </SelectItem>
+                                                ))
                                               ) : (
                                                 <div className="px-3 py-2 text-sm text-gray-500">
                                                   {searchTerm

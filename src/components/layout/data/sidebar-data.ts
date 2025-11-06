@@ -139,16 +139,10 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "Reports",
+          url: "/reports",
           icon: ChartPie,
           menuKey: "reports",
-          items: [
-            {
-              title: "All Reports",
-              url: "/reports",
-              menuKey: "all_reports",
-            },
-          ],
-        },
+        }
       ],
     },
     {
