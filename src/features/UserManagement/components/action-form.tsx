@@ -31,7 +31,7 @@ import CustomButton from "@/components/shared/custom-button";
 import { useGetDepartment } from "@/features/auth/Admin-sign-up/services/sign-up-services";
 import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
 import { useGetAllTerritoriesForDropdown } from "@/features/userterritory/services/user-territory.hook";
-import { formSchema, TFormSchema } from "../data/schema";
+import { formSchemaConditional, TFormSchemaConditional } from "../data/schema";
 import { useGetAllRolesForDropdown } from "../services/Roles.hook";
 
 interface Props {
@@ -39,7 +39,7 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   loading?: boolean;
-  onSubmit: (values: TFormSchema) => void;
+  onSubmit: (values: TFormSchemaConditional) => void;
   allowTerritoryFilter?: boolean;
 }
 
@@ -52,7 +52,7 @@ export function UserActionForm({
   allowTerritoryFilter,
 }: Props) {
   const isEdit = !!currentRow;
-
+  const [hideReportingToField, setHideReportingToField] = useState(false);
   const { data: rolesList } = useGetAllRolesForDropdown();
 
   // Initialize selectedRoleId with current row's reportingToRoleId for edit mode
@@ -119,8 +119,12 @@ export function UserActionForm({
     // Combine country code with phone number
     return `${defaultCountryCode}${cleanPhone}`;
   };
-  const form = useForm<TFormSchema>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<TFormSchemaConditional>({
+    // use the conditional schema which performs the extra checks based on the
+    // `hideReportingToField` flag that we pass into the form values.
+  // zodResolver typing can conflict when schema is a union; cast to any to avoid
+  // an unrelated type-instantiation mismatch between resolver types.
+  resolver: (zodResolver(formSchemaConditional) as unknown) as any,
     defaultValues: {
       id: currentRow?.id ?? "",
       firstName: currentRow?.firstName ?? "",
@@ -139,6 +143,8 @@ export function UserActionForm({
       reportingToRoleId: currentRow?.reportingToRoleId,
       tierkey: currentRow?.tierkey,
       reportingToIds: [],
+      // include the hide flag so the resolver can see it and validate conditionally
+      hideReportingToField: hideReportingToField,
     },
   });
 
@@ -158,6 +164,17 @@ export function UserActionForm({
       const reportingRoleId = currentRow.reportingToRoleId;
       if (reportingRoleId) {
         setSelectedRoleId(reportingRoleId);
+      }
+      const hideField = currentRow.superAdminCreatedBy && currentRow.superAdminCreatedBy !== null;
+      if (hideField) {
+        setHideReportingToField(true);
+        // inform form that the reporting field is hidden and clear the values
+        setValue("hideReportingToField", true, { shouldValidate: true });
+        setValue("reportingToRoleId", "");
+        setValue("reportingToIds", []);
+      } else {
+        setHideReportingToField(false);
+        setValue("hideReportingToField", false, { shouldValidate: true });
       }
 
       const formattedPhone = formatPhoneToE164(
@@ -226,6 +243,7 @@ export function UserActionForm({
         reportingToRoleId: currentRow.reportingToRoleId,
         tierkey: currentRow.tierkey,
         reportingToIds: processedReportingToIds,
+        hideReportingToField: hideField,
       });
     }
   }, [currentRow, open, reset]);
@@ -244,6 +262,9 @@ export function UserActionForm({
     if (!state) {
       reset();
       setSelectedRoleId(""); // Reset selected role ID
+      setHideReportingToField(false);
+      // update form context/value too
+      setValue("hideReportingToField", false, { shouldValidate: true });
     }
     onOpenChange(state);
   };
@@ -572,84 +593,30 @@ export function UserActionForm({
             </div>
 
             {/* Reporting Structure Section */}
-            <div className="space-y-4">
-              {/* Row 5: Reporting To Role & Reporting To Users */}
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="space-y-2">
-                  <Label htmlFor="reportingToRoleId">
-                    Reporting To Role <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="reportingToRoleId"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        value={getFieldValue(field.value)}
-                        onValueChange={(value) => {
-                          field.onChange(value);
-                          setSelectedRoleId(value);
-                        }}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select role..." />
-                        </SelectTrigger>
-                        <SelectContent className="!w-full">
-                          {roles.map((option) => (
-                            <SelectItem
-                              key={option.value}
-                              value={String(option.value)}
-                            >
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  {errors.reportingToRoleId && (
-                    <p className="flex items-center gap-1 text-xs text-red-500">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.reportingToRoleId.message}
-                    </p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="reportingToIds">
-                    Reporting To User<span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="reportingToIds"
-                    control={control}
-                    render={({ field }) => {
-                      const currentValue = Array.isArray(field.value)
-                        ? field.value[0]
-                        : field.value;
-                      const displayValue = currentValue
-                        ? String(currentValue)
-                        : "";
-
-                      console.log("=== SELECT RENDER DEBUG ===");
-                      console.log("field.value:", field.value);
-                      console.log("currentValue:", currentValue);
-                      console.log("displayValue:", displayValue);
-                      console.log(
-                        "available users:",
-                        users.map((u) => ({ id: u.value, name: u.label }))
-                      );
-
-                      return (
+            {!hideReportingToField && (
+              <div className="space-y-4">
+                {/* Row 5: Reporting To Role & Reporting To Users */}
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="reportingToRoleId">
+                      Reporting To Role <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="reportingToRoleId"
+                      control={control}
+                      render={({ field }) => (
                         <Select
-                          value={displayValue}
+                          value={getFieldValue(field.value)}
                           onValueChange={(value) => {
-                            console.log("Select onChange with value:", value);
-                            field.onChange([value]); // Always store as array
+                            field.onChange(value);
+                            setSelectedRoleId(value);
                           }}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select user..." />
+                            <SelectValue placeholder="Select role..." />
                           </SelectTrigger>
                           <SelectContent className="!w-full">
-                            {users.map((option) => (
+                            {roles.map((option) => (
                               <SelectItem
                                 key={option.value}
                                 value={String(option.value)}
@@ -659,18 +626,73 @@ export function UserActionForm({
                             ))}
                           </SelectContent>
                         </Select>
-                      );
-                    }}
-                  />
-                  {errors.reportingToIds && (
-                    <p className="flex items-center gap-1 text-xs text-red-500">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.reportingToIds.message}
-                    </p>
-                  )}
-                </div>
+                      )}
+                    />
+                    {errors.reportingToRoleId && (
+                      <p className="flex items-center gap-1 text-xs text-red-500">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.reportingToRoleId.message}
+                      </p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="reportingToIds">
+                      Reporting To User<span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="reportingToIds"
+                      control={control}
+                      render={({ field }) => {
+                        const currentValue = Array.isArray(field.value)
+                          ? field.value[0]
+                          : field.value;
+                        const displayValue = currentValue
+                          ? String(currentValue)
+                          : "";
 
-                {/* <div className='space-y-2'>
+                        console.log("=== SELECT RENDER DEBUG ===");
+                        console.log("field.value:", field.value);
+                        console.log("currentValue:", currentValue);
+                        console.log("displayValue:", displayValue);
+                        console.log(
+                          "available users:",
+                          users.map((u) => ({ id: u.value, name: u.label }))
+                        );
+
+                        return (
+                          <Select
+                            value={displayValue}
+                            onValueChange={(value) => {
+                              console.log("Select onChange with value:", value);
+                              field.onChange([value]); // Always store as array
+                            }}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select user..." />
+                            </SelectTrigger>
+                            <SelectContent className="!w-full">
+                              {users.map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={String(option.value)}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        );
+                      }}
+                    />
+                    {errors.reportingToIds && (
+                      <p className="flex items-center gap-1 text-xs text-red-500">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.reportingToIds.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* <div className='space-y-2'>
                   <Label htmlFor='reportingToIds'>
                     Reporting To <span className='text-red-500'>*</span>
                   </Label>
@@ -748,9 +770,9 @@ export function UserActionForm({
                     </p>
                   )}
                 </div> */}
+                </div>
               </div>
-            </div>
-
+            )}
             {/* Settings Section */}
             <div className="space-y-4">
               {/* Row 6: Active Role Checkbox (takes full width or can be paired with another field) */}

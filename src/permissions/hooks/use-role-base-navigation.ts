@@ -8,7 +8,7 @@ export function useRoleBasedNavigation(
   options?: { allowAddUsersBasedOnTerritories?: boolean }
 ) {
   console.log("backendPermissions", backendPermissions);
-  const { hasAccess, canPerformAction, isAuthenticated } = usePermission();
+  const { hasAccess, canPerformAction, isAuthenticated, user } = usePermission();
 
   const sidebarData = useMemo(() => {
     if (!isAuthenticated) {
@@ -18,7 +18,8 @@ export function useRoleBasedNavigation(
     let filteredSidebar = filterSidebarByPermissions(
       fullSidebarData,
       hasAccess,
-      backendPermissions?.permissions
+      backendPermissions?.permissions,
+      user
     );
 
     // ✅ Extra filtering based on org settings flags

@@ -50,5 +50,6 @@ export function usePermission() {
     canPerformAction,
     getAccessibleMenuKeys,
     isAuthenticated: !!user,
+    user,
   }
 }

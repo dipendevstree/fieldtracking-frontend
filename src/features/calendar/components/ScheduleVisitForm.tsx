@@ -6,8 +6,8 @@ import {
   useFieldArray,
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useParams, useSearch } from "@tanstack/react-router";
-import { AlertCircle, MapPin, Trash2, Clock } from "lucide-react";
+import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
+import { AlertCircle, MapPin, Trash2, Clock, Edit, Trash } from "lucide-react";
 import moment from "moment-timezone";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
@@ -69,6 +69,7 @@ import {
   Visit,
 } from "../type/type";
 import { TimePicker } from "@/components/ui/TimePicker";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 function DeleteVisitDialog({ visit, isOpen, onClose }: DeleteVisitDialogProps) {
   if (!visit) return null;
@@ -107,7 +108,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
   const params = useParams({ strict: false });
   const visitId = params.id;
   const isEditMode = !!visitId;
-
+  const navigate = useNavigate();
   const { salesRepId }: any = useSearch({
     from: "/_authenticated/calendar/schedule-visit",
   });
@@ -1129,8 +1130,9 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                         <p className="text-muted-foreground text-xs">
                           Rep: {visit.rep}
                         </p>
-                        {/* <div className="flex gap-1 mt-1">
-                          <PermissionGate
+                      </div>
+                      <div className="flex gap-1">
+                        {/* <PermissionGate
                             requiredPermission="calender_view"
                             action="viewOwn"
                           >
@@ -1141,38 +1143,37 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                             >
                               <Eye />
                             </Button>
-                          </PermissionGate>
-                          <PermissionGate
-                            requiredPermission="calender_view"
-                            action="edit"
+                          </PermissionGate> */}
+                        <PermissionGate
+                          requiredPermission="calender_view"
+                          action="edit"
+                        >
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() =>
+                              navigate({
+                                to: `/calendar/schedule-visit/${visit.id}`,
+                              })
+                            }
+                            aria-label={`Edit visit ${visit.id}`}
                           >
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                navigate({
-                                  to: `/calendar/schedule-visit/${visit.id}`,
-                                })
-                              }
-                              aria-label={`Edit visit ${visit.id}`}
-                            >
-                              <Edit />
-                            </Button>
-                          </PermissionGate>
-                          <PermissionGate
-                            requiredPermission="calender_view"
-                            action="delete"
+                            <Edit />
+                          </Button>
+                        </PermissionGate>
+                        <PermissionGate
+                          requiredPermission="calender_view"
+                          action="delete"
+                        >
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setVisitToDelete(visit)}
+                            aria-label={`Delete visit ${visit.id}`}
                           >
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setVisitToDelete(visit)}
-                              aria-label={`Delete visit ${visit.id}`}
-                            >
-                              <Trash />
-                            </Button>
-                          </PermissionGate>
-                        </div> */}
+                            <Trash />
+                          </Button>
+                        </PermissionGate>
                       </div>
                     </div>
                   ))}
