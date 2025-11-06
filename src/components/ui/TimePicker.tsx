@@ -6,24 +6,22 @@ import {
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { isToday as checkIsToday } from "date-fns";
 import { Clock } from "lucide-react";
 
 interface TimePickerProps {
   /** The value in "HH:mm" (24-hour) format */
   value?: string;
-  /** Callback function when the time changes, returns "HH:mm" format */
+  /** Callback when the time changes (returns "HH:mm" 24h format) */
   onChange: (value: string) => void;
-  /** The date for which the time is being selected */
-  date?: string | Date;
-  /** If true, disables past time selection for the current day */
+  /** If true, disables past times based on current system time when selectedDate is today */
   disablePast?: boolean;
   /** Time format: "12h" (AM/PM) or "24h" */
   format?: "12h" | "24h";
   className?: string;
+  /** Optional: the date this time belongs to (used for disablePast logic) */
+  selectedDate?: Date;
 }
 
-// Generate arrays for hours, minutes, and periods
 const hours12 = Array.from({ length: 12 }, (_, i) =>
   String(i + 1).padStart(2, "0")
 );
@@ -38,10 +36,10 @@ const periods = ["AM", "PM"];
 export function TimePicker({
   value,
   onChange,
-  date,
   disablePast = false,
-  format = "12h", // ✅ Default to 12-hour format
+  format = "12h",
   className,
+  selectedDate,
 }: TimePickerProps) {
   const [hour, setHour] = useState<string>("");
   const [minute, setMinute] = useState<string>("");
@@ -52,7 +50,7 @@ export function TimePicker({
   const minuteRef = useRef<HTMLButtonElement>(null);
   const periodRef = useRef<HTMLButtonElement>(null);
 
-  // Parse the incoming "HH:mm" value into hour, minute, and period
+  // Parse incoming value
   useEffect(() => {
     if (value) {
       const [h, m] = value.split(":");
@@ -76,47 +74,29 @@ export function TimePicker({
     }
   }, [value, format]);
 
-  // When local state changes, combine into "HH:mm" format and call onChange
+  // Emit change
   useEffect(() => {
     if (hour && minute) {
       let hour24 = parseInt(hour, 10);
-
       if (format === "12h") {
         if (period === "PM" && hour24 < 12) hour24 += 12;
         if (period === "AM" && hour24 === 12) hour24 = 0;
       }
-
       const newValue = `${String(hour24).padStart(2, "0")}:${minute}`;
-      if (newValue !== value) {
-        onChange(newValue);
-      }
+      if (newValue !== value) onChange(newValue);
     }
   }, [hour, minute, period, format, onChange, value]);
 
-  // Memoize current time details for disabling past times
-  const { isToday, currentHour12, currentMinute, currentPeriod } =
-    useMemo(() => {
-      if (!disablePast || !date) {
-        return {
-          isToday: false,
-          currentHour12: -1,
-          currentMinute: -1,
-          currentPeriod: "AM",
-        };
-      }
-      const now = new Date();
-      const selectedDate = new Date(date);
-      const isToday = checkIsToday(selectedDate);
+  // System time (used for disablePast)
+  const { currentHour24, currentMinute } = useMemo(() => {
+    const now = new Date();
+    return {
+      currentHour24: now.getHours(),
+      currentMinute: now.getMinutes(),
+    };
+  }, []);
 
-      return {
-        isToday,
-        currentHour12: now.getHours() % 12 || 12,
-        currentMinute: now.getMinutes(),
-        currentPeriod: now.getHours() >= 12 ? "PM" : "AM",
-      };
-    }, [date, disablePast]);
-
-  // Scroll to selected values when the popover opens
+  // Scroll to active value
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => hourRef.current?.scrollIntoView({ block: "center" }), 0);
@@ -139,6 +119,13 @@ export function TimePicker({
       : "Select a time...";
 
   const hourList = format === "12h" ? hours12 : hours24;
+
+  // Check if selected date is today
+  const isToday = useMemo(() => {
+    if (!selectedDate) return false;
+    const now = new Date();
+    return selectedDate.toDateString() === now.toDateString();
+  }, [selectedDate]);
 
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
@@ -167,11 +154,17 @@ export function TimePicker({
                 variant={hour === h ? "default" : "ghost"}
                 onClick={() => setHour(h)}
                 disabled={
+                  disablePast &&
                   isToday &&
-                  format === "12h" &&
-                  ((currentPeriod === "PM" && period === "AM") ||
-                    (period === currentPeriod &&
-                      parseInt(h, 10) < currentHour12))
+                  (() => {
+                    const selectedHour24 =
+                      format === "12h"
+                        ? period === "PM"
+                          ? (parseInt(h, 10) % 12) + 12
+                          : parseInt(h, 10) % 12
+                        : parseInt(h, 10);
+                    return selectedHour24 < currentHour24;
+                  })()
                 }
               >
                 {h}
@@ -188,11 +181,20 @@ export function TimePicker({
                 variant={minute === m ? "default" : "ghost"}
                 onClick={() => setMinute(m)}
                 disabled={
+                  disablePast &&
                   isToday &&
-                  format === "12h" &&
-                  period === currentPeriod &&
-                  parseInt(hour, 10) === currentHour12 &&
-                  parseInt(m, 10) < currentMinute
+                  (() => {
+                    const selectedHour24 =
+                      format === "12h"
+                        ? period === "PM"
+                          ? (parseInt(hour, 10) % 12) + 12
+                          : parseInt(hour, 10) % 12
+                        : parseInt(hour, 10);
+                    return (
+                      selectedHour24 === currentHour24 &&
+                      parseInt(m, 10) < currentMinute
+                    );
+                  })()
                 }
               >
                 {m}
@@ -200,7 +202,7 @@ export function TimePicker({
             ))}
           </div>
 
-          {/* Period Column (only for 12h mode) */}
+          {/* Period Column (12h only) */}
           {format === "12h" && (
             <div className="flex h-48 flex-col gap-1 pr-2">
               {periods.map((p) => (
@@ -209,7 +211,16 @@ export function TimePicker({
                   ref={period === p ? periodRef : null}
                   variant={period === p ? "default" : "ghost"}
                   onClick={() => setPeriod(p as "AM" | "PM")}
-                  disabled={isToday && currentPeriod === "PM" && p === "AM"}
+                  disabled={
+                    disablePast &&
+                    isToday &&
+                    (() => {
+                      const now = new Date();
+                      const currentPeriod = now.getHours() >= 12 ? "PM" : "AM";
+                      if (currentPeriod === "PM" && p === "AM") return true;
+                      return false;
+                    })()
+                  }
                 >
                   {p}
                 </Button>
