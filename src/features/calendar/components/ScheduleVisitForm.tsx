@@ -1072,33 +1072,34 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
             </div>
           </CardHeader>
           <CardContent>
-            {isVisitsLoading && <p>Loading visits...</p>}
-            {visitsError && (
-              <p className="text-red-500">
-                Error fetching visits: {visitsError.message}
-              </p>
-            )}
-            {!isVisitsLoading &&
-              !visitsError &&
-              upcomingVisits.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-8 text-center">
-                  <div className="rounded-full bg-gray-100 p-4 mb-4">
-                    <MapPin className="h-8 w-8 text-gray-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                    No Visits Found
-                  </h3>
-                  <p className="text-sm text-gray-500 max-w-xs">
-                    No visits are scheduled for{" "}
-                    {moment(selectedDate).format("MMMM D, YYYY")}
-                    {selectedRep
-                      ? " with the selected sales representative"
-                      : ""}
-                    .
-                  </p>
-                </div>
-              )}
             <ScrollArea className="h-[calc(100vh-300px)] pr-4">
+              {isVisitsLoading && <p>Loading visits...</p>}
+              {visitsError && (
+                <p className="text-red-500">
+                  Error fetching visits: {visitsError.message}
+                </p>
+              )}
+              {!isVisitsLoading &&
+                !visitsError &&
+                upcomingVisits.length === 0 && (
+                  <div className="flex flex-col items-center justify-center py-8 text-center">
+                    <div className="rounded-full bg-gray-100 p-4 mb-4">
+                      <MapPin className="h-8 w-8 text-gray-400" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                      No Visits Found
+                    </h3>
+                    <p className="text-sm text-gray-500 max-w-xs">
+                      No visits are scheduled for{" "}
+                      {moment(selectedDate).format("ddd, DD-MM-YYYY")}
+                      {selectedRep
+                        ? " with the selected sales representative"
+                        : ""}
+                      .
+                    </p>
+                  </div>
+                )}
+
               <div className="grid grid-cols-1 gap-4">
                 {upcomingVisits
                   .filter(
