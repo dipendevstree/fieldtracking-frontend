@@ -7,7 +7,7 @@ import {
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
-import { AlertCircle, MapPin, Trash2, Clock, Edit, Trash } from "lucide-react";
+import { AlertCircle, MapPin, Trash2, Clock, Edit } from "lucide-react";
 import moment from "moment-timezone";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
@@ -71,12 +71,15 @@ import {
 import { TimePicker } from "@/components/ui/TimePicker";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 
-function DeleteVisitDialog({ visit, isOpen, onClose }: DeleteVisitDialogProps) {
+function DeleteVisitDialog({ visit, isOpen, onClose, onSuccess }: DeleteVisitDialogProps & { onSuccess?: () => void }) {
   if (!visit) return null;
 
   const { mutate: deleteVisit, isPending: isLoading } = useDeleteVisits(
     visit.id,
-    onClose
+    () => {
+      if (onSuccess) onSuccess();
+      onClose();
+    }
   );
 
   return (
@@ -112,7 +115,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
   const { salesRepId }: any = useSearch({
     from: "/_authenticated/calendar/schedule-visit",
   });
-
+  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const isCreateWithPrefill = !isEditMode && salesRepId;
 
   const form = useForm<TFormSchema>({
@@ -516,8 +519,9 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
       ))}
       <DeleteVisitDialog
         visit={visitToDelete}
-        isOpen={!!visitToDelete}
-        onClose={() => setVisitToDelete(null)}
+        isOpen={openDeleteDialog}
+        onClose={() => setOpenDeleteDialog(false)}
+        onSuccess={() => setVisitToDelete(null)}
       />
       <div className="grid grid-cols-12 gap-4">
         <Card className="col-span-8">
@@ -1150,6 +1154,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                           action="edit"
                         >
                           <Button
+                            className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
                             variant="outline"
                             size="sm"
                             onClick={() =>
@@ -1159,7 +1164,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                             }
                             aria-label={`Edit visit ${visit.id}`}
                           >
-                            <Edit />
+                            <Edit className="h-3 w-3" />
                           </Button>
                         </PermissionGate>
                         <PermissionGate
@@ -1167,12 +1172,17 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                           action="delete"
                         >
                           <Button
+                            className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
                             variant="outline"
                             size="sm"
-                            onClick={() => setVisitToDelete(visit)}
+                            onClick={() => {
+                              setOpenDeleteDialog(true)
+                              setVisitToDelete(visit)
+                            }}
                             aria-label={`Delete visit ${visit.id}`}
+                            disabled={visitToDelete !== null}
                           >
-                            <Trash />
+                            <Trash2 className="h-3 w-3" />
                           </Button>
                         </PermissionGate>
                       </div>
