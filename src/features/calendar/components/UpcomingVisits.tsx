@@ -18,6 +18,8 @@ import {
 import { FormData } from "./CalendarView";
 import UpcomingVisitsTable from "./upcoming-visits-table";
 import { formatDropDownLabel } from "@/utils/commonFunction";
+import { DateRange } from "react-day-picker";
+import { addDays, format } from "date-fns";
 
 export default function UpcomingVisits() {
   const [pagination, setPagination] = useState({
@@ -31,6 +33,11 @@ export default function UpcomingVisits() {
     isUpcoming: true,
     customerId: "",
     status: "pending",
+  });
+
+  const [selectedRange, setSelectedRange] = useState<DateRange | undefined>({
+    from: new Date(),
+    to: addDays(new Date(), 0),
   });
 
   const { watch, setValue } = useForm<FormData>({
@@ -49,12 +56,17 @@ export default function UpcomingVisits() {
     setPagination((prev) => ({ ...prev, page, limit: pageSize }));
   };
 
-  const [selectedDate, setSelectedDate] = useState<string>("");
-
-  const handleDateChange = (newDate?: string) => {
-    const value = newDate ?? new Date().toISOString().split("T")[0];
-    setSelectedDate(value);
-    setPagination((prev) => ({ ...prev, startDate: value, endDate: value }));
+  const handleDateRangeChange = (range?: DateRange) => {
+    setSelectedRange(range);
+    setPagination((prev) => ({
+      ...prev,
+      startDate: range?.from
+        ? format(range.from, "yyyy-MM-dd")
+        : new Date().toISOString().split("T")[0],
+      endDate: range?.to
+        ? format(range.to, "yyyy-MM-dd")
+        : new Date().toISOString().split("T")[0],
+    }));
   };
 
   const roleId = watch("roleId");
@@ -128,11 +140,13 @@ export default function UpcomingVisits() {
 
   const filters: FilterConfig[] = [
     {
-      key: "date",
-      type: "date",
-      onChange: handleDateChange,
-      placeholder: "Select date",
-      value: selectedDate,
+      key: "dateRange",
+      type: "date-range",
+      placeholder: "Select date range",
+      dateRangeValue: selectedRange,
+      onDateRangeChange: handleDateRangeChange,
+      dataRangeClassName: "w-full max-w-xs",
+      // disablePastDates: true,
     },
     {
       key: "search",
@@ -185,7 +199,11 @@ export default function UpcomingVisits() {
 
   return (
     <>
-      <GlobalFilterSection key={"calender-view-filters"} filters={filters} className={"mb-0"}/>
+      <GlobalFilterSection
+        key={"calender-view-filters"}
+        filters={filters}
+        className={"mb-0"}
+      />
 
       <UpcomingVisitsTable
         data={visits}

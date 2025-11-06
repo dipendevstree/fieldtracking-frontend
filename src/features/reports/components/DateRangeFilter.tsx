@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/popover";
 import { CalendarIcon, XIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
+import { format, isBefore, startOfDay } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +18,7 @@ interface DateRangeFilterProps {
   className?: string;
   size?: "sm" | "md" | "lg";
   placeholder?: string;
+  disablePastDates?: boolean;
 }
 
 export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
@@ -27,6 +28,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
   className,
   size = "md",
   placeholder = "Pick a date range",
+  disablePastDates = false,
 }) => {
   const sizeClasses = {
     sm: "h-8 text-sm",
@@ -68,6 +70,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
               </span>
             </Button>
           </PopoverTrigger>
+
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               initialFocus
@@ -76,11 +79,16 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
               selected={dateRange}
               onSelect={setDateRange}
               numberOfMonths={2}
+              disabled={
+                disablePastDates
+                  ? (date) => isBefore(startOfDay(date), startOfDay(new Date()))
+                  : undefined
+              }
             />
           </PopoverContent>
         </Popover>
 
-        {dateRange?.from || dateRange?.to ? (
+        {(dateRange?.from || dateRange?.to) && (
           <button
             type="button"
             onClick={() => setDateRange(undefined)}
@@ -89,7 +97,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
           >
             <XIcon className="size-4 text-muted-foreground" />
           </button>
-        ) : null}
+        )}
       </div>
     </div>
   );

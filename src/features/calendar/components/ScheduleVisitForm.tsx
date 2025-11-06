@@ -588,6 +588,9 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                               isUsersLoading ? "Loading..." : "Select user..."
                             }
                             disabled={isUsersLoading || isEditMode}
+                            onCancelPress={() => {
+                              setValue("salesRep", "");
+                            }}
                           />
                         )}
                       />
@@ -788,7 +791,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                                 <TimePicker
                                   value={field.value}
                                   onChange={field.onChange}
-                                  date={selectedDate}
+                                  selectedDate={new Date(selectedDate)}
                                   disablePast={true}
                                   className="w-full"
                                 />
@@ -1058,7 +1061,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
         <Card className="col-span-4">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
-              <CardDescription className="mt-2">
+              <CardDescription>
                 Visits scheduled for{" "}
                 <span className="font-semibold text-primary">
                   {moment(selectedDate).format("ddd, DD-MM-YYYY")}
