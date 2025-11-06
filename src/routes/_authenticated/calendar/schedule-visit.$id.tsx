@@ -16,7 +16,7 @@ function EditVisitPage() {
         <h1 className='text-2xl font-bold'>Edit Visit</h1>
         <p className='text-muted-foreground'>Update the details below.</p>
       </div>
-      <ScheduleVisitForm onClose={() => router.history.back()} />
+      <ScheduleVisitForm onClose={() => router.navigate({ to: '/calendar' })} />
     </div>
   )
 }
