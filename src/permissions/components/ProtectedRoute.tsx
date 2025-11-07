@@ -13,13 +13,14 @@ export function ProtectedRoute({
   requiredPermission,
   fallback = <Navigate to='/403' replace />,
 }: ProtectedRouteProps) {
-  const { hasAccess, isAuthenticated } = usePermission()
+  const { user, hasAccess, isAuthenticated } = usePermission()
 
   if (!isAuthenticated) {
     return <Navigate to='/sign-in' replace />
   }
+  const isSuperAdmin = user?.isSuperAdmin;
 
-  if (requiredPermission && !hasAccess(requiredPermission)) {
+  if (requiredPermission && !hasAccess(requiredPermission) && !isSuperAdmin) {
     return <>{fallback}</>
   }
 
