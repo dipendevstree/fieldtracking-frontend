@@ -1,5 +1,5 @@
 // src/features/calendar/index.tsx
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -8,6 +8,7 @@ import Analytics from "./components/Analytics";
 import CalendarView from "./components/CalendarView";
 import UpcomingVisits from "./components/UpcomingVisits";
 import VisitReports from "./components/VisitReports";
+import { usePermission } from "@/permissions/hooks/use-permission";
 
 // Define valid tab values
 export type TabValue =
@@ -17,12 +18,51 @@ export type TabValue =
   | "/calendar//calendar/task-assignment"
   | "/calendar/analytics";
 
+const TAB_DEFINITIONS = [
+  {
+    key: "calender_view",
+    value: "/calendar",
+    label: "Calendar View",
+    content: <CalendarView />,
+  },
+  {
+    key: "upcoming_visits",
+    value: "/calendar/upcoming-visit",
+    label: "Upcoming Visits",
+    content: <UpcomingVisits />,
+  },
+  {
+    key: "visits_reports",
+    value: "/calendar/visit-report",
+    label: "Visit Reports",
+    content: <VisitReports />,
+  },
+  {
+    key: "analytic",
+    value: "/calendar/analytics",
+    label: "Analytics",
+    content: <Analytics />,
+  },
+];
+
 export default function CalendarPage() {
   const { latestLocation } = useRouter();
-  console.log("router", latestLocation.pathname);
   const pathname = latestLocation.pathname;
   const [activeTab, setActiveTab] = useState<string>(pathname);
-  console.log("activeTab", activeTab);
+  const { hasAccess } = usePermission();
+
+  const visibleTabs = useMemo(
+    () => TAB_DEFINITIONS.filter((t) => hasAccess(t.key)),
+    [hasAccess]
+  );
+
+  const visibleTabCount = visibleTabs.length || 1;
+
+  useEffect(() => {
+    if (visibleTabs.length === 0) return;
+    const found = visibleTabs.find((t) => t.value === activeTab);
+    if (!found) setActiveTab(visibleTabs[0].value);
+  }, [visibleTabs, activeTab]);
 
   const handleTabChange = (value: string) => {
     console.log("value", value);
@@ -36,7 +76,34 @@ export default function CalendarPage() {
         onValueChange={handleTabChange}
         className=" space-y-5"
       >
-        <TabsList className="grid w-full grid-cols-4 mb-2 h-10">
+        {visibleTabs.length <= 1 ? (
+          visibleTabs[0] ? (
+            <div className="space-y-4">{visibleTabs[0].content}</div>
+          ) : null
+        ) : (
+          <>
+            <TabsList
+              className={cn(
+                "grid w-full mb-2 h-10",
+                `grid-cols-${visibleTabCount}`
+              )}
+            >
+              {visibleTabs.map((t) => (
+                <TabsTrigger key={t.key} value={t.value}>
+                  {t.label}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+
+            {visibleTabs.map((t) => (
+              <TabsContent key={t.key} value={t.value} className="space-y-4">
+                {t.content}
+              </TabsContent>
+            ))}
+          </>
+        )}
+
+        {/* <TabsList className="grid w-full grid-cols-4 mb-2 h-10">
           <TabsTrigger value="/calendar">Calendar View</TabsTrigger>
           <TabsTrigger value="/calendar/upcoming-visit">
             Upcoming Visits
@@ -44,9 +111,6 @@ export default function CalendarPage() {
           <TabsTrigger value="/calendar/visit-report">
             Visit Reports
           </TabsTrigger>
-          {/* <TabsTrigger value='/calendar/task-assignment'>
-            Task Assignment
-          </TabsTrigger> */}
           <TabsTrigger value="/calendar/analytics">Analytics</TabsTrigger>
         </TabsList>
 
@@ -59,12 +123,9 @@ export default function CalendarPage() {
         <TabsContent value="/calendar/visit-report" className="space-y-4">
           <VisitReports />
         </TabsContent>
-        {/* <TabsContent value='/calendar/task-assignment' className='space-y-4'>
-          <TaskAssignment />
-        </TabsContent> */}
         <TabsContent value="/calendar/analytics" className="space-y-4">
           <Analytics />
-        </TabsContent>
+        </TabsContent> */}
       </Tabs>
     </Main>
   );

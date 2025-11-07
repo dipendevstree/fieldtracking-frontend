@@ -51,7 +51,7 @@ export default function VisitReports() {
           hasMore={completedVisits.totalCount < visitReports.length}
         >
           <div className='space-y-6'>
-            {visitReports.map((report: any, key: number) => (
+            {visitReports.length > 0 ? visitReports.map((report: any, key: number) => (
               <div key={key} className='space-y-4 rounded-lg border p-6' ref={key === visitReports.length - 1 ? completedVisits.lastPostRef : null}>
                 <div className='flex items-center justify-between'>
                   <div>
@@ -109,7 +109,9 @@ export default function VisitReports() {
                   </Button>
                 </div> */}
               </div>
-            ))}
+            )) : (
+              <p className="space-y-4 rounded-lg border p-6 text-center">No reports found.</p>
+            )}
           </div>
         </InfiniteScroll>
       </CardContent>
