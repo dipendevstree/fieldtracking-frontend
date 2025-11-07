@@ -129,6 +129,7 @@ export const useGetPermission = (options?: { enabled?: boolean }) => {
 export const useOrganizationMenulist = (options?: { enabled?: boolean }) => {
   const query = useFetchData<any>({
     url: API.roles.organizationMenulist,
+    params: { sort: "asc" },
     enabled: options?.enabled ?? true,
   });
 
