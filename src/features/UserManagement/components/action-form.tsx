@@ -122,9 +122,9 @@ export function UserActionForm({
   const form = useForm<TFormSchemaConditional>({
     // use the conditional schema which performs the extra checks based on the
     // `hideReportingToField` flag that we pass into the form values.
-  // zodResolver typing can conflict when schema is a union; cast to any to avoid
-  // an unrelated type-instantiation mismatch between resolver types.
-  resolver: (zodResolver(formSchemaConditional) as unknown) as any,
+    // zodResolver typing can conflict when schema is a union; cast to any to avoid
+    // an unrelated type-instantiation mismatch between resolver types.
+    resolver: zodResolver(formSchemaConditional) as unknown as any,
     defaultValues: {
       id: currentRow?.id ?? "",
       firstName: currentRow?.firstName ?? "",
@@ -165,7 +165,9 @@ export function UserActionForm({
       if (reportingRoleId) {
         setSelectedRoleId(reportingRoleId);
       }
-      const hideField = currentRow.superAdminCreatedBy && currentRow.superAdminCreatedBy !== null;
+      const hideField =
+        currentRow.superAdminCreatedBy &&
+        currentRow.superAdminCreatedBy !== null;
       if (hideField) {
         setHideReportingToField(true);
         // inform form that the reporting field is hidden and clear the values
@@ -285,7 +287,7 @@ export function UserActionForm({
     return "";
   };
 
-  // console.log('selectedValues', selectedValues)
+  const roleId = form.watch("roleId");
 
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
@@ -395,7 +397,9 @@ export function UserActionForm({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phoneNumber">Phone <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="phoneNumber">
+                    Phone <span className="text-red-500">*</span>
+                  </Label>
                   <Controller
                     name="phoneNumber"
                     control={control}
@@ -446,7 +450,9 @@ export function UserActionForm({
               {/* Row 3: Department & User Role */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="departmentId">Department<span className="text-red-500">*</span></Label>
+                  <Label htmlFor="departmentId">
+                    Department<span className="text-red-500">*</span>
+                  </Label>
                   <Controller
                     name="departmentId"
                     control={control}
@@ -616,14 +622,16 @@ export function UserActionForm({
                             <SelectValue placeholder="Select role..." />
                           </SelectTrigger>
                           <SelectContent className="!w-full">
-                            {roles.map((option) => (
-                              <SelectItem
-                                key={option.value}
-                                value={String(option.value)}
-                              >
-                                {option.label}
-                              </SelectItem>
-                            ))}
+                            {roles
+                              .filter((role) => role.value !== roleId)
+                              .map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={String(option.value)}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
                           </SelectContent>
                         </Select>
                       )}
