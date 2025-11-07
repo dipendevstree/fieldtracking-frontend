@@ -1,6 +1,6 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { ProtectedRoute } from '@/permissions/components/ProtectedRoute'
+import { createFileRoute, Navigate } from '@tanstack/react-router'
 import { RoleActionForm } from '@/features/UserManagement/components/roles-action-form'
+import { PermissionGate } from '@/permissions/components/PermissionGate'
 
 export const Route = createFileRoute(
   '/_authenticated/user-management/add-roles-permission'
@@ -10,8 +10,8 @@ export const Route = createFileRoute(
 
 function RouteComponent() {
   return (
-    <ProtectedRoute requiredPermission='all_users'>
+    <PermissionGate requiredPermission="roles_permission" action="add" fallback={<Navigate to="/403" replace />}>
       <RoleActionForm />
-    </ProtectedRoute>
+    </PermissionGate>
   )
 }

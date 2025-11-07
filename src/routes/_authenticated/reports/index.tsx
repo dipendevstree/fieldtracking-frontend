@@ -1,11 +1,11 @@
-import DashboardPage from "@/features/dashboard";
 import { ProtectedRoute } from "@/permissions/components/ProtectedRoute";
+import Reports from "@/features/reports";
 import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/_authenticated/")({
+export const Route = createFileRoute("/_authenticated/reports/")({
   component: () => (
-    <ProtectedRoute requiredPermission="dashboard">
-      <DashboardPage />
+    <ProtectedRoute requiredPermission="reports">
+      <Reports />
     </ProtectedRoute>
   ),
 });

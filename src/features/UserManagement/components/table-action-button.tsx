@@ -28,7 +28,7 @@ export function DataTableRowActions({ row }: any) {
 
   return (
     <div className="flex items-center space-x-2">
-      <PermissionGate requiredPermission="all_users" action="add">
+      <PermissionGate requiredPermission="calender_view" action="add">
         <CustomTooltip title="Add Visit">
           <Button
             onClick={() => handleVisit(row)}

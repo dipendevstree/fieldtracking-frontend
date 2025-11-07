@@ -8,7 +8,7 @@ export const Route = createFileRoute("/_authenticated/user-management/")({
 
 function RouteComponent() {
   return (
-    <ProtectedRoute requiredPermission="User_Management">
+    <ProtectedRoute requiredPermission="all_users">
       <AllUsers />
     </ProtectedRoute>
   );
