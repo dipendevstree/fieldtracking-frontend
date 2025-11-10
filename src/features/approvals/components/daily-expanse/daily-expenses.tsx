@@ -12,7 +12,7 @@ import GlobalFilterSection from "@/components/global-table-filter-section";
 import DailyExpenseTable from "./components/daily-expense-table";
 import { useGetUsers } from "@/features/livetracking/services/live-tracking-services";
 import { DateRange } from "react-day-picker";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import { formatDropDownLabel } from "@/utils/commonFunction";
 import {
   formatExpenseSubType,
@@ -22,7 +22,7 @@ import { useGetAllDailyExpanses } from "@/features/approvals/services/daily-expa
 
 export default function DailyExpenses() {
   const initialDateRange: DateRange = {
-    from: new Date(),
+    from: subDays(new Date(), 7),
     to: new Date(),
   };
 
