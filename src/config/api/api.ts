@@ -180,6 +180,9 @@ const API = {
     getById: "expenses/monthly-expenses",
     listDetailed: "expenses/list/detailed",
   },
+  ExpenseAnalytics: {
+    list: "expenses/approvals/analytics",
+  },
   approvals: {
     lists: "approvals/list",
     action: "approvals/action",
