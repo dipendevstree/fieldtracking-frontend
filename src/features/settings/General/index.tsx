@@ -93,8 +93,7 @@ const GeneralSettingsPage = () => {
 
     if (
       currentSettingsData?.fixedDayExpense &&
-      submitFixedExpenseForm &&
-      currentSettingsData.isFixedExpenseDirty
+      submitFixedExpenseForm
     ) {
       const result = await submitFixedExpenseForm();
       if (!result) return;
@@ -211,7 +210,7 @@ const GeneralSettingsPage = () => {
       <div className="flex justify-end gap-4">
         <button
           onClick={handleSaveSettings}
-          disabled={isLoading || (!isFixedExpenseDirty || !currentSettingsData)}
+          disabled={isLoading || (/*!isFixedExpenseDirty ||*/ !currentSettingsData)}
           className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? "Saving..." : "Save Settings"}
