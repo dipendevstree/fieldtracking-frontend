@@ -5,8 +5,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Main } from "@/components/layout/main";
 import ExpanseReport from "./components/expanseReport";
 import CustomReports from "./components/custom-reports";
+import ReportsHistory from "./components/ReportsHistory";
 
-export type ApprovalsTabValue = "/reports" | "/reports/custom-reports";
+export type ApprovalsTabValue =
+  | "/reports"
+  | "/reports/custom-reports"
+  | "/reports/reports-history";
 
 export default function Reports() {
   const { latestLocation } = useRouter();
@@ -24,10 +28,13 @@ export default function Reports() {
         onValueChange={handleTabChange}
         className="space-y-5"
       >
-        <TabsList className="grid w-full grid-cols-2 mb-2 h-10">
+        <TabsList className="grid w-full grid-cols-3 mb-2 h-10">
           <TabsTrigger value="/reports">Expense Reports</TabsTrigger>
           <TabsTrigger value="/reports/custom-reports">
             Custom Reports
+          </TabsTrigger>
+          <TabsTrigger value="/reports/reports-history">
+            Reports History
           </TabsTrigger>
         </TabsList>
 
@@ -37,6 +44,10 @@ export default function Reports() {
 
         <TabsContent value="/reports/custom-reports" className="space-y-4">
           <CustomReports />
+        </TabsContent>
+
+        <TabsContent value="/reports/reports-history" className="space-y-4">
+          <ReportsHistory />
         </TabsContent>
       </Tabs>
     </Main>
