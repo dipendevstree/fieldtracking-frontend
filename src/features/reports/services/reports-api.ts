@@ -348,12 +348,30 @@ export const useExpanseReportGeneration = (onSuccess?: () => void) => {
   });
 };
 
-export const useGetCustomReports = (
+export const useGetReportsHistory = (
   params?: any,
   options?: { enabled?: boolean }
 ) => {
   const query = useFetchData<any>({
     url: API.reports.list,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+  return {
+    ...query,
+    reports: query.data?.list ?? [],
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
+export const useGetCustomReports = (
+  params?: any,
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<any>({
+    url: API.reports.customReportList,
     params,
     enabled: options?.enabled ?? true,
   });

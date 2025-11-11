@@ -6,7 +6,7 @@ import ReportsHead from "./ReportsHead";
 import { CustomDataTable } from "@/components/shared/custom-data-table";
 import { ColumnDef } from "@tanstack/react-table";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
-import { useGetCustomReports } from "../services/reports-api";
+import { useGetReportsHistory } from "../services/reports-api";
 import { socketForVisit } from "@/socket/socket";
 import { useAuth } from "@/stores/use-auth-store";
 import { reportsHistoryColumns } from "./ReportHistoryColumns";
@@ -19,7 +19,7 @@ const ReportsHistory: React.FC = () => {
 
   // -------------------- API Hooks --------------------
   const { user } = useAuth();
-  const { reports, isLoading, totalCount } = useGetCustomReports({
+  const { reports, isLoading, totalCount } = useGetReportsHistory({
     page: currentPage,
     limit: pageSize,
   });
