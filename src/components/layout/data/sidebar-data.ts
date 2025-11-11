@@ -131,7 +131,7 @@ export const sidebarData: SidebarData = {
               menuKey: "monthly_consolidated",
             },
             {
-              title: "Reports & Analytics",
+              title: "Expense Analytics",
               url: "/approvals/reports-analytics",
               menuKey: "reports_analytics",
             },

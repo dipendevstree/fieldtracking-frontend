@@ -1,152 +1,125 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Download, FileText } from "lucide-react"
-
-// Mock data for daily expenses
-const dailyExpenses = [
-  {
-    id: 1,
-    repName: "John Smith",
-    repAvatar: "/placeholder.svg?height=32&width=32",
-    date: "2024-01-15",
-    category: "Travel Allowance",
-    amount: 45.5,
-    description: "Client visit - Downtown office",
-    receipt: true,
-    status: "pending",
-    submittedAt: "2024-01-15 14:30",
-    mileage: "25 miles",
-  },
-  {
-    id: 2,
-    repName: "Sarah Johnson",
-    repAvatar: "/placeholder.svg?height=32&width=32",
-    date: "2024-01-15",
-    category: "Daily Allowance",
-    amount: 75.0,
-    description: "Field work - North Zone",
-    receipt: true,
-    status: "pending",
-    submittedAt: "2024-01-15 16:45",
-    mileage: null,
-  },
-  {
-    id: 3,
-    repName: "Mike Wilson",
-    repAvatar: "/placeholder.svg?height=32&width=32",
-    date: "2024-01-14",
-    category: "Meals & Entertainment",
-    amount: 120.0,
-    description: "Client lunch meeting",
-    receipt: true,
-    status: "approved",
-    submittedAt: "2024-01-14 19:20",
-    mileage: null,
-  },
-  {
-    id: 4,
-    repName: "Emily Davis",
-    repAvatar: "/placeholder.svg?height=32&width=32",
-    date: "2024-01-14",
-    category: "Travel Allowance",
-    amount: 67.25,
-    description: "Training session travel",
-    receipt: false,
-    status: "pending",
-    submittedAt: "2024-01-14 17:15",
-    mileage: "35 miles",
-  },
-]
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  startOfDay,
+  endOfDay,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  subMonths,
+  format,
+} from "date-fns";
+import { useMemo, useState } from "react";
+import { Loader2 } from "lucide-react";
+import { useGetAllReportsAndAnalyticsQuickStats } from "../../services/reports and-analytics";
 
 export default function ReportsAnalytics() {
-  const handleExportPDF = () => {
-    console.log("Exporting to PDF")
-  }
+  const [filter, setFilter] = useState<
+    "day" | "week" | "lastMonth" | "currentMonth"
+  >("day");
 
-  const handleExportExcel = () => {
-    console.log("Exporting to Excel")
-  }
+  const { startDate, endDate } = useMemo(() => {
+    const now = new Date();
+    switch (filter) {
+      case "day":
+        return { startDate: startOfDay(now), endDate: endOfDay(now) };
+      case "week":
+        return { startDate: startOfWeek(now), endDate: endOfWeek(now) };
+      case "lastMonth":
+        const lastMonth = subMonths(now, 1);
+        return {
+          startDate: startOfMonth(lastMonth),
+          endDate: endOfMonth(lastMonth),
+        };
+      case "currentMonth":
+      default:
+        return { startDate: startOfMonth(now), endDate: endOfMonth(now) };
+    }
+  }, [filter]);
+
+  const { data, isLoading } = useGetAllReportsAndAnalyticsQuickStats({
+    startDate: format(startDate, "yyyy-MM-dd"),
+    endDate: format(endDate, "yyyy-MM-dd"),
+  });
+
+  const {
+    pendingApprovals = 0,
+    approvedToday = 0,
+    averageDailyExpense = 0,
+  } = data || {};
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between space-y-2">
-        <h2 className="text-3xl font-bold tracking-tight">Reports & Analytics</h2>
-        <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={handleExportPDF}>
-            <FileText className="h-4 w-4 mr-2" />
-            Export PDF
-          </Button>
-          <Button variant="outline" onClick={handleExportExcel}>
-            <Download className="h-4 w-4 mr-2" />
-            Export Excel
-          </Button>
-        </div>
+      {/* Header with filter */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between space-y-2 md:space-y-0">
+        <h2 className="text-2xl font-bold tracking-tight">Expense Analytics</h2>
+
+        <Select value={filter} onValueChange={(v) => setFilter(v as any)}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select Period" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="day">Today</SelectItem>
+            <SelectItem value="week">This Week</SelectItem>
+            <SelectItem value="currentMonth">This Month</SelectItem>
+            <SelectItem value="lastMonth">Last Month</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Reports & Analytics Content */}
-      <div className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Export Options</CardTitle>
-              <CardDescription>Generate detailed reports for expense analysis.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <Button className="w-full justify-start bg-white hover:bg-gray-50 text-gray-700 border border-gray-300" onClick={handleExportPDF}>
-                  <div className="w-6 h-6 bg-red-500 text-white text-xs font-bold rounded flex items-center justify-center mr-3">PDF</div>
-                  Export Daily Expenses (PDF)
-                </Button>
-                <Button className="w-full justify-start bg-white hover:bg-gray-50 text-gray-700 border border-gray-300" variant="outline" onClick={handleExportExcel}>
-                  <div className="w-6 h-6 bg-green-500 text-white text-xs font-bold rounded flex items-center justify-center mr-3">XLS</div>
-                  Export Daily Expenses (Excel)
-                </Button>
-                <Button className="w-full justify-start bg-white hover:bg-gray-50 text-gray-700 border border-gray-300" onClick={handleExportPDF}>
-                  <div className="w-6 h-6 bg-red-500 text-white text-xs font-bold rounded flex items-center justify-center mr-3">PDF</div>
-                  Export Monthly Consolidated (PDF)
-                </Button>
-                <Button className="w-full justify-start bg-white hover:bg-gray-50 text-gray-700 border border-gray-300" variant="outline" onClick={handleExportExcel}>
-                  <div className="w-6 h-6 bg-green-500 text-white text-xs font-bold rounded flex items-center justify-center mr-3">XLS</div>
-                  Export Monthly Consolidated (Excel)
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+      {/* Quick Stats Card */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Quick Stats</CardTitle>
+          <CardDescription>
+            Overview of expense metrics ({filter.replace(/([A-Z])/g, " $1")}).
+          </CardDescription>
+        </CardHeader>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Stats</CardTitle>
-              <CardDescription>Overview of expense approval metrics.</CardDescription>
-            </CardHeader>
-            <CardContent>
-               <div className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Pending Approvals</span>
-                  <span className="font-medium">{dailyExpenses.filter((e) => e.status === "pending").length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Approved Today</span>
-                  <span className="font-medium">
-                    {dailyExpenses.filter((e) => e.status === "approved" && e.date === "2024-01-15").length}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Average Daily Expense</span>
-                  <span className="font-medium">
-                    ${(dailyExpenses.reduce((sum, e) => sum + e.amount, 0) / dailyExpenses.length).toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Highest Monthly Total</span>
-                    <span className="font-medium">
-                    ${Math.max(...dailyExpenses.map((r) => r.amount)).toLocaleString()}
-                  </span>
-                </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16 bg-white rounded-b-xl">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Pending Approvals
+                </span>
+                <span className="font-medium">{pendingApprovals}</span>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Total Approved
+                </span>
+                <span className="font-medium">{approvedToday}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Average Daily Expense
+                </span>
+                <span className="font-medium">
+                  ₹ {averageDailyExpense.toLocaleString()}
+                </span>
+              </div>
+            </div>
+          </CardContent>
+        )}
+      </Card>
     </div>
-  )
+  );
 }
