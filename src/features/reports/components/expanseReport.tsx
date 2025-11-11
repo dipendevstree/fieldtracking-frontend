@@ -249,7 +249,12 @@ const ExpanseReport: React.FC = () => {
         <div className="flex justify-end">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button disabled={isGenerating} className="min-w-[150px]">
+              <Button
+                disabled={
+                  isGenerating || isLoading || !reports || reports.length === 0
+                }
+                className="min-w-[150px]"
+              >
                 {isGenerating ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
