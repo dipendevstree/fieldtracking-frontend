@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader2, ChevronDown } from "lucide-react";
 import ReportsHead from "./ReportsHead";
 import { CustomDataTable } from "@/components/shared/custom-data-table";
 import { expanseReportsColumns } from "./expanseReportsColumns";
@@ -25,6 +25,12 @@ import { useGetExpenseCategoriesDropDownList } from "../../settings/Approvers/se
 import { formatDropDownLabel } from "@/utils/commonFunction";
 import { format } from "date-fns";
 import { ExpanseReportFilterState } from "../types";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 const todayStr = format(new Date(), "yyyy-MM-dd");
 
@@ -85,85 +91,6 @@ const ExpanseReport: React.FC = () => {
     })
   );
 
-  const formatOptions = Object.entries(REPORT_FORMAT).map(([key, value]) => ({
-    label: formatDropDownLabel(key),
-    value,
-  }));
-
-  // Handle date range change
-  const handleDateRangeChange = (
-    key: "expanse" | "created",
-    range: { from?: Date; to?: Date } | undefined
-  ) => {
-    setFilters((prev) => ({
-      ...prev,
-      ...(key === "expanse"
-        ? {
-            startDate: range?.from
-              ? format(range.from, "yyyy-MM-dd")
-              : undefined,
-            endDate: range?.to ? format(range.to, "yyyy-MM-dd") : undefined,
-          }
-        : {
-            createdStartDate: range?.from
-              ? format(range.from, "yyyy-MM-dd")
-              : undefined,
-            createdEndDate: range?.to
-              ? format(range.to, "yyyy-MM-dd")
-              : undefined,
-          }),
-    }));
-    setCurrentPage(1);
-    setErrors((prev) => {
-      const newErrors = { ...prev };
-      delete newErrors.dateRange;
-      return newErrors;
-    });
-  };
-
-  // Handle other filters
-  const handleFilterChange = (
-    key: keyof ExpanseReportFilterState,
-    value?: string
-  ) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
-    setCurrentPage(1);
-    setErrors((prev) => {
-      const newErrors = { ...prev };
-      delete newErrors[key];
-      return newErrors;
-    });
-  };
-
-  // ✅ Validation logic
-  const validateFilters = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!filters.startDate || !filters.endDate) {
-      newErrors.dateRange = "Expense date range is required";
-    }
-
-    if (!filters.format) {
-      newErrors.format = "Format is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Generate report
-  const handleGenerateReport = () => {
-    setErrors({});
-    if (!validateFilters()) return;
-    generateReport(filters);
-  };
-
-  // Pagination
-  const onPaginationChange = (page: number, pageSize: number) => {
-    setCurrentPage(page);
-    setPageSize(pageSize);
-  };
-
   const filtersGlob: FilterConfig[] = [
     {
       key: "expanse-date-range",
@@ -222,17 +149,80 @@ const ExpanseReport: React.FC = () => {
       onCancelPress: () => handleFilterChange("status", ""),
       searchableSelectClassName: "w-full max-w-[180px]",
     },
-    {
-      key: "format",
-      type: "searchable-select",
-      onChange: (value: any) => handleFilterChange("format", value),
-      placeholder: "Select Format",
-      options: formatOptions,
-      value: filters.format,
-      onCancelPress: () => handleFilterChange("format", ""),
-      searchableSelectClassName: "w-full max-w-[180px]",
-    },
   ];
+
+  // Handle date range change
+  const handleDateRangeChange = (
+    key: "expanse" | "created",
+    range: { from?: Date; to?: Date } | undefined
+  ) => {
+    setFilters((prev) => ({
+      ...prev,
+      ...(key === "expanse"
+        ? {
+            startDate: range?.from
+              ? format(range.from, "yyyy-MM-dd")
+              : undefined,
+            endDate: range?.to ? format(range.to, "yyyy-MM-dd") : undefined,
+          }
+        : {
+            createdStartDate: range?.from
+              ? format(range.from, "yyyy-MM-dd")
+              : undefined,
+            createdEndDate: range?.to
+              ? format(range.to, "yyyy-MM-dd")
+              : undefined,
+          }),
+    }));
+    setCurrentPage(1);
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors.dateRange;
+      return newErrors;
+    });
+  };
+
+  // Handle other filters
+  const handleFilterChange = (
+    key: keyof ExpanseReportFilterState,
+    value?: string
+  ) => {
+    setFilters((prev) => ({ ...prev, [key]: value }));
+    setCurrentPage(1);
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[key];
+      return newErrors;
+    });
+  };
+
+  // ✅ Validation logic
+  const validateFilters = () => {
+    const newErrors: Record<string, string> = {};
+    if (!filters.startDate || !filters.endDate) {
+      newErrors.dateRange = "Expense date range is required";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // ✅ Generate report based on selected format
+  const handleGenerateReport = (formatType: string) => {
+    setErrors({});
+    if (!validateFilters()) return;
+    generateReport({ ...filters, format: formatType });
+  };
+
+  // Pagination
+  const onPaginationChange = (page: number, pageSize: number) => {
+    setCurrentPage(page);
+    setPageSize(pageSize);
+  };
+
+  const formatOptions = Object.entries(REPORT_FORMAT).map(([key, value]) => ({
+    label: formatDropDownLabel(key),
+    value,
+  }));
 
   return (
     <div>
@@ -257,20 +247,36 @@ const ExpanseReport: React.FC = () => {
         )}
 
         <div className="flex justify-end">
-          <Button
-            onClick={handleGenerateReport}
-            disabled={isGenerating}
-            className="min-w-[120px]"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              "Generate Report"
-            )}
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                disabled={isGenerating}
+                className="min-w-[160px] flex items-center justify-between"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    Generate Report
+                    <ChevronDown className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {formatOptions.map((opt) => (
+                <DropdownMenuItem
+                  key={opt.value}
+                  onClick={() => handleGenerateReport(opt.value)}
+                >
+                  {opt.label}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </Card>
 

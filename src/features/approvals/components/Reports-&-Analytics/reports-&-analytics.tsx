@@ -85,7 +85,7 @@ export default function ReportsAnalytics() {
         <CardHeader>
           <CardTitle>Quick Stats</CardTitle>
           <CardDescription>
-            Overview of expense metrics ({filter.replace(/([A-Z])/g, " $1")}).
+            Overview of expense metrics for the selected period
           </CardDescription>
         </CardHeader>
 
