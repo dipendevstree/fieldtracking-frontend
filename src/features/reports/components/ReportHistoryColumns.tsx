@@ -55,7 +55,7 @@ export const reportsHistoryColumns: ColumnDef<CustomReportRow>[] = [
     accessorKey: "createdDate",
     cell: ({ row }) => {
       const date = new Date(row.original.createdDate);
-      return format(date, "dd/MM/yyyy");
+      return format(date, "dd-MM-yyyy");
     },
   },
   {

@@ -197,8 +197,8 @@ export function GeneralSettingsActionForm({
                           <SelectValue placeholder='Select date format' />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value='mm-dd-yyyy'>MM/DD/YYYY</SelectItem>
-                          <SelectItem value='dd-mm-yyyy'>DD/MM/YYYY</SelectItem>
+                          <SelectItem value='mm-dd-yyyy'>MM-DD-YYYY</SelectItem>
+                          <SelectItem value='dd-mm-yyyy'>DD-MM-YYYY</SelectItem>
                           <SelectItem value='yyyy-mm-dd'>YYYY-MM-DD</SelectItem>
                         </SelectContent>
                       </Select>
