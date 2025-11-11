@@ -30,7 +30,7 @@ const TAB_DEFINITIONS = [
   {
     key: "reports_analytics",
     value: "/approvals/reports-analytics",
-    label: "Reports & Analytics",
+    label: "Expense Analytics",
     content: <ReportsAnalytics />,
   },
 ];

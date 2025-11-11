@@ -16,7 +16,8 @@ const GeneralSettingsPage = () => {
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
   });
-  const [submitFixedExpenseForm, setSubmitFixedExpenseForm] = useState<Function | null>();
+  const [submitFixedExpenseForm, setSubmitFixedExpenseForm] =
+    useState<Function | null>();
   const [currentSettingsData, setCurrentSettingsData] = useState<any>(null);
   const { mutate } = usePermissionData({
     onSuccess(data) {
@@ -64,7 +65,7 @@ const GeneralSettingsPage = () => {
       "state",
       "zipCode",
       "country",
-      "userDepartment"
+      "userDepartment",
     ];
 
     const missingFields = requiredFields.filter(
@@ -90,7 +91,11 @@ const GeneralSettingsPage = () => {
       return;
     }
 
-    if (currentSettingsData?.fixedDayExpense && submitFixedExpenseForm) {
+    if (
+      currentSettingsData?.fixedDayExpense &&
+      submitFixedExpenseForm &&
+      currentSettingsData.isFixedExpenseDirty
+    ) {
       const result = await submitFixedExpenseForm();
       if (!result) return;
     }
@@ -151,8 +156,14 @@ const GeneralSettingsPage = () => {
         "userDepartment",
         currentSettingsData.userDepartment || null
       );
-      formData.append("removeOrgIcon", currentSettingsData.removeOrgIcon ? "true" : "");
-      formData.append("removeProfileImage", currentSettingsData.removeProfileImage ? "true" : "");
+      formData.append(
+        "removeOrgIcon",
+        currentSettingsData.removeOrgIcon ? "true" : ""
+      );
+      formData.append(
+        "removeProfileImage",
+        currentSettingsData.removeProfileImage ? "true" : ""
+      );
       // console.log('Organization update payload:', organizationUpdatePayload)
 
       // Update organization data
@@ -167,7 +178,7 @@ const GeneralSettingsPage = () => {
         });
       });
 
-      toast.success("Settings updated successfully!");
+      // toast.success("Settings updated successfully!");
 
       // Clear the current settings data to force a refresh
       setCurrentSettingsData(null);
@@ -190,7 +201,10 @@ const GeneralSettingsPage = () => {
 
       {/* Settings Configuration */}
       <div className="mb-2">
-        <GeneralSettings onDataChange={handleDataChange} setSubmitFixedExpenseForm={setSubmitFixedExpenseForm} isFixedExpenseDirty={isFixedExpenseDirty} setIsFixedExpenseDirty={setIsFixedExpenseDirty} />
+        <GeneralSettings
+          onDataChange={handleDataChange}
+          setSubmitFixedExpenseForm={setSubmitFixedExpenseForm} isFixedExpenseDirty={isFixedExpenseDirty} setIsFixedExpenseDirty={setIsFixedExpenseDirty} 
+        />
       </div>
 
       {/* Action Buttons */}
