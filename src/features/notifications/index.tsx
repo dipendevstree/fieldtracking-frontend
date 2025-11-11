@@ -34,7 +34,7 @@ export default function Notifications() {
     const { listData } = useGetUsers({
         page: 1,
         limit: 1000, // Get all users to count them
-        includeLatLong: true,
+        includeLatLong: false,
     });
     
     const usersList = useMemo(() => listData.map((user: any) => ({ value: user.id, label: `${user.firstName} ${user.lastName}` })), [listData]);
