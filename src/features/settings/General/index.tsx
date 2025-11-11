@@ -34,6 +34,7 @@ const GeneralSettingsPage = () => {
       });
     },
   });
+  const [isFixedExpenseDirty, setIsFixedExpenseDirty] = useState(false);
   // API hooks for updating data
   const organizationId = user?.organization?.organizationID;
   const { mutate: updateGeneralSettings, isPending: isGeneralSettingsLoading } =
@@ -44,6 +45,7 @@ const GeneralSettingsPage = () => {
   // Handle data changes from the component
   const handleDataChange = useCallback((data: any) => {
     setCurrentSettingsData(data);
+    setIsFixedExpenseDirty(isFixedExpenseDirty);
   }, []);
 
   const handleSaveSettings = async () => {
@@ -174,7 +176,7 @@ const GeneralSettingsPage = () => {
       toast.error("Failed to update settings. Please try again.");
     }
   };
-
+  console.log("handleDataChange", "button disabled =", "isLoading", isLoading, "!isFixedExpenseDirty", !isFixedExpenseDirty, "!currentSettingsData?.isSettingsDirty", !currentSettingsData?.isSettingsDirty)
   return (
     <Main className={cn("flex flex-col p-0")}>
       {/* General Settings Configuration Section */}
@@ -188,14 +190,14 @@ const GeneralSettingsPage = () => {
 
       {/* Settings Configuration */}
       <div className="mb-2">
-        <GeneralSettings onDataChange={handleDataChange} setSubmitFixedExpenseForm={setSubmitFixedExpenseForm}/>
+        <GeneralSettings onDataChange={handleDataChange} setSubmitFixedExpenseForm={setSubmitFixedExpenseForm} isFixedExpenseDirty={isFixedExpenseDirty} setIsFixedExpenseDirty={setIsFixedExpenseDirty} />
       </div>
 
       {/* Action Buttons */}
       <div className="flex justify-end gap-4">
         <button
           onClick={handleSaveSettings}
-          disabled={isLoading || !currentSettingsData}
+          disabled={isLoading || (!isFixedExpenseDirty)}
           className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? "Saving..." : "Save Settings"}

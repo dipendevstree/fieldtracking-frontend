@@ -32,11 +32,15 @@ import { CircleX } from "lucide-react";
 interface GeneralApplicationSettingsProps {
   onDataChange?: (data: any) => void;
   setSubmitFixedExpenseForm: Function;
+  isFixedExpenseDirty: boolean;
+  setIsFixedExpenseDirty: (isDirty: boolean) => void;
 }
 
 export default function GeneralApplicationSettings({
   onDataChange,
   setSubmitFixedExpenseForm,
+  isFixedExpenseDirty,
+  setIsFixedExpenseDirty
 }: GeneralApplicationSettingsProps) {
   const { user } = useAuth();
   const [autoExpenseApproval, setAutoExpenseApproval] = useState(false);
@@ -78,7 +82,6 @@ export default function GeneralApplicationSettings({
   const [filePreview, setFilePreview] = useState<Record<string, string>>({});
   const orgIconInputRef = useRef<HTMLInputElement>(null);
   const profileImageInputRef = useRef<HTMLInputElement>(null);
-  const [isFixedExpenseDirty, setIsFixedExpenseDirty] = useState(false);
 
   // State for country, state, and city dropdowns
   const [countries, setCountries] = useState<ICountry[]>([]);
