@@ -187,7 +187,7 @@ const GeneralSettingsPage = () => {
       toast.error("Failed to update settings. Please try again.");
     }
   };
-  console.log("handleDataChange", "button disabled =", "isLoading", isLoading, "!isFixedExpenseDirty", !isFixedExpenseDirty, "!currentSettingsData?.isSettingsDirty", !currentSettingsData?.isSettingsDirty)
+  
   return (
     <Main className={cn("flex flex-col p-0")}>
       {/* General Settings Configuration Section */}
@@ -211,7 +211,7 @@ const GeneralSettingsPage = () => {
       <div className="flex justify-end gap-4">
         <button
           onClick={handleSaveSettings}
-          disabled={isLoading || (!isFixedExpenseDirty)}
+          disabled={isLoading || (!isFixedExpenseDirty || !currentSettingsData)}
           className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? "Saving..." : "Save Settings"}
