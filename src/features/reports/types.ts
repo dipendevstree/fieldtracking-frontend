@@ -58,3 +58,60 @@ export interface ExpanseReportFilterState {
   type?: string;
   format: string;
 }
+
+export type ProductivityReportRow = {
+  date: string;
+  salesRepresentative: string;
+  punchIn: string;
+  punchOut: string;
+  vehicleType: string;
+  vehicleCategory: string;
+  odometer: string;
+  totalDistance: string;
+  dayStartAddress: string;
+  dayEndAddress: string;
+  status: string;
+  isOnBreak: string;
+  workingHours: string;
+  totalBreakTime: string;
+};
+
+export type CustomerReportRow = {
+  customerName: string;
+  streetAddress: string;
+  city: string;
+  state: string;
+  country: string;
+  zipCode: string;
+  phoneNumber: string;
+  totalVisitScheduled: string;
+  visitsCompleted: string;
+  pendingVisits: string;
+  completionRate: string;
+  totalVisitDuration: string;
+  cancelledVisits: string;
+  rescheduledVisits: string;
+  additionalNotes?: string;
+};
+
+export type VisitReportRow = {
+  date: string;
+  priority: string;
+  streetAddress: string;
+  city: string;
+  state: string;
+  country: string;
+  visitCheckInTime: string;
+  visitCheckOutTime: string;
+  duration: string;
+  feedBackDescription: string;
+  meetingNotes: string;
+  meetingOutcomes: string;
+  followUpDate: string;
+  nextActions: string;
+  salesRepresentativeUserName: string;
+  customerName: string;
+  status: string;
+  purpose: string;
+  feedBackStar: string;
+};

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Loader2, ChevronDown } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import ReportsHead from "./ReportsHead";
 import { CustomDataTable } from "@/components/shared/custom-data-table";
 import { expanseReportsColumns } from "./expanseReportsColumns";
@@ -250,8 +250,10 @@ const ExpanseReport: React.FC = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
-                disabled={isGenerating}
-                className="min-w-[160px] flex items-center justify-between"
+                disabled={
+                  isGenerating || isLoading || !reports || reports.length === 0
+                }
+                className="min-w-[150px]"
               >
                 {isGenerating ? (
                   <>
@@ -259,10 +261,7 @@ const ExpanseReport: React.FC = () => {
                     Generating...
                   </>
                 ) : (
-                  <>
-                    Generate Report
-                    <ChevronDown className="ml-2 h-4 w-4" />
-                  </>
+                  <>Generate Report</>
                 )}
               </Button>
             </DropdownMenuTrigger>

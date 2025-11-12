@@ -27,7 +27,7 @@ export default function Notification({
             <div className="w-77 truncate">
                 <span className='flex justify-between'>
                 <span>{notification.title}</span>
-                <span className='text-sm'>{moment(notification.createdDate).format('DD/MM/YYYY')}</span>
+                <span className='text-sm'>{moment(notification.createdDate).format('DD-MM-YYYY')}</span>
                 </span>
                 <div className='flex justify-between items-center gap-1 font-light'>
                 <span className='text-sm'>

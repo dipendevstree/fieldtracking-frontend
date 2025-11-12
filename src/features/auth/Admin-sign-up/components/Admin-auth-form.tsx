@@ -521,9 +521,7 @@ const RegistrationForm = () => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="department">
-                        Department <span className="text-red-500">*</span>
-                      </Label>
+                      <Label htmlFor="department">Department</Label>
                       <Controller
                         name="department"
                         control={control}
