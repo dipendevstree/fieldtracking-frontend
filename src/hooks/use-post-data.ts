@@ -23,6 +23,7 @@ interface UsePostDataProps<TData, TVariables> {
   refetchQueries?: string[]
   onSuccess?: (data: TData) => void
   onError?: (error: Error) => void
+  skipToast?: boolean
 }
 
 const usePostData = <TData = unknown, TVariables = unknown>({
@@ -32,6 +33,7 @@ const usePostData = <TData = unknown, TVariables = unknown>({
   refetchQueries,
   onSuccess,
   onError,
+  skipToast = false,
 }: UsePostDataProps<TData, TVariables>) => {
   const queryClient = useQueryClient()
 
@@ -47,10 +49,11 @@ const usePostData = <TData = unknown, TVariables = unknown>({
         !response?.error &&
         (response?.statusCode === 200 || response?.statusCode === 201)
       ) {
-        toast(response?.message || 'Data posted successfully', {
-          position: 'top-center',
-          duration: 2000,
-        })
+        if (!skipToast) 
+          toast(response?.message || 'Data posted successfully', {
+            position: 'top-center',
+            duration: 2000,
+          })
         return response.data as TData // Return the data with proper typing
       }
       // Handle error cases

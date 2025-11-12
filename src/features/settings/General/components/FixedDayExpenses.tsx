@@ -35,10 +35,10 @@ export default function FixedDayExpenses({
 }: FixedDayExpensesProps) {
   const { list: allFixedDayExpenseList = {}, isLoading } =
     useGetAllFixedDayExpense();
-  const { mutate: createFixedDayExpense } = useCreateFixedDayExpense();
-  const { mutate: updateFixedDayExpense } = useUpdateFixedDayExpense();
+  const { mutate: createFixedDayExpense } = useCreateFixedDayExpense(undefined, true);
+  const { mutate: updateFixedDayExpense } = useUpdateFixedDayExpense(undefined, true);
   const { mutate: deleteFixedDayExpense, isPending: isDeleting } =
-    useDeleteFixedDayExpense();
+    useDeleteFixedDayExpense(undefined);
 
   const [deletionState, setDeletionState] = useState<DeletionState | null>(
     null
