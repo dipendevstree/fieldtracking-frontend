@@ -28,9 +28,7 @@ export const columns: ColumnDef<any>[] = [
         ? format(new Date(createdAt), "dd-MM-yyyy")
         : "-";
 
-      return (
-        <div className="text-muted-foreground text-sm">{formattedDate}</div>
-      );
+      return <div className=" text-sm">{formattedDate}</div>;
     },
     enableSorting: false,
   },

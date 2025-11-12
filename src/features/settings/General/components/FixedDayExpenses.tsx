@@ -28,6 +28,7 @@ import {
   useUpdateFixedDayExpense,
 } from "../services/Generalhook";
 import { Label } from "@/components/ui/label";
+import { formatDropDownLabel } from "@/utils/commonFunction";
 
 export default function FixedDayExpenses({
   setSubmitFixedExpenseForm,
@@ -35,8 +36,14 @@ export default function FixedDayExpenses({
 }: FixedDayExpensesProps) {
   const { list: allFixedDayExpenseList = {}, isLoading } =
     useGetAllFixedDayExpense();
-  const { mutate: createFixedDayExpense } = useCreateFixedDayExpense(undefined, true);
-  const { mutate: updateFixedDayExpense } = useUpdateFixedDayExpense(undefined, true);
+  const { mutate: createFixedDayExpense } = useCreateFixedDayExpense(
+    undefined,
+    true
+  );
+  const { mutate: updateFixedDayExpense } = useUpdateFixedDayExpense(
+    undefined,
+    true
+  );
   const { mutate: deleteFixedDayExpense, isPending: isDeleting } =
     useDeleteFixedDayExpense(undefined);
 
@@ -251,7 +258,7 @@ const FixedDayTierExpenseRow = ({
     const expenseCategoryData = watch(`fixedDayTierExpenseList.${levelIdx}`);
     initiateDelete({
       itemName: "Expense Category",
-      itemIdentifierValue: `Fixed Day Expense (Tier: ${expenseCategoryData.tierKey})`,
+      itemIdentifierValue: `Fixed Day Expense ( ${formatDropDownLabel(expenseCategoryData.tierKey)} )`,
       onConfirm: () => {
         if (expenseCategoryData.fixedDayExpenseId) {
           deleteApprovalLevel(

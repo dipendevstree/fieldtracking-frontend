@@ -528,10 +528,10 @@ const UserTrackingTimeline = ({
               <div className="text-sm text-gray-500">
                 {user?.role?.roleName}
               </div>
-              <div className="mt-1 flex items-center gap-2">
+              {/* <div className="mt-1 flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-teal-500"></div>
                 <span className="text-sm text-gray-600">100%</span>
-              </div>
+              </div> */}
             </div>
             <span
               className={`flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium ${

@@ -28,9 +28,7 @@ export const columns: ColumnDef<any>[] = [
         ? format(new Date(createdAt), "dd-MM-yyyy")
         : "-";
 
-      return (
-        <div className="text-muted-foreground text-sm">{formattedDate}</div>
-      );
+      return <div className=" text-sm">{formattedDate}</div>;
     },
     enableSorting: false,
   },
@@ -41,7 +39,7 @@ export const columns: ColumnDef<any>[] = [
     ),
     cell: ({ row }) => {
       const userCount = row.original.userCount || 0;
-      return <div className="text-muted-foreground text-sm">{userCount}</div>;
+      return <div className=" text-sm">{userCount}</div>;
     },
     enableSorting: false,
   },
