@@ -81,6 +81,7 @@ export interface LoginUser {
   organizationID:string;
   organization:any,
   userName:string,
+  fcm_token?: string | null;
 }
 
 // Complete login response

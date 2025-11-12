@@ -28,10 +28,11 @@ export const useCreateUsers = (onSuccess?: () => void) => {
     },
   })
 }
-export const useUpdateUser = (id: string, onSuccess?: () => void) => {
+export const useUpdateUser = (id: string, onSuccess?: () => void, skipToast?: boolean) => {
   return usePatchData({
     url: `${API.users.update}/${id}`,
     refetchQueries: [USEALLUSERS_QUERY],
+    skipToast,
     onSuccess: (data) => {
       console.log('User updated successfully:', data) // Debug log
       if (onSuccess) {
