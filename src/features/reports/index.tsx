@@ -6,6 +6,7 @@ import { Main } from "@/components/layout/main";
 import ExpanseReport from "./components/expanseReport";
 import CustomReports from "./components/custom-reports";
 import ReportsHistory from "./components/ReportsHistory";
+import { useReportSocketTracker } from "./hooks/useReportSocketTracker";
 
 export type ApprovalsTabValue =
   | "/reports"
@@ -20,6 +21,9 @@ export default function Reports() {
   const handleTabChange = (value: string) => {
     setActiveTab(value as ApprovalsTabValue);
   };
+
+  // Socket listeners
+  useReportSocketTracker();
 
   return (
     <Main className={cn("flex flex-col gap-2 p-4")}>
