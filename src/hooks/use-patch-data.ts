@@ -16,6 +16,7 @@ interface PatchDataOptions<TData, TVariables> {
   onSuccess?: (data: TData) => void
   onError?: (error: EnhancedError) => void
   mutationOptions?: UseMutationOptions<TData, Error, TVariables>
+  skipToast?: boolean
 }
 
 const usePatchData = <TData = unknown, TVariables = unknown>({
@@ -26,6 +27,7 @@ const usePatchData = <TData = unknown, TVariables = unknown>({
   onSuccess,
   onError,
   token,
+  skipToast = false,
 }: PatchDataOptions<TData, TVariables>) => {
   const queryClient = useQueryClient()
 
@@ -39,10 +41,11 @@ const usePatchData = <TData = unknown, TVariables = unknown>({
       })
 
       if (response?.statusCode === 200) {
-        toast(response?.message || 'Data updated successfully', {
-          duration: 2000,
-          position: 'top-center',
-        })
+        if (!skipToast) 
+          toast(response?.message || 'Data updated successfully', {
+            duration: 2000,
+            position: 'top-center',
+          })
         return response.data as TData
       }
 

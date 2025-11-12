@@ -490,7 +490,7 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
         </div>
       </div>
 
-      {isCreateError && (
+      {/* {isCreateError && (
         <div className="text-red-500">
           Failed to create role. Please try again.
         </div>
@@ -499,7 +499,7 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
         <div className="text-red-500">
           Failed to update role. Please try again.
         </div>
-      )}
+      )} */}
 
       <Card>
         <CardHeader>

@@ -211,10 +211,11 @@ export const useGetAllFixedDayExpense = (params: any = {}) => {
     error: query.error,
   };
 };
-export const useCreateFixedDayExpense = (onSuccess?: () => void) => {
+export const useCreateFixedDayExpense = (onSuccess?: () => void, skipToast?: boolean) => {
   return usePostData({
     url: API.fixedDayExpense.create,
     refetchQueries: [API.fixedDayExpense.list],
+    skipToast: skipToast,
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
@@ -222,10 +223,11 @@ export const useCreateFixedDayExpense = (onSuccess?: () => void) => {
     },
   });
 };
-export const useUpdateFixedDayExpense = (onSuccess?: () => void) => {
+export const useUpdateFixedDayExpense = (onSuccess?: () => void, skipToast?: boolean) => {
   return usePatchData({
     url: API.fixedDayExpense.update,
     refetchQueries: [API.fixedDayExpense.list],
+    skipToast: skipToast,
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
@@ -233,11 +235,11 @@ export const useUpdateFixedDayExpense = (onSuccess?: () => void) => {
     },
   });
 };
-export const useDeleteFixedDayExpense = (onSuccess?: () => void) => {
+export const useDeleteFixedDayExpense = (onSuccess?: () => void, skipToast?: boolean) => {
   return useDeleteData({
     url: API.fixedDayExpense.delete,
     refetchQueries: [API.fixedDayExpense.list],
-
+    skipToast: skipToast,
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
