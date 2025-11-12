@@ -29,6 +29,21 @@ const statusColors: Record<string, { text: string; bg: string; dot: string }> =
       bg: "bg-blue-100",
       dot: "bg-blue-500",
     },
+    completed: {
+      text: "text-green-600",
+      bg: "bg-green-100",
+      dot: "bg-green-500",
+    },
+    in_progress: {
+      text: "text-orange-600",
+      bg: "bg-orange-100",
+      dot: "bg-orange-500",
+    },
+    processing: {
+      text: "text-orange-600",
+      bg: "bg-orange-100",
+      dot: "bg-orange-500",
+    },
     success: {
       text: "text-green-600",
       bg: "bg-green-100",
@@ -38,7 +53,7 @@ const statusColors: Record<string, { text: string; bg: string; dot: string }> =
       text: "text-green-600",
       bg: "bg-green-100",
       dot: "bg-green-500",
-    },  
+    },
     rejected: {
       text: "text-red-600",
       bg: "bg-red-100",

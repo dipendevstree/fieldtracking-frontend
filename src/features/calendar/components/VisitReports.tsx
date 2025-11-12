@@ -57,7 +57,7 @@ export default function VisitReports() {
                   <div>
                     <h3 className='text-lg font-semibold'>{report?.customer?.companyName}</h3>
                     <p className='text-muted-foreground text-sm'>
-                      {`${report?.salesRepresentativeUser?.firstName} ${report?.salesRepresentativeUser?.lastName}`} • {moment(report.date).format("YYYY-MM-DD")}
+                      {`${report?.salesRepresentativeUser?.firstName} ${report?.salesRepresentativeUser?.lastName}`} • {moment(report.date).format("DD-MM-yyyy")}
                     </p>
                   </div>
                   <div className='flex items-center space-x-2'>

@@ -15,7 +15,7 @@ export const expanseReportsColumns: ColumnDef<any>[] = [
   {
     accessorFn: (row) => {
       const date = row.expenseDate;
-      return date ? format(new Date(date), "dd/MM/yyyy") : "-";
+      return date ? format(new Date(date), "dd-MM-yyyy") : "-";
     },
     id: "expenseDate",
     header: ({ column }) => (
@@ -26,7 +26,7 @@ export const expanseReportsColumns: ColumnDef<any>[] = [
   {
     accessorFn: (row) => {
       const date = row.createdDate;
-      return date ? format(new Date(date), "dd/MM/yyyy") : "-";
+      return date ? format(new Date(date), "dd-MM-yyyy") : "-";
     },
     id: "createdDate",
     header: ({ column }) => (

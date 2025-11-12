@@ -225,6 +225,7 @@ const API = {
     list: "report/list",
     create: "report/create",
     createExpanseReport: "report/expenseReportCreate",
+    customReportList: "report/type/list",
   },
   termsAndConditions: {
     list: "termsAndConditions/list",

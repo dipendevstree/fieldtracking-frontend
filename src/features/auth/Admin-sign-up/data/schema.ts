@@ -43,7 +43,7 @@ const step1BaseSchema = z.object({
       }
     }),
   jobTitle: z.string().nonempty("Job title is required"),
-  department: z.string().nonempty("Department is required"),
+  department: z.string().optional(),
   PhoneCountryCode: z.string().nonempty("PhoneCountryCode is required"),
 });
 
