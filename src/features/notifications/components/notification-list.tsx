@@ -15,12 +15,14 @@ import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
 import Notification from "./notification";
+import NotificationAction from "./notification-action";
 
 export function NotificationList() {
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
     isMobile: false,
+    sort: "desc",
   });
   const notifications = useGetNotifications(pagination);
   const notificationData = notifications.allData ?? [];
@@ -60,17 +62,19 @@ export function NotificationList() {
           <DropdownMenuGroup>
             {notificationData.length > 0 ? (
               notificationData.map((notification: any, key: number) => (
-                <DropdownMenuItem
-                  key={key}
-                  ref={
-                    key === notificationData.length - 1
-                      ? notifications.lastPostRef
-                      : null
-                  }
-                  className="flex items-center justify-between m-2 my-4 outline-none"
-                >
-                  <Notification key={key} notification={notification} />
-                </DropdownMenuItem>
+                <NotificationAction key={key} row={{ original: notification }}>
+                  <DropdownMenuItem
+                    key={key}
+                    ref={
+                      key === notificationData.length - 1
+                        ? notifications.lastPostRef
+                        : null
+                    }
+                    className="flex items-center justify-between m-2 my-4 outline-none"
+                  >
+                    <Notification key={key} notification={notification} />
+                  </DropdownMenuItem>
+                </NotificationAction>
               ))
             ) : (
               <DropdownMenuLabel className="flex items-center justify-between">

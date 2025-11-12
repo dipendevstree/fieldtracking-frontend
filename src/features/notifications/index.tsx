@@ -12,6 +12,9 @@ import moment from "moment-timezone";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 import { useGetUsers } from "../livetracking/services/live-tracking-services";
+import CustomTooltip from "@/components/shared/custom-tooltip";
+import { SquareArrowOutUpRight } from "lucide-react";
+import NotificationAction from "./components/notification-action";
 
 export default function Notifications() {
     const initialDateRange: DateRange = {
@@ -97,7 +100,7 @@ export default function Notifications() {
                                 )}`
                             }
                             alt={row.original.createdByData.fullName}
-                            className="h-12 w-12 rounded-full object-cover"
+                            className="h-8 w-8 rounded-full object-cover"
                         />
                     )}
                     <span className="block my-auto">
@@ -115,14 +118,18 @@ export default function Notifications() {
             accessorKey: "title",
             header: "Title",
             cell: ({ row }) => (
-                <div>{row?.original?.title}</div>
+                <CustomTooltip title={row?.original?.title}>
+                    <div>{row?.original?.title.length > 25 ? row?.original?.title.slice(0, 25) + "..." : row?.original?.title}</div>
+                </CustomTooltip>
             )
         },
         {
             accessorKey: "message",
             header: "Message",
             cell: ({ row }) => (
-                <div>{row?.original?.body}</div>
+                <CustomTooltip title={row?.original?.body}>
+                    <div>{row?.original?.body.length > 50 ? row?.original?.body.slice(0, 50) + "..." : row?.original?.body}</div>
+                </CustomTooltip>
             )
         },
         {
@@ -136,7 +143,18 @@ export default function Notifications() {
             accessorKey: "dateTime",
             header: "Date & Time",
             cell: ({ row }) => (
-                <div>{moment(row?.original?.createdDate).format("YYYY-MM-DD hh:mm A")}</div>
+                <div>{moment(row?.original?.createdDate).format("DD-MM-YYYY hh:mm A")}</div>
+            )
+        },
+        {
+            accessorKey: "action",
+            header: "Action",
+            cell: ({ row }) => (
+                <div className="flex items-center justify-center">
+                    <NotificationAction row={row} removeElementIfNoLink={true}>
+                        <SquareArrowOutUpRight size={20} />
+                    </NotificationAction>
+                </div>
             )
         }
     ];
