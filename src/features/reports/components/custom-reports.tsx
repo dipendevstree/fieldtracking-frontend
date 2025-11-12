@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useCallback } from "react";
+import React, { useState, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -25,10 +25,18 @@ import GlobalFilterSection from "@/components/global-table-filter-section";
 import { useGetExpenseCategoriesDropDownList } from "../../settings/Approvers/services/approvers.hook";
 import { CustomeReportFilter } from "../types";
 import { formatDropDownLabel } from "@/utils/commonFunction";
-import { customReportsColumns } from "./customReportsColumns";
 import { useGetAllCustomer } from "@/features/calendar/services/calendar-view.hook";
-import { socketForVisit } from "@/socket/socket";
-import { useAuth } from "@/stores/use-auth-store";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { format } from "date-fns";
+import { ProductivityReportsColumns } from "./productivityReportsColumns";
+import { CustomerReportColumns } from "./CustomerReportColumns";
+import { VisitReportColumns } from "./visitReportColumns";
 
 const normalizeOptions = (options: any[]) =>
   options.map((o) => ({ ...o, value: String(o.value) }));
@@ -37,7 +45,7 @@ const CustomReport: React.FC = () => {
   // -------------------- State --------------------
   const [filters, setFilters] = useState<CustomeReportFilter>({
     dateRange: undefined,
-    reportType: "",
+    reportType: REPORT_TYPE.VISIT_REPORTS,
     salesRep: "",
     customerId: "",
     category: "",
@@ -47,14 +55,12 @@ const CustomReport: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(DEFAULT_PAGE_NUMBER);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [reportData, setReportData] = useState<any[]>([]);
 
   // -------------------- API Hooks --------------------
   const { data: userListDropDownData = [] } = useGetAllUsers();
   const { expenseCategories: expenseCategoriesData } =
     useGetExpenseCategoriesDropDownList({ defaultCategory: true });
   const { data: customers } = useGetAllCustomer();
-  const { user } = useAuth();
 
   const userListDropDownList = userListDropDownData.map((user: any) => ({
     ...user,
@@ -86,11 +92,6 @@ const CustomReport: React.FC = () => {
     })
   );
 
-  const formatOptions = Object.entries(REPORT_FORMAT).map(([key, value]) => ({
-    label: formatDropDownLabel(key),
-    value,
-  }));
-
   const reportTypeOptions = Object.entries(REPORT_TYPE).map(([key, value]) => ({
     label: formatDropDownLabel(key),
     value,
@@ -107,11 +108,21 @@ const CustomReport: React.FC = () => {
   const apiFilters: ReportFilter = useMemo(() => {
     const type = filters.reportType || undefined;
 
+    const startDate =
+      filters.dateRange?.from instanceof Date
+        ? format(filters.dateRange.from, "yyyy-MM-dd")
+        : undefined;
+
+    const endDate =
+      filters.dateRange?.to instanceof Date
+        ? format(filters.dateRange.to, "yyyy-MM-dd")
+        : undefined;
+
     const baseFilters: any = {
       type,
       format: filters.format || undefined,
-      startDate: filters.dateRange?.from || undefined,
-      endDate: filters.dateRange?.to || undefined,
+      startDate,
+      endDate,
     };
 
     const reportSpecificFilters: Record<string, any> = {
@@ -131,10 +142,10 @@ const CustomReport: React.FC = () => {
     if (type) {
       Object.assign(baseFilters, reportSpecificFilters[type] || {});
     }
+
     return baseFilters;
   }, [
     filters.reportType,
-    filters.format,
     filters.dateRange?.from,
     filters.dateRange?.to,
     filters.salesRep,
@@ -143,6 +154,7 @@ const CustomReport: React.FC = () => {
   ]);
 
   const { reports, isLoading, totalCount } = useGetCustomReports({
+    ...apiFilters,
     page: currentPage,
     limit: pageSize,
   });
@@ -186,10 +198,6 @@ const CustomReport: React.FC = () => {
       newErrors.dateRange = "Date range is required";
     }
 
-    if (!filters.format) {
-      newErrors.format = "Format is required";
-    }
-
     if (filters.reportType === REPORT_TYPE.PRODUCTIVITY_REPORT) {
       visibleFiltersWithReportType.forEach(({ key, placeholder }) => {
         if (["report-type", "date-range", "format"].includes(key)) return;
@@ -211,10 +219,18 @@ const CustomReport: React.FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleGenerateReport = async () => {
+  const handleGenerateReport = async (selectedFormat?: string) => {
     setErrors({});
+    const formatToUse = selectedFormat || filters.format;
+    if (!formatToUse) {
+      setErrors({ format: "Format is required" });
+      return;
+    }
+
+    const finalFilters = { ...apiFilters, format: formatToUse };
+
     if (!validateFilters()) return;
-    generateReport(apiFilters);
+    generateReport(finalFilters);
   };
 
   const onPaginationChange = (page: number, size: number) => {
@@ -234,23 +250,13 @@ const CustomReport: React.FC = () => {
         dataRangeClassName: "w-full max-w-xs",
       },
       {
-        key: "format",
-        type: "searchable-select",
-        onChange: (v) => handleFilterChange({ format: v }),
-        placeholder: "Select Format",
-        options: formatOptions,
-        value: filters.format,
-        onCancelPress: () => handleFilterChange({ format: "" }),
-        searchableSelectClassName: "w-full max-w-[180px]",
-      },
-      {
         key: "report-type",
         type: "searchable-select",
         onChange: (v) => handleFilterChange({ reportType: v }),
         placeholder: "Select Report Type",
         options: reportTypeOptions,
         value: filters.reportType,
-        onCancelPress: () => handleFilterChange({ reportType: "" }),
+        // onCancelPress: () => handleFilterChange({ reportType: "" }),
         searchableSelectClassName: "w-full max-w-[180px]",
       },
       {
@@ -303,14 +309,12 @@ const CustomReport: React.FC = () => {
       "salesRepresentativeUserId",
       "customerId",
       "status",
-      "format",
     ],
     [REPORT_TYPE.PRODUCTIVITY_REPORT]: [
       "date-range",
       "salesRepresentativeUserId",
-      "format",
     ],
-    [REPORT_TYPE.CUSTOMER_REPORT]: ["date-range", "customerId", "format"],
+    [REPORT_TYPE.CUSTOMER_REPORT]: ["date-range", "customerId"],
   };
 
   const visibleFilterKeys =
@@ -328,52 +332,16 @@ const CustomReport: React.FC = () => {
     [filters.reportType, visibleFilters]
   );
 
-  useEffect(() => {
-    if (Array.isArray(reports)) {
-      setReportData(reports);
-    }
-  }, [reports]);
+  //---------------------columns --------------------
+  const reportColumnsMap: Record<REPORT_TYPE, ColumnDef<any>[]> = {
+    [REPORT_TYPE.VISIT_REPORTS]: VisitReportColumns,
+    [REPORT_TYPE.CUSTOMER_REPORT]: CustomerReportColumns,
+    [REPORT_TYPE.PRODUCTIVITY_REPORT]: ProductivityReportsColumns,
+  };
 
-  const handleReportGenerated = useCallback((data: any) => {
-    setReportData((prev: any) => {
-      return prev.map((r: any) =>
-        r.id === data.id
-          ? {
-              ...r,
-              status: data.status ?? r.status,
-              fileUrl: data.fileUrl ?? r.fileUrl,
-              fileSize: data.fileSize ?? r.fileSize,
-            }
-          : r
-      );
-    });
-  }, []);
-
-  // Socket listeners
-  useEffect(() => {
-    const socket = socketForVisit(user?.access_token);
-    if (!socket) return;
-
-    const orgId = user?.organizationID;
-
-    const handleConnect = () => {
-      socket.emit("track_reports", { organizationId: orgId });
-    };
-
-    // Listen to events
-    socket.on("connect", handleConnect);
-    socket.on("report_generated", handleReportGenerated);
-
-    return () => {
-      // 1. Leave the report room
-      socket.emit("untrack_reports", { organizationId: orgId });
-      // 2. Remove listeners
-      socket.off("connect", handleConnect);
-      socket.off("report_generated", handleReportGenerated);
-      // 3. Disconnect socket
-      socket.disconnect();
-    };
-  }, [user?.access_token, user?.organizationID, handleReportGenerated]);
+  const columns = useMemo<ColumnDef<any>[]>(() => {
+    return reportColumnsMap[filters.reportType as REPORT_TYPE] || [];
+  }, [filters.reportType, reportColumnsMap]);
 
   // -------------------- UI --------------------
   return (
@@ -399,27 +367,44 @@ const CustomReport: React.FC = () => {
         )}
 
         <div className="flex justify-end">
-          <Button
-            onClick={handleGenerateReport}
-            disabled={isGenerating}
-            className="min-w-[120px]"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Generating...
-              </>
-            ) : (
-              "Generate Report"
-            )}
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                disabled={
+                  isGenerating || isLoading || !reports || reports.length === 0
+                }
+                className="min-w-[150px]"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  "Generate Report"
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {Object.entries(REPORT_FORMAT).map(([key, value]) => (
+                <DropdownMenuItem
+                  key={key}
+                  onClick={() => {
+                    handleGenerateReport(value);
+                  }}
+                >
+                  {formatDropDownLabel(key)}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </Card>
 
       <Card className="p-4 mt-4 gap-2">
         <ReportsHead
           title="Custom Reports"
-          subtitle="Custom report results generated previously"
+          subtitle="Custom report results generated based on your filters."
         />
         {isLoading ? (
           <div className="flex items-center justify-center h-48">
@@ -429,9 +414,9 @@ const CustomReport: React.FC = () => {
         ) : (
           <CustomDataTable
             paginationCallbacks={{ onPaginationChange }}
-            data={reportData}
+            data={reports}
             currentPage={currentPage}
-            columns={customReportsColumns as ColumnDef<unknown>[]}
+            columns={columns as ColumnDef<unknown>[]}
             totalCount={totalCount}
             defaultPageSize={pageSize}
           />
