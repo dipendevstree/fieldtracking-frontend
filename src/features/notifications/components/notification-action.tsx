@@ -16,8 +16,8 @@ export function toUrl(row: any) {
     case NOTIFICATION_TYPE.VIEW_VISIT:
     case NOTIFICATION_TYPE.VISIT_CHANGES:
       return {
-        to: "/calendar/upcoming-visit"
-      }
+        to: "/calendar/upcoming-visit",
+      };
 
     case NOTIFICATION_TYPE.EXPENSE_REVIEW:
     case NOTIFICATION_TYPE.EXPENSE_REJECT:
@@ -44,10 +44,7 @@ export default function NotificationAction({
 
   if (url && url?.to) {
     return (
-      <Link
-        {...url}
-        target="_blank"
-      >
+      <Link {...url} target="_blank">
         {children}
       </Link>
     );
