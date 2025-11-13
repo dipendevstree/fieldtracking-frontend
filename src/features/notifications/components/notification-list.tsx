@@ -45,7 +45,7 @@ export function NotificationList() {
             }
           }
         >
-          {"New Expense Submitted"}
+          {notification?.title ? notification?.title: "New Message"}
         </div>,
         {
           icon: <BellRing className="w-5 h-5" />,
@@ -55,13 +55,14 @@ export function NotificationList() {
                 url ? navigate({ to: url.to, params: url.params }) : null
               }
             >
-              {"Atmaram Bhide added a new expense."}
+              {notification?.body ? notification?.body : "You have received a new message."}
             </div>
           ),
           duration: 8000,
-          position: "top-right",
+          position: "top-center",
         }
       );
+      notifications.refetch();
     }
   });
 
