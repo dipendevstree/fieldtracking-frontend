@@ -8,17 +8,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useGetNotifications } from "../services/notifications.hook";
 import { useState } from "react";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import InfiniteScroll from "react-infinite-scroll-component";
 import { DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
 import Notification from "./notification";
-import NotificationAction from "./notification-action";
+import NotificationAction, { toUrl } from "./notification-action";
 import { useFcm } from "@/hooks/use-fcm";
+import { toast } from "sonner";
+import { BellRing } from "lucide-react";
 
 export function NotificationList() {
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
@@ -27,11 +31,42 @@ export function NotificationList() {
   });
   const notifications = useGetNotifications(pagination);
   const notificationData = notifications.allData ?? [];
-  const { newNotification } = useFcm();
-  console.log("newNotification", newNotification);
+  const { newNotification: _newNotification } = useFcm((notification) => {
+    console.log("Notification Recieved: ", notification)
+    if (notification) {
+      const url = toUrl({ original: { ...notification, messageType: notification?.extraData?.messageType } });
+      console.log("notification receievd url", url);
+      const id = toast.success(
+        <div
+          onClick={() =>
+            {
+              if (url) navigate({ to: url.to, params: url.params })
+              toast.dismiss(id);
+            }
+          }
+        >
+          {"New Expense Submitted"}
+        </div>,
+        {
+          icon: <BellRing className="w-5 h-5" />,
+          description: (
+            <div
+              onClick={() =>
+                url ? navigate({ to: url.to, params: url.params }) : null
+              }
+            >
+              {"Atmaram Bhide added a new expense."}
+            </div>
+          ),
+          duration: 8000,
+          position: "top-right",
+        }
+      );
+    }
+  });
 
   return (
-    <DropdownMenu>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
@@ -45,7 +80,7 @@ export function NotificationList() {
       <DropdownMenuContent className="w-100 max-h-150" align="end">
         <DropdownMenuLabel className="flex justify-between">
           Notifications
-          <Link to={"/notifications"}>
+          <Link to={"/notifications"} onClick={() => setOpen(false)}>
             <span>View All</span>
           </Link>
         </DropdownMenuLabel>

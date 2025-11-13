@@ -5,6 +5,30 @@ importScripts(
   "https://www.gstatic.com/firebasejs/10.0.0/firebase-messaging-compat.js"
 );
 
+// message redirect function logic
+function redirectToUrl(messageType, notification) {
+  switch (messageType) {
+    // chat messages are never come
+    case "CHAT_MESSAGE":
+      return "/"
+
+    case "VIEW_VISIT":
+    case "VISIT_CHANGES":
+      return "/calendar/upcoming-visit";
+
+    case "EXPENSE_REVIEW":
+    case "EXPENSE_REJECT":
+    case "EXPENSE_APPROVAL":
+    case "EXPENSE_REQUEST":
+      return `${notification.extraData?.id ? "/approvals/daily-expense-details/" + String(notification.extraData?.id): null}`;
+
+    case "LATE_CHECKIN":
+    case "LATE_CHECKOUT":
+    case "IDLE_TIME":
+      return "/"
+  }
+}
+
 // Replace with your firebase config values (only the keys needed)
 const firebaseConfig = {
   apiKey: "AIzaSyDJFt-CmUF8QTsjVVAkEAWI80zjRJ9SYVk",
@@ -16,22 +40,38 @@ const firebaseConfig = {
   measurementId: "G-RNTFQ8WQ0V",
 };
 
-firebase.initializeApp(firebaseConfig);
+if (firebase.apps.length === 0) {
+  firebase.initializeApp(firebaseConfig);
+}
 
 const messaging = firebase.messaging();
 
+self.addEventListener("notificationclick", function (event) {
+  event.notification.close();
+  const url = event.notification.data?.url;
+  if (url) {
+    event.waitUntil(clients.openWindow(url));
+  }
+});
+
 // Optional: customize background notification handling
 messaging.onBackgroundMessage(function (payload) {
-  console.log(
-    "[firebase-messaging-sw.js] Received background message ",
-    payload
-  );
-  const notification = payload.notification || {};
-  const title = notification.title || "Background Message";
+  const notification = {
+    title: payload?.notification?.title,
+    body: payload?.notification?.body,
+    image: payload?.notification?.image,
+    createdDate: new Date().toISOString(),
+    extraData: payload?.data
+  };
+  const title = notification.title || "New Message";
   const options = {
     body: notification.body || "",
     icon: notification.icon || "/favicon.ico",
-    data: payload.data || {},
+    data: payload?.data || {},
   };
+  const url = redirectToUrl(notification.extraData?.messageType, notification);
+  if (url) {
+    options.data.url = url;
+  }
   self.registration.showNotification(title, options);
 });

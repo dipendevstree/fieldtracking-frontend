@@ -9,7 +9,7 @@ export interface FcmNotification {
   [key: string]: any;
 }
 
-export function useFcm() {
+export function useFcm(onMessage: (notification: FcmNotification) => void) {
   const [token, setToken] = useState<string | null>(null);
   const [permissionGranted, setPermissionGranted] = useState<boolean>(false);
   const [newNotification, setNewNotification] =
@@ -23,7 +23,6 @@ export function useFcm() {
     if (permission === "granted") {
       const fcmToken = await requestFcmToken();
       if (fcmToken) {
-        console.log("✅ FCM Token Hook:", fcmToken);
         setToken(fcmToken);
         setPermissionGranted(true);
       } else {
@@ -38,19 +37,20 @@ export function useFcm() {
   // ✅ Listen for foreground messages
   useEffect(() => {
     const unsubscribe = onForegroundMessage((payload) => {
-      console.log("📩 Foreground message received:", payload);
-      
       const notification: FcmNotification = {
         title: payload.notification?.title,
         body: payload.notification?.body,
         image: payload.notification?.image,
         createdDate: new Date().toISOString(),
+        extraData: payload.data
       };
       setNewNotification(notification);
+      console.log("Notification Recieveed and created nofification instance:", payload, notification);
+      if (onMessage) onMessage(notification);
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [onMessage]);
 
   return { token, permissionGranted, newNotification, requestPermission };
 }
