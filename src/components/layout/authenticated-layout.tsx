@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Navigate, Outlet } from "@tanstack/react-router";
+import { Navigate, Outlet, useNavigate } from "@tanstack/react-router";
 import { useAppStore } from "@/stores/use-app-store";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -27,7 +27,7 @@ export function AuthenticatedLayout({
     true
   );
   const { token, requestPermission, permissionGranted } = useFcm();
-
+  const navigate = useNavigate();
   // ✅ Ask for permission once after login
   useEffect(() => {
     if (user && !user.isSuperAdmin && !permissionGranted) {
@@ -58,6 +58,25 @@ export function AuthenticatedLayout({
       );
     }
   }, [token, user?.id]);
+
+  useEffect(() => {
+    if ("serviceWorker" in navigator) {
+      const handler = (event: any) => {
+        if (event.data?.type === "navigate" && event.data.url) {
+          console.log("[SW message] Navigate to:", event.data.url);
+          // Focus the window and navigate internally
+          window.focus();
+          navigate({ to: event.data.url});
+        }
+      }
+      navigator.serviceWorker.addEventListener("message", handler);
+      
+      // Optional cleanup
+      return () => {
+        navigator.serviceWorker.removeEventListener("message", handler);
+      };
+    }
+  }, [navigate])
 
   if (isLoading) {
     return (
