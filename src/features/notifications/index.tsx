@@ -7,7 +7,6 @@ import GlobalFilterSection from "@/components/global-table-filter-section";
 import { FilterConfig } from "@/components/global-filter-section";
 import { CustomDataTable } from "@/components/shared/custom-data-table";
 import { ColumnDef } from "@tanstack/react-table";
-import { formatName, getFullName } from "@/utils/commonFunction";
 import moment from "moment-timezone";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
@@ -15,6 +14,7 @@ import { useGetUsers } from "../livetracking/services/live-tracking-services";
 import CustomTooltip from "@/components/shared/custom-tooltip";
 import { SquareArrowOutUpRight } from "lucide-react";
 import NotificationAction from "./components/notification-action";
+import UserProfile from "./components/uesr-profile";
 
 export default function Notifications() {
     const initialDateRange: DateRange = {
@@ -91,26 +91,7 @@ export default function Notifications() {
             header: "From User",
             cell: ({ row }) => (
                 <div className="flex gap-3">
-                    {row.original?.createdByData && (
-                        <img
-                            src={
-                                row.original.createdByData.profileUrl ||
-                                `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                    (row.original.createdByData.firstName + " " + row.original.createdByData.lastName)
-                                )}`
-                            }
-                            alt={row.original.createdByData.fullName}
-                            className="h-8 w-8 rounded-full object-cover"
-                        />
-                    )}
-                    <span className="block my-auto">
-                        {formatName(
-                            getFullName(
-                                row.original?.createdByData.firstName,
-                                row.original?.createdByData?.lastName
-                            )
-                        )}
-                    </span>
+                    <UserProfile row={row} />
                 </div>
             ),
         },
