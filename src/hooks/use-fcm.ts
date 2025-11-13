@@ -17,7 +17,6 @@ export function useFcm(onMessage?: (notification?: FcmNotification) => void) {
 
   // ✅ Explicitly ask for permission
   const requestPermission = useCallback(async () => {
-    console.log("🪄 Requesting notification permission...");
     const permission = await Notification.requestPermission();
 
     if (permission === "granted") {
@@ -45,7 +44,6 @@ export function useFcm(onMessage?: (notification?: FcmNotification) => void) {
         extraData: payload.data
       };
       setNewNotification(notification);
-      console.log("Notification Recieveed and created nofification instance:", payload, notification);
       if (onMessage) onMessage(notification);
     });
 
