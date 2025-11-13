@@ -7,13 +7,13 @@ importScripts(
 
 // Replace with your firebase config values (only the keys needed)
 const firebaseConfig = {
-  apiKey: "AIzaSyBIIFesNWVQaRNKr61KJMfjQkD_iSs6niQ",
-  authDomain: "fieldtrack360-e4a13.firebaseapp.com",
-  projectId: "fieldtrack360-e4a13",
-  storageBucket: "fieldtrack360-e4a13.firebasestorage.app",
-  messagingSenderId: "428880598590",
-  appId: "1:428880598590:web:e779212185f294895fa36f",
-  measurementId: "G-KS28JW7WYZ",
+  apiKey: "AIzaSyDJFt-CmUF8QTsjVVAkEAWI80zjRJ9SYVk",
+  authDomain: "fieldtrack360-248be.firebaseapp.com",
+  projectId: "fieldtrack360-248be",
+  storageBucket: "fieldtrack360-248be.firebasestorage.app",
+  messagingSenderId: "586185505781",
+  appId: "1:586185505781:web:c6c8fce60376636246bebc",
+  measurementId: "G-RNTFQ8WQ0V",
 };
 
 firebase.initializeApp(firebaseConfig);
