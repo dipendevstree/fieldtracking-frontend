@@ -76,9 +76,9 @@ self.addEventListener("notificationclick", (event) => {
 messaging.onBackgroundMessage(function (payload) {
   if (payload.notification) return;
   const notification = {
-    title: payload?.notification?.title,
-    body: payload?.notification?.body,
-    image: payload?.notification?.image,
+    title: payload?.data?.title,
+    body: payload?.data?.body,
+    image: payload?.data?.image,
     createdDate: new Date().toISOString(),
     extraData: payload?.data
   };
