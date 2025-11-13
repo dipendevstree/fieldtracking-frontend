@@ -36,12 +36,10 @@ export function NotificationList() {
       const url = toUrl({ original: { ...notification, messageType: notification?.extraData?.messageType } });
       const id = toast.success(
         <div
-          onClick={() =>
-            {
-              if (url) navigate({ to: url.to, params: url.params })
-              toast.dismiss(id);
-            }
-          }
+          onClick={() => {
+            if (url) navigate({ to: url.to, params: url.params });
+            toast.dismiss(id);
+          }}
         >
           {notification?.extraData?.title ? notification?.extraData?.title: "New Message"}
         </div>,
