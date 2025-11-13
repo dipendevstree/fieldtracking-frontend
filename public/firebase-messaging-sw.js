@@ -46,16 +46,35 @@ if (firebase.apps.length === 0) {
 
 const messaging = firebase.messaging();
 
-self.addEventListener("notificationclick", function (event) {
+self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const url = event.notification.data?.url;
-  if (url) {
-    event.waitUntil(clients.openWindow(url));
-  }
+  const url = event.notification.data?.url || "/";
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      // Check if a tab with your app is already open
+      for (const client of clientList) {
+        // Adjust this condition depending on how your app URLs are structured
+        if (client.url.includes(self.location.origin)) {
+          // Focus the existing tab
+          client.focus();
+
+          // Now navigate inside that tab (using postMessage)
+          client.postMessage({ type: "navigate", url });
+          return;
+        }
+      }
+
+      // If no open tab, open a new one
+      if (clients.openWindow) {
+        return clients.openWindow(url);
+      }
+    })
+  );
 });
 
 // Optional: customize background notification handling
 messaging.onBackgroundMessage(function (payload) {
+  if (payload.notification) return;
   const notification = {
     title: payload?.notification?.title,
     body: payload?.notification?.body,
