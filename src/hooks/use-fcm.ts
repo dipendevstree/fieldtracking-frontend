@@ -9,7 +9,7 @@ export interface FcmNotification {
   [key: string]: any;
 }
 
-export function useFcm(onMessage: (notification: FcmNotification) => void) {
+export function useFcm(onMessage?: (notification?: FcmNotification) => void) {
   const [token, setToken] = useState<string | null>(null);
   const [permissionGranted, setPermissionGranted] = useState<boolean>(false);
   const [newNotification, setNewNotification] =
