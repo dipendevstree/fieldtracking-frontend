@@ -16,6 +16,7 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { DropdownMenuItem } from "@radix-ui/react-dropdown-menu";
 import Notification from "./notification";
 import NotificationAction from "./notification-action";
+import { useFcm } from "@/hooks/use-fcm";
 
 export function NotificationList() {
   const [pagination, setPagination] = useState({
@@ -26,6 +27,8 @@ export function NotificationList() {
   });
   const notifications = useGetNotifications(pagination);
   const notificationData = notifications.allData ?? [];
+  const { newNotification } = useFcm();
+  console.log("newNotification", newNotification);
 
   return (
     <DropdownMenu>
