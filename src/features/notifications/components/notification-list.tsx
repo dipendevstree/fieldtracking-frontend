@@ -32,13 +32,8 @@ export function NotificationList() {
   const notifications = useGetNotifications(pagination);
   const notificationData = notifications.allData ?? [];
   const { newNotification: _newNotification } = useFcm((notification) => {
-    if (notification) {
-      const url = toUrl({
-        original: {
-          ...notification,
-          messageType: notification?.extraData?.messageType,
-        },
-      });
+    if (notification && window.document.visibilityState === "visible") {
+      const url = toUrl({ original: { ...notification, messageType: notification?.extraData?.messageType } });
       const id = toast.success(
         <div
           onClick={() => {
@@ -46,7 +41,7 @@ export function NotificationList() {
             toast.dismiss(id);
           }}
         >
-          {notification?.title ? notification?.title : "New Message"}
+          {notification?.extraData?.title ? notification?.extraData?.title: "New Message"}
         </div>,
         {
           icon: <BellRing className="w-5 h-5" />,
@@ -56,9 +51,7 @@ export function NotificationList() {
                 url ? navigate({ to: url.to, params: url.params }) : null
               }
             >
-              {notification?.body
-                ? notification?.body
-                : "You have received a new message."}
+              {notification?.extraData?.body ? notification?.extraData?.body : "You have received a new message."}
             </div>
           ),
           duration: 8000,
@@ -81,7 +74,7 @@ export function NotificationList() {
           <span className="sr-only">Notifications</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-100 max-h-100" align="end">
+      <DropdownMenuContent className="w-100 max-h-150" align="end">
         <DropdownMenuLabel className="flex justify-between">
           Notifications
           <Link to={"/notifications"} onClick={() => setOpen(false)}>
