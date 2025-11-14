@@ -71,7 +71,12 @@ import {
 import { TimePicker } from "@/components/ui/TimePicker";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 
-function DeleteVisitDialog({ visit, isOpen, onClose, onSuccess }: DeleteVisitDialogProps & { onSuccess?: () => void }) {
+function DeleteVisitDialog({
+  visit,
+  isOpen,
+  onClose,
+  onSuccess,
+}: DeleteVisitDialogProps & { onSuccess?: () => void }) {
   if (!visit) return null;
 
   const { mutate: deleteVisit, isPending: isLoading } = useDeleteVisits(
@@ -609,7 +614,10 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                   </div>
 
                   {/* Visit Forms */}
-                  <ScrollArea className="h-[calc(100vh-380px)] pr-4">
+                  <ScrollArea
+                    className="h-[calc(100vh-380px)] pr-4"
+                    type="always"
+                  >
                     {fields.map((field, index) => (
                       <div
                         key={field.id}
@@ -1176,8 +1184,8 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                             variant="outline"
                             size="sm"
                             onClick={() => {
-                              setOpenDeleteDialog(true)
-                              setVisitToDelete(visit)
+                              setOpenDeleteDialog(true);
+                              setVisitToDelete(visit);
                             }}
                             aria-label={`Delete visit ${visit.id}`}
                             disabled={visitToDelete !== null}
