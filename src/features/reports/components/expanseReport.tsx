@@ -23,7 +23,7 @@ import { FilterConfig } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import { useGetExpenseCategoriesDropDownList } from "../../settings/Approvers/services/approvers.hook";
 import { formatDropDownLabel } from "@/utils/commonFunction";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import { ExpanseReportFilterState } from "../types";
 import {
   DropdownMenu,
@@ -32,14 +32,15 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 
-const todayStr = format(new Date(), "yyyy-MM-dd");
+const last7Start = format(subDays(new Date(), 6), "yyyy-MM-dd");
+const last7End = format(new Date(), "yyyy-MM-dd");
 
 const ExpanseReport: React.FC = () => {
   const [filters, setFilters] = useState<ExpanseReportFilterState>({
     startDate: undefined,
     endDate: undefined,
-    createdStartDate: todayStr,
-    createdEndDate: todayStr,
+    createdStartDate: last7Start,
+    createdEndDate: last7End,
     salesRepresentativeUserId: "",
     expenseCategory: "",
     isWebAdminSide: true,
