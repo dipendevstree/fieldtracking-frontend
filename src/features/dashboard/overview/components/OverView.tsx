@@ -27,6 +27,7 @@ import { customerColumns } from "./columns/customerColumns";
 import { auditLogColumns } from "./columns/auditLogColumns";
 import { FilterConfig } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 interface OverviewProps {
   salesReps: SalesRep[];
@@ -462,99 +463,107 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
     <div className="space-y-4">
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-        <Card className="gap-2">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-sm font-medium">
-              Total Sales Reps
-            </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold mb-1">
-              {isStatsLoading ? "..." : stats?.totalUsers}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              From today's schedule
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="gap-2">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-sm font-medium">
-              Active in Field
-            </CardTitle>
-            <MapPin className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold mb-1">
-              {isStatsLoading ? "..." : stats?.onlineUsers}
-            </div>
-            <p className="text-xs text-muted-foreground">Currently online</p>
-          </CardContent>
-        </Card>
+        <PermissionGate requiredPermission="all_users">
+          <Card className="gap-2">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-sm font-medium">
+                Total Sales Reps
+              </CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold mb-1">
+                {isStatsLoading ? "..." : stats?.totalUsers}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                From today's schedule
+              </p>
+            </CardContent>
+          </Card>
+        </PermissionGate>
+        <PermissionGate requiredPermission="live_tracking">
+          <Card className="gap-2">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-sm font-medium">
+                Active in Field
+              </CardTitle>
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold mb-1">
+                {isStatsLoading ? "..." : stats?.onlineUsers}
+              </div>
+              <p className="text-xs text-muted-foreground">Currently online</p>
+            </CardContent>
+          </Card>
+        </PermissionGate>
       </div>
 
       {/* Today's Schedule */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <CardTitle>Today's Schedule</CardTitle>
+      <PermissionGate requiredPermission="calender_view">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <CardTitle>Today's Schedule</CardTitle>
+              </div>
+              <Button onClick={() => handleNavigation("/calendar")}>
+                View All
+              </Button>
             </div>
-            <Button onClick={() => handleNavigation("/calendar")}>
-              View All
-            </Button>
-          </div>
 
-          <div className="w-full">
-            <GlobalFilterSection
-              key={"overview-schedule-filters"}
-              filters={scheduleSelectFilters}
-              className={"mb-0"}
+            <div className="w-full">
+              <GlobalFilterSection
+                key={"overview-schedule-filters"}
+                filters={scheduleSelectFilters}
+                className={"mb-0"}
+              />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <CustomDataTable
+              data={(mappedScheduleData ?? []).slice(0, limit)}
+              columns={scheduleColumns}
+              totalCount={scheduleTotalCount}
+              loading={scheduleLoading}
+              key="schedule-table"
             />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <CustomDataTable
-            data={(mappedScheduleData ?? []).slice(0, limit)}
-            columns={scheduleColumns}
-            totalCount={scheduleTotalCount}
-            loading={scheduleLoading}
-            key="schedule-table"
-          />
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </PermissionGate>
 
       {/* Customer List */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <CardTitle>Customer List</CardTitle>
+      <PermissionGate requiredPermission="customer_directory">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <CardTitle>Customer List</CardTitle>
+              </div>
+              <Button onClick={() => handleNavigation("/customers")}>
+                View All
+              </Button>
             </div>
-            <Button onClick={() => handleNavigation("/customers")}>
-              View All
-            </Button>
-          </div>
 
-          <div className="w-full">
-            <GlobalFilterSection
-              key={"overview-customer-filters"}
-              filters={customerSelectFilters}
-              className={"mb-0"}
+            <div className="w-full">
+              <GlobalFilterSection
+                key={"overview-customer-filters"}
+                filters={customerSelectFilters}
+                className={"mb-0"}
+              />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <CustomDataTable
+              data={(customers ?? []).slice(0, limit)}
+              columns={customerColumns}
+              totalCount={customerTotalCount}
+              loading={customersLoading}
+              key="customer-table"
             />
-          </div>
-        </CardHeader>
-        <CardContent>
-          <CustomDataTable
-            data={(customers ?? []).slice(0, limit)}
-            columns={customerColumns}
-            totalCount={customerTotalCount}
-            loading={customersLoading}
-            key="customer-table"
-          />
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </PermissionGate>
 
       {/* Audit Log  */}
       <Card className="gap-0">

@@ -5,7 +5,6 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link, useNavigate } from "@tanstack/react-router";
@@ -33,7 +32,12 @@ export function NotificationList() {
   const notificationData = notifications.allData ?? [];
   const { newNotification: _newNotification } = useFcm((notification) => {
     if (notification && window.document.visibilityState === "visible") {
-      const url = toUrl({ original: { ...notification, messageType: notification?.extraData?.messageType } });
+      const url = toUrl({
+        original: {
+          ...notification,
+          messageType: notification?.extraData?.messageType,
+        },
+      });
       const id = toast.success(
         <div
           onClick={() => {
@@ -41,7 +45,9 @@ export function NotificationList() {
             toast.dismiss(id);
           }}
         >
-          {notification?.extraData?.title ? notification?.extraData?.title: "New Message"}
+          {notification?.extraData?.title
+            ? notification?.extraData?.title
+            : "New Message"}
         </div>,
         {
           icon: <BellRing className="w-5 h-5" />,
@@ -51,7 +57,9 @@ export function NotificationList() {
                 url ? navigate({ to: url.to, params: url.params }) : null
               }
             >
-              {notification?.extraData?.body ? notification?.extraData?.body : "You have received a new message."}
+              {notification?.extraData?.body
+                ? notification?.extraData?.body
+                : "You have received a new message."}
             </div>
           ),
           duration: 8000,
@@ -74,50 +82,54 @@ export function NotificationList() {
           <span className="sr-only">Notifications</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-100 max-h-150" align="end">
-        <DropdownMenuLabel className="flex justify-between">
+      <DropdownMenuContent className="w-100" align="end">
+        <DropdownMenuLabel className="flex justify-between mb-2 border-b">
           Notifications
           <Link to={"/notifications"} onClick={() => setOpen(false)}>
             <span>View All</span>
           </Link>
         </DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <InfiniteScroll
-          loader={
-            <p className="text-center text-sm text-gray-500">
-              Loading more data...
-            </p>
-          }
-          dataLength={notificationData.length}
-          next={() =>
-            setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
-          }
-          hasMore={notifications.totalCount < notificationData.length}
-        >
-          <DropdownMenuGroup>
-            {notificationData.length > 0 ? (
-              notificationData.map((notification: any, key: number) => (
-                <NotificationAction key={key} row={{ original: notification }}>
-                  <DropdownMenuItem
+
+        <div id="scrollArea" className="max-h-72 overflow-y-auto">
+          <InfiniteScroll
+            scrollableTarget="scrollArea"
+            loader={
+              <p className="text-center text-sm text-gray-500">
+                Loading more data...
+              </p>
+            }
+            dataLength={notificationData.length}
+            next={() =>
+              setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
+            }
+            hasMore={notifications.totalCount < notificationData.length}
+          >
+            <DropdownMenuGroup>
+              {notificationData.length > 0 ? (
+                notificationData.map((notification: any, key: number) => (
+                  <NotificationAction
                     key={key}
-                    ref={
-                      key === notificationData.length - 1
-                        ? notifications.lastPostRef
-                        : null
-                    }
-                    className="flex items-center justify-between m-2 my-4 outline-none"
+                    row={{ original: notification }}
                   >
-                    <Notification key={key} notification={notification} />
-                  </DropdownMenuItem>
-                </NotificationAction>
-              ))
-            ) : (
-              <DropdownMenuLabel className="flex items-center justify-between">
-                Notification not found
-              </DropdownMenuLabel>
-            )}
-          </DropdownMenuGroup>
-        </InfiniteScroll>
+                    <DropdownMenuItem
+                      key={key}
+                      ref={
+                        key === notificationData.length - 1
+                          ? notifications.lastPostRef
+                          : null
+                      }
+                      className="flex items-center justify-between mt-0 m-2 my-4 outline-none"
+                    >
+                      <Notification key={key} notification={notification} />
+                    </DropdownMenuItem>
+                  </NotificationAction>
+                ))
+              ) : (
+                <DropdownMenuLabel>Notification not found</DropdownMenuLabel>
+              )}
+            </DropdownMenuGroup>
+          </InfiniteScroll>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );
