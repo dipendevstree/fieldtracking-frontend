@@ -1,4 +1,5 @@
 import API from '@/config/api/api'
+import { VISIT_STATUS } from '@/data/app.data'
 import useDeleteData from '@/hooks/use-delete-data'
 import useFetchData from '@/hooks/use-fetch-data'
 import useFetchInfiniteData, { PaginatedResponse } from '@/hooks/use-fetch-Infinite-data'
@@ -140,7 +141,7 @@ export const useGetAllCompletedVisit = (
   const query = useFetchInfiniteData<any>({
     url: `${CALENDAR_QUERY}`,
     params: { 
-      status: "completed", 
+      status: VISIT_STATUS.COMPLETED, 
       ...params 
     },
     enabled: options?.enabled ?? true,
