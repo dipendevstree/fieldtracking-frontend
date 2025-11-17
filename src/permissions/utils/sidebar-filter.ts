@@ -1,4 +1,4 @@
-import { SidebarData, SidebarItem } from '../types'
+import { SidebarData, SidebarItem } from "../types";
 
 export function filterSidebarByPermissions(
   sidebarData: SidebarData,
@@ -7,25 +7,25 @@ export function filterSidebarByPermissions(
   user: any
 ): SidebarData {
   // Create a map of menuKey to menuName for quick lookup
-  const menuNameMap = new Map<string, string>()
+  const menuNameMap = new Map<string, string>();
   backendPermissions?.forEach((perm) => {
-    menuNameMap.set(perm?.menuKey, perm?.menuName)
+    menuNameMap.set(perm?.menuKey, perm?.menuName);
     perm?.children?.forEach((child: any) => {
-      menuNameMap.set(child?.menuKey, child?.menuName)
-    })
-  })
+      menuNameMap.set(child?.menuKey, child?.menuName);
+    });
+  });
 
   const filteredNavGroups = sidebarData.navGroups
     .map((group) => ({
       ...group,
       items: filterSidebarItems(group?.items, hasAccess, menuNameMap, user),
     }))
-    .filter((group) => group?.items?.length > 0) // Remove empty groups
+    .filter((group) => group?.items?.length > 0); // Remove empty groups
 
   return {
     ...sidebarData,
     navGroups: filteredNavGroups,
-  }
+  };
 }
 
 function filterSidebarItems(
@@ -38,12 +38,12 @@ function filterSidebarItems(
     .filter((item) => {
       // If item has menuKey, check permission
       // Note: Never Change MenuKey In The Backend. Only Change Title
-      if (item?.menuKey === "settings" && user?.superAdminCreatedBy === null) return false; // Hide settings menu entirely
+      // if (item?.menuKey === "settings" && user?.superAdminCreatedBy === null) return false; // Hide settings menu entirely
       if (item.menuKey) {
-        return hasAccess(item?.menuKey)
+        return hasAccess(item?.menuKey);
       }
       // If no menuKey, include by default
-      return true
+      return true;
     })
     .map((item) => ({
       ...item,
@@ -59,8 +59,8 @@ function filterSidebarItems(
     .filter((item) => {
       // Remove items that have nested items but all nested items were filtered out
       if (item?.items) {
-        return item?.items?.length > 0
+        return item?.items?.length > 0;
       }
-      return true
-    })
+      return true;
+    });
 }

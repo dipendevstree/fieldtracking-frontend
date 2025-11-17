@@ -82,6 +82,7 @@ export interface LoginUser {
   organization:any,
   userName:string,
   fcm_token?: string | null;
+  superAdminCreatedBy?: string | null;
 }
 
 // Complete login response

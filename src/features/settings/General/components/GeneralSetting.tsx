@@ -40,7 +40,7 @@ export default function GeneralApplicationSettings({
   onDataChange,
   setSubmitFixedExpenseForm,
   isFixedExpenseDirty,
-  setIsFixedExpenseDirty
+  setIsFixedExpenseDirty,
 }: GeneralApplicationSettingsProps) {
   const { user } = useAuth();
   const [autoExpenseApproval, setAutoExpenseApproval] = useState(false);
@@ -319,428 +319,6 @@ export default function GeneralApplicationSettings({
     <div className="space-y-6">
       <Card className="bg-white shadow-sm">
         <CardContent>
-          {/* Company Information Section */}
-          <div className="space-y-6 mb-10">
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium text-gray-900">
-                Organization Information
-              </h3>
-            </div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="company-name"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Organization Name <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="company-name"
-                  value={formData.organizationName}
-                  onChange={(e) =>
-                    handleInputChange("organizationName", e.target.value)
-                  }
-                  placeholder="Enter your organization name"
-                  className="h-10"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="timezone"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Default Timezone <span className="text-red-500">*</span>
-                  </Label>
-                  {/* Set form user system timezone */}
-                  <Select
-                    value={formData.timezone}
-                    onValueChange={(value) =>
-                      handleInputChange("timezone", value)
-                    }
-                  >
-                    <SelectTrigger className="h-10 w-full">
-                      <SelectValue placeholder="Select your system timezone" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {/* Ideally, populate this list dynamically from user system or backend */}
-                      <SelectItem value="Asia/Calcutta">
-                        Asia/Calcutta IST (+05:30)
-                      </SelectItem>
-                      <SelectItem value="America/New_York">
-                        Eastern Time (EST)
-                      </SelectItem>
-                      <SelectItem value="America/Chicago">
-                        Central Time (CST)
-                      </SelectItem>
-                      <SelectItem value="America/Denver">
-                        Mountain Time (MST)
-                      </SelectItem>
-                      <SelectItem value="America/Los_Angeles">
-                        Pacific Time (PST)
-                      </SelectItem>
-                      <SelectItem value="Europe/London">
-                        GMT (London)
-                      </SelectItem>
-                      <SelectItem value="Europe/Paris">CET (Paris)</SelectItem>
-                      <SelectItem value="Asia/Tokyo">JST (Tokyo)</SelectItem>
-                      <SelectItem value="Australia/Sydney">
-                        AEDT (Sydney)
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="timezone"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Default Currency <span className="text-red-500">*</span>
-                  </Label>
-                  {/* Set form user system timezone */}
-                  <Select
-                    value={formData.currency}
-                    onValueChange={(value) =>
-                      handleInputChange("currency", value)
-                    }
-                  >
-                    <SelectTrigger className="h-10 w-full">
-                      <SelectValue placeholder="Select your system currency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {currency.map((c: any, index: number) => (
-                        <SelectItem
-                          key={index}
-                          value={c.currency.symbol}
-                        >{`${c.currency.name} (${c.currency.symbol})`}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label
-                  htmlFor="org-type"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Organization Type <span className="text-red-500">*</span>
-                </Label>
-                {orgTypeLoading ? (
-                  <div className="text-gray-500 text-sm">Loading...</div>
-                ) : orgTypeError ? (
-                  <div className="text-red-500 text-sm">
-                    Failed to load organization types
-                  </div>
-                ) : (
-                  <Select
-                    value={formData.organizationType}
-                    onValueChange={(value) =>
-                      handleInputChange("organizationType", value)
-                    }
-                  >
-                    <SelectTrigger className="h-10 w-full">
-                      <SelectValue placeholder="Select type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {orgTypeList?.map((type: any) => (
-                        <SelectItem
-                          key={type.organizationTypeId || type.value || type.id}
-                          value={String(
-                            type.organizationTypeId || type.value || type.id
-                          )}
-                        >
-                          {type.organizationTypeName || type.label || type.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label
-                  htmlFor="website"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Website <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="website"
-                  type="url"
-                  value={formData.website}
-                  onChange={(e) => handleInputChange("website", e.target.value)}
-                  placeholder="https://your-website.com"
-                  className="h-10"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="description"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Organization Description
-                </Label>
-                <Textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) =>
-                    handleInputChange("description", e.target.value)
-                  }
-                  placeholder="Brief description of your organization..."
-                  className="min-h-[80px] resize-none"
-                />
-              </div>
-              {/* Organization Icon Upload Section */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="org-icon"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Organization Icon
-                  </Label>
-                  <input
-                    ref={orgIconInputRef}
-                    id="org-icon"
-                    type="file"
-                    accept="image/png, image/jpeg, image/svg+xml"
-                    className="h-10 block w-full border border-gray-300 rounded-md px-3 py-2"
-                    style={{ display: "none" }}
-                    onChange={(e) => {
-                      setFileError((prev) => ({
-                        ...prev,
-                        orgIcon: "",
-                      }));
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const validTypes = [
-                          "image/png",
-                          "image/jpeg",
-                          "image/svg+xml",
-                        ];
-                        if (!validTypes.includes(file.type)) {
-                          setFileError((prev) => ({
-                            ...prev,
-                            orgIcon:
-                              "Invalid file type. Please upload PNG, JPG, or SVG.",
-                          }));
-                          e.target.value = "";
-                          setFileName((prev) => ({
-                            ...prev,
-                            orgIconFileName: "",
-                          }));
-                        } else {
-                          if (filePreview.orgIconFileName)
-                            URL.revokeObjectURL(filePreview.orgIconFileName);
-                          setFileName((prev) => ({
-                            ...prev,
-                            orgIconFileName: file.name,
-                          }));
-                          setFilePreview((prev) => ({
-                            ...prev,
-                            orgIconFileName: URL.createObjectURL(file),
-                          }));
-                          handleInputChange("orgIcon", file);
-                          // user selected a new file -> not removing
-                          setFormData((prev) => ({
-                            ...prev,
-                            removeOrgIcon: false,
-                          }));
-                        }
-                      } else {
-                        setFileName((prev) => ({
-                          ...prev,
-                          orgIconFileName: "",
-                        }));
-                      }
-                    }}
-                  />
-                  <button
-                    type="button"
-                    className="h-10 block w-full border border-gray-300 rounded-md px-3 py-2 text-left truncate"
-                    onClick={() => orgIconInputRef.current?.click()}
-                    title={`${fileName?.orgIconFileName || "No file chosen"}`}
-                  >
-                    Choose file {fileName?.orgIconFileName || "No file chosen"}
-                  </button>
-                  <p className="text-sm text-gray-600">
-                    Upload your organization logo/icon (PNG, JPG, SVG)
-                  </p>
-                  {fileError?.orgIcon && (
-                    <p className="text-sm text-red-500">{fileError.orgIcon}</p>
-                  )}
-                </div>
-                <div className="space-y-2 flex flex-col justify-center items-center">
-                  {filePreview?.orgIconFileName ? (
-                    <div className="flex items-center space-y-2">
-                      <img
-                        src={filePreview?.orgIconFileName}
-                        alt={fileName?.orgIconFileName}
-                        className="size-25 border rounded-xl"
-                      />
-                      <div className="relative bottom-12 right-4">
-                        <button
-                          type="button"
-                          className="text-sm text-red-600"
-                          onClick={() =>
-                            removeFile(
-                              "orgIcon",
-                              "orgIconFileName",
-                              "orgIconFileName",
-                              orgIconInputRef,
-                              "removeOrgIcon"
-                            )
-                          }
-                        >
-                          <CircleX size={30} />
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    "No Preview Availble"
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <Separator className="my-8" />
-
-          {/* Address Information Section */}
-          <div className="space-y-6 mb-10">
-            <div className="space-y-2">
-              <h3 className="text-lg font-medium text-gray-900">
-                Address Information
-              </h3>
-            </div>
-
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="street-address"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Street Address <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="street-address"
-                  value={formData.streetAddress}
-                  onChange={(e) =>
-                    handleInputChange("streetAddress", e.target.value)
-                  }
-                  placeholder="Enter street address"
-                  className="h-10"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="country"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    Country <span className="text-red-500">*</span>
-                  </Label>
-                  <Select
-                    value={formData.country}
-                    onValueChange={handleCountryChange}
-                  >
-                    <SelectTrigger className="h-10 w-full">
-                      <SelectValue placeholder="Select country" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {countries.map((country) => (
-                        <SelectItem
-                          key={country.isoCode}
-                          value={country.isoCode}
-                        >
-                          {country.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="state"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    State/Province <span className="text-red-500">*</span>
-                  </Label>
-                  <Select
-                    value={formData.state}
-                    onValueChange={handleStateChange}
-                    disabled={!formData.country || states.length === 0}
-                  >
-                    <SelectTrigger className="h-10 w-full">
-                      <SelectValue placeholder="Select state/province" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {states.map((state) => (
-                        <SelectItem key={state.isoCode} value={state.isoCode}>
-                          {state.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="city"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    City <span className="text-red-500">*</span>
-                  </Label>
-                  <Select
-                    value={formData.city}
-                    onValueChange={(value) => handleInputChange("city", value)}
-                    disabled={!formData.state || cities.length === 0}
-                  >
-                    <SelectTrigger className="h-10 w-full">
-                      <SelectValue placeholder="Select city" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {cities.map((city) => (
-                        <SelectItem key={city.name} value={city.name}>
-                          {city.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="zip-code"
-                    className="text-sm font-medium text-gray-700"
-                  >
-                    ZIP/Postal Code <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="zip-code"
-                    value={formData.zipCode}
-                    onChange={(e) =>
-                      handleInputChange("zipCode", e.target.value)
-                    }
-                    placeholder="Enter ZIP or postal code"
-                    className="h-10"
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <Separator className="my-8" />
-
           {/* Personal Information Section */}
           <div className="space-y-6 mb-10">
             <div className="space-y-2">
@@ -1004,106 +582,552 @@ export default function GeneralApplicationSettings({
             </div>
           </div>
 
-          <Separator className="my-8" />
+          {user?.superAdminCreatedBy !== null && (
+            <>
+              <Separator className="my-8" />
+              {/* Company Information Section */}
+              <div className="space-y-6 mb-10">
+                <div className="space-y-2">
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Organization Information
+                  </h3>
+                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="company-name"
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Organization Name <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="company-name"
+                      value={formData.organizationName}
+                      onChange={(e) =>
+                        handleInputChange("organizationName", e.target.value)
+                      }
+                      placeholder="Enter your organization name"
+                      className="h-10"
+                    />
+                  </div>
 
-          {/* Allow to add Users based on Territories Section */}
-          <div className="flex items-center justify-between">
-            <div className="space-y-3">
-              <Label className="text-lg font-medium text-gray-900">
-                Allow to add Users based on Territories
-              </Label>
-            </div>
-            <Switch
-              id="territory-users"
-              checked={allowAddUsersBasedOnTerritories}
-              onCheckedChange={(value) => {
-                if (!value) {
-                  // User is turning it OFF → show confirmation
-                  setPendingToggle(value);
-                  setShowTerritoryConfirm(true);
-                } else {
-                  // User is turning it ON → allow directly
-                  setAllowAddUsersBasedOnTerritories(value);
-                }
-              }}
-            />
-          </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="timezone"
+                        className="text-sm font-medium text-gray-700"
+                      >
+                        Default Timezone <span className="text-red-500">*</span>
+                      </Label>
+                      {/* Set form user system timezone */}
+                      <Select
+                        value={formData.timezone}
+                        onValueChange={(value) =>
+                          handleInputChange("timezone", value)
+                        }
+                      >
+                        <SelectTrigger className="h-10 w-full">
+                          <SelectValue placeholder="Select your system timezone" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {/* Ideally, populate this list dynamically from user system or backend */}
+                          <SelectItem value="Asia/Calcutta">
+                            Asia/Calcutta IST (+05:30)
+                          </SelectItem>
+                          <SelectItem value="America/New_York">
+                            Eastern Time (EST)
+                          </SelectItem>
+                          <SelectItem value="America/Chicago">
+                            Central Time (CST)
+                          </SelectItem>
+                          <SelectItem value="America/Denver">
+                            Mountain Time (MST)
+                          </SelectItem>
+                          <SelectItem value="America/Los_Angeles">
+                            Pacific Time (PST)
+                          </SelectItem>
+                          <SelectItem value="Europe/London">
+                            GMT (London)
+                          </SelectItem>
+                          <SelectItem value="Europe/Paris">
+                            CET (Paris)
+                          </SelectItem>
+                          <SelectItem value="Asia/Tokyo">
+                            JST (Tokyo)
+                          </SelectItem>
+                          <SelectItem value="Australia/Sydney">
+                            AEDT (Sydney)
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="timezone"
+                        className="text-sm font-medium text-gray-700"
+                      >
+                        Default Currency <span className="text-red-500">*</span>
+                      </Label>
+                      {/* Set form user system timezone */}
+                      <Select
+                        value={formData.currency}
+                        onValueChange={(value) =>
+                          handleInputChange("currency", value)
+                        }
+                      >
+                        <SelectTrigger className="h-10 w-full">
+                          <SelectValue placeholder="Select your system currency" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {currency.map((c: any, index: number) => (
+                            <SelectItem
+                              key={index}
+                              value={c.currency.symbol}
+                            >{`${c.currency.name} (${c.currency.symbol})`}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
 
-          <Separator className="my-6" />
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="org-type"
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Organization Type <span className="text-red-500">*</span>
+                    </Label>
+                    {orgTypeLoading ? (
+                      <div className="text-gray-500 text-sm">Loading...</div>
+                    ) : orgTypeError ? (
+                      <div className="text-red-500 text-sm">
+                        Failed to load organization types
+                      </div>
+                    ) : (
+                      <Select
+                        value={formData.organizationType}
+                        onValueChange={(value) =>
+                          handleInputChange("organizationType", value)
+                        }
+                      >
+                        <SelectTrigger className="h-10 w-full">
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {orgTypeList?.map((type: any) => (
+                            <SelectItem
+                              key={
+                                type.organizationTypeId || type.value || type.id
+                              }
+                              value={String(
+                                type.organizationTypeId || type.value || type.id
+                              )}
+                            >
+                              {type.organizationTypeName ||
+                                type.label ||
+                                type.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
 
-          {/* Auto-Expense Approval Section */}
-          <div className="space-y-4 mb-8">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label className="text-lg font-medium text-gray-900">
-                  Auto-Expense Approval
-                </Label>
-                <p className="text-sm text-gray-600">
-                  {autoExpenseApproval
-                    ? "Automatically approve expenses (Rate per KM is required)"
-                    : "Manually approve expenses"}
-                </p>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="website"
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Website <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="website"
+                      type="url"
+                      value={formData.website}
+                      onChange={(e) =>
+                        handleInputChange("website", e.target.value)
+                      }
+                      placeholder="https://your-website.com"
+                      className="h-10"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="description"
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Organization Description
+                    </Label>
+                    <Textarea
+                      id="description"
+                      value={formData.description}
+                      onChange={(e) =>
+                        handleInputChange("description", e.target.value)
+                      }
+                      placeholder="Brief description of your organization..."
+                      className="min-h-[80px] resize-none"
+                    />
+                  </div>
+                  {/* Organization Icon Upload Section */}
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="org-icon"
+                        className="text-sm font-medium text-gray-700"
+                      >
+                        Organization Icon
+                      </Label>
+                      <input
+                        ref={orgIconInputRef}
+                        id="org-icon"
+                        type="file"
+                        accept="image/png, image/jpeg, image/svg+xml"
+                        className="h-10 block w-full border border-gray-300 rounded-md px-3 py-2"
+                        style={{ display: "none" }}
+                        onChange={(e) => {
+                          setFileError((prev) => ({
+                            ...prev,
+                            orgIcon: "",
+                          }));
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const validTypes = [
+                              "image/png",
+                              "image/jpeg",
+                              "image/svg+xml",
+                            ];
+                            if (!validTypes.includes(file.type)) {
+                              setFileError((prev) => ({
+                                ...prev,
+                                orgIcon:
+                                  "Invalid file type. Please upload PNG, JPG, or SVG.",
+                              }));
+                              e.target.value = "";
+                              setFileName((prev) => ({
+                                ...prev,
+                                orgIconFileName: "",
+                              }));
+                            } else {
+                              if (filePreview.orgIconFileName)
+                                URL.revokeObjectURL(
+                                  filePreview.orgIconFileName
+                                );
+                              setFileName((prev) => ({
+                                ...prev,
+                                orgIconFileName: file.name,
+                              }));
+                              setFilePreview((prev) => ({
+                                ...prev,
+                                orgIconFileName: URL.createObjectURL(file),
+                              }));
+                              handleInputChange("orgIcon", file);
+                              // user selected a new file -> not removing
+                              setFormData((prev) => ({
+                                ...prev,
+                                removeOrgIcon: false,
+                              }));
+                            }
+                          } else {
+                            setFileName((prev) => ({
+                              ...prev,
+                              orgIconFileName: "",
+                            }));
+                          }
+                        }}
+                      />
+                      <button
+                        type="button"
+                        className="h-10 block w-full border border-gray-300 rounded-md px-3 py-2 text-left truncate"
+                        onClick={() => orgIconInputRef.current?.click()}
+                        title={`${fileName?.orgIconFileName || "No file chosen"}`}
+                      >
+                        Choose file{" "}
+                        {fileName?.orgIconFileName || "No file chosen"}
+                      </button>
+                      <p className="text-sm text-gray-600">
+                        Upload your organization logo/icon (PNG, JPG, SVG)
+                      </p>
+                      {fileError?.orgIcon && (
+                        <p className="text-sm text-red-500">
+                          {fileError.orgIcon}
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2 flex flex-col justify-center items-center">
+                      {filePreview?.orgIconFileName ? (
+                        <div className="flex items-center space-y-2">
+                          <img
+                            src={filePreview?.orgIconFileName}
+                            alt={fileName?.orgIconFileName}
+                            className="size-25 border rounded-xl"
+                          />
+                          <div className="relative bottom-12 right-4">
+                            <button
+                              type="button"
+                              className="text-sm text-red-600"
+                              onClick={() =>
+                                removeFile(
+                                  "orgIcon",
+                                  "orgIconFileName",
+                                  "orgIconFileName",
+                                  orgIconInputRef,
+                                  "removeOrgIcon"
+                                )
+                              }
+                            >
+                              <CircleX size={30} />
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        "No Preview Availble"
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <Switch
-                id="auto-expense"
-                checked={autoExpenseApproval}
-                onCheckedChange={(value: boolean) =>
-                  toggleApprovalCheckBox("autoExpenseApproval", value)
-                }
-              />
-            </div>
 
-            {autoExpenseApproval && (
-              <div className="space-y-2 mt-4">
-                <Label
-                  htmlFor="rate-per-km"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Rate Per KM (₹) <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="rate-per-km"
-                  value={formData.ratePerKm}
-                  onChange={(e) =>
-                    handleInputChange("ratePerKm", e.target.value)
-                  }
-                  placeholder="30"
-                  className="w-32 h-10"
-                  type="number"
+              <Separator className="my-8" />
+
+              {/* Address Information Section */}
+              <div className="space-y-6 mb-10">
+                <div className="space-y-2">
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Address Information
+                  </h3>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="street-address"
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Street Address <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="street-address"
+                      value={formData.streetAddress}
+                      onChange={(e) =>
+                        handleInputChange("streetAddress", e.target.value)
+                      }
+                      placeholder="Enter street address"
+                      className="h-10"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="country"
+                        className="text-sm font-medium text-gray-700"
+                      >
+                        Country <span className="text-red-500">*</span>
+                      </Label>
+                      <Select
+                        value={formData.country}
+                        onValueChange={handleCountryChange}
+                      >
+                        <SelectTrigger className="h-10 w-full">
+                          <SelectValue placeholder="Select country" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {countries.map((country) => (
+                            <SelectItem
+                              key={country.isoCode}
+                              value={country.isoCode}
+                            >
+                              {country.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="state"
+                        className="text-sm font-medium text-gray-700"
+                      >
+                        State/Province <span className="text-red-500">*</span>
+                      </Label>
+                      <Select
+                        value={formData.state}
+                        onValueChange={handleStateChange}
+                        disabled={!formData.country || states.length === 0}
+                      >
+                        <SelectTrigger className="h-10 w-full">
+                          <SelectValue placeholder="Select state/province" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {states.map((state) => (
+                            <SelectItem
+                              key={state.isoCode}
+                              value={state.isoCode}
+                            >
+                              {state.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="city"
+                        className="text-sm font-medium text-gray-700"
+                      >
+                        City <span className="text-red-500">*</span>
+                      </Label>
+                      <Select
+                        value={formData.city}
+                        onValueChange={(value) =>
+                          handleInputChange("city", value)
+                        }
+                        disabled={!formData.state || cities.length === 0}
+                      >
+                        <SelectTrigger className="h-10 w-full">
+                          <SelectValue placeholder="Select city" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {cities.map((city) => (
+                            <SelectItem key={city.name} value={city.name}>
+                              {city.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="zip-code"
+                        className="text-sm font-medium text-gray-700"
+                      >
+                        ZIP/Postal Code <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="zip-code"
+                        value={formData.zipCode}
+                        onChange={(e) =>
+                          handleInputChange("zipCode", e.target.value)
+                        }
+                        placeholder="Enter ZIP or postal code"
+                        className="h-10"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Separator className="my-8" />
+
+              {/* Allow to add Users based on Territories Section */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-3">
+                  <Label className="text-lg font-medium text-gray-900">
+                    Allow to add Users based on Territories
+                  </Label>
+                </div>
+                <Switch
+                  id="territory-users"
+                  checked={allowAddUsersBasedOnTerritories}
+                  onCheckedChange={(value) => {
+                    if (!value) {
+                      // User is turning it OFF → show confirmation
+                      setPendingToggle(value);
+                      setShowTerritoryConfirm(true);
+                    } else {
+                      // User is turning it ON → allow directly
+                      setAllowAddUsersBasedOnTerritories(value);
+                    }
+                  }}
                 />
               </div>
-            )}
-          </div>
 
-          {/* Fixed Day Expense Section */}
-          <div className="space-y-4 mb-8">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label className="text-lg font-medium text-gray-900">
-                  Fixed Day Expense
-                </Label>
-                <p className="text-sm text-gray-600">
-                  {fixedDayExpense
-                    ? "Fixed Daily Expense (Enter At Least One Fixed Expense)"
-                    : "No Fixed Daily Expense"}
-                </p>
+              <Separator className="my-6" />
+
+              {/* Auto-Expense Approval Section */}
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label className="text-lg font-medium text-gray-900">
+                      Auto-Expense Approval
+                    </Label>
+                    <p className="text-sm text-gray-600">
+                      {autoExpenseApproval
+                        ? "Automatically approve expenses (Rate per KM is required)"
+                        : "Manually approve expenses"}
+                    </p>
+                  </div>
+                  <Switch
+                    id="auto-expense"
+                    checked={autoExpenseApproval}
+                    onCheckedChange={(value: boolean) =>
+                      toggleApprovalCheckBox("autoExpenseApproval", value)
+                    }
+                  />
+                </div>
+
+                {autoExpenseApproval && (
+                  <div className="space-y-2 mt-4">
+                    <Label
+                      htmlFor="rate-per-km"
+                      className="text-sm font-medium text-gray-700"
+                    >
+                      Rate Per KM (₹) <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      id="rate-per-km"
+                      value={formData.ratePerKm}
+                      onChange={(e) =>
+                        handleInputChange("ratePerKm", e.target.value)
+                      }
+                      placeholder="30"
+                      className="w-32 h-10"
+                      type="number"
+                    />
+                  </div>
+                )}
               </div>
-              <Switch
-                id="auto-expense"
-                checked={fixedDayExpense}
-                onCheckedChange={(value: boolean) =>
-                  toggleApprovalCheckBox("fixedDayExpense", value)
-                }
-              />
-            </div>
 
-            {fixedDayExpense && (
-              <FixedDayExpenses
-                setSubmitFixedExpenseForm={setSubmitFixedExpenseForm}
-                onDirtyStateChange={setIsFixedExpenseDirty}
-              />
-            )}
-          </div>
+              {/* Fixed Day Expense Section */}
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label className="text-lg font-medium text-gray-900">
+                      Fixed Day Expense
+                    </Label>
+                    <p className="text-sm text-gray-600">
+                      {fixedDayExpense
+                        ? "Fixed Daily Expense (Enter At Least One Fixed Expense)"
+                        : "No Fixed Daily Expense"}
+                    </p>
+                  </div>
+                  <Switch
+                    id="auto-expense"
+                    checked={fixedDayExpense}
+                    onCheckedChange={(value: boolean) =>
+                      toggleApprovalCheckBox("fixedDayExpense", value)
+                    }
+                  />
+                </div>
+
+                {fixedDayExpense && (
+                  <FixedDayExpenses
+                    setSubmitFixedExpenseForm={setSubmitFixedExpenseForm}
+                    onDirtyStateChange={setIsFixedExpenseDirty}
+                  />
+                )}
+              </div>
+            </>
+          )}
+
           <ConfirmDialog
             open={showTerritoryConfirm}
             onOpenChange={setShowTerritoryConfirm}
