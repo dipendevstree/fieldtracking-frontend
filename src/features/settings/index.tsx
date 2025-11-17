@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 // Import the actual page components
 import ExpenseCategoriesPage from "./Expense-categories";
-import LimitsControlsPage from "./Limits-&-Controls";
+// import LimitsControlsPage from "./Limits-&-Controls";
 import ApproversPage from "./Approvers";
 import GeneralSettingsPage from "./General";
 import Notifications from "./notifications/components/Notifications";
@@ -15,7 +15,7 @@ import Notifications from "./notifications/components/Notifications";
 export type SettingsTabValue =
   | "/settings"
   | "/settings/expense-categories"
-  | "/settings/limits-controls"
+  // | "/settings/limits-controls"
   | "/settings/approvers"
   | "/settings/notifications"
   | "/settings/general";
@@ -27,11 +27,11 @@ const SETTINGS_TABS = [
     label: "Expense Categories",
     component: ExpenseCategoriesPage,
   },
-  {
-    value: "/settings/limits-controls",
-    label: "Limits & Controls",
-    component: LimitsControlsPage,
-  },
+  // {
+  //   value: "/settings/limits-controls",
+  //   label: "Limits & Controls",
+  //   component: LimitsControlsPage,
+  // },
   {
     value: "/settings/approvers",
     label: "Approvers",
@@ -74,7 +74,7 @@ export default function SettingsPage() {
         onValueChange={handleTabChange}
         className="space-y-5"
       >
-        <TabsList className="grid w-full grid-cols-5 h-10">
+        <TabsList className="grid w-full grid-cols-4 h-10">
           {SETTINGS_TABS.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value}>
               {tab.label}
