@@ -545,7 +545,7 @@ const UserTrackingTimeline = ({
                   liveUserSession?.isDayStarted ? "bg-green-500" : "bg-red-500"
                 }`}
               ></div>
-              {liveUserSession?.isDayStarted ? "Active" : "Offline"}
+              {liveUserSession?.isDayStarted ? "Online" : "Offline"}
             </span>
           </div>
         </div>
