@@ -397,11 +397,13 @@ export default function AddCustomerPage({
         onValueChange={setSelectedTab}
         className="space-y-4"
       >
-        <TabsList className="grid w-auto grid-cols-2 h-10">
-          <TabsTrigger value="individual">Add Individual</TabsTrigger>
-          <TabsTrigger value="bulk">Bulk Import</TabsTrigger>
-          {/* <TabsTrigger value="uploads">Upload History</TabsTrigger> */}
-        </TabsList>
+        {!isEditMode && (
+          <TabsList className="grid w-auto grid-cols-2 h-10">
+            <TabsTrigger value="individual">Add Individual</TabsTrigger>
+            <TabsTrigger value="bulk">Bulk Import</TabsTrigger>
+            {/* <TabsTrigger value="uploads">Upload History</TabsTrigger> */}
+          </TabsList>
+        )}
 
         <TabsContent value="individual" className="space-y-4">
           <CardContent className="px-0">
@@ -916,7 +918,11 @@ export default function AddCustomerPage({
                                         value={field.value || ""}
                                         onValueChange={(val) => {
                                           console.log("Role changed:", val);
-                                          console.log("Current selectedRoleIds:", selectedRoleIds, selectedRoleIds[contact.id]);
+                                          console.log(
+                                            "Current selectedRoleIds:",
+                                            selectedRoleIds,
+                                            selectedRoleIds[contact.id]
+                                          );
                                           if (val) {
                                             console.log(
                                               "Role selected:",
@@ -933,7 +939,10 @@ export default function AddCustomerPage({
                                               form.getValues(
                                                 `contacts.${index}.assignedRep`
                                               );
-                                            console.log("Assigned Rep Field:", assignedRepField);
+                                            console.log(
+                                              "Assigned Rep Field:",
+                                              assignedRepField
+                                            );
                                             if (assignedRepField) {
                                               form.setValue(
                                                 `contacts.${index}.assignedRep`,
@@ -976,7 +985,9 @@ export default function AddCustomerPage({
                                     control={control}
                                     render={({ field }) => {
                                       // Read the currently selected userRole directly from the form
-                                      const userRoleValue = form.watch(`contacts.${index}.userRole`);
+                                      const userRoleValue = form.watch(
+                                        `contacts.${index}.userRole`
+                                      );
 
                                       const {
                                         data: users,
@@ -1046,17 +1057,19 @@ export default function AddCustomerPage({
                                             {/* Users List */}
                                             <div className="max-h-60 overflow-y-auto">
                                               {filteredUsers.length > 0 ? (
-                                                filteredUsers.map((user: any) => (
-                                                  <SelectItem
-                                                    key={user.id}
-                                                    value={String(user.id)}
-                                                    className="cursor-pointer hover:bg-gray-50 px-3 py-2 text-sm"
-                                                  >
-                                                    {formatDropDownLabel(
-                                                      `${user.firstName} ${user.lastName}`
-                                                    )}
-                                                  </SelectItem>
-                                                ))
+                                                filteredUsers.map(
+                                                  (user: any) => (
+                                                    <SelectItem
+                                                      key={user.id}
+                                                      value={String(user.id)}
+                                                      className="cursor-pointer hover:bg-gray-50 px-3 py-2 text-sm"
+                                                    >
+                                                      {formatDropDownLabel(
+                                                        `${user.firstName} ${user.lastName}`
+                                                      )}
+                                                    </SelectItem>
+                                                  )
+                                                )
                                               ) : (
                                                 <div className="px-3 py-2 text-sm text-gray-500">
                                                   {searchTerm
