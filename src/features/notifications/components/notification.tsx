@@ -26,7 +26,7 @@ export default function Notification({
           />
         )}
       </div>
-      <div className="w-77 truncate">
+      <div className="w-80 truncate">
         <span className="flex justify-between">
           <span>
             {notification.title.length > 25
@@ -37,7 +37,7 @@ export default function Notification({
             {moment(notification.createdDate).format("DD-MM-YYYY")}
           </span>
         </span>
-        <div className="flex justify-between items-center gap-1 font-light">
+        <div className="flex justify-between items-center font-light">
           <span className="text-xs">
             {notification.body.length > 25
               ? notification.body.slice(0, 25) + "..."

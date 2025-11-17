@@ -26,7 +26,7 @@ export default function UpcomingVisits() {
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
     startDate: new Date().toISOString().split("T")[0],
-    endDate: new Date().toISOString().split("T")[0],
+    endDate: format(addDays(new Date(), 7), "yyyy-MM-dd"),
     searchFor: "",
     roleId: "",
     salesRepresentativeUserId: "",
@@ -37,7 +37,7 @@ export default function UpcomingVisits() {
 
   const [selectedRange, setSelectedRange] = useState<DateRange | undefined>({
     from: new Date(),
-    to: addDays(new Date(), 0),
+    to: addDays(new Date(), 7),
   });
 
   const { watch, setValue } = useForm<FormData>({
@@ -146,7 +146,7 @@ export default function UpcomingVisits() {
       dateRangeValue: selectedRange,
       onDateRangeChange: handleDateRangeChange,
       dataRangeClassName: "w-full max-w-xs",
-      // disablePastDates: true,
+      disablePastDates: true,
     },
     {
       key: "search",
