@@ -43,6 +43,7 @@ export default function Livetracking() {
     territoryId: "",
     includeLatLong: true,
     sortField: "isOnline",
+    status: "",
   });
 
   const { user: userAuth } = useAuthStore();
@@ -78,6 +79,15 @@ export default function Livetracking() {
     ...user,
     fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
   }));
+
+  const statusOptions = useSelectOptions<any>({
+    listData: [
+      { status: "online", label: "Online" },
+      { status: "offline", label: "Offline" },
+    ],
+    labelKey: "label",
+    valueKey: "status",
+  });
 
   const usersOptions = useSelectOptions<any>({
     listData: userListDropDownList,
@@ -234,6 +244,27 @@ export default function Livetracking() {
         }
       },
     },
+    {
+      type: "select",
+      key: "status",
+      placeholder: "User Status",
+      value: pagination.status,
+      options: statusOptions as Option[],
+      onChange: (value) => {
+        if (value) {
+          setPagination((prev) => ({
+            ...prev,
+            status: value,
+          }));
+        }
+      },
+      onCancelPress: () => {
+        setPagination((prev) => ({
+          ...prev,
+          status: "",
+        }));
+      }
+    }
   ];
 
   useEffect(() => {
@@ -324,6 +355,7 @@ export default function Livetracking() {
             roleId: "",
             territoryId: "",
             includeLatLong: true,
+            status: "",
             sortField: "isOnline",
           });
         }}
@@ -385,7 +417,7 @@ export default function Livetracking() {
                                 : "bg-red-100 text-red-600"
                             }`}
                           >
-                            {user.isOnline ? "Active" : "Offline"}
+                            {user.isOnline ? "Online" : "Offline"}
                           </span>
                         </CardContent>
                       </Card>

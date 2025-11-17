@@ -7,6 +7,13 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 
+interface CustomerContacts {
+    customerName: string;
+    email: string;
+    designation: string;
+    phoneNumber: string;
+    isPrimary: boolean;
+  }
 interface Customer {
   CustomerName: string;
   employeeRang?: {
@@ -32,6 +39,7 @@ interface Customer {
   phoneNumber: string;
   customerId: string;
   streetAddress: string;
+  customerContacts: Array<CustomerContacts>;
 }
 
 interface GetColumnsProps {
@@ -47,6 +55,16 @@ export const getColumns = ({
       <CustomDataTableColumnHeader column={column} title="Company Name" />
     ),
     cell: ({ row }) => <div>{row.original.companyName ?? "-"}</div>,
+    enableSorting: false,
+  },
+  {
+    accessorKey: "industry.industryName",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Industry" />
+    ),
+    cell: ({ row }) => {
+      return <div>{row.original.industry?.industryName ?? "-"}</div>;
+    },
     enableSorting: false,
   },
   {
@@ -80,12 +98,46 @@ export const getColumns = ({
     enableSorting: false,
   },
   {
-    accessorKey: "industry.industryName",
+    accessorKey: "customerContacts.customerName",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title="Industry" />
+      <CustomDataTableColumnHeader column={column} title="Customer Name" />
     ),
     cell: ({ row }) => {
-      return <div>{row.original.industry?.industryName ?? "-"}</div>;
+      const primaryContact = row.original.customerContacts.find((c: CustomerContacts) => c.isPrimary);
+      return primaryContact ? (<div>{primaryContact.customerName ?? "-"}</div>): (<div>-</div>);
+    },
+    enableSorting: false,
+  },
+  {
+    accessorKey: "customerContacts.email",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Customer Email" />
+    ),
+    cell: ({ row }) => {
+      const primaryContact = row.original.customerContacts.find((c: CustomerContacts) => c.isPrimary);
+      return primaryContact ? (<div>{primaryContact.email ?? "-"}</div>): (<div>-</div>);
+    },
+    enableSorting: false,
+  },
+  {
+    accessorKey: "customerContacts.designation",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Customer Designation" />
+    ),
+    cell: ({ row }) => {
+      const primaryContact = row.original.customerContacts.find((c: CustomerContacts) => c.isPrimary);
+      return primaryContact ? (<div>{primaryContact.designation ?? "-"}</div>): (<div>-</div>);
+    },
+    enableSorting: false,
+  },
+  {
+    accessorKey: "customerContacts.phoneNumber",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Customer Contact Number" />
+    ),
+    cell: ({ row }) => {
+      const primaryContact = row.original.customerContacts.find((c: CustomerContacts) => c.isPrimary);
+      return primaryContact ? (<div>{primaryContact.phoneNumber ?? "-"}</div>): (<div>-</div>);
     },
     enableSorting: false,
   },

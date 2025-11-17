@@ -7,18 +7,43 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { useGetAllCompletedVisit } from '../services/calendar-view.hook'
-import { useState } from 'react'
+import { useGetAllCompletedVisit, useGetAllCustomer } from '../services/calendar-view.hook'
+import { useCallback, useEffect, useState } from 'react'
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from '@/data/app.data'
 import moment from 'moment-timezone'
 import InfiniteScroll from 'react-infinite-scroll-component';
+import GlobalFilterSection from '@/components/global-table-filter-section'
+import { FilterConfig } from '@/components/global-filter-section'
+import { useForm } from 'react-hook-form'
+import debounce from 'lodash.debounce'
+import { useSelectOptions } from '@/hooks/use-select-option'
+import { useGetUsersForDropdown } from '@/features/buyers/services/users.hook'
+import { format } from 'date-fns'
+import { DateRange } from 'react-day-picker'
+
+export interface FormData {
+  salesRep: string;
+  search: string;
+  customerId: string;
+}
 
 export default function VisitReports() {
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
+    startDate: new Date().toISOString().split("T")[0],
+    endDate: new Date().toISOString().split("T")[0],
+    searchFeedback: "",
+    salesRepresentativeUserId: "",
+    customerId: "",
   });
-  
+  const [selectedRange, setSelectedRange] = useState<DateRange | undefined>({
+    from: undefined,
+    to: undefined,
+  });
+  const { watch, setValue } = useForm<FormData>({
+    defaultValues: { salesRep: "", search: "" },
+  });
   const completedVisits = useGetAllCompletedVisit(pagination);
 
   const visitReports = completedVisits.allData ?? [];
@@ -35,7 +60,112 @@ export default function VisitReports() {
     )
   }
 
+  const { data: userList = [] } = useGetUsersForDropdown({
+    enabled: true,
+  });
+
+  const enhancedUserList = userList.map((user: any) => ({
+    ...user,
+    fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+  }));
+
+  const users = useSelectOptions({
+    listData: enhancedUserList,
+    labelKey: "fullName",
+    valueKey: "id",
+  }).map((option) => ({ ...option, value: String(option.value) }));
+  
+  const { data: customers } = useGetAllCustomer();
+  const customerOptions = useSelectOptions({
+    listData: customers ?? [],
+    labelKey: "companyName",
+    valueKey: "customerId",
+  }).map((option) => ({
+    ...option,
+    value: String(option.value),
+  }));
+  
+  const handleDateRangeChange = (range?: DateRange) => {
+    setSelectedRange(range);
+    setPagination((prev) => ({
+      ...prev,
+      startDate: range?.from
+        ? format(range.from, "yyyy-MM-dd")
+        : new Date().toISOString().split("T")[0],
+      endDate: range?.to
+        ? format(range.to, "yyyy-MM-dd")
+        : new Date().toISOString().split("T")[0],
+    }));
+  };
+
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      setPagination((prev) => ({
+        ...prev,
+        searchFeedback: value,
+      }));
+    }, 800),
+    []
+  );
+
+  const handleGlobalSearchChange = (value: string | undefined) => {
+    const searchValue = value ?? "";
+    setValue("search", searchValue);
+    debouncedSearch(searchValue);
+  };
+
+  const selectedRep = watch("salesRep");
+  const customerId = watch("customerId");
+
+  useEffect(() => {
+    setPagination((prev) => ({
+      ...prev,
+      salesRepresentativeUserId: selectedRep,
+      customerId,
+    }));
+  }, [selectedRep, customerId]);
+  
+  const filters: FilterConfig[] = [
+    {
+      key: "dateRange",
+      type: "date-range",
+      placeholder: "Select date range",
+      dateRangeValue: selectedRange,
+      onDateRangeChange: handleDateRangeChange,
+      dataRangeClassName: "w-full max-w-xs",
+    },
+    {
+      key: "search",
+      type: "search",
+      onChange: handleGlobalSearchChange,
+      placeholder: "Search visits outcomes, client feedback, next actions...",
+      value: watch("search"),
+    },
+    {
+      key: "salesRep",
+      type: "searchable-select",
+      onChange: (value) => setValue("salesRep", value ?? ""),
+      onCancelPress: () => setValue("salesRep", ""),
+      placeholder: "Select salesRep",
+      value: selectedRep,
+      options: users,
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+    {
+      key: "customerId",
+      type: "searchable-select",
+      onChange: (value) => setValue("customerId", value ?? ""),
+      onCancelPress: () => setValue("customerId", ""),
+      placeholder: "Select customer",
+      value: customerId,
+      options: customerOptions,
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+  ];
+
   return (
+    <>
+    <GlobalFilterSection key={"calender-view-filters"} filters={filters} />
     <Card>
       <CardHeader>
         <CardTitle>Visit Reports</CardTitle>
@@ -57,7 +187,7 @@ export default function VisitReports() {
                   <div>
                     <h3 className='text-lg font-semibold'>{report?.customer?.companyName}</h3>
                     <p className='text-muted-foreground text-sm'>
-                      {`${report?.salesRepresentativeUser?.firstName} ${report?.salesRepresentativeUser?.lastName}`} • {moment(report.date).format("DD-MM-yyyy")}
+                      {`${report?.salesRepresentativeUser?.firstName} ${report?.salesRepresentativeUser?.lastName}`} • {moment(report.date).format("DD-MM-YYYY")}
                     </p>
                   </div>
                   <div className='flex items-center space-x-2'>
@@ -116,5 +246,6 @@ export default function VisitReports() {
         </InfiniteScroll>
       </CardContent>
     </Card>
+    </>
   )
 }
