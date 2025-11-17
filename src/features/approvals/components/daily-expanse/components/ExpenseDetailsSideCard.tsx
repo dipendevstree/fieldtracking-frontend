@@ -146,6 +146,11 @@ export function ExpenseDetailsSideCard(
         return { ...base, buttonText: "Approve", status: "approved" };
       }
 
+      // if no level was set and current user is default admin then enable buttons.
+      if (currentUser && currentUser["superAdminCreatedBy"]) {
+        return { ...base, buttonText: "Approve", status: "approved" };
+      }
+
       return { ...base, isDisable: true, reason: REASON_MISMATCH };
     }
 
