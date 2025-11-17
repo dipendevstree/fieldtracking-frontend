@@ -211,7 +211,7 @@ export default function DailyExpenseDetails() {
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <Avatar>
-                  <AvatarImage src={user?.avatarUrl || ""} alt="User avatar" />
+                  <AvatarImage src={user?.profileUrl || ""} alt="User avatar" />
                   <AvatarFallback>
                     {getUserInitials(user?.firstName, user?.lastName)}
                   </AvatarFallback>
