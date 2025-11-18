@@ -6,9 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Trash2Icon } from "lucide-react";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
-import { useGetExpenseCategoriesDropDownList } from "../../services/approvers.hook";
+import {
+  useGetExpenseCategoriesDropDownList,
+  useGetUsersDropDownList,
+} from "../../services/approvers.hook";
+import { useSelectOptions } from "@/hooks/use-select-option";
 
-// ------------------- Schema -------------------------
+// ------------------- ZOD Schema -------------------------
 const tierSchema = z.object({
   min: z.coerce.number().min(0),
   max: z.coerce.number().min(0),
@@ -34,42 +38,51 @@ type FormData = z.infer<typeof formSchema>;
 
 // -------------------- Constants ---------------------
 const TERRITORIES = ["North", "South", "East", "West"];
-const USERS = ["User A", "User B", "User C", "User D"];
-const CATEGORIES = [
-  "Travel Lumpsum",
-  "Food",
-  "Accommodation",
-  "Stationeries",
-  "Parking",
-];
 const TIERS = ["Tier 1", "Tier 2"];
-
-// Create Level Template
-const createDefaultLevel = (levelNumber: number) => ({
-  levelNumber,
-  selectedUser: "",
-  categories: Object.fromEntries(
-    CATEGORIES.map((c) => [c, { tiers: TIERS.map(() => ({ min: 0, max: 0 })) }])
-  ),
-});
 
 const TIER_COLUMN_WIDTH = 240;
 
 // -----------------------------------------------------------------------------
-// FINAL PricingForm
+// PRICING FORM
 // -----------------------------------------------------------------------------
 export function PricingForm() {
   const { expenseCategories: expenseCategoriesData } =
     useGetExpenseCategoriesDropDownList({ defaultCategory: true });
 
-    console.log('expenseCategoriesData', expenseCategoriesData);
-    
+  const categories = (expenseCategoriesData ?? []).map(
+    (c: any) => c.categoryName
+  );
+
+  const { listData: allUsersList = [] } = useGetUsersDropDownList();
+
+  // -------- Convert API Users into Select Format --------
+  const allUsersOptions = useSelectOptions<any>({
+    listData: allUsersList
+      .filter((u: any) => u.isWebUser)
+      .map((u: any) => ({
+        ...u,
+        fullName: `${u.firstName || ""} ${u.lastName || ""}`.trim(),
+      })),
+    labelKey: "fullName",
+    valueKey: "id",
+  }).map((u) => ({ ...u, value: String(u.value) }));
+
+  // -------- Create Level Template --------
+  const createDefaultLevel = (levelNumber: number, categories: string[]) => ({
+    levelNumber,
+    selectedUser: "",
+    categories: Object.fromEntries(
+      categories.map((c) => [
+        c,
+        { tiers: TIERS.map(() => ({ min: 0, max: 0 })) },
+      ])
+    ),
+  });
+
+  // -------- FORM HOOK --------
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      territory: "",
-      levels: [createDefaultLevel(1)],
-    },
+    defaultValues: { territory: "", levels: [] },
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -77,7 +90,22 @@ export function PricingForm() {
     name: "levels",
   });
 
-  const handleAddLevel = () => append(createDefaultLevel(fields.length + 1));
+  // ⭐ All selected userIds from form state
+  const selectedUserIds = form.watch("levels").map((lvl) => lvl.selectedUser);
+
+  // ⭐ Filter out already selected users (except current one)
+  const getAvailableUsers = (currentValue: string) => {
+    return allUsersOptions.filter((u) => {
+      if (u.value === currentValue) return true;
+      return !selectedUserIds.includes(u.value);
+    });
+  };
+
+  // -------- Add Level --------
+  const handleAddLevel = () => {
+    if (!categories.length) return;
+    append(createDefaultLevel(fields.length + 1, categories));
+  };
 
   const onSubmit = (data: FormData) => console.log("Form:", data);
 
@@ -161,13 +189,15 @@ export function PricingForm() {
                           <FormItem>
                             <SearchableSelect
                               value={field.value}
-                              onChange={field.onChange}
+                              onChange={(val) => field.onChange(val ?? "")}
                               onCancelPress={() => field.onChange("")}
                               placeholder="Select User"
-                              options={USERS.map((u) => ({
-                                label: u,
-                                value: u,
-                              }))}
+                              options={getAvailableUsers(field.value).map(
+                                (u) => ({
+                                  label: u.label,
+                                  value: u.value,
+                                })
+                              )}
                             />
                             <FormMessage />
                           </FormItem>
@@ -201,6 +231,10 @@ export function PricingForm() {
                   variant="outline"
                   className="w-full h-full border-2 border-dashed text-lg"
                   onClick={handleAddLevel}
+                  disabled={
+                    fields.length >= allUsersOptions.length ||
+                    allUsersOptions.length === 0
+                  }
                 >
                   + Add Level
                 </Button>
@@ -208,7 +242,7 @@ export function PricingForm() {
             </div>
 
             {/* ----------------------- ROWS ----------------------- */}
-            {CATEGORIES.map((category) => (
+            {categories.map((category: any) => (
               <div key={category} className="flex border-b">
                 <div className="w-64 p-4 border-r font-medium sticky left-0 bg-card z-20">
                   {category}
@@ -236,6 +270,7 @@ export function PricingForm() {
                                 </FormItem>
                               )}
                             />
+
                             <FormField
                               control={form.control}
                               name={`levels.${levelIndex}.categories.${category}.tiers.${tierIndex}.max`}
