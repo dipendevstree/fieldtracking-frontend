@@ -11,6 +11,7 @@ import {
   useGetUsersDropDownList,
 } from "../../services/approvers.hook";
 import { useSelectOptions } from "@/hooks/use-select-option";
+import { useGetAllTerritoriesForDropdown } from "@/features/userterritory/services/user-territory.hook";
 
 // ------------------- ZOD Schema -------------------------
 // CHANGE: Updated tierSchema with required and max > min validation
@@ -47,7 +48,6 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 // -------------------- Constants ---------------------
-const TERRITORIES = ["North", "South", "East", "West"];
 const TIERS = ["Tier 1", "Tier 2"];
 
 const TIER_COLUMN_WIDTH = 240;
@@ -56,6 +56,7 @@ const TIER_COLUMN_WIDTH = 240;
 // PRICING FORM
 // -----------------------------------------------------------------------------
 export function PricingForm() {
+  const { allTerritories = [] } = useGetAllTerritoriesForDropdown();
   const { expenseCategories: expenseCategoriesData } =
     useGetExpenseCategoriesDropDownList({ defaultCategory: true });
 
@@ -64,6 +65,11 @@ export function PricingForm() {
   );
 
   const { listData: allUsersList = [] } = useGetUsersDropDownList();
+  const territoryOptions = useSelectOptions<any>({
+    listData: allTerritories ?? [],
+    labelKey: "name",
+    valueKey: "id",
+  });
 
   // -------- Convert API Users into Select Format --------
   const allUsersOptions = useSelectOptions<any>({
@@ -177,9 +183,9 @@ export function PricingForm() {
                       onChange={field.onChange}
                       onCancelPress={() => field.onChange("")}
                       placeholder="Select Territory"
-                      options={TERRITORIES.map((t) => ({
-                        label: t,
-                        value: t,
+                      options={territoryOptions.map((option) => ({
+                        ...option,
+                        value: String(option.value),
                       }))}
                     />
                     <FormMessage />
