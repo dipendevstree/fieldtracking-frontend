@@ -67,17 +67,43 @@ export function PricingForm() {
     valueKey: "id",
   }).map((u) => ({ ...u, value: String(u.value) }));
 
-  // -------- Create Level Template --------
-  const createDefaultLevel = (levelNumber: number, categories: string[]) => ({
-    levelNumber,
-    selectedUser: "",
-    categories: Object.fromEntries(
-      categories.map((c) => [
-        c,
-        { tiers: TIERS.map(() => ({ min: 0, max: 0 })) },
-      ])
-    ),
-  });
+  // -------- Create Level Template (with prefill logic) --------
+  const createDefaultLevel = (
+    levelNumber: number,
+    categories: string[],
+    prevLevels: FormData["levels"]
+  ) => {
+    return {
+      levelNumber,
+      selectedUser: "",
+      categories: Object.fromEntries(
+        categories.map((category) => {
+          const prevLevel = prevLevels[levelNumber - 2];
+          const prevTiers = prevLevel?.categories?.[category]?.tiers ?? [];
+
+          return [
+            category,
+            {
+              tiers: TIERS.map((_, tierIdx) => {
+                // ⭐ Level 1 → always start with 0
+                if (!prevLevel) {
+                  return { min: 0, max: 0 };
+                }
+
+                // ⭐ Level 2+ → base on previous tier max
+                const prevMax = Number(prevTiers[tierIdx]?.max ?? 0);
+
+                return {
+                  min: prevMax + 1,
+                  max: prevMax + 1,
+                };
+              }),
+            },
+          ];
+        })
+      ),
+    };
+  };
 
   // -------- FORM HOOK --------
   const form = useForm<FormData>({
@@ -101,10 +127,13 @@ export function PricingForm() {
     });
   };
 
-  // -------- Add Level --------
+  // -------- Add Level (with prefill) --------
   const handleAddLevel = () => {
     if (!categories.length) return;
-    append(createDefaultLevel(fields.length + 1, categories));
+
+    const prevLevels = form.getValues("levels"); // ⭐ current values
+
+    append(createDefaultLevel(fields.length + 1, categories, prevLevels));
   };
 
   const onSubmit = (data: FormData) => console.log("Form:", data);
