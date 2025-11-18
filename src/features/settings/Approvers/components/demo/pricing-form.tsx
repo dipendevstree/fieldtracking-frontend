@@ -13,10 +13,20 @@ import {
 import { useSelectOptions } from "@/hooks/use-select-option";
 
 // ------------------- ZOD Schema -------------------------
-const tierSchema = z.object({
-  min: z.coerce.number().min(0),
-  max: z.coerce.number().min(0),
-});
+// CHANGE: Updated tierSchema with required and max > min validation
+const tierSchema = z
+  .object({
+    min: z.coerce
+      .number({ invalid_type_error: "Min is required" })
+      .min(0, "Cannot be negative"),
+    max: z.coerce
+      .number({ invalid_type_error: "Max is required" })
+      .min(0, "Cannot be negative"),
+  })
+  .refine((data) => data.max > data.min, {
+    message: "Max must be greater than min",
+    path: ["max"], // Point the error to the 'max' field
+  });
 
 const levelSchema = z.object({
   levelNumber: z.number(),
@@ -296,6 +306,7 @@ export function PricingForm() {
                               render={({ field }) => (
                                 <FormItem>
                                   <Input type="number" {...field} />
+                                  <FormMessage />
                                 </FormItem>
                               )}
                             />
@@ -306,6 +317,7 @@ export function PricingForm() {
                               render={({ field }) => (
                                 <FormItem>
                                   <Input type="number" {...field} />
+                                  <FormMessage />
                                 </FormItem>
                               )}
                             />
