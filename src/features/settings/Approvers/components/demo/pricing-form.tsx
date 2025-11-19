@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,6 +8,8 @@ import { Form, FormField, FormItem, FormMessage } from "@/components/ui/form";
 import { Trash2Icon } from "lucide-react";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import {
+  useCreateApprovalsLevel,
+  useGetAllApprovalsLevel,
   useGetExpenseCategoriesDropDownList,
   useGetUsersDropDownList,
 } from "../../services/approvers.hook";
@@ -14,7 +17,6 @@ import { useSelectOptions } from "@/hooks/use-select-option";
 import { useGetAllTerritoriesForDropdown } from "@/features/userterritory/services/user-territory.hook";
 
 // ------------------- ZOD Schema -------------------------
-// CHANGE: Updated tierSchema with required and max > min validation
 const tierSchema = z
   .object({
     min: z.coerce
@@ -26,7 +28,7 @@ const tierSchema = z
   })
   .refine((data) => data.max > data.min, {
     message: "Max must be greater than min",
-    path: ["max"], // Point the error to the 'max' field
+    path: ["max"],
   });
 
 const levelSchema = z.object({
@@ -49,13 +51,19 @@ type FormData = z.infer<typeof formSchema>;
 
 // -------------------- Constants ---------------------
 const TIERS = ["Tier 1", "Tier 2"];
-
 const TIER_COLUMN_WIDTH = 240;
 
 // -----------------------------------------------------------------------------
 // PRICING FORM
 // -----------------------------------------------------------------------------
 export function PricingForm() {
+  const { data: allApprovalsLevelList = {}, isLoading } =
+    useGetAllApprovalsLevel();
+
+  console.log("allApprovalsLevelList:", allApprovalsLevelList);
+
+  const { mutate: createApprovalLevel, isPending: isCreating } =
+    useCreateApprovalsLevel();
   const { allTerritories = [] } = useGetAllTerritoriesForDropdown();
   const { expenseCategories: expenseCategoriesData } =
     useGetExpenseCategoriesDropDownList({ defaultCategory: true });
@@ -83,7 +91,139 @@ export function PricingForm() {
     valueKey: "id",
   }).map((u) => ({ ...u, value: String(u.value) }));
 
-  // -------- Create Level Template (with prefill logic) --------
+  // -------- FORM HOOK --------
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { territory: "", levels: [] },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "levels",
+  });
+
+  // Refs to prevent infinite loops
+  const hasPopulatedForm = useRef(false);
+  const isInitialLoad = useRef(true);
+
+  // Helper function to find category name by ID
+  const findCategoryNameById = (categoryId: string, categoriesData: any[]) => {
+    const category = categoriesData?.find(
+      (cat: any) => cat.expensesCategoryId === categoryId
+    );
+    return category?.categoryName;
+  };
+
+  // -------- Transform API data to form structure --------
+  const transformApiDataToForm = (
+    apiData: any,
+    categories: string[]
+  ): FormData => {
+    const levelsMap = new Map<number, any>();
+
+    // Group data by level and user
+    Object.values(apiData)
+      .flat()
+      .forEach((item: any) => {
+        const level = item.level;
+        const userId = item.userId;
+
+        if (!levelsMap.has(level)) {
+          levelsMap.set(level, {
+            levelNumber: level,
+            selectedUser: userId,
+            categories: {},
+          });
+        }
+
+        const levelData = levelsMap.get(level);
+
+        // Initialize category if not exists
+        const categoryName = findCategoryNameById(
+          item.expensesCategoryId,
+          expenseCategoriesData || []
+        );
+        if (categoryName && !levelData.categories[categoryName]) {
+          levelData.categories[categoryName] = {
+            tiers: Array(TIERS.length)
+              .fill(null)
+              .map(() => ({ min: 0, max: 0 })),
+          };
+        }
+
+        // Update tier data
+        if (categoryName) {
+          const tierIndex = parseInt(item.tierkey.split("_")[1]) - 1;
+          if (tierIndex >= 0 && tierIndex < TIERS.length) {
+            levelData.categories[categoryName].tiers[tierIndex] = {
+              min: item.minAmount,
+              max: item.maxAmount,
+            };
+          }
+        }
+      });
+
+    // Fill missing categories with default values
+    levelsMap.forEach((levelData) => {
+      categories.forEach((category) => {
+        if (!levelData.categories[category]) {
+          levelData.categories[category] = {
+            tiers: Array(TIERS.length)
+              .fill(null)
+              .map(() => ({ min: 0, max: 0 })),
+          };
+        }
+      });
+    });
+
+    return {
+      territory: "", // You might want to set this from API if available
+      levels: Array.from(levelsMap.values()).sort(
+        (a, b) => a.levelNumber - b.levelNumber
+      ),
+    };
+  };
+
+  // -------- Populate form from API data --------
+  useEffect(() => {
+    // Skip if still loading, no data, no categories, or already populated
+    if (
+      isLoading ||
+      !allApprovalsLevelList ||
+      Object.keys(allApprovalsLevelList).length === 0 ||
+      categories.length === 0 ||
+      hasPopulatedForm.current
+    ) {
+      return;
+    }
+
+    // Only populate on initial load when we have all required data
+    if (isInitialLoad.current && categories.length > 0) {
+      const transformedData = transformApiDataToForm(
+        allApprovalsLevelList,
+        categories
+      );
+
+      // Reset form with API data
+      form.reset(transformedData);
+
+      // Mark as populated to prevent re-running
+      hasPopulatedForm.current = true;
+      isInitialLoad.current = false;
+
+      console.log("Form populated with API data:", transformedData);
+    }
+  }, [allApprovalsLevelList, isLoading, categories, form]);
+
+  // Reset the populated flag when territories or other dependencies change if needed
+  useEffect(() => {
+    // Reset the flag when component unmounts or when you want to allow re-population
+    return () => {
+      hasPopulatedForm.current = false;
+    };
+  }, []);
+
+  // -------- Create Level Template --------
   const createDefaultLevel = (
     levelNumber: number,
     categories: string[],
@@ -101,14 +241,10 @@ export function PricingForm() {
             category,
             {
               tiers: TIERS.map((_, tierIdx) => {
-                // ⭐ Level 1 → always start with 0
                 if (!prevLevel) {
                   return { min: 0, max: 0 };
                 }
-
-                // ⭐ Level 2+ → base on previous tier max
                 const prevMax = Number(prevTiers[tierIdx]?.max ?? 0);
-
                 return {
                   min: prevMax + 1,
                   max: prevMax + 1,
@@ -120,17 +256,6 @@ export function PricingForm() {
       ),
     };
   };
-
-  // -------- FORM HOOK --------
-  const form = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: { territory: "", levels: [] },
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "levels",
-  });
 
   // ⭐ All selected userIds from form state
   const selectedUserIds = form.watch("levels").map((lvl) => lvl.selectedUser);
@@ -147,12 +272,43 @@ export function PricingForm() {
   const handleAddLevel = () => {
     if (!categories.length) return;
 
-    const prevLevels = form.getValues("levels"); // ⭐ current values
-
+    const prevLevels = form.getValues("levels");
     append(createDefaultLevel(fields.length + 1, categories, prevLevels));
   };
 
-  const onSubmit = (data: FormData) => console.log("Form:", data);
+  const onSubmit = (data: FormData) => {
+    if (!expenseCategoriesData) {
+      console.error("Expense categories not loaded");
+      return;
+    }
+
+    // Create category name to ID mapping
+    const categoryMap = (expenseCategoriesData ?? []).reduce(
+      (acc: any, category: any) => {
+        acc[category.categoryName] = category.expensesCategoryId;
+        return acc;
+      },
+      {}
+    );
+
+    const payload = {
+      expenseApprovalLevels: data.levels.flatMap((level) =>
+        Object.entries(level.categories).flatMap(
+          ([categoryName, categoryData]) =>
+            categoryData.tiers.map((tier, tierIndex) => ({
+              expensesCategoryId: categoryMap[categoryName],
+              level: level.levelNumber,
+              userId: level.selectedUser,
+              tierkey: `tier_${tierIndex + 1}`,
+              minAmount: tier.min,
+              maxAmount: tier.max,
+            }))
+        )
+      ),
+    };
+
+    createApprovalLevel(payload);
+  };
 
   const dynamicGridStyle = {
     gridTemplateColumns: `repeat(${TIERS.length}, minmax(0, 1fr))`,
@@ -163,6 +319,11 @@ export function PricingForm() {
     minWidth: `${levelColumnWidth}px`,
     maxWidth: `${levelColumnWidth}px`,
   };
+
+  // Show loading state while transforming data
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Form {...form}>
