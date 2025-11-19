@@ -5,6 +5,7 @@ import {
   EXPENSE_STATUS,
   EXPENSE_SUB_TYPE,
   EXPENSE_TYPE,
+  LIMIT_TYPE,
 } from "@/data/app.data";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { FilterConfig } from "@/components/global-filter-section";
@@ -44,6 +45,7 @@ export default function DailyExpenses() {
     expenseSubType: "",
     sort: "desc",
     isWebAdminSide: true,
+    limitType: ""
   });
 
   const {
@@ -86,6 +88,13 @@ export default function DailyExpenses() {
     labelKey: "fullName",
     valueKey: "id",
   }).map((option) => ({ ...option, value: String(option.value) }));
+
+  const limitTypeOptions = Object.entries(LIMIT_TYPE).map(
+    ([key, value]) => ({
+      label: key.replace("_", " ").toLowerCase().replace(/\b\w/g, char => char.toUpperCase()),
+      value,
+    })
+  );
 
   const expanseTypeOptions = Object.entries(EXPENSE_TYPE).map(
     ([key, value]) => ({
@@ -152,6 +161,14 @@ export default function DailyExpenses() {
       value: pagination.expenseSubType,
       options: expanseSubTypeOptions,
     },
+    {
+      key: "limitType",
+      type: "select",
+      onChange: (value) => handleFilterChange("limitType", String(value)),
+      placeholder: "Select Limit Type",
+      value: pagination.limitType,
+      options: limitTypeOptions
+    }
   ];
 
   return (
@@ -159,6 +176,7 @@ export default function DailyExpenses() {
       <GlobalFilterSection key={"calender-view-filters"} filters={filters} />
 
       <DailyExpenseTable
+        pagination={pagination}
         data={dailyExpanses}
         totalCount={totalCount}
         loading={isPending}

@@ -8,8 +8,40 @@ import {
 } from "@/utils/commonFormatters";
 import { DataTableRowActions } from "./daily-expense-table-action-button";
 import { formatDateRange } from "@/utils/commonFunction";
+import { Checkbox } from "@/components/ui/checkbox";
+import { EXPENSE_STATUS } from "@/data/app.data";
 
-export const columns: ColumnDef<any>[] = [
+export const createColumns = (
+  selectedRows: Set<string>,
+  toggleRowSelection: (rowId: string) => void,
+  toggleSelectAll: () => void,
+  isAllSelected: boolean
+): ColumnDef<any>[] => [
+  {
+    accessorKey: "manageExpense",
+    header: () => (
+      <div>
+        <Checkbox
+          id="manage-all-expense"
+          checked={isAllSelected}
+          onCheckedChange={toggleSelectAll}
+        />
+        {/* <label htmlFor="manage-all-expense" className="text-sm pl-2">Select All</label> */}
+      </div>
+    ),
+    cell: ({ row }) => {
+      if ([EXPENSE_STATUS.APPROVED, EXPENSE_STATUS.REVIEWED].includes(row?.original?.status as EXPENSE_STATUS)) return;
+      const isSelected = selectedRows.has(String(row.original.id))
+      return (
+        <Checkbox
+          id={`expense-${row.original.id}`}
+          checked={isSelected}
+          onCheckedChange={() => toggleRowSelection(String(row.original.id))}
+          value={row.original.id}
+        />
+      )
+    }
+  },
   {
     accessorKey: "salesRep",
     header: ({ column }) => (
