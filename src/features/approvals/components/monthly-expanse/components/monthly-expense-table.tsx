@@ -27,7 +27,7 @@ const MonthlyExpenseTable = ({
         loading={loading}
         data={data}
         currentPage={currentPage}
-        columns={columns(user?.organization?.currency) as ColumnDef<unknown>[]}
+        columns={columns(user?.organization?.currency || "₹") as ColumnDef<unknown>[]}
         totalCount={totalCount}
         key={'monthlyExpense'}
       />

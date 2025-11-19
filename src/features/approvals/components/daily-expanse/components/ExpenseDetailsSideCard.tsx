@@ -126,6 +126,7 @@ export function ExpenseDetailsSideCard(
       isDisable: false,
       reason: "",
       status: "reviewed" as "reviewed" | "approved",
+      warningMessageForAmount: "",
     };
 
     const levels =
@@ -165,6 +166,12 @@ export function ExpenseDetailsSideCard(
     const myLevel = levels.find((lvl: any) => lvl.userId === me);
     if (!myLevel) return { ...base, isDisable: true, reason: REASON_MISMATCH };
 
+    if (myLevel) {
+      if (Number(dailyExpanse?.totalAmount) > myLevel.maxAmount) {
+        base.warningMessageForAmount = `Max Allowed Limit is ${currentUser?.organization?.currency || "₹"}${myLevel.maxAmount}`;
+      }
+    }
+
     const lowerLevels = levels.filter(
       (lvl: any) => lvl.level < approvalLevel.level
     );
@@ -202,13 +209,13 @@ export function ExpenseDetailsSideCard(
 
     // 🟢 Case 3: Approver for this level (or fallback last level)
     if (approvalLevel.userId === myLevel.userId) {
-      return buildResult(true, lowerLevels);
+      return { ...base, ...buildResult(true, lowerLevels) };
     }
 
     // 🟢 Case 4: Reviewer (lower level)
     if (lowerLevels.some((lvl: any) => lvl.level === myLevel.level)) {
       const belowMe = levels.filter((lvl: any) => lvl.level < myLevel.level);
-      return buildResult(false, belowMe);
+      return { ...base, ...buildResult(false, belowMe) };
     }
 
     // 🟢 Case 5: Otherwise mismatch
@@ -289,7 +296,9 @@ export function ExpenseDetailsSideCard(
                     />
                   </>
                 )}
-                <Detail label="Amount" value={`₹${item.amount}`} />
+                <Detail label="Amount" value={
+                  <p>{currentUser?.organization?.currency || "₹"}{item.amount} {resultObj?.warningMessageForAmount ? <span className="text-red-500">({resultObj?.warningMessageForAmount})</span>: ``}</p>
+                } />
                 {"notes" in item && item.notes && (
                   <Detail label="Notes" value={item.notes} />
                 )}

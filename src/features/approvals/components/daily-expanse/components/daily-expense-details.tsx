@@ -1,4 +1,4 @@
-import { useParams } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Card,
@@ -30,6 +30,8 @@ import {
 } from "@/features/approvals/services/daily-expanses.hook";
 import { useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { CircleArrowLeft } from "lucide-react";
 
 export default function DailyExpenseDetails() {
   const [updateId, setUpdateId] = useState<string | null>(null);
@@ -37,7 +39,8 @@ export default function DailyExpenseDetails() {
   const { dailyExpanse, refetch: refetchExpanseDetails } = useDailyExpansesById(
     id || ""
   );
-
+  const { user: currentUser } = useAuthStore();
+  const navigate = useNavigate();
   const { mutate: expenseReviewAndApproval, isSuccess } =
     useExpenseReviewAndApproval();
 
@@ -201,6 +204,7 @@ export default function DailyExpenseDetails() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Expense Information */}
         <Card>
+          <CircleArrowLeft className="mx-6" onClick={() => navigate({ to: '/approvals' })}/>
           <CardHeader>
             <CardTitle>Expense Information</CardTitle>
             <CardDescription>
@@ -211,7 +215,7 @@ export default function DailyExpenseDetails() {
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <Avatar>
-                  <AvatarImage src={user?.profileUrl || ""} alt="User avatar" />
+                  <AvatarImage src={user?.profileUrl || ""} alt={`${user?.firstName} ${user?.lastName}`} />
                   <AvatarFallback>
                     {getUserInitials(user?.firstName, user?.lastName)}
                   </AvatarFallback>
@@ -243,7 +247,7 @@ export default function DailyExpenseDetails() {
               />
               <Detail
                 label="Amount"
-                value={`₹${dailyExpanse?.totalAmount ?? 0}`}
+                value={`${currentUser?.organization?.currency || "₹"}${dailyExpanse?.totalAmount ?? 0}`}
               />
               <Detail label="Notes" value={dailyExpanse?.notes || "-"} />
             </div>
