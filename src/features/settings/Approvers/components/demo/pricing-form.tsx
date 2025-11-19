@@ -55,6 +55,7 @@ type FormData = z.infer<typeof formSchema>;
 // -------------------- Constants ---------------------
 const TIERS = ["Tier 1", "Tier 2"];
 const TIER_COLUMN_WIDTH = 240;
+const ADD_LEVEL_COLUMN_WIDTH = 300;
 
 // -----------------------------------------------------------------------------
 // PRICING FORM
@@ -581,8 +582,8 @@ export function PricingForm() {
         </div>
 
         {/* ------------------------------- MAIN TABLE -------------------------------- */}
-        <div className="p-6 overflow-x-auto">
-          <div className="border rounded-lg bg-card w-fit relative">
+        <div className="overflow-x-auto">
+          <div className="border bg-card w-fit relative">
             {/* ---- Top Row ---- */}
             <div className="flex sticky top-0 bg-card z-40">
               <div className="w-64 p-4 border-r border-b font-semibold text-lg sticky left-0 bg-card z-50">
@@ -655,7 +656,13 @@ export function PricingForm() {
               ))}
 
               {/* + ADD LEVEL BUTTON */}
-              <div className="p-4 border-b" style={levelColumnStyle}>
+              <div
+                className="p-4 border-b"
+                style={{
+                  minWidth: `${ADD_LEVEL_COLUMN_WIDTH}px`,
+                  maxWidth: `${ADD_LEVEL_COLUMN_WIDTH}px`,
+                }}
+              >
                 <Button
                   type="button"
                   variant="outline"
@@ -720,7 +727,13 @@ export function PricingForm() {
                 ))}
 
                 {/* EMPTY COLUMN */}
-                <div style={levelColumnStyle}></div>
+                <div
+                  className="p-4 border-b"
+                  style={{
+                    minWidth: `${ADD_LEVEL_COLUMN_WIDTH}px`,
+                    maxWidth: `${ADD_LEVEL_COLUMN_WIDTH}px`,
+                  }}
+                ></div>
               </div>
             ))}
           </div>
