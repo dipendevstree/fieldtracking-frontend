@@ -9,6 +9,7 @@ const MODULE_NAME_MAP: Record<string, string> = {
   "reports-analytics": "Reports & Analytics",
   reports: "All Reports",
   settings: "Settings & Configuration",
+  "view-territorywise-user": "User In Territory"
 };
 
 const isIdLike = (segment: string) => {
