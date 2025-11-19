@@ -119,6 +119,13 @@ export function PricingForm() {
   // Refs to prevent infinite loops
   const hasPopulatedForm = useRef(false);
 
+  // State to track if form has changes
+  const [hasChanges, setHasChanges] = useState(false);
+
+  // Watch form values for changes
+  const formValues = form.watch();
+  const isDirty = form.formState.isDirty;
+
   // Create original records map for change detection
   const originalRecordsMap = useMemo(() => {
     return Object.values(allApprovalsLevelList || {})
@@ -226,6 +233,90 @@ export function PricingForm() {
     };
   };
 
+  // -------- Check if form has actual changes --------
+  const checkForChanges = useMemo(() => {
+    if (
+      !allApprovalsLevelList ||
+      Object.keys(allApprovalsLevelList).length === 0 ||
+      !expenseCategoriesData
+    ) {
+      return false;
+    }
+
+    const currentFormData = form.getValues();
+
+    // If form is not dirty, no changes
+    if (!isDirty) return false;
+
+    // Create category name to ID mapping
+    const categoryMap = (expenseCategoriesData ?? []).reduce(
+      (acc: any, category: any) => {
+        acc[category.categoryName] = category.expensesCategoryId;
+        return acc;
+      },
+      {}
+    );
+
+    // Check each level and category for changes
+    for (const level of currentFormData.levels) {
+      for (const [categoryName, categoryData] of Object.entries(
+        level.categories
+      )) {
+        const categoryId = categoryMap[categoryName];
+
+        for (
+          let tierIndex = 0;
+          tierIndex < categoryData.tiers.length;
+          tierIndex++
+        ) {
+          const tier = categoryData.tiers[tierIndex];
+          const tierKey = `tier_${tierIndex + 1}`;
+
+          // Find the existing expensesLevelId if it exists
+          const expensesLevelId = findExpensesLevelId(
+            level.levelNumber,
+            level.selectedUser,
+            categoryId,
+            tierKey,
+            allApprovalsLevelList
+          );
+
+          if (!expensesLevelId) {
+            // New record - check if values are non-zero
+            if (Number(tier.min) !== 0 || Number(tier.max) !== 0) {
+              return true;
+            }
+          } else {
+            // Existing record - check if changed
+            const original = originalRecordsMap[expensesLevelId];
+            if (
+              original.expensesCategoryId !== categoryId ||
+              original.tierkey !== tierKey ||
+              Number(original.minAmount) !== Number(tier.min) ||
+              Number(original.maxAmount) !== Number(tier.max) ||
+              String(original.userId) !== String(level.selectedUser)
+            ) {
+              return true;
+            }
+          }
+        }
+      }
+    }
+
+    return false;
+  }, [
+    formValues,
+    isDirty,
+    allApprovalsLevelList,
+    expenseCategoriesData,
+    originalRecordsMap,
+  ]);
+
+  // Update hasChanges when checkForChanges changes
+  useEffect(() => {
+    setHasChanges(checkForChanges);
+  }, [checkForChanges]);
+
   // -------- Populate form from API data --------
   useEffect(() => {
     if (
@@ -245,6 +336,7 @@ export function PricingForm() {
 
     form.reset(transformedData);
     hasPopulatedForm.current = true;
+    setHasChanges(false); // Reset changes after population
 
     console.log("Form populated with API data:", transformedData);
   }, [allApprovalsLevelList, isLoading, categories, form]);
@@ -300,6 +392,9 @@ export function PricingForm() {
 
     const prevLevels = form.getValues("levels");
     append(createDefaultLevel(fields.length + 1, categories, prevLevels));
+
+    // Adding a level counts as a change
+    setHasChanges(true);
   };
 
   const onSubmit = (data: FormData) => {
@@ -392,6 +487,10 @@ export function PricingForm() {
     if (createList.length === 0 && updateList.length === 0) {
       console.log("No changes to save");
     }
+
+    // Reset form state after submission
+    form.reset(data);
+    setHasChanges(false);
   };
 
   const dynamicGridStyle = {
@@ -443,6 +542,7 @@ export function PricingForm() {
           remove(levelIndex);
         }
         setDeletionState(null); // close modal after confirm
+        setHasChanges(true); // Deleting a level counts as a change
       },
     });
   };
@@ -628,7 +728,11 @@ export function PricingForm() {
 
         {/* ------------------------- FOOTER ------------------------- */}
         <div className="border-t bg-card p-4 flex justify-end">
-          <Button type="submit" size="lg" disabled={isCreating || isUpdating}>
+          <Button
+            type="submit"
+            size="lg"
+            disabled={isCreating || isUpdating || !hasChanges}
+          >
             {isCreating || isUpdating ? "Saving..." : "Save Configuration"}
           </Button>
         </div>
