@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo } from "react";
+import { useEffect, useRef, useMemo, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -9,6 +9,7 @@ import { Trash2Icon } from "lucide-react";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import {
   useCreateApprovalsLevel,
+  useDeleteApprovalsLevel,
   useGetAllApprovalsLevel,
   useGetExpenseCategoriesDropDownList,
   useGetUsersDropDownList,
@@ -16,6 +17,7 @@ import {
 } from "../../services/approvers.hook";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { useGetAllTerritoriesForDropdown } from "@/features/userterritory/services/user-territory.hook";
+import { DeleteModal } from "@/components/shared/common-delete-modal";
 
 // ------------------- ZOD Schema -------------------------
 const tierSchema = z
@@ -58,6 +60,12 @@ const TIER_COLUMN_WIDTH = 240;
 // PRICING FORM
 // -----------------------------------------------------------------------------
 export function PricingForm() {
+  const [deletionState, setDeletionState] = useState<{
+    itemName: string;
+    itemIdentifierValue: string;
+    onConfirm: () => void;
+  } | null>(null);
+
   const { data: allApprovalsLevelList = {}, isLoading } =
     useGetAllApprovalsLevel();
 
@@ -66,6 +74,9 @@ export function PricingForm() {
 
   const { mutate: updateApprovalLevel, isPending: isUpdating } =
     useUpdateApprovalsLevel();
+
+  const { mutate: deleteApproval, isPending: isDeleting } =
+    useDeleteApprovalsLevel();
 
   const { allTerritories = [] } = useGetAllTerritoriesForDropdown();
   const { expenseCategories: expenseCategoriesData } =
@@ -398,6 +409,44 @@ export function PricingForm() {
     return <div>Loading...</div>;
   }
 
+  //---------------delete------------
+  const initiateDelete = (state: typeof deletionState) =>
+    setDeletionState(state);
+  const handleConfirmDelete = () => deletionState?.onConfirm();
+
+  const handleLevelDelete = (levelIndex: number) => {
+    const levelData = form.getValues(`levels.${levelIndex}`);
+    const userId = levelData.selectedUser;
+    const levelNumber = levelData.levelNumber;
+
+    const userName =
+      allUsersOptions.find((u) => u.value === userId)?.label ||
+      `User in Level ${levelIndex + 1}`;
+
+    // collect backend IDs for deletion
+    const items =
+      allApprovalsLevelList[userId]?.filter(
+        (item: any) => item.level === levelNumber
+      ) || [];
+
+    const idsToDelete = items.map((i: any) => i.id).filter(Boolean);
+
+    initiateDelete({
+      itemName: `Level for ${userName}`,
+      itemIdentifierValue: `Level ${levelIndex + 1} and all assigned expense categories`,
+      onConfirm: () => {
+        if (idsToDelete.length > 0) {
+          deleteApproval({ ids: idsToDelete } as any, {
+            onSuccess: () => remove(levelIndex),
+          });
+        } else {
+          remove(levelIndex);
+        }
+        setDeletionState(null); // close modal after confirm
+      },
+    });
+  };
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
@@ -450,8 +499,9 @@ export function PricingForm() {
                     <Button
                       type="button"
                       size="icon"
-                      onClick={() => remove(index)}
+                      onClick={() => handleLevelDelete(index)}
                       className="absolute top-2 right-2 h-7 w-7"
+                      disabled={isDeleting}
                     >
                       <Trash2Icon className="h-4 w-4" />
                     </Button>
@@ -582,6 +632,14 @@ export function PricingForm() {
             {isCreating || isUpdating ? "Saving..." : "Save Configuration"}
           </Button>
         </div>
+        <DeleteModal
+          open={!!deletionState}
+          onOpenChange={(open) => !open && setDeletionState(null)}
+          currentRow={{ identifier: deletionState?.itemIdentifierValue || "" }}
+          onDelete={handleConfirmDelete}
+          itemName={deletionState?.itemName || "item"}
+          itemIdentifier="identifier"
+        />
       </form>
     </Form>
   );
