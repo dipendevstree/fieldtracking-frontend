@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -12,6 +12,7 @@ import {
   useGetAllApprovalsLevel,
   useGetExpenseCategoriesDropDownList,
   useGetUsersDropDownList,
+  useUpdateApprovalsLevel,
 } from "../../services/approvers.hook";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { useGetAllTerritoriesForDropdown } from "@/features/userterritory/services/user-territory.hook";
@@ -60,10 +61,12 @@ export function PricingForm() {
   const { data: allApprovalsLevelList = {}, isLoading } =
     useGetAllApprovalsLevel();
 
-  console.log("allApprovalsLevelList:", allApprovalsLevelList);
-
   const { mutate: createApprovalLevel, isPending: isCreating } =
     useCreateApprovalsLevel();
+
+  const { mutate: updateApprovalLevel, isPending: isUpdating } =
+    useUpdateApprovalsLevel();
+
   const { allTerritories = [] } = useGetAllTerritoriesForDropdown();
   const { expenseCategories: expenseCategoriesData } =
     useGetExpenseCategoriesDropDownList({ defaultCategory: true });
@@ -104,7 +107,16 @@ export function PricingForm() {
 
   // Refs to prevent infinite loops
   const hasPopulatedForm = useRef(false);
-  const isInitialLoad = useRef(true);
+
+  // Create original records map for change detection
+  const originalRecordsMap = useMemo(() => {
+    return Object.values(allApprovalsLevelList || {})
+      .flat()
+      .reduce((acc: Record<string, any>, rec: any) => {
+        acc[rec.id] = rec;
+        return acc;
+      }, {});
+  }, [allApprovalsLevelList]);
 
   // Helper function to find category name by ID
   const findCategoryNameById = (categoryId: string, categoriesData: any[]) => {
@@ -112,6 +124,26 @@ export function PricingForm() {
       (cat: any) => cat.expensesCategoryId === categoryId
     );
     return category?.categoryName;
+  };
+
+  // Helper function to find expensesLevelId by data
+  const findExpensesLevelId = (
+    level: number,
+    userId: string,
+    categoryId: string,
+    tierKey: string,
+    apiData: any
+  ) => {
+    const levelData = apiData[userId];
+    if (!levelData) return null;
+
+    const item = levelData.find(
+      (item: any) =>
+        item.level === level &&
+        item.expensesCategoryId === categoryId &&
+        item.tierkey === tierKey
+    );
+    return item?.id || null;
   };
 
   // -------- Transform API data to form structure --------
@@ -122,11 +154,9 @@ export function PricingForm() {
     const levelsMap = new Map<number, any>();
 
     // Group data by level and user
-    Object.values(apiData)
-      .flat()
-      .forEach((item: any) => {
+    Object.entries(apiData).forEach(([userId, levelData]: [string, any]) => {
+      levelData.forEach((item: any) => {
         const level = item.level;
-        const userId = item.userId;
 
         if (!levelsMap.has(level)) {
           levelsMap.set(level, {
@@ -162,6 +192,7 @@ export function PricingForm() {
           }
         }
       });
+    });
 
     // Fill missing categories with default values
     levelsMap.forEach((levelData) => {
@@ -177,7 +208,7 @@ export function PricingForm() {
     });
 
     return {
-      territory: "", // You might want to set this from API if available
+      territory: "",
       levels: Array.from(levelsMap.values()).sort(
         (a, b) => a.levelNumber - b.levelNumber
       ),
@@ -186,7 +217,6 @@ export function PricingForm() {
 
   // -------- Populate form from API data --------
   useEffect(() => {
-    // Skip if still loading, no data, no categories, or already populated
     if (
       isLoading ||
       !allApprovalsLevelList ||
@@ -197,31 +227,16 @@ export function PricingForm() {
       return;
     }
 
-    // Only populate on initial load when we have all required data
-    if (isInitialLoad.current && categories.length > 0) {
-      const transformedData = transformApiDataToForm(
-        allApprovalsLevelList,
-        categories
-      );
+    const transformedData = transformApiDataToForm(
+      allApprovalsLevelList,
+      categories
+    );
 
-      // Reset form with API data
-      form.reset(transformedData);
+    form.reset(transformedData);
+    hasPopulatedForm.current = true;
 
-      // Mark as populated to prevent re-running
-      hasPopulatedForm.current = true;
-      isInitialLoad.current = false;
-
-      console.log("Form populated with API data:", transformedData);
-    }
+    console.log("Form populated with API data:", transformedData);
   }, [allApprovalsLevelList, isLoading, categories, form]);
-
-  // Reset the populated flag when territories or other dependencies change if needed
-  useEffect(() => {
-    // Reset the flag when component unmounts or when you want to allow re-population
-    return () => {
-      hasPopulatedForm.current = false;
-    };
-  }, []);
 
   // -------- Create Level Template --------
   const createDefaultLevel = (
@@ -291,23 +306,81 @@ export function PricingForm() {
       {}
     );
 
-    const payload = {
-      expenseApprovalLevels: data.levels.flatMap((level) =>
-        Object.entries(level.categories).flatMap(
-          ([categoryName, categoryData]) =>
-            categoryData.tiers.map((tier, tierIndex) => ({
-              expensesCategoryId: categoryMap[categoryName],
-              level: level.levelNumber,
-              userId: level.selectedUser,
-              tierkey: `tier_${tierIndex + 1}`,
-              minAmount: tier.min,
-              maxAmount: tier.max,
-            }))
-        )
-      ),
-    };
+    const allPayloads: any[] = [];
 
-    createApprovalLevel(payload);
+    // Process each level and category
+    data.levels.forEach((level) => {
+      Object.entries(level.categories).forEach(
+        ([categoryName, categoryData]) => {
+          categoryData.tiers.forEach((tier, tierIndex) => {
+            const categoryId = categoryMap[categoryName];
+            const tierKey = `tier_${tierIndex + 1}`;
+
+            // Find the existing expensesLevelId if it exists
+            const expensesLevelId = findExpensesLevelId(
+              level.levelNumber,
+              level.selectedUser,
+              categoryId,
+              tierKey,
+              allApprovalsLevelList
+            );
+
+            if (!expensesLevelId) {
+              // New record - always create
+              allPayloads.push({
+                expensesCategoryId: categoryId,
+                level: level.levelNumber,
+                userId: level.selectedUser,
+                tierkey: tierKey,
+                minAmount: Number(tier.min),
+                maxAmount: Number(tier.max),
+              });
+            } else {
+              // Existing record - check if changed
+              const original = originalRecordsMap[expensesLevelId];
+              const isChanged =
+                original.expensesCategoryId !== categoryId ||
+                original.tierkey !== tierKey ||
+                Number(original.minAmount) !== Number(tier.min) ||
+                Number(original.maxAmount) !== Number(tier.max) ||
+                String(original.userId) !== String(level.selectedUser);
+
+              if (isChanged) {
+                allPayloads.push({
+                  expensesLevelId: expensesLevelId,
+                  expensesCategoryId: categoryId,
+                  level: level.levelNumber,
+                  userId: level.selectedUser,
+                  tierkey: tierKey,
+                  minAmount: Number(tier.min),
+                  maxAmount: Number(tier.max),
+                });
+              }
+            }
+          });
+        }
+      );
+    });
+
+    // Separate create and update lists
+    const createList = allPayloads.filter((p) => !p.expensesLevelId);
+    const updateList = allPayloads.filter((p) => p.expensesLevelId);
+
+    console.log("Create List:", createList);
+    console.log("Update List:", updateList);
+
+    // Execute create and update operations
+    if (createList.length > 0) {
+      createApprovalLevel({ expenseApprovalLevels: createList });
+    }
+
+    if (updateList.length > 0) {
+      updateApprovalLevel({ expenseApprovalLevels: updateList });
+    }
+
+    if (createList.length === 0 && updateList.length === 0) {
+      console.log("No changes to save");
+    }
   };
 
   const dynamicGridStyle = {
@@ -332,27 +405,28 @@ export function PricingForm() {
         <div className="border-b bg-card p-4">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold">Expense Configuration</h1>
-
-            <div className="w-64">
-              <FormField
-                control={form.control}
-                name="territory"
-                render={({ field }) => (
-                  <FormItem>
-                    <SearchableSelect
-                      value={field.value}
-                      onChange={field.onChange}
-                      onCancelPress={() => field.onChange("")}
-                      placeholder="Select Territory"
-                      options={territoryOptions.map((option) => ({
-                        ...option,
-                        value: String(option.value),
-                      }))}
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <div className="flex items-center gap-4">
+              <div className="w-64">
+                <FormField
+                  control={form.control}
+                  name="territory"
+                  render={({ field }) => (
+                    <FormItem>
+                      <SearchableSelect
+                        value={field.value}
+                        onChange={field.onChange}
+                        onCancelPress={() => field.onChange("")}
+                        placeholder="Select Territory"
+                        options={territoryOptions.map((option) => ({
+                          ...option,
+                          value: String(option.value),
+                        }))}
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -504,8 +578,8 @@ export function PricingForm() {
 
         {/* ------------------------- FOOTER ------------------------- */}
         <div className="border-t bg-card p-4 flex justify-end">
-          <Button type="submit" size="lg">
-            Save Configuration
+          <Button type="submit" size="lg" disabled={isCreating || isUpdating}>
+            {isCreating || isUpdating ? "Saving..." : "Save Configuration"}
           </Button>
         </div>
       </form>
