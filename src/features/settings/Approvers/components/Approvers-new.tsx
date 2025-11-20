@@ -19,6 +19,7 @@ import { useSelectOptions } from "@/hooks/use-select-option";
 import { useGetAllTerritoriesForDropdown } from "@/features/userterritory/services/user-territory.hook";
 import { DeleteModal } from "@/components/shared/common-delete-modal";
 import { toast } from "sonner";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 // ------------------- ZOD Schema -------------------------
 const tierSchema = z
@@ -64,6 +65,10 @@ const ADD_LEVEL_COLUMN_WIDTH = 300;
 // PRICING FORM
 // -----------------------------------------------------------------------------
 export function ApproverFormNew() {
+  const { user } = useAuthStore();
+  const allowAddUsersBasedOnTerritories =
+    user?.organization?.allowAddUsersBasedOnTerritories;
+
   const [deletionState, setDeletionState] = useState<{
     itemName: string;
     itemIdentifierValue: string;
@@ -563,35 +568,37 @@ export function ApproverFormNew() {
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold">Expense Configuration</h1>
             <div className="flex items-center gap-4">
-              <div className="w-64">
-                <FormField
-                  control={form.control}
-                  name="territory"
-                  render={({ field }) => (
-                    <FormItem>
-                      <SearchableSelect
-                        value={field.value}
-                        onChange={(value) => {
-                          field.onChange(value);
-                          // Reset form to trigger re-population based on new territory
-                          // This also marks the form as pristine again
-                          hasPopulatedForm.current = false;
-                        }}
-                        onCancelPress={() => {
-                          field.onChange("");
-                          hasPopulatedForm.current = false;
-                        }}
-                        placeholder="Select Territory"
-                        options={territoryOptions.map((option) => ({
-                          ...option,
-                          value: String(option.value),
-                        }))}
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              {allowAddUsersBasedOnTerritories && (
+                <div className="w-64">
+                  <FormField
+                    control={form.control}
+                    name="territory"
+                    render={({ field }) => (
+                      <FormItem>
+                        <SearchableSelect
+                          value={field.value}
+                          onChange={(value) => {
+                            field.onChange(value);
+                            // Reset form to trigger re-population based on new territory
+                            // This also marks the form as pristine again
+                            hasPopulatedForm.current = false;
+                          }}
+                          onCancelPress={() => {
+                            field.onChange("");
+                            hasPopulatedForm.current = false;
+                          }}
+                          placeholder="Select Territory"
+                          options={territoryOptions.map((option) => ({
+                            ...option,
+                            value: String(option.value),
+                          }))}
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
             </div>
           </div>
         </div>
