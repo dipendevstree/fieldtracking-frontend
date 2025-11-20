@@ -25,12 +25,13 @@ import {
 import { useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useGetAllReportsAndAnalyticsQuickStats } from "../../services/reports and-analytics";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 export default function ReportsAnalytics() {
   const [filter, setFilter] = useState<
     "day" | "week" | "lastMonth" | "currentMonth"
   >("day");
-
+  const { user: currentUser } = useAuthStore();
   const { startDate, endDate } = useMemo(() => {
     const now = new Date();
     switch (filter) {
@@ -113,7 +114,7 @@ export default function ReportsAnalytics() {
                   Average Daily Expense
                 </span>
                 <span className="font-medium">
-                  ₹ {averageDailyExpense.toLocaleString()}
+                  {currentUser?.organization?.currency || "₹"} {averageDailyExpense.toLocaleString()}
                 </span>
               </div>
             </div>

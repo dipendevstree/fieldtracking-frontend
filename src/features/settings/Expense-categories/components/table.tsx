@@ -20,7 +20,7 @@ const ExpenseCategoryTable = ({
   currentPage,
 }: ExpenseCategoryTableProps) => {
   return (
-    <div className="-mx-4 flex-1 overflow-auto lg:flex-row lg:space-y-0 lg:space-x-12 -mt-2">
+    <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12">
       <CustomDataTable
         paginationCallbacks={paginationCallbacks}
         loading={loading}

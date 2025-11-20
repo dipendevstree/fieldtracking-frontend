@@ -109,6 +109,7 @@ export function DailyAllowanceDetailsCard({
       isDisable: false,
       reason: "",
       status: "reviewed" as "reviewed" | "approved",
+      warningMessageForAmount: "",
     };
 
     // Filter levels specific to the item's category
@@ -143,6 +144,11 @@ export function DailyAllowanceDetailsCard({
     const myLevel = levels.find((lvl: any) => lvl.userId === me);
     if (!myLevel) return { ...base, isDisable: true, reason: REASON_MISMATCH };
 
+    if (myLevel) {
+      if (Number(dailyExpanse?.totalAmount) > myLevel.maxAmount) {
+        base.warningMessageForAmount = `Max Allowed Limit is ${currentUser?.organization?.currency || "₹"}${myLevel.maxAmount}`;
+      }
+    }
     // Find all levels that must review before the target approval level
     const lowerLevels = levels.filter(
       (lvl: any) => lvl.level < approvalLevel.level
@@ -178,13 +184,13 @@ export function DailyAllowanceDetailsCard({
 
     // Case 3: Current user IS the designated approver for this amount
     if (approvalLevel.userId === myLevel.userId) {
-      return buildResult(true, lowerLevels, item.id);
+      return { ...base, ...buildResult(true, lowerLevels, item.id) };
     }
 
     // Case 4: Current user is a reviewer (at a level lower than the final approver)
     if (lowerLevels.some((lvl: any) => lvl.level === myLevel.level)) {
       const belowMe = levels.filter((lvl: any) => lvl.level < myLevel.level);
-      return buildResult(false, belowMe, item.id);
+      return { ...base, ...buildResult(false, belowMe, item.id) };
     }
 
     // Case 5: User is in the hierarchy but not the approver or a required reviewer
@@ -261,7 +267,9 @@ export function DailyAllowanceDetailsCard({
                           "dd-MM-yyyy"
                         )}
                       />
-                      <Detail label="Amount" value={`₹${detail.amount}`} />
+                      <Detail label="Amount" value={
+                        <p>{currentUser?.organization?.currency || "₹"}{detail.amount} {resultObj?.warningMessageForAmount ? <span className="text-red-500">({resultObj?.warningMessageForAmount})</span>: ``}</p>
+                      } />
                       <Detail
                         label="Category"
                         value={detail.expensesCategory?.categoryName || "-"}

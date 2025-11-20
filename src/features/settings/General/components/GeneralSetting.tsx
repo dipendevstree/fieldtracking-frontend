@@ -1080,7 +1080,7 @@ export default function GeneralApplicationSettings({
                       htmlFor="rate-per-km"
                       className="text-sm font-medium text-gray-700"
                     >
-                      Rate Per KM (₹) <span className="text-red-500">*</span>
+                      Rate Per KM ({user?.organization?.currency || "₹"}) <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="rate-per-km"
