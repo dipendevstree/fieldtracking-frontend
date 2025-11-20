@@ -85,7 +85,7 @@ export function ApproverFormNew() {
 
   // Fetch all approvals data based on selected territory
   const { data: allApprovalsLevelList = {}, isLoading } =
-    useGetAllApprovalsLevel({ territoryId: selectedTerritory || undefined });
+    useGetAllApprovalsLevel();
 
   const { mutateAsync: createApprovalLevel, isPending: isCreating } =
     useCreateApprovalsLevel();
@@ -306,11 +306,14 @@ export function ApproverFormNew() {
     (
       levelNumber: number,
       categories: string[],
-      prevLevels: FormData["levels"]
+      prevLevels: FormData["levels"],
+      availableUsers: { label: string; value: string }[]
     ) => {
+      const defaultUser =
+        availableUsers.length > 0 ? availableUsers[0].value : "";
       return {
         levelNumber,
-        selectedUser: "",
+        selectedUser: defaultUser,
         categories: Object.fromEntries(
           categories.map((category) => {
             const prevLevel = prevLevels[levelNumber - 2];
@@ -359,7 +362,15 @@ export function ApproverFormNew() {
       return;
     }
     const prevLevels = form.getValues("levels");
-    append(createDefaultLevel(fields.length + 1, categories, prevLevels));
+    const availableUsersForNewLevel = getAvailableUsers("");
+    append(
+      createDefaultLevel(
+        fields.length + 1,
+        categories,
+        prevLevels,
+        availableUsersForNewLevel
+      )
+    );
     form.setValue("levels", form.getValues("levels"), { shouldDirty: true }); // Mark form as dirty
   };
 
