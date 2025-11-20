@@ -1,4 +1,4 @@
-import { useEffect, useRef, useMemo, useState } from "react";
+import { useEffect, useRef, useMemo, useState, useCallback } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -18,6 +18,7 @@ import {
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { useGetAllTerritoriesForDropdown } from "@/features/userterritory/services/user-territory.hook";
 import { DeleteModal } from "@/components/shared/common-delete-modal";
+import { toast } from "sonner";
 
 // ------------------- ZOD Schema -------------------------
 const tierSchema = z
@@ -29,8 +30,8 @@ const tierSchema = z
       .number({ invalid_type_error: "Max is required" })
       .min(0, "Cannot be negative"),
   })
-  .refine((data) => data.max > data.min, {
-    message: "Max must be greater than min",
+  .refine((data) => data.max >= data.min, {
+    message: "Max must be greater than or equal to min",
     path: ["max"],
   });
 
@@ -43,6 +44,8 @@ const levelSchema = z.object({
       tiers: z.array(tierSchema),
     })
   ),
+  // Added for tracking backend ID for easier updates/deletions
+  levelId: z.string().optional(),
 });
 
 const formSchema = z.object({
@@ -67,45 +70,6 @@ export function PricingForm() {
     onConfirm: () => void;
   } | null>(null);
 
-  const { data: allApprovalsLevelList = {}, isLoading } =
-    useGetAllApprovalsLevel();
-
-  const { mutate: createApprovalLevel, isPending: isCreating } =
-    useCreateApprovalsLevel();
-
-  const { mutate: updateApprovalLevel, isPending: isUpdating } =
-    useUpdateApprovalsLevel();
-
-  const { mutate: deleteApproval, isPending: isDeleting } =
-    useDeleteApprovalsLevel();
-
-  const { allTerritories = [] } = useGetAllTerritoriesForDropdown();
-  const { expenseCategories: expenseCategoriesData } =
-    useGetExpenseCategoriesDropDownList({ defaultCategory: true });
-
-  const categories = (expenseCategoriesData ?? []).map(
-    (c: any) => c.categoryName
-  );
-
-  const { listData: allUsersList = [] } = useGetUsersDropDownList();
-  const territoryOptions = useSelectOptions<any>({
-    listData: allTerritories ?? [],
-    labelKey: "name",
-    valueKey: "id",
-  });
-
-  // -------- Convert API Users into Select Format --------
-  const allUsersOptions = useSelectOptions<any>({
-    listData: allUsersList
-      .filter((u: any) => u.isWebUser)
-      .map((u: any) => ({
-        ...u,
-        fullName: `${u.firstName || ""} ${u.lastName || ""}`.trim(),
-      })),
-    labelKey: "fullName",
-    valueKey: "id",
-  }).map((u) => ({ ...u, value: String(u.value) }));
-
   // -------- FORM HOOK --------
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -117,15 +81,59 @@ export function PricingForm() {
     name: "levels",
   });
 
-  // Refs to prevent infinite loops
+  const selectedTerritory = form.watch("territory");
+
+  // Fetch all approvals data based on selected territory
+  const { data: allApprovalsLevelList = {}, isLoading } =
+    useGetAllApprovalsLevel({ territoryId: selectedTerritory || undefined });
+
+  const { mutateAsync: createApprovalLevel, isPending: isCreating } =
+    useCreateApprovalsLevel();
+
+  const { mutateAsync: updateApprovalLevel, isPending: isUpdating } =
+    useUpdateApprovalsLevel();
+
+  const { mutateAsync: deleteApproval, isPending: isDeleting } =
+    useDeleteApprovalsLevel();
+
+  const { allTerritories = [] } = useGetAllTerritoriesForDropdown();
+  const { expenseCategories: expenseCategoriesData } =
+    useGetExpenseCategoriesDropDownList({ defaultCategory: true });
+
+  const categories = useMemo(
+    () => (expenseCategoriesData ?? []).map((c: any) => c.categoryName),
+    [expenseCategoriesData]
+  );
+
+  const { listData: allUsersList = [] } = useGetUsersDropDownList({
+    territoryId: selectedTerritory,
+  });
+
+  const territoryOptions = useSelectOptions<any>({
+    listData: allTerritories ?? [],
+    labelKey: "name",
+    valueKey: "id",
+  }).map((option) => ({
+    ...option,
+    value: String(option.value),
+  }));
+
+  const allUsersOptions = useSelectOptions<any>({
+    listData: allUsersList
+      .filter((u: any) => u.isWebUser)
+      .map((u: any) => ({
+        ...u,
+        fullName: `${u.firstName || ""} ${u.lastName || ""}`.trim(),
+      })),
+    labelKey: "fullName",
+    valueKey: "id",
+  }).map((u) => ({ ...u, value: String(u.value) }));
+
+  // Ref to prevent infinite loops on initial form population
   const hasPopulatedForm = useRef(false);
 
-  // State to track if form has changes
-  const [hasChanges, setHasChanges] = useState(false);
-
-  // Watch form values for changes
-  const formValues = form.watch();
-  const isDirty = form.formState.isDirty;
+  // Watch for form changes to enable/disable save button
+  const isFormDirty = form.formState.isDirty;
 
   // Create original records map for change detection
   const originalRecordsMap = useMemo(() => {
@@ -138,273 +146,234 @@ export function PricingForm() {
   }, [allApprovalsLevelList]);
 
   // Helper function to find category name by ID
-  const findCategoryNameById = (categoryId: string, categoriesData: any[]) => {
-    const category = categoriesData?.find(
-      (cat: any) => cat.expensesCategoryId === categoryId
-    );
-    return category?.categoryName;
-  };
+  const findCategoryNameById = useCallback(
+    (categoryId: string) => {
+      const category = expenseCategoriesData?.find(
+        (cat: any) => cat.expensesCategoryId === categoryId
+      );
+      return category?.categoryName;
+    },
+    [expenseCategoriesData]
+  );
 
   // Helper function to find expensesLevelId by data
-  const findExpensesLevelId = (
-    level: number,
-    userId: string,
-    categoryId: string,
-    tierKey: string,
-    apiData: any
-  ) => {
-    const levelData = apiData[userId];
-    if (!levelData) return null;
+  const findExpensesLevelId = useCallback(
+    (
+      level: number,
+      userId: string,
+      categoryId: string,
+      tierKey: string,
+      apiData: any,
+      territoryId: string | undefined
+    ) => {
+      const levelData = apiData[userId];
+      if (!levelData) return null;
 
-    const item = levelData.find(
-      (item: any) =>
-        item.level === level &&
-        item.expensesCategoryId === categoryId &&
-        item.tierkey === tierKey
-    );
-    return item?.id || null;
-  };
+      const item = levelData.find(
+        (item: any) =>
+          item.level === level &&
+          item.expensesCategoryId === categoryId &&
+          item.tierkey === tierKey &&
+          (territoryId ? item.territoryId === territoryId : !item.territoryId)
+      );
+      return item?.id || null;
+    },
+    []
+  );
 
   // -------- Transform API data to form structure --------
-  const transformApiDataToForm = (
-    apiData: any,
-    categories: string[]
-  ): FormData => {
-    const levelsMap = new Map<number, any>();
+  const transformApiDataToForm = useCallback(
+    (
+      apiData: any,
+      categories: string[],
+      currentTerritory: string | undefined
+    ): FormData => {
+      const levelsMap = new Map<number, any>();
 
-    // Group data by level and user
-    Object.entries(apiData).forEach(([userId, levelData]: [string, any]) => {
-      levelData.forEach((item: any) => {
-        const level = item.level;
+      // Filter API data for the current territory
+      const filteredApiData: Record<string, any[]> = {};
+      Object.entries(apiData).forEach(([userId, levelData]: [string, any]) => {
+        filteredApiData[userId] = levelData.filter((item: any) =>
+          currentTerritory
+            ? item.territoryId === currentTerritory
+            : !item.territoryId
+        );
+      });
 
-        if (!levelsMap.has(level)) {
-          levelsMap.set(level, {
-            levelNumber: level,
-            selectedUser: userId,
-            categories: {},
+      // Group data by level and user
+      Object.entries(filteredApiData).forEach(
+        ([userId, levelData]: [string, any]) => {
+          levelData.forEach((item: any) => {
+            const level = item.level;
+
+            if (!levelsMap.has(level)) {
+              levelsMap.set(level, {
+                levelNumber: level,
+                selectedUser: userId,
+                categories: {},
+                levelId: item.id, // Store a representative ID for the level
+              });
+            }
+
+            const currentLevelData = levelsMap.get(level);
+
+            const categoryName = findCategoryNameById(item.expensesCategoryId);
+            if (categoryName && !currentLevelData.categories[categoryName]) {
+              currentLevelData.categories[categoryName] = {
+                tiers: Array(TIERS.length)
+                  .fill(null)
+                  .map(() => ({ min: 0, max: 0 })),
+              };
+            }
+
+            if (categoryName) {
+              const tierIndex = parseInt(item.tierkey.split("_")[1]) - 1;
+              if (tierIndex >= 0 && tierIndex < TIERS.length) {
+                currentLevelData.categories[categoryName].tiers[tierIndex] = {
+                  min: item.minAmount,
+                  max: item.maxAmount,
+                };
+              }
+            }
           });
         }
+      );
 
-        const levelData = levelsMap.get(level);
-
-        // Initialize category if not exists
-        const categoryName = findCategoryNameById(
-          item.expensesCategoryId,
-          expenseCategoriesData || []
-        );
-        if (categoryName && !levelData.categories[categoryName]) {
-          levelData.categories[categoryName] = {
-            tiers: Array(TIERS.length)
-              .fill(null)
-              .map(() => ({ min: 0, max: 0 })),
-          };
-        }
-
-        // Update tier data
-        if (categoryName) {
-          const tierIndex = parseInt(item.tierkey.split("_")[1]) - 1;
-          if (tierIndex >= 0 && tierIndex < TIERS.length) {
-            levelData.categories[categoryName].tiers[tierIndex] = {
-              min: item.minAmount,
-              max: item.maxAmount,
+      // Fill missing categories with default values for each level
+      levelsMap.forEach((levelData) => {
+        categories.forEach((category) => {
+          if (!levelData.categories[category]) {
+            levelData.categories[category] = {
+              tiers: Array(TIERS.length)
+                .fill(null)
+                .map(() => ({ min: 0, max: 0 })),
             };
           }
-        }
+        });
       });
-    });
 
-    // Fill missing categories with default values
-    levelsMap.forEach((levelData) => {
-      categories.forEach((category) => {
-        if (!levelData.categories[category]) {
-          levelData.categories[category] = {
-            tiers: Array(TIERS.length)
-              .fill(null)
-              .map(() => ({ min: 0, max: 0 })),
-          };
-        }
-      });
-    });
-
-    return {
-      territory: "",
-      levels: Array.from(levelsMap.values()).sort(
+      const sortedLevels = Array.from(levelsMap.values()).sort(
         (a, b) => a.levelNumber - b.levelNumber
-      ),
-    };
-  };
+      );
 
-  // -------- Check if form has actual changes --------
-  const checkForChanges = useMemo(() => {
-    if (
-      !allApprovalsLevelList ||
-      Object.keys(allApprovalsLevelList).length === 0 ||
-      !expenseCategoriesData
-    ) {
-      return false;
-    }
-
-    const currentFormData = form.getValues();
-
-    // If form is not dirty, no changes
-    if (!isDirty) return false;
-
-    // Create category name to ID mapping
-    const categoryMap = (expenseCategoriesData ?? []).reduce(
-      (acc: any, category: any) => {
-        acc[category.categoryName] = category.expensesCategoryId;
-        return acc;
-      },
-      {}
-    );
-
-    // Check each level and category for changes
-    for (const level of currentFormData.levels) {
-      for (const [categoryName, categoryData] of Object.entries(
-        level.categories
-      )) {
-        const categoryId = categoryMap[categoryName];
-
-        for (
-          let tierIndex = 0;
-          tierIndex < categoryData.tiers.length;
-          tierIndex++
-        ) {
-          const tier = categoryData.tiers[tierIndex];
-          const tierKey = `tier_${tierIndex + 1}`;
-
-          // Find the existing expensesLevelId if it exists
-          const expensesLevelId = findExpensesLevelId(
-            level.levelNumber,
-            level.selectedUser,
-            categoryId,
-            tierKey,
-            allApprovalsLevelList
-          );
-
-          if (!expensesLevelId) {
-            // New record - check if values are non-zero
-            if (Number(tier.min) !== 0 || Number(tier.max) !== 0) {
-              return true;
-            }
-          } else {
-            // Existing record - check if changed
-            const original = originalRecordsMap[expensesLevelId];
-            if (
-              original.expensesCategoryId !== categoryId ||
-              original.tierkey !== tierKey ||
-              Number(original.minAmount) !== Number(tier.min) ||
-              Number(original.maxAmount) !== Number(tier.max) ||
-              String(original.userId) !== String(level.selectedUser)
-            ) {
-              return true;
-            }
-          }
-        }
+      // If no levels are found for the territory, reset levels and keep territory
+      if (sortedLevels.length === 0) {
+        return { territory: currentTerritory, levels: [] };
       }
-    }
 
-    return false;
-  }, [
-    formValues,
-    isDirty,
-    allApprovalsLevelList,
-    expenseCategoriesData,
-    originalRecordsMap,
-  ]);
+      return {
+        territory: currentTerritory,
+        levels: sortedLevels,
+      };
+    },
+    [expenseCategoriesData, findCategoryNameById]
+  );
 
-  // Update hasChanges when checkForChanges changes
+  // -------- Populate form from API data when allApprovalsLevelList or territory changes --------
   useEffect(() => {
-    setHasChanges(checkForChanges);
-  }, [checkForChanges]);
-
-  // -------- Populate form from API data --------
-  useEffect(() => {
-    if (
-      isLoading ||
-      !allApprovalsLevelList ||
-      Object.keys(allApprovalsLevelList).length === 0 ||
-      categories.length === 0 ||
-      hasPopulatedForm.current
-    ) {
+    if (isLoading || !expenseCategoriesData || categories.length === 0) {
       return;
     }
 
-    const transformedData = transformApiDataToForm(
-      allApprovalsLevelList,
-      categories
-    );
+    // Determine if form population has happened for the current territory
+    const currentTerritoryInForm = form.getValues("territory");
+    const isInitialLoadOrTerritoryChange =
+      !hasPopulatedForm.current || currentTerritoryInForm !== selectedTerritory;
 
-    form.reset(transformedData);
-    hasPopulatedForm.current = true;
-    setHasChanges(false); // Reset changes after population
+    if (isInitialLoadOrTerritoryChange) {
+      const transformedData = transformApiDataToForm(
+        allApprovalsLevelList,
+        categories,
+        selectedTerritory || undefined
+      );
 
-    console.log("Form populated with API data:", transformedData);
-  }, [allApprovalsLevelList, isLoading, categories, form]);
+      form.reset(transformedData);
+      hasPopulatedForm.current = true;
+      // console.log("Form populated with API data:", transformedData);
+    }
+  }, [
+    allApprovalsLevelList,
+    isLoading,
+    categories,
+    form,
+    selectedTerritory,
+    expenseCategoriesData,
+    transformApiDataToForm,
+  ]);
 
   // -------- Create Level Template --------
-  const createDefaultLevel = (
-    levelNumber: number,
-    categories: string[],
-    prevLevels: FormData["levels"]
-  ) => {
-    return {
-      levelNumber,
-      selectedUser: "",
-      categories: Object.fromEntries(
-        categories.map((category) => {
-          const prevLevel = prevLevels[levelNumber - 2];
-          const prevTiers = prevLevel?.categories?.[category]?.tiers ?? [];
+  const createDefaultLevel = useCallback(
+    (
+      levelNumber: number,
+      categories: string[],
+      prevLevels: FormData["levels"]
+    ) => {
+      return {
+        levelNumber,
+        selectedUser: "",
+        categories: Object.fromEntries(
+          categories.map((category) => {
+            const prevLevel = prevLevels[levelNumber - 2];
+            const prevTiers = prevLevel?.categories?.[category]?.tiers ?? [];
 
-          return [
-            category,
-            {
-              tiers: TIERS.map((_, tierIdx) => {
-                if (!prevLevel) {
-                  return { min: 0, max: 0 };
-                }
-                const prevMax = Number(prevTiers[tierIdx]?.max ?? 0);
-                return {
-                  min: prevMax + 1,
-                  max: prevMax + 1,
-                };
-              }),
-            },
-          ];
-        })
-      ),
-    };
-  };
+            return [
+              category,
+              {
+                tiers: TIERS.map((_, tierIdx) => {
+                  if (!prevLevel) {
+                    return { min: 0, max: 0 };
+                  }
+                  const prevMax = Number(prevTiers[tierIdx]?.max ?? 0);
+                  return {
+                    min: prevMax + 1,
+                    max: prevMax + 1,
+                  };
+                }),
+              },
+            ];
+          })
+        ),
+      };
+    },
+    []
+  );
 
   // ⭐ All selected userIds from form state
   const selectedUserIds = form.watch("levels").map((lvl) => lvl.selectedUser);
 
   // ⭐ Filter out already selected users (except current one)
-  const getAvailableUsers = (currentValue: string) => {
-    return allUsersOptions.filter((u) => {
-      if (u.value === currentValue) return true;
-      return !selectedUserIds.includes(u.value);
-    });
-  };
+  const getAvailableUsers = useCallback(
+    (currentValue: string) => {
+      return allUsersOptions.filter((u) => {
+        if (u.value === currentValue) return true;
+        return !selectedUserIds.includes(u.value);
+      });
+    },
+    [allUsersOptions, selectedUserIds]
+  );
 
   // -------- Add Level (with prefill) --------
   const handleAddLevel = () => {
-    if (!categories.length) return;
-
+    if (!categories.length) {
+      toast.error("Expense categories not loaded. Cannot add a level.");
+      return;
+    }
     const prevLevels = form.getValues("levels");
     append(createDefaultLevel(fields.length + 1, categories, prevLevels));
-
-    // Adding a level counts as a change
-    setHasChanges(true);
+    form.setValue("levels", form.getValues("levels"), { shouldDirty: true }); // Mark form as dirty
   };
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
     if (!expenseCategoriesData) {
-      console.error("Expense categories not loaded");
+      toast.error("Expense categories not loaded. Cannot save configuration.");
       return;
     }
 
-    // Create category name to ID mapping
+    const selectedTerritoryId = data.territory || undefined;
+    const territoryPayload = selectedTerritoryId
+      ? { territoryId: selectedTerritoryId }
+      : {};
+
     const categoryMap = (expenseCategoriesData ?? []).reduce(
       (acc: any, category: any) => {
         acc[category.categoryName] = category.expensesCategoryId;
@@ -413,9 +382,11 @@ export function PricingForm() {
       {}
     );
 
-    const allPayloads: any[] = [];
+    const createList: any[] = [];
+    const updateList: any[] = [];
+    const existingIdsInForm: Set<string> = new Set();
 
-    // Process each level and category
+    // Process each level and category to determine creates/updates
     data.levels.forEach((level) => {
       Object.entries(level.categories).forEach(
         ([categoryName, categoryData]) => {
@@ -423,75 +394,89 @@ export function PricingForm() {
             const categoryId = categoryMap[categoryName];
             const tierKey = `tier_${tierIndex + 1}`;
 
-            // Find the existing expensesLevelId if it exists
             const expensesLevelId = findExpensesLevelId(
               level.levelNumber,
               level.selectedUser,
               categoryId,
               tierKey,
-              allApprovalsLevelList
+              allApprovalsLevelList,
+              selectedTerritoryId
             );
 
-            if (!expensesLevelId) {
-              // New record - always create
-              allPayloads.push({
-                expensesCategoryId: categoryId,
-                level: level.levelNumber,
-                userId: level.selectedUser,
-                tierkey: tierKey,
-                minAmount: Number(tier.min),
-                maxAmount: Number(tier.max),
-              });
-            } else {
-              // Existing record - check if changed
+            const payload = {
+              expensesCategoryId: categoryId,
+              level: level.levelNumber,
+              userId: level.selectedUser,
+              tierkey: tierKey,
+              minAmount: Number(tier.min),
+              maxAmount: Number(tier.max),
+              ...territoryPayload,
+            };
+
+            if (expensesLevelId) {
+              // Existing record
               const original = originalRecordsMap[expensesLevelId];
               const isChanged =
-                original.expensesCategoryId !== categoryId ||
-                original.tierkey !== tierKey ||
-                Number(original.minAmount) !== Number(tier.min) ||
-                Number(original.maxAmount) !== Number(tier.max) ||
-                String(original.userId) !== String(level.selectedUser);
+                original.expensesCategoryId !== payload.expensesCategoryId ||
+                original.tierkey !== payload.tierkey ||
+                Number(original.minAmount) !== Number(payload.minAmount) ||
+                Number(original.maxAmount) !== Number(payload.maxAmount) ||
+                String(original.userId) !== String(payload.userId) ||
+                (selectedTerritoryId &&
+                  original.territoryId !== selectedTerritoryId) ||
+                (!selectedTerritoryId && original.territoryId);
 
               if (isChanged) {
-                allPayloads.push({
-                  expensesLevelId: expensesLevelId,
-                  expensesCategoryId: categoryId,
-                  level: level.levelNumber,
-                  userId: level.selectedUser,
-                  tierkey: tierKey,
-                  minAmount: Number(tier.min),
-                  maxAmount: Number(tier.max),
-                });
+                updateList.push({ ...payload, expensesLevelId });
               }
+              existingIdsInForm.add(expensesLevelId);
+            } else {
+              // New record
+              createList.push(payload);
             }
           });
         }
       );
     });
 
-    // Separate create and update lists
-    const createList = allPayloads.filter((p) => !p.expensesLevelId);
-    const updateList = allPayloads.filter((p) => p.expensesLevelId);
+    // Determine deletions: any original record not present in the new form data for the current territory
+    const deleteIds: string[] = [];
+    Object.values(allApprovalsLevelList || {})
+      .flat()
+      .forEach((originalItem: any) => {
+        const isForCurrentTerritory = selectedTerritoryId
+          ? originalItem.territoryId === selectedTerritoryId
+          : !originalItem.territoryId;
 
-    console.log("Create List:", createList);
-    console.log("Update List:", updateList);
+        if (isForCurrentTerritory && !existingIdsInForm.has(originalItem.id)) {
+          deleteIds.push(originalItem.id);
+        }
+      });
 
-    // Execute create and update operations
-    if (createList.length > 0) {
-      createApprovalLevel({ expenseApprovalLevels: createList });
+    try {
+      if (createList.length > 0) {
+        await createApprovalLevel({ expenseApprovalLevels: createList });
+      }
+      if (updateList.length > 0) {
+        await updateApprovalLevel({ expenseApprovalLevels: updateList });
+      }
+      if (deleteIds.length > 0) {
+        await deleteApproval({ ids: deleteIds } as any);
+      }
+
+      if (
+        createList.length === 0 &&
+        updateList.length === 0 &&
+        deleteIds.length === 0
+      ) {
+        toast.info("No changes to save.");
+      }
+      form.reset(data); // Reset form state after successful submission to mark as pristine
+      hasPopulatedForm.current = false; // Force re-population from API on next render
+    } catch (error) {
+      toast.error("Failed to save configuration. Please try again.");
+      console.error("Submission error:", error);
     }
-
-    if (updateList.length > 0) {
-      updateApprovalLevel({ expenseApprovalLevels: updateList });
-    }
-
-    if (createList.length === 0 && updateList.length === 0) {
-      console.log("No changes to save");
-    }
-
-    // Reset form state after submission
-    form.reset(data);
-    setHasChanges(false);
   };
 
   const dynamicGridStyle = {
@@ -504,9 +489,9 @@ export function PricingForm() {
     maxWidth: `${levelColumnWidth}px`,
   };
 
-  // Show loading state while transforming data
-  if (isLoading) {
-    return <div>Loading...</div>;
+  // Show loading state while initial data is being fetched
+  if (isLoading && !hasPopulatedForm.current) {
+    return <div>Loading configuration...</div>;
   }
 
   //---------------delete------------
@@ -518,32 +503,43 @@ export function PricingForm() {
     const levelData = form.getValues(`levels.${levelIndex}`);
     const userId = levelData.selectedUser;
     const levelNumber = levelData.levelNumber;
+    const currentTerritory = form.getValues("territory") || undefined;
 
     const userName =
       allUsersOptions.find((u) => u.value === userId)?.label ||
       `User in Level ${levelIndex + 1}`;
 
-    // collect backend IDs for deletion
-    const items =
+    // Collect backend IDs for deletion for the specific level and territory
+    const itemsToDelete =
       allApprovalsLevelList[userId]?.filter(
-        (item: any) => item.level === levelNumber
+        (item: any) =>
+          item.level === levelNumber &&
+          (currentTerritory
+            ? item.territoryId === currentTerritory
+            : !item.territoryId)
       ) || [];
 
-    const idsToDelete = items.map((i: any) => i.id).filter(Boolean);
+    const idsToDelete = itemsToDelete.map((i: any) => i.id).filter(Boolean);
 
     initiateDelete({
       itemName: `Level for ${userName}`,
       itemIdentifierValue: `Level ${levelIndex + 1} and all assigned expense categories`,
-      onConfirm: () => {
-        if (idsToDelete.length > 0) {
-          deleteApproval({ ids: idsToDelete } as any, {
-            onSuccess: () => remove(levelIndex),
-          });
-        } else {
-          remove(levelIndex);
+      onConfirm: async () => {
+        try {
+          if (idsToDelete.length > 0) {
+            await deleteApproval({ ids: idsToDelete } as any);
+          }
+          remove(levelIndex); // Remove from form array regardless of backend deletion status
+          form.setValue("levels", form.getValues("levels"), {
+            shouldDirty: true,
+          }); // Mark form as dirty
+          setDeletionState(null); // close modal after confirm
+          hasPopulatedForm.current = false; // Force re-population to reflect changes
+        } catch (error) {
+          toast.error("Failed to delete level. Please try again.");
+          console.error("Delete level error:", error);
+          setDeletionState(null); // close modal on error
         }
-        setDeletionState(null); // close modal after confirm
-        setHasChanges(true); // Deleting a level counts as a change
       },
     });
   };
@@ -564,8 +560,16 @@ export function PricingForm() {
                     <FormItem>
                       <SearchableSelect
                         value={field.value}
-                        onChange={field.onChange}
-                        onCancelPress={() => field.onChange("")}
+                        onChange={(value) => {
+                          field.onChange(value);
+                          // Reset form to trigger re-population based on new territory
+                          // This also marks the form as pristine again
+                          hasPopulatedForm.current = false;
+                        }}
+                        onCancelPress={() => {
+                          field.onChange("");
+                          hasPopulatedForm.current = false;
+                        }}
                         placeholder="Select Territory"
                         options={territoryOptions.map((option) => ({
                           ...option,
@@ -620,8 +624,14 @@ export function PricingForm() {
                           <FormItem>
                             <SearchableSelect
                               value={field.value}
-                              onChange={(val) => field.onChange(val ?? "")}
-                              onCancelPress={() => field.onChange("")}
+                              onChange={(val) => {
+                                field.onChange(val ?? "");
+                                form.trigger(`levels.${index}.selectedUser`); // Trigger validation on change
+                              }}
+                              onCancelPress={() => {
+                                field.onChange("");
+                                form.trigger(`levels.${index}.selectedUser`);
+                              }}
                               placeholder="Select User"
                               options={getAvailableUsers(field.value).map(
                                 (u) => ({
@@ -679,7 +689,7 @@ export function PricingForm() {
             </div>
 
             {/* ----------------------- ROWS ----------------------- */}
-            {categories.map((category: any) => (
+            {categories.map((category: string) => (
               <div key={category} className="flex border-b">
                 <div className="w-64 p-4 border-r font-medium sticky left-0 bg-card z-20">
                   {category}
@@ -744,7 +754,7 @@ export function PricingForm() {
           <Button
             type="submit"
             size="lg"
-            disabled={isCreating || isUpdating || !hasChanges}
+            disabled={isCreating || isUpdating || isDeleting || !isFormDirty}
           >
             {isCreating || isUpdating ? "Saving..." : "Save Configuration"}
           </Button>
