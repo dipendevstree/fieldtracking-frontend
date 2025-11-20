@@ -14,7 +14,7 @@ import {
   useGetExpenseCategoriesDropDownList,
   useGetUsersDropDownList,
   useUpdateApprovalsLevel,
-} from "../../services/approvers.hook";
+} from "../services/approvers.hook";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { useGetAllTerritoriesForDropdown } from "@/features/userterritory/services/user-territory.hook";
 import { DeleteModal } from "@/components/shared/common-delete-modal";
@@ -63,7 +63,7 @@ const ADD_LEVEL_COLUMN_WIDTH = 300;
 // -----------------------------------------------------------------------------
 // PRICING FORM
 // -----------------------------------------------------------------------------
-export function PricingForm() {
+export function ApproverFormNew() {
   const [deletionState, setDeletionState] = useState<{
     itemName: string;
     itemIdentifierValue: string;
