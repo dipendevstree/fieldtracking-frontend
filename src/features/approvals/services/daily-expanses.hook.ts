@@ -50,6 +50,18 @@ export const useExpenseReviewAndApproval = (onSuccess?: () => void) => {
   });
 };
 
+export const useExpenseReviewAndApprovalMultiple = (onSuccess?: () => void) => {
+  return usePostData({
+    url: API.dailyExpenses.expenseReviewAndApprovalMultiple,
+    refetchQueries: [API.dailyExpenses.list],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};
+
 export const useExpenseReviewAndApprovalUpdate = (
   id: string,
   onSuccess?: () => void

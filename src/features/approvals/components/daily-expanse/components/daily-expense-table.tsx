@@ -5,6 +5,8 @@ import { useState, useMemo, useEffect } from 'react'
 import { createColumns } from './columns'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { userUpcomingVisitStoreState } from '@/features/approvals/store/upcoming-visits.store'
+import { EXPENSE_STATUS } from '@/data/app.data'
 interface DailyExpensesTableProps {
   data: any[]
   totalCount: number
@@ -25,11 +27,13 @@ const DailyExpenseTable = ({
   pagination: _pagination
 }: DailyExpensesTableProps) => {
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
-
+  const { setOpen, setSelectedIds, setCurrentRow } = userUpcomingVisitStoreState();
+  const [selectableData, setSelectableData] = useState<any[]>([]);
   // Clear selected rows when data changes (pagination, filtering, etc.)
   useEffect(() => {
     setSelectedRows(new Set())
-  }, [data])
+    data && setSelectableData(data?.filter((d) => d.isApprovalLevel))
+  }, [data]);
 
   // Toggle individual row selection
   const toggleRowSelection = (rowId: string) => {
@@ -46,20 +50,20 @@ const DailyExpenseTable = ({
 
   // Toggle select all
   const toggleSelectAll = () => {
-    if (selectedRows.size === data.length && data.length > 0) {
+    if (selectedRows.size === selectableData.length && selectableData.length > 0) {
       // Deselect all
       setSelectedRows(new Set())
     } else {
       // Select all
-      const allIds = new Set(data.map((item) => String(item.id)))
+      const allIds = new Set(selectableData.map((item) => String(item.id)))
       setSelectedRows(allIds)
     }
   }
 
   // Check if all rows are selected
   const isAllSelected = useMemo(
-    () => data && data.length > 0 && selectedRows.size === data.length,
-    [selectedRows, data?.length]
+    () => selectableData && selectableData.length > 0 && selectedRows.size === selectableData.length,
+    [selectedRows, selectableData?.length]
   )
 
   // Create columns with selection handlers
@@ -68,6 +72,12 @@ const DailyExpenseTable = ({
     [selectedRows, isAllSelected]
   )
 
+  const handleActionOnExpense = (types: EXPENSE_STATUS[]) => {
+    setSelectedIds(selectedRows);
+    setCurrentRow({ actionType: types.join(",") });
+    setOpen("action");
+  }
+console.log("selectedRows.size", selectedRows.size);
   return (
     <>
       <Card className="p-4 gap-0">
@@ -79,9 +89,9 @@ const DailyExpenseTable = ({
             </div>
           </div>
           <div className="flex gap-2">
-            <Button disabled={!selectedRows.size} className="bg-green-600 text-white hover:bg-green-700">Approve</Button>
-            <Button disabled={!selectedRows.size} className="bg-green-600 text-white hover:bg-green-700">Review</Button>
-            <Button disabled={!selectedRows.size} variant="destructive">Reject</Button>
+            <Button disabled={!selectedRows.size} className="bg-green-600 text-white hover:bg-green-700" onClick={() => handleActionOnExpense([EXPENSE_STATUS.APPROVED, EXPENSE_STATUS.REVIEWED])}>Approve/Review</Button>
+            {/* <Button disabled={!selectedRows.size} className="bg-green-600 text-white hover:bg-green-700">Review</Button> */}
+            <Button disabled={!selectedRows.size} variant="destructive" onClick={() => handleActionOnExpense([EXPENSE_STATUS.REJECT])}>Reject</Button>
           </div>
         </div>
       </Card>

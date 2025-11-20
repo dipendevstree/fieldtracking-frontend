@@ -37,6 +37,7 @@ export enum EXPENSE_STATUS {
   APPROVED = "approved",
   PARTIALLY_APPROVED = "partially_approved",
   REJECT = "reject",
+  REJECTED = "rejected",
   REVIEWED = "reviewed",
 }
 

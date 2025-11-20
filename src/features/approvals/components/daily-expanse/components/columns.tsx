@@ -9,7 +9,8 @@ import {
 import { DataTableRowActions } from "./daily-expense-table-action-button";
 import { formatDateRange } from "@/utils/commonFunction";
 import { Checkbox } from "@/components/ui/checkbox";
-import { EXPENSE_STATUS } from "@/data/app.data";
+import { Info } from "lucide-react";
+import CustomTooltip from "@/components/shared/custom-tooltip";
 
 export const createColumns = (
   selectedRows: Set<string>,
@@ -30,7 +31,13 @@ export const createColumns = (
       </div>
     ),
     cell: ({ row }) => {
-      if ([EXPENSE_STATUS.APPROVED, EXPENSE_STATUS.REVIEWED].includes(row?.original?.status as EXPENSE_STATUS)) return;
+      if (!row?.original?.isApprovalLevel) {
+        return (
+          <CustomTooltip title={row?.original?.warningMessageForAmount || "No further actions."}>
+            <Info size={16}/>
+          </CustomTooltip>
+        )
+      }
       const isSelected = selectedRows.has(String(row.original.id))
       return (
         <Checkbox

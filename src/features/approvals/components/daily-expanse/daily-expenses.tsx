@@ -20,13 +20,15 @@ import {
   formatExpenseType,
 } from "@/utils/commonFormatters";
 import { useGetAllDailyExpanses } from "@/features/approvals/services/daily-expanses.hook";
+import { userUpcomingVisitStoreState } from "../../store/upcoming-visits.store";
+import { ActionModal } from "./components/action-modal";
 
 export default function DailyExpenses() {
   const initialDateRange: DateRange = {
     from: subDays(new Date(), 7),
     to: new Date(),
   };
-
+  const { open, setOpen, currentRow, setCurrentRow, selectedIds } = userUpcomingVisitStoreState();
   const [dateRange, setDateRange] = useState<DateRange | undefined>(
     initialDateRange
   );
@@ -171,6 +173,12 @@ export default function DailyExpenses() {
     }
   ];
 
+  const closeModal = () => {
+    setOpen(null);
+    setTimeout(() => setCurrentRow(null), 300);
+
+  };
+  console.log("render, open =", open)
   return (
     <>
       <GlobalFilterSection key={"calender-view-filters"} filters={filters} />
@@ -184,6 +192,19 @@ export default function DailyExpenses() {
         paginationCallbacks={{ onPaginationChange }}
         defaultPageSize={pagination.limit}
       />
+      {(currentRow || selectedIds) && (
+        <ActionModal
+          key="delete-daily-expense"
+          open={open === "action"}
+          currentRow={currentRow ?? {}}
+          onDelete={() => {}}
+          onCancel={closeModal}
+          onOpenChange={(value) => {
+            if (!value) closeModal();
+            else setOpen("delete");
+          }}
+        />
+      )}
     </>
   );
 }
