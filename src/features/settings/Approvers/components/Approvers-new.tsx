@@ -538,6 +538,20 @@ export function ApproverFormNew() {
     });
   };
 
+  //-------- Pre-fill form with first territory if allowed ------------
+  useEffect(() => {
+    if (
+      allTerritories?.length > 0 &&
+      allowAddUsersBasedOnTerritories &&
+      !form.getValues("territory")
+    ) {
+      const firstTerritoryId = String(allTerritories[0].id);
+      form.setValue("territory", firstTerritoryId);
+      hasPopulatedForm.current = false;
+    }
+  }, [allTerritories, allowAddUsersBasedOnTerritories, form]);
+
+  //--------- styling ------------
   const dynamicGridStyle = {
     gridTemplateColumns: `repeat(${TIERS.length}, minmax(0, 1fr))`,
   };
