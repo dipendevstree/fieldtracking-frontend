@@ -1,14 +1,16 @@
 import { create } from 'zustand'
 
 // Define the dialog types
-type DialogType = 'add' | 'edit' | 'delete' | null
+type DialogType = 'add' | 'edit' | 'delete' | 'action' | null
 
 // Define the store interface
 interface UserUpcomingVisitStoreState {
   open: DialogType
   setOpen: (open: DialogType) => void
   currentRow: any | null
-  setCurrentRow: (row: any | null) => void
+  setCurrentRow: (row: any | null) => void,
+  selectedIds: Set<string> | null;
+  setSelectedIds: (ids: Set<string> | null) => void,
 }
 // Create the Zustand store
 export const userUpcomingVisitStoreState = create<UserUpcomingVisitStoreState>(
@@ -17,5 +19,7 @@ export const userUpcomingVisitStoreState = create<UserUpcomingVisitStoreState>(
     setOpen: (open) => set({ open }),
     currentRow: null,
     setCurrentRow: (row) => set({ currentRow: row }),
+    selectedIds: null,
+    setSelectedIds: (ids: Set<string> | null) => set({ selectedIds: ids }),
   })
 )

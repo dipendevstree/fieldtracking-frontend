@@ -8,8 +8,47 @@ import {
 } from "@/utils/commonFormatters";
 import { DataTableRowActions } from "./daily-expense-table-action-button";
 import { formatDateRange } from "@/utils/commonFunction";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Info } from "lucide-react";
+import CustomTooltip from "@/components/shared/custom-tooltip";
 
-export const columns: ColumnDef<any>[] = [
+export const createColumns = (
+  selectedRows: Set<string>,
+  toggleRowSelection: (rowId: string) => void,
+  toggleSelectAll: () => void,
+  isAllSelected: boolean
+): ColumnDef<any>[] => [
+  {
+    accessorKey: "manageExpense",
+    header: () => (
+      <div>
+        <Checkbox
+          id="manage-all-expense"
+          checked={isAllSelected}
+          onCheckedChange={toggleSelectAll}
+        />
+        {/* <label htmlFor="manage-all-expense" className="text-sm pl-2">Select All</label> */}
+      </div>
+    ),
+    cell: ({ row }) => {
+      if (!row?.original?.isApprovalLevel) {
+        return (
+          <CustomTooltip title={row?.original?.warningMessageForAmount || "No further actions."}>
+            <Info size={16}/>
+          </CustomTooltip>
+        )
+      }
+      const isSelected = selectedRows.has(String(row.original.id))
+      return (
+        <Checkbox
+          id={`expense-${row.original.id}`}
+          checked={isSelected}
+          onCheckedChange={() => toggleRowSelection(String(row.original.id))}
+          value={row.original.id}
+        />
+      )
+    }
+  },
   {
     accessorKey: "salesRep",
     header: ({ column }) => (
@@ -37,10 +76,7 @@ export const columns: ColumnDef<any>[] = [
       <CustomDataTableColumnHeader column={column} title="Date" />
     ),
     cell: ({ row }:any) => {
-      console.log("row", row);
-      
-     
-      return <div className=" text-sm">{formatDateRange(row.original.startDate,row.original.endDate)}</div>;
+      return <div className="text-sm">{formatDateRange(row.original.startDate,row.original.endDate)}</div>;
     },
     enableSorting: false,
   },
@@ -49,6 +85,9 @@ export const columns: ColumnDef<any>[] = [
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Amount" />
     ),
+    cell: ({ row }:any) => {
+      return <div className="text-sm">{row.original.totalAmount || 0}{row?.original?.isApprovalLevel && row?.original?.warningMessageForAmount ? ` (${row?.original?.warningMessageForAmount})`: ``}</div>;
+    },
     enableSorting: false,
   },
   {

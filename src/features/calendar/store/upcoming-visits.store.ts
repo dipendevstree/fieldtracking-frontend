@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 
 // Define the dialog types
-type DialogType = 'add' | 'edit' | 'delete' | null
+type DialogType = 'add' | 'edit' | 'delete' | 'action' | null
 
 // Define the store interface
 interface UserUpcomingVisitStoreState {
