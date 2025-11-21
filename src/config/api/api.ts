@@ -193,6 +193,7 @@ const API = {
     update: "expenseApprovalLevel/patch",
     delete: "expenseApprovalLevel/multi-delete",
     organizationCreate: "organization/patch",
+    tierList: "users/tiers/list",
   },
   fixedDayExpense: {
     list: "fixedDayExpense/list",

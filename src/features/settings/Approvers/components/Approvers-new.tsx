@@ -11,6 +11,7 @@ import {
   useCreateApprovalsLevel,
   useDeleteApprovalsLevel,
   useGetAllApprovalsLevel,
+  useGetAllTiers,
   useGetExpenseCategoriesDropDownList,
   useGetUsersDropDownList,
   useUpdateApprovalsLevel,
@@ -93,12 +94,11 @@ const formSchema = z
 type FormData = z.infer<typeof formSchema>;
 
 // -------------------- Constants ---------------------
-const TIERS = ["Tier 1", "Tier 2"];
 const TIER_COLUMN_WIDTH = 240;
 const ADD_LEVEL_COLUMN_WIDTH = 300;
 
 // -----------------------------------------------------------------------------
-// PRICING FORM
+// APPROVER FORM
 // -----------------------------------------------------------------------------
 export function ApproverFormNew() {
   const { user } = useAuthStore();
@@ -124,7 +124,7 @@ export function ApproverFormNew() {
 
   const selectedTerritory = form.watch("territory");
 
-  // Fetch all approvals data based on selected territory
+  // API Hooks
   const { data: allApprovalsLevelList = {}, isLoading } =
     useGetAllApprovalsLevel();
 
@@ -140,15 +140,35 @@ export function ApproverFormNew() {
   const { allTerritories = [] } = useGetAllTerritoriesForDropdown();
   const { expenseCategories: expenseCategoriesData } =
     useGetExpenseCategoriesDropDownList({ defaultCategory: true });
+  const { data: allTiersData } = useGetAllTiers();
+  const { listData: allUsersList = [] } = useGetUsersDropDownList({
+    territoryId: selectedTerritory,
+  });
+
+  // -------- Derived State: Sorted Tiers --------
+  const dynamicTiers = useMemo(() => {
+    if (!allTiersData || !Array.isArray(allTiersData)) return [];
+
+    return [...allTiersData]
+      .sort((a, b) => {
+        // Extract number for sorting: "tier_1" -> 1
+        const numA = parseInt(a.split("_")[1] || "0");
+        const numB = parseInt(b.split("_")[1] || "0");
+        return numA - numB;
+      })
+      .map((key) => {
+        // Create label: "tier_1" -> "Tier 1"
+        const label = key
+          .replace("_", " ")
+          .replace(/\b\w/g, (l: any) => l.toUpperCase());
+        return { key, label };
+      });
+  }, [allTiersData]);
 
   const categories = useMemo(
     () => (expenseCategoriesData ?? []).map((c: any) => c.categoryName),
     [expenseCategoriesData]
   );
-
-  const { listData: allUsersList = [] } = useGetUsersDropDownList({
-    territoryId: selectedTerritory,
-  });
 
   const territoryOptions = useSelectOptions<any>({
     listData: allTerritories ?? [],
@@ -225,7 +245,8 @@ export function ApproverFormNew() {
     (
       apiData: any,
       categories: string[],
-      currentTerritory: string | undefined
+      currentTerritory: string | undefined,
+      availableTiers: { key: string; label: string }[]
     ): FormData => {
       const levelsMap = new Map<number, any>();
 
@@ -260,14 +281,18 @@ export function ApproverFormNew() {
             if (categoryName) {
               if (!currentLevelData.categories[categoryName]) {
                 currentLevelData.categories[categoryName] = {
-                  tiers: Array(TIERS.length)
+                  tiers: Array(availableTiers.length)
                     .fill(null)
                     .map(() => ({ min: 0, max: 0 })),
                 };
               }
 
-              const tierIndex = parseInt(item.tierkey.split("_")[1]) - 1;
-              if (tierIndex >= 0 && tierIndex < TIERS.length) {
+              // Find the index in our sorted array matching the API tierkey
+              const tierIndex = availableTiers.findIndex(
+                (t) => t.key === item.tierkey
+              );
+
+              if (tierIndex >= 0) {
                 currentLevelData.categories[categoryName].tiers[tierIndex] = {
                   min: item.minAmount,
                   max: item.maxAmount,
@@ -283,7 +308,7 @@ export function ApproverFormNew() {
         categories.forEach((category) => {
           if (!levelData.categories[category]) {
             levelData.categories[category] = {
-              tiers: Array(TIERS.length)
+              tiers: Array(availableTiers.length)
                 .fill(null)
                 .map(() => ({ min: 0, max: 0 })),
             };
@@ -312,11 +337,15 @@ export function ApproverFormNew() {
 
   // -------- Populate form from API data when allApprovalsLevelList or territory changes --------
   useEffect(() => {
-    if (isLoading || !expenseCategoriesData || categories.length === 0) {
+    if (
+      isLoading ||
+      !expenseCategoriesData ||
+      categories.length === 0 ||
+      dynamicTiers.length === 0
+    ) {
       return;
     }
 
-    // Determine if form population has happened for the current territory
     const currentTerritoryInForm = form.getValues("territory");
     const isInitialLoadOrTerritoryChange =
       !hasPopulatedForm.current || currentTerritoryInForm !== selectedTerritory;
@@ -325,7 +354,8 @@ export function ApproverFormNew() {
       const transformedData = transformApiDataToForm(
         allApprovalsLevelList,
         categories,
-        selectedTerritory || undefined
+        selectedTerritory || undefined,
+        dynamicTiers
       );
       form.reset(transformedData);
       hasPopulatedForm.current = true;
@@ -338,6 +368,7 @@ export function ApproverFormNew() {
     selectedTerritory,
     expenseCategoriesData,
     transformApiDataToForm,
+    dynamicTiers,
   ]);
 
   // -------- Helper to create new level --------
@@ -346,7 +377,8 @@ export function ApproverFormNew() {
       levelNumber: number,
       categories: string[],
       prevLevels: FormData["levels"],
-      availableUsers: { label: string; value: string }[]
+      availableUsers: { label: string; value: string }[],
+      availableTiers: { key: string; label: string }[]
     ) => {
       const defaultUser =
         availableUsers.length > 0 ? availableUsers[0].value : "";
@@ -361,7 +393,7 @@ export function ApproverFormNew() {
             return [
               category,
               {
-                tiers: TIERS.map((_, tierIdx) => {
+                tiers: availableTiers.map((_, tierIdx) => {
                   if (!prevLevel) {
                     return { min: 0, max: 0 };
                   }
@@ -394,10 +426,10 @@ export function ApproverFormNew() {
     [allUsersOptions, selectedUserIds]
   );
 
-  // -------- Add Level (with prefill) --------
+  // -------- Add Level --------
   const handleAddLevel = () => {
-    if (!categories.length) {
-      toast.error("Expense categories not loaded. Cannot add a level.");
+    if (!categories.length || !dynamicTiers.length) {
+      toast.error("Data not loaded. Cannot add a level.");
       return;
     }
     const prevLevels = form.getValues("levels");
@@ -407,7 +439,8 @@ export function ApproverFormNew() {
         fields.length + 1,
         categories,
         prevLevels,
-        availableUsersForNewLevel
+        availableUsersForNewLevel,
+        dynamicTiers
       )
     );
     form.setValue("levels", form.getValues("levels"), { shouldDirty: true }); // Mark form as dirty
@@ -415,8 +448,8 @@ export function ApproverFormNew() {
 
   // -------- ON SUBMIT (Handles Create, Update AND Delete) --------
   const onSubmit = async (data: FormData) => {
-    if (!expenseCategoriesData) {
-      toast.error("Expense categories not loaded. Cannot save configuration.");
+    if (!expenseCategoriesData || !dynamicTiers.length) {
+      toast.error("Data not loaded. Cannot save configuration.");
       return;
     }
 
@@ -447,8 +480,10 @@ export function ApproverFormNew() {
         ([categoryName, categoryData]) => {
           categoryData.tiers.forEach((tier, tierIndex) => {
             const categoryId = categoryMap[categoryName];
-            const tierKey = `tier_${tierIndex + 1}`;
 
+            // Get the correct string key (e.g. "tier_1") from the sorted array
+            const tierKey = dynamicTiers[tierIndex]?.key;
+            if (!tierKey) return;
             // Find if this combination existed in the original DB data
             const expensesLevelId = findExpensesLevelId(
               level.selectedUser,
@@ -568,7 +603,6 @@ export function ApproverFormNew() {
           shouldDirty: true,
           shouldTouch: true,
         });
-
         setDeletionState(null);
       },
     });
@@ -589,17 +623,17 @@ export function ApproverFormNew() {
 
   //--------- styling ------------
   const dynamicGridStyle = {
-    gridTemplateColumns: `repeat(${TIERS.length}, minmax(0, 1fr))`,
+    gridTemplateColumns: `repeat(${dynamicTiers.length}, minmax(0, 1fr))`,
   };
 
-  const levelColumnWidth = TIERS.length * TIER_COLUMN_WIDTH;
+  const levelColumnWidth = dynamicTiers.length * TIER_COLUMN_WIDTH;
   const levelColumnStyle = {
     minWidth: `${levelColumnWidth}px`,
     maxWidth: `${levelColumnWidth}px`,
   };
 
   // Show loading state while initial data is being fetched
-  if (isLoading && !hasPopulatedForm.current) {
+  if ((isLoading || !dynamicTiers.length) && !hasPopulatedForm.current) {
     return <div>Loading configuration...</div>;
   }
 
@@ -675,7 +709,7 @@ export function ApproverFormNew() {
                     </Button>
 
                     <div className="font-semibold text-lg mb-3">
-                      Level {index + 1} {index === 0 && "(Default Approver)"}
+                      Level {index + 1} {index === 0 && "(Default)"}
                     </div>
 
                     {/* ---- SEARCHABLE SELECT ---- */}
@@ -705,14 +739,14 @@ export function ApproverFormNew() {
                     </div>
                   </div>
 
-                  {/* TIER HEADERS */}
+                  {/* DYNAMIC TIER HEADERS */}
                   <div className="grid bg-muted/50" style={dynamicGridStyle}>
-                    {TIERS.map((t) => (
+                    {dynamicTiers.map((t) => (
                       <div
-                        key={t}
+                        key={t.key}
                         className="p-2 text-center border-r last:border-r-0"
                       >
-                        <div className="font-medium text-sm">{t}</div>
+                        <div className="font-medium text-sm">{t.label}</div>
                         <div className="flex justify-evenly text-xs mt-1">
                           <span>Min</span>
                           <span>Max</span>
@@ -738,7 +772,8 @@ export function ApproverFormNew() {
                   onClick={handleAddLevel}
                   disabled={
                     fields.length >= allUsersOptions.length ||
-                    allUsersOptions.length === 0
+                    allUsersOptions.length === 0 ||
+                    dynamicTiers.length === 0
                   }
                 >
                   + Add Level
@@ -760,9 +795,9 @@ export function ApproverFormNew() {
                     className="border-r last:border-r-0"
                   >
                     <div className="grid" style={dynamicGridStyle}>
-                      {TIERS.map((_, tierIndex) => (
+                      {dynamicTiers.map((tierItem, tierIndex) => (
                         <div
-                          key={tierIndex}
+                          key={`${tierItem.key}-${tierIndex}`}
                           className="p-2 border-r last:border-r-0"
                         >
                           <div className="flex gap-4 justify-center">
