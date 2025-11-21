@@ -37,6 +37,8 @@ export enum EXPENSE_STATUS {
   APPROVED = "approved",
   PARTIALLY_APPROVED = "partially_approved",
   REJECT = "reject",
+  REJECTED = "rejected",
+  REVIEWED = "reviewed",
 }
 
 export enum EXPENSE_SUB_TYPE {
@@ -83,4 +85,9 @@ export enum VISIT_STATUS {
   COMPLETED = "completed",
   PARTIAL_COMPLETED = "partial_completed",
   CANCEL = "cancel",
+}
+
+export enum LIMIT_TYPE {
+  OVER_LIMIT = "Over Limit",
+  UNDER_LIMIT = "Under Limit"
 }

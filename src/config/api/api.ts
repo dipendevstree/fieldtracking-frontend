@@ -140,6 +140,7 @@ const API = {
     list: "expenses/list",
     getById: "expenses",
     expenseReviewAndApproval: "expenseReviewAndApproval/create",
+    expenseReviewAndApprovalMultiple: "expenseReviewAndApproval/create-multiple",
     expenseReviewAndApprovalUpdate: "expenseReviewAndApproval/patch",
     delete: "expenses/delete",
   },
