@@ -220,6 +220,7 @@ export const useCreateApprovalsLevel = (onSuccess?: () => void) => {
   return usePostData({
     url: API.approvals.create,
     refetchQueries: [API.approvals.list],
+    skipToast: true,
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
@@ -232,6 +233,7 @@ export const useUpdateApprovalsLevel = (onSuccess?: () => void) => {
   return usePatchData({
     url: API.approvals.update,
     refetchQueries: [API.approvals.list],
+    skipToast: true,
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
@@ -244,6 +246,7 @@ export const useDeleteApprovalsLevel = (onSuccess?: () => void) => {
   return useDeleteData({
     url: API.approvals.delete,
     refetchQueries: [API.approvals.list],
+    skipToast: true,
 
     onSuccess: () => {
       if (onSuccess) {

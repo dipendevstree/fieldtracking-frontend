@@ -51,7 +51,7 @@ const levelSchema = z.object({
 
 const formSchema = z.object({
   territory: z.string().optional(),
-  levels: z.array(levelSchema).min(1, "Add at least one level"),
+  levels: z.array(levelSchema),
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -164,7 +164,6 @@ export function ApproverFormNew() {
   // Helper function to find expensesLevelId by data
   const findExpensesLevelId = useCallback(
     (
-      level: number,
       userId: string,
       categoryId: string,
       tierKey: string,
@@ -176,7 +175,6 @@ export function ApproverFormNew() {
 
       const item = levelData.find(
         (item: any) =>
-          item.level === level &&
           item.expensesCategoryId === categoryId &&
           item.tierkey === tierKey &&
           (territoryId ? item.territoryId === territoryId : !item.territoryId)
@@ -221,17 +219,17 @@ export function ApproverFormNew() {
             }
 
             const currentLevelData = levelsMap.get(level);
-
             const categoryName = findCategoryNameById(item.expensesCategoryId);
-            if (categoryName && !currentLevelData.categories[categoryName]) {
-              currentLevelData.categories[categoryName] = {
-                tiers: Array(TIERS.length)
-                  .fill(null)
-                  .map(() => ({ min: 0, max: 0 })),
-              };
-            }
 
             if (categoryName) {
+              if (!currentLevelData.categories[categoryName]) {
+                currentLevelData.categories[categoryName] = {
+                  tiers: Array(TIERS.length)
+                    .fill(null)
+                    .map(() => ({ min: 0, max: 0 })),
+                };
+              }
+
               const tierIndex = parseInt(item.tierkey.split("_")[1]) - 1;
               if (tierIndex >= 0 && tierIndex < TIERS.length) {
                 currentLevelData.categories[categoryName].tiers[tierIndex] = {
@@ -261,14 +259,16 @@ export function ApproverFormNew() {
         (a, b) => a.levelNumber - b.levelNumber
       );
 
-      // If no levels are found for the territory, reset levels and keep territory
-      if (sortedLevels.length === 0) {
-        return { territory: currentTerritory, levels: [] };
-      }
+      // Normalize level numbers strictly on load to avoid index gaps immediately
+      // This fixes the "1, 2, 4" gap visually on load
+      const normalizedLevels = sortedLevels.map((lvl, idx) => ({
+        ...lvl,
+        levelNumber: idx + 1,
+      }));
 
       return {
         territory: currentTerritory,
-        levels: sortedLevels,
+        levels: normalizedLevels,
       };
     },
     [expenseCategoriesData, findCategoryNameById]
@@ -291,10 +291,8 @@ export function ApproverFormNew() {
         categories,
         selectedTerritory || undefined
       );
-
       form.reset(transformedData);
       hasPopulatedForm.current = true;
-      // console.log("Form populated with API data:", transformedData);
     }
   }, [
     allApprovalsLevelList,
@@ -306,7 +304,7 @@ export function ApproverFormNew() {
     transformApiDataToForm,
   ]);
 
-  // -------- Create Level Template --------
+  // -------- Helper to create new level --------
   const createDefaultLevel = useCallback(
     (
       levelNumber: number,
@@ -379,6 +377,7 @@ export function ApproverFormNew() {
     form.setValue("levels", form.getValues("levels"), { shouldDirty: true }); // Mark form as dirty
   };
 
+  // -------- ON SUBMIT (Handles Create, Update AND Delete) --------
   const onSubmit = async (data: FormData) => {
     if (!expenseCategoriesData) {
       toast.error("Expense categories not loaded. Cannot save configuration.");
@@ -402,16 +401,20 @@ export function ApproverFormNew() {
     const updateList: any[] = [];
     const existingIdsInForm: Set<string> = new Set();
 
-    // Process each level and category to determine creates/updates
-    data.levels.forEach((level) => {
+    // 1. Identify Creates and Updates
+    data.levels.forEach((level, index) => {
+      // IMPORTANT: We use the index + 1 as the canonical Level Number
+      // This fixes the sequence (1, 2, 3...) even if backend was 1, 2, 4
+      const currentLevelNumber = index + 1;
+
       Object.entries(level.categories).forEach(
         ([categoryName, categoryData]) => {
           categoryData.tiers.forEach((tier, tierIndex) => {
             const categoryId = categoryMap[categoryName];
             const tierKey = `tier_${tierIndex + 1}`;
 
+            // Find if this combination existed in the original DB data
             const expensesLevelId = findExpensesLevelId(
-              level.levelNumber,
               level.selectedUser,
               categoryId,
               tierKey,
@@ -421,7 +424,7 @@ export function ApproverFormNew() {
 
             const payload = {
               expensesCategoryId: categoryId,
-              level: level.levelNumber,
+              level: currentLevelNumber,
               userId: level.selectedUser,
               tierkey: tierKey,
               minAmount: Number(tier.min),
@@ -430,7 +433,7 @@ export function ApproverFormNew() {
             };
 
             if (expensesLevelId) {
-              // Existing record
+              // Existing record - Check for changes
               const original = originalRecordsMap[expensesLevelId];
               const isChanged =
                 original.expensesCategoryId !== payload.expensesCategoryId ||
@@ -438,9 +441,9 @@ export function ApproverFormNew() {
                 Number(original.minAmount) !== Number(payload.minAmount) ||
                 Number(original.maxAmount) !== Number(payload.maxAmount) ||
                 String(original.userId) !== String(payload.userId) ||
+                Number(original.level) !== Number(payload.level) || // Checks if level number changed (re-sequencing)
                 (selectedTerritoryId &&
-                  original.territoryId !== selectedTerritoryId) ||
-                (!selectedTerritoryId && original.territoryId);
+                  original.territoryId !== selectedTerritoryId);
 
               if (isChanged) {
                 updateList.push({ ...payload, expensesLevelId });
@@ -455,7 +458,9 @@ export function ApproverFormNew() {
       );
     });
 
-    // Determine deletions: any original record not present in the new form data for the current territory
+    // 2. Identify Deletions
+    // Any ID present in the original DB list for this territory,
+    // but NOT present in our processed 'existingIdsInForm', must be deleted.
     const deleteIds: string[] = [];
     Object.values(allApprovalsLevelList || {})
       .flat()
@@ -470,6 +475,7 @@ export function ApproverFormNew() {
       });
 
     try {
+      // Execute all operations
       if (createList.length > 0) {
         await createApprovalLevel({ expenseApprovalLevels: createList });
       }
@@ -486,13 +492,50 @@ export function ApproverFormNew() {
         deleteIds.length === 0
       ) {
         toast.info("No changes to save.");
+      } else {
+        toast.success("Configuration saved successfully.");
       }
-      form.reset(data); // Reset form state after successful submission to mark as pristine
+
+      // Reset form state to pristine using the submitted data
+      form.reset(data);
       hasPopulatedForm.current = false; // Force re-population from API on next render
     } catch (error) {
       toast.error("Failed to save configuration. Please try again.");
       console.error("Submission error:", error);
     }
+  };
+
+  // -------- SOFT DELETE HANDLER --------
+  const handleLevelDelete = (levelIndex: number) => {
+    const levelData = form.getValues(`levels.${levelIndex}`);
+    const userId = levelData.selectedUser;
+    const userName =
+      allUsersOptions.find((u) => u.value === userId)?.label ||
+      `User in Level ${levelIndex + 1}`;
+
+    initiateDelete({
+      itemName: `Level for ${userName}`,
+      itemIdentifierValue: `Level ${levelIndex + 1}`,
+      onConfirm: async () => {
+        // 1. Remove from UI only (No API call here)
+        remove(levelIndex);
+
+        // 2. Re-sequence the remaining levels in Form Data
+        const currentLevels = form.getValues("levels");
+        const resequencedLevels = currentLevels.map((lvl, idx) => ({
+          ...lvl,
+          levelNumber: idx + 1, // Explicitly set sequential level number
+        }));
+
+        // 3. Update Form and Mark Dirty
+        form.setValue("levels", resequencedLevels, {
+          shouldDirty: true,
+          shouldTouch: true,
+        });
+
+        setDeletionState(null);
+      },
+    });
   };
 
   const dynamicGridStyle = {
@@ -514,51 +557,6 @@ export function ApproverFormNew() {
   const initiateDelete = (state: typeof deletionState) =>
     setDeletionState(state);
   const handleConfirmDelete = () => deletionState?.onConfirm();
-
-  const handleLevelDelete = (levelIndex: number) => {
-    const levelData = form.getValues(`levels.${levelIndex}`);
-    const userId = levelData.selectedUser;
-    const levelNumber = levelData.levelNumber;
-    const currentTerritory = form.getValues("territory") || undefined;
-
-    const userName =
-      allUsersOptions.find((u) => u.value === userId)?.label ||
-      `User in Level ${levelIndex + 1}`;
-
-    // Collect backend IDs for deletion for the specific level and territory
-    const itemsToDelete =
-      allApprovalsLevelList[userId]?.filter(
-        (item: any) =>
-          item.level === levelNumber &&
-          (currentTerritory
-            ? item.territoryId === currentTerritory
-            : !item.territoryId)
-      ) || [];
-
-    const idsToDelete = itemsToDelete.map((i: any) => i.id).filter(Boolean);
-
-    initiateDelete({
-      itemName: `Level for ${userName}`,
-      itemIdentifierValue: `Level ${levelIndex + 1} and all assigned expense categories`,
-      onConfirm: async () => {
-        try {
-          if (idsToDelete.length > 0) {
-            await deleteApproval({ ids: idsToDelete } as any);
-          }
-          remove(levelIndex); // Remove from form array regardless of backend deletion status
-          form.setValue("levels", form.getValues("levels"), {
-            shouldDirty: true,
-          }); // Mark form as dirty
-          setDeletionState(null); // close modal after confirm
-          hasPopulatedForm.current = false; // Force re-population to reflect changes
-        } catch (error) {
-          toast.error("Failed to delete level. Please try again.");
-          console.error("Delete level error:", error);
-          setDeletionState(null); // close modal on error
-        }
-      },
-    });
-  };
 
   return (
     <Form {...form}>
@@ -583,15 +581,12 @@ export function ApproverFormNew() {
                             // This also marks the form as pristine again
                             hasPopulatedForm.current = false;
                           }}
-                          onCancelPress={() => {
-                            field.onChange("");
-                            hasPopulatedForm.current = false;
-                          }}
+                          // onCancelPress={() => {
+                          //   field.onChange("");
+                          //   hasPopulatedForm.current = false;
+                          // }}
                           placeholder="Select Territory"
-                          options={territoryOptions.map((option) => ({
-                            ...option,
-                            value: String(option.value),
-                          }))}
+                          options={territoryOptions}
                         />
                         <FormMessage />
                       </FormItem>
@@ -624,7 +619,7 @@ export function ApproverFormNew() {
                       size="icon"
                       onClick={() => handleLevelDelete(index)}
                       className="absolute top-2 right-2 h-7 w-7"
-                      disabled={isDeleting}
+                      disabled={isDeleting || isUpdating || isCreating}
                     >
                       <Trash2Icon className="h-4 w-4" />
                     </Button>
@@ -644,19 +639,14 @@ export function ApproverFormNew() {
                               value={field.value}
                               onChange={(val) => {
                                 field.onChange(val ?? "");
-                                form.trigger(`levels.${index}.selectedUser`); // Trigger validation on change
+                                form.trigger(`levels.${index}.selectedUser`);
                               }}
                               onCancelPress={() => {
                                 field.onChange("");
                                 form.trigger(`levels.${index}.selectedUser`);
                               }}
                               placeholder="Select User"
-                              options={getAvailableUsers(field.value).map(
-                                (u) => ({
-                                  label: u.label,
-                                  value: u.value,
-                                })
-                              )}
+                              options={getAvailableUsers(field.value)}
                             />
                             <FormMessage />
                           </FormItem>
@@ -774,7 +764,9 @@ export function ApproverFormNew() {
             size="lg"
             disabled={isCreating || isUpdating || isDeleting || !isFormDirty}
           >
-            {isCreating || isUpdating ? "Saving..." : "Save Configuration"}
+            {isCreating || isUpdating || isDeleting
+              ? "Saving..."
+              : "Save Configuration"}
           </Button>
         </div>
         <DeleteModal
