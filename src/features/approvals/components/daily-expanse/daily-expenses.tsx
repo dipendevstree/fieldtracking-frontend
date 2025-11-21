@@ -19,7 +19,7 @@ import {
   formatExpenseSubType,
   formatExpenseType,
 } from "@/utils/commonFormatters";
-import { useGetAllDailyExpanses } from "@/features/approvals/services/daily-expanses.hook";
+import { useExpenseReviewAndApprovalMultiple, useGetAllDailyExpanses } from "@/features/approvals/services/daily-expanses.hook";
 import { userUpcomingVisitStoreState } from "../../store/upcoming-visits.store";
 import { ActionModal } from "./components/action-modal";
 
@@ -28,7 +28,13 @@ export default function DailyExpenses() {
     from: subDays(new Date(), 7),
     to: new Date(),
   };
-  const { open, setOpen, currentRow, setCurrentRow, selectedIds } = userUpcomingVisitStoreState();
+  const { open, setOpen, currentRow, setCurrentRow, selectedIds, setSelectedIds } = userUpcomingVisitStoreState();
+  const closeModal = () => {
+    setOpen(null);
+    setTimeout(() => setCurrentRow(null), 300);
+    setSelectedIds(null);
+  };
+  const { mutate: expenseReviewAndApproval, isPending: isUpdating } = useExpenseReviewAndApprovalMultiple(() => closeModal());
   const [dateRange, setDateRange] = useState<DateRange | undefined>(
     initialDateRange
   );
@@ -173,12 +179,86 @@ export default function DailyExpenses() {
     }
   ];
 
-  const closeModal = () => {
-    setOpen(null);
-    setTimeout(() => setCurrentRow(null), 300);
-
-  };
-  console.log("render, open =", open)
+  const handleConfirm = (actionType: EXPENSE_STATUS, reason: string) => {
+    if (selectedIds && selectedIds.size > 0) {
+      let expenseReviewsAndApprovals = Array.from(selectedIds).map((id) => {
+        const data = dailyExpanses.find((expense: any) => String(expense.id) === String(id));
+        if (!data) return undefined;
+        if (actionType === EXPENSE_STATUS.REJECT) actionType = EXPENSE_STATUS.REJECTED;
+        if (data?.expenseType === EXPENSE_TYPE.TRAVEL) {
+          return {
+            expenseId: data.id,
+            status: actionType === EXPENSE_STATUS.REJECTED ? EXPENSE_STATUS.REJECTED : (data.showApprove ? EXPENSE_STATUS.APPROVED : EXPENSE_STATUS.REVIEWED),
+            comment: reason,
+            isApprovalLevel: data.isApprovalLevel,
+            ...(data?.expenseSubType === "travel_lump_sum"
+              ? { travelLumpSumId: data.travelLumpSums[0].travelLumpSumId }
+              : { travelRouteId: data.travelRoutes[0].travelRouteId }),
+          }
+        } else {
+          if (data?.dailyAllowances && data?.dailyAllowances?.length) {
+            const result = [];
+            for (let dailyAllowances of data?.dailyAllowances) {
+              if (dailyAllowances?.dailyAllowancesDetails && dailyAllowances?.dailyAllowancesDetails?.length) {
+                for (let dailyAllowancesDetails of dailyAllowances?.dailyAllowancesDetails) {
+                  const payload = {
+                    expenseId: data.id,
+                    status: actionType === EXPENSE_STATUS.REJECTED ? EXPENSE_STATUS.REJECTED : (data.showApprove ? EXPENSE_STATUS.APPROVED : EXPENSE_STATUS.REVIEWED),
+                    comment: reason,
+                    isApprovalLevel: data.isApprovalLevel,
+                    dailyAllowanceId: dailyAllowances?.dailyAllowanceId,
+                    dailyAllowanceDetailsId: dailyAllowancesDetails?.id,
+                  };
+                  result.push(payload);
+                }
+              }
+            }
+            return result;
+          }
+        }
+      });
+      expenseReviewsAndApprovals = expenseReviewsAndApprovals.flat() as any[];
+      expenseReviewAndApproval({ expenseReviewsAndApprovals });
+    } else {
+      const expense: any = currentRow;
+      if (expense && expense?.expenseType) {
+        if (actionType === EXPENSE_STATUS.REJECT) actionType = EXPENSE_STATUS.REJECTED;
+        if (expense?.expenseType === EXPENSE_TYPE.TRAVEL) {
+          const payload = {
+            expenseId: expense.id,
+            status: actionType,
+            comment: reason,
+            isApprovalLevel: expense.isApprovalLevel,
+            ...(expense?.expenseSubType === "travel_lump_sum"
+              ? { travelLumpSumId: expense.travelLumpSums[0].travelLumpSumId }
+              : { travelRouteId: expense.travelRoutes[0].travelRouteId }),
+          };
+          expenseReviewAndApproval({ expenseReviewsAndApprovals: [payload] });
+        } else {
+          if (expense?.dailyAllowances && expense?.dailyAllowances?.length) {
+            const data = [];
+            for (let dailyAllowances of expense?.dailyAllowances) {
+              if (dailyAllowances?.dailyAllowancesDetails && dailyAllowances?.dailyAllowancesDetails?.length) {
+                for (let dailyAllowancesDetails of dailyAllowances?.dailyAllowancesDetails) {
+                  const payload = {
+                    expenseId: expense.id,
+                    status: actionType,
+                    comment: reason,
+                    isApprovalLevel: expense.isApprovalLevel,
+                    dailyAllowanceId: dailyAllowances?.dailyAllowanceId,
+                    dailyAllowanceDetailsId: dailyAllowancesDetails?.id,
+                  };
+                  data.push(payload);
+                }
+              }
+            }
+            expenseReviewAndApproval({ expenseReviewsAndApprovals: data });
+          }
+        }
+      }
+    }
+  }
+  
   return (
     <>
       <GlobalFilterSection key={"calender-view-filters"} filters={filters} />
@@ -192,6 +272,7 @@ export default function DailyExpenses() {
         paginationCallbacks={{ onPaginationChange }}
         defaultPageSize={pagination.limit}
       />
+      
       {(currentRow || selectedIds) && (
         <ActionModal
           key="delete-daily-expense"
@@ -199,6 +280,8 @@ export default function DailyExpenses() {
           currentRow={currentRow ?? {}}
           onDelete={() => {}}
           onCancel={closeModal}
+          handleConfirm={handleConfirm}
+          isUpdating={isUpdating}
           onOpenChange={(value) => {
             if (!value) closeModal();
             else setOpen("delete");

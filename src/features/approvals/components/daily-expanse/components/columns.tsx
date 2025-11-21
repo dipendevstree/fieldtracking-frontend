@@ -76,10 +76,7 @@ export const createColumns = (
       <CustomDataTableColumnHeader column={column} title="Date" />
     ),
     cell: ({ row }:any) => {
-      console.log("row", row);
-      
-     
-      return <div className=" text-sm">{formatDateRange(row.original.startDate,row.original.endDate)}</div>;
+      return <div className="text-sm">{formatDateRange(row.original.startDate,row.original.endDate)}</div>;
     },
     enableSorting: false,
   },
@@ -88,6 +85,9 @@ export const createColumns = (
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Amount" />
     ),
+    cell: ({ row }:any) => {
+      return <div className="text-sm">{row.original.totalAmount || 0}{row?.original?.isApprovalLevel && row?.original?.warningMessageForAmount ? ` (${row?.original?.warningMessageForAmount})`: ``}</div>;
+    },
     enableSorting: false,
   },
   {

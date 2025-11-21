@@ -10,7 +10,7 @@ interface UserUpcomingVisitStoreState {
   currentRow: any | null
   setCurrentRow: (row: any | null) => void,
   selectedIds: Set<string> | null;
-  setSelectedIds: (ids: Set<string>) => void,
+  setSelectedIds: (ids: Set<string> | null) => void,
 }
 // Create the Zustand store
 export const userUpcomingVisitStoreState = create<UserUpcomingVisitStoreState>(
@@ -20,6 +20,6 @@ export const userUpcomingVisitStoreState = create<UserUpcomingVisitStoreState>(
     currentRow: null,
     setCurrentRow: (row) => set({ currentRow: row }),
     selectedIds: null,
-    setSelectedIds: (ids: Set<string>) => set({ selectedIds: ids }),
+    setSelectedIds: (ids: Set<string> | null) => set({ selectedIds: ids }),
   })
 )

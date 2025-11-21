@@ -9,8 +9,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
-import { EXPENSE_STATUS, EXPENSE_TYPE } from "@/data/app.data";
-import { useExpenseReviewAndApprovalMultiple } from "@/features/approvals/services/daily-expanses.hook";
+import { EXPENSE_STATUS } from "@/data/app.data";
 
 interface Props<T> {
   open: boolean;
@@ -18,57 +17,20 @@ interface Props<T> {
   currentRow: T & { actionType: string };
   onDelete: () => void;
   onCancel: () => void;
+  handleConfirm: (actionType: EXPENSE_STATUS, reason: string) => void;
+  isUpdating: boolean;
 }
 
 export function ActionModal<T>({
   open,
   onOpenChange,
   currentRow,
-  onCancel
+  onCancel,
+  handleConfirm,
+  isUpdating,
 }: Props<T>) {
-  const { mutate: expenseReviewAndApproval, isPending } = useExpenseReviewAndApprovalMultiple(() => onCancel());
   const [reason, setReason] = useState<string>("");
-  const handleConfirm = (actionType: EXPENSE_STATUS) => {
-    console.log("render, reason =", reason, "actionType =", actionType, "currentRow =", currentRow);
-    // ... code for the approve/review and reject.
-    const expense: any = currentRow;
-    if (expense && expense?.expenseType) {
-      if (actionType === EXPENSE_STATUS.REJECT) actionType = EXPENSE_STATUS.REJECTED;
-      if (expense?.expenseType === EXPENSE_TYPE.TRAVEL) {
-        const payload = {
-          expenseId: expense.id,
-          status: actionType,
-          comment: reason,
-          isApprovalLevel: expense.isApprovalLevel,
-          ...(expense?.expenseSubType === "travel_lump_sum"
-            ? { travelLumpSumId: expense.travelLumpSums[0].travelLumpSumId }
-            : { travelRouteId: expense.travelRoutes[0].travelRouteId }),
-        };
-        expenseReviewAndApproval({ expenseReviewsAndApprovals: [payload] });
-      } else {
-        if (expense?.dailyAllowances && expense?.dailyAllowances?.length) {
-          const data = [];
-          for (let dailyAllowances of expense?.dailyAllowances) {
-            if (dailyAllowances?.dailyAllowancesDetails && dailyAllowances?.dailyAllowancesDetails?.length) {
-              for (let dailyAllowancesDetails of dailyAllowances?.dailyAllowancesDetails) {
-                const payload = {
-                  expenseId: expense.id,
-                  status: actionType,
-                  comment: reason,
-                  isApprovalLevel: expense.isApprovalLevel,
-                  dailyAllowanceId: dailyAllowances?.dailyAllowanceId,
-                  dailyAllowanceDetailsId: dailyAllowancesDetails?.id,
-                };
-                data.push(payload);
-              }
-            }
-          }
-          console.log("payload", data);
-          expenseReviewAndApproval({ expenseReviewsAndApprovals: data });
-        }
-      }
-    }
-  }
+  
   const action: Record<string, string> = {
     [EXPENSE_STATUS.APPROVED]: "Approve",
     [EXPENSE_STATUS.REJECT]: "Reject",
@@ -94,12 +56,12 @@ export function ActionModal<T>({
           rows={3}
         />
         <DialogFooter className="flex gap-2">
-          <Button variant="outline" onClick={onCancel} disabled={isPending}>
+          <Button variant="outline" onClick={onCancel} disabled={isUpdating}>
             Cancel
           </Button>
           <Button
-            disabled={isPending}
-            onClick={() => handleConfirm(currentRow.actionType as EXPENSE_STATUS)}
+            disabled={isUpdating}
+            onClick={() => handleConfirm(currentRow.actionType as EXPENSE_STATUS, reason)}
             className={currentRow.actionType !== EXPENSE_STATUS.REJECT ?`bg-green-600 text-white hover:bg-green-700`: ``}
             variant={currentRow.actionType === EXPENSE_STATUS.REJECT ? "destructive" : "default"}
           >
