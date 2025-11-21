@@ -32,7 +32,7 @@ const tierSchema = z
       .min(0, "Cannot be negative"),
   })
   .refine((data) => data.max >= data.min, {
-    message: "Max must be greater than or equal to min",
+    message: "Must be equal or higher",
     path: ["max"],
   });
 
@@ -49,10 +49,46 @@ const levelSchema = z.object({
   levelId: z.string().optional(),
 });
 
-const formSchema = z.object({
-  territory: z.string().optional(),
-  levels: z.array(levelSchema),
-});
+const formSchema = z
+  .object({
+    territory: z.string().optional(),
+    levels: z.array(levelSchema),
+  })
+  .superRefine((data, ctx) => {
+    const levels = data.levels;
+
+    for (let i = 1; i < levels.length; i++) {
+      const currentLevel = levels[i];
+      const prevLevel = levels[i - 1];
+
+      Object.keys(currentLevel.categories).forEach((catName) => {
+        const currentTiers = currentLevel.categories[catName]?.tiers || [];
+        const prevTiers = prevLevel.categories[catName]?.tiers || [];
+
+        currentTiers.forEach((tier, tierIndex) => {
+          const prevMax = prevTiers[tierIndex]?.max || 0;
+          const currentMin = tier.min;
+
+          // Logic: Next level must strictly start AFTER the previous level
+          if (currentMin <= prevMax) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: `Start above ${prevMax}`,
+              path: [
+                "levels",
+                i,
+                "categories",
+                catName,
+                "tiers",
+                tierIndex,
+                "min",
+              ],
+            });
+          }
+        });
+      });
+    }
+  });
 
 type FormData = z.infer<typeof formSchema>;
 
