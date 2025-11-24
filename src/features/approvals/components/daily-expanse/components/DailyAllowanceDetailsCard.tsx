@@ -1,5 +1,4 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Detail } from "@/components/ui/detail";
 import { format } from "date-fns";
@@ -223,7 +222,7 @@ export function DailyAllowanceDetailsCard({
   };
 
   return (
-    <ScrollArea className="h-[calc(100vh-12rem)] pr-4 space-y-4">
+    <div className="pr-4 space-y-4">
       {dailyAllowances.map((allowance, i) => (
         <Card
           key={allowance.dailyAllowanceId}
@@ -253,9 +252,11 @@ export function DailyAllowanceDetailsCard({
                 const isProcessingApprove = loadingIds[approveKey] ?? false;
                 const isProcessingReject = loadingIds[rejectKey] ?? false;
                 const isUpdatingApprove =
-                myReview?.id && updatingReviewKeys?.[`${myReview.id}-reviewed`];
+                  myReview?.id &&
+                  updatingReviewKeys?.[`${myReview.id}-reviewed`];
                 const isUpdatingReject =
-                myReview?.id && updatingReviewKeys?.[`${myReview.id}-rejected`];
+                  myReview?.id &&
+                  updatingReviewKeys?.[`${myReview.id}-rejected`];
 
                 return (
                   <div key={detail.id} className="border p-4 rounded-md mb-4">
@@ -267,9 +268,22 @@ export function DailyAllowanceDetailsCard({
                           "dd-MM-yyyy"
                         )}
                       />
-                      <Detail label="Amount" value={
-                        <p>{currentUser?.organization?.currency || "₹"}{detail.amount} {resultObj?.warningMessageForAmount ? <span className="text-red-500">({resultObj?.warningMessageForAmount})</span>: ``}</p>
-                      } />
+                      <Detail
+                        label="Amount"
+                        value={
+                          <p>
+                            {currentUser?.organization?.currency || "₹"}
+                            {detail.amount}{" "}
+                            {resultObj?.warningMessageForAmount ? (
+                              <span className="text-red-500">
+                                ({resultObj?.warningMessageForAmount})
+                              </span>
+                            ) : (
+                              ``
+                            )}
+                          </p>
+                        }
+                      />
                       <Detail
                         label="Category"
                         value={detail.expensesCategory?.categoryName || "-"}
@@ -348,7 +362,9 @@ export function DailyAllowanceDetailsCard({
                           <div className="grid w-full grid-cols-2 gap-2">
                             <Button
                               className="bg-green-600 text-white hover:bg-green-700"
-                            disabled={resultObj.isDisable || isUpdatingApprove}
+                              disabled={
+                                resultObj.isDisable || isUpdatingApprove
+                              }
                               onClick={() =>
                                 handleUpdateReview(
                                   myReview.id,
@@ -442,7 +458,9 @@ export function DailyAllowanceDetailsCard({
                             </Button>
                             <Button
                               variant="destructive"
-                            disabled={resultObj.isDisable || isProcessingReject}
+                              disabled={
+                                resultObj.isDisable || isProcessingReject
+                              }
                               onClick={() =>
                                 handleReviewAction(
                                   allowance.dailyAllowanceId,
@@ -471,6 +489,6 @@ export function DailyAllowanceDetailsCard({
           </CardContent>
         </Card>
       ))}
-    </ScrollArea>
+    </div>
   );
 }

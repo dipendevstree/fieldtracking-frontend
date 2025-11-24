@@ -10,7 +10,7 @@ import {
 import { Main } from "@/components/layout/main";
 import StatusBadge from "@/components/shared/common-status-badge";
 import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
+// import { ScrollArea } from "@/components/ui/scroll-area";
 import { Detail } from "@/components/ui/detail";
 import {
   formatDateRange,
@@ -58,6 +58,8 @@ export default function DailyExpenseDetails() {
     Record<string, boolean>
   >({});
 
+  const [isFromApprovalAction, setIsFromApprovalAction] = useState(false);
+
   const setProcessing = (key: string, value: boolean) =>
     setProcessingActions((prev) => ({ ...prev, [key]: value }));
 
@@ -85,6 +87,9 @@ export default function DailyExpenseDetails() {
     setProcessing(actionKey, true);
     expenseReviewAndApproval(payload, {
       onSettled: () => setProcessing(actionKey, false),
+      onSuccess: () => {
+        setIsFromApprovalAction(true);
+      },
     });
   };
 
@@ -112,6 +117,9 @@ export default function DailyExpenseDetails() {
     setProcessing(actionKey, true);
     expenseReviewAndApproval(payload, {
       onSettled: () => setProcessing(actionKey, false),
+      onSuccess: () => {
+        setIsFromApprovalAction(true);
+      },
     });
   };
 
@@ -133,6 +141,9 @@ export default function DailyExpenseDetails() {
       onSettled: () => {
         setUpdatingReviewKeys((prev) => ({ ...prev, [actionKey]: false }));
         setUpdateId(null);
+      },
+      onSuccess: () => {
+        setIsFromApprovalAction(true);
       },
     });
   };
@@ -199,12 +210,23 @@ export default function DailyExpenseDetails() {
     return { label: "", value: "value", amount: 0 };
   };
 
+  useEffect(() => {
+    if (!dailyExpanse) return;
+
+    if (isFromApprovalAction && dailyExpanse.status === "approved") {
+      navigate({ to: "/approvals" });
+    }
+  }, [dailyExpanse, isFromApprovalAction, navigate]);
+
   return (
     <Main>
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Expense Information */}
         <Card>
-          <CircleArrowLeft className="mx-6" onClick={() => navigate({ to: '/approvals' })}/>
+          <CircleArrowLeft
+            className="mx-6"
+            onClick={() => navigate({ to: "/approvals" })}
+          />
           <CardHeader>
             <CardTitle>Expense Information</CardTitle>
             <CardDescription>
@@ -215,7 +237,10 @@ export default function DailyExpenseDetails() {
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <Avatar>
-                  <AvatarImage src={user?.profileUrl || ""} alt={`${user?.firstName} ${user?.lastName}`} />
+                  <AvatarImage
+                    src={user?.profileUrl || ""}
+                    alt={`${user?.firstName} ${user?.lastName}`}
+                  />
                   <AvatarFallback>
                     {getUserInitials(user?.firstName, user?.lastName)}
                   </AvatarFallback>
@@ -256,59 +281,53 @@ export default function DailyExpenseDetails() {
 
             <div>
               <p className="font-medium text-sm mb-2">Review and Approval</p>
-              <ScrollArea className="h-[calc(100vh-32rem)] pr-4">
-                {dailyExpanse?.expenseReviewAndApproval?.length ? (
-                  dailyExpanse.expenseReviewAndApproval.map((data: any) => {
-                    const { label, value, amount } =
-                      getReviewExtraInformation(data);
-                    return (
-                      <Card
-                        key={data.id}
-                        className="p-4 shadow-sm border text-sm mb-3"
-                      >
-                        <div className="grid grid-cols-2 gap-2">
-                          <Detail
-                            label="Name"
-                            value={getFullName(
-                              data.reviewer?.firstName,
-                              data.reviewer?.lastName
-                            )}
-                          />
-                          <Detail
-                            label="Level"
-                            value={getUserLevelLabel(data)}
-                          />
-                          <Detail label={label} value={value} />
-                          <Detail label="Amount" value={amount} />
-                          <Detail
-                            label="Status"
-                            value={<StatusBadge status={data?.status} />}
-                          />
-                          <Detail
-                            label="Created At"
-                            value={
-                              data?.modifiedDate
-                                ? format(
-                                    new Date(data.modifiedDate),
-                                    "dd MMM yyyy, hh:mm a"
-                                  )
-                                : "-"
-                            }
-                          />
-                          <Detail
-                            label="Comment"
-                            value={data?.comment || "-"}
-                          />
-                        </div>
-                      </Card>
-                    );
-                  })
-                ) : (
-                  <p className="text-muted-foreground text-sm">
-                    No Review and Approval
-                  </p>
-                )}
-              </ScrollArea>
+              {/* <ScrollArea className="h-[calc(100vh-32rem)] pr-4"> */}
+              {dailyExpanse?.expenseReviewAndApproval?.length ? (
+                dailyExpanse.expenseReviewAndApproval.map((data: any) => {
+                  const { label, value, amount } =
+                    getReviewExtraInformation(data);
+                  return (
+                    <Card
+                      key={data.id}
+                      className="p-4 shadow-sm border text-sm mb-3"
+                    >
+                      <div className="grid grid-cols-2 gap-2">
+                        <Detail
+                          label="Name"
+                          value={getFullName(
+                            data.reviewer?.firstName,
+                            data.reviewer?.lastName
+                          )}
+                        />
+                        <Detail label="Level" value={getUserLevelLabel(data)} />
+                        <Detail label={label} value={value} />
+                        <Detail label="Amount" value={amount} />
+                        <Detail
+                          label="Status"
+                          value={<StatusBadge status={data?.status} />}
+                        />
+                        <Detail
+                          label="Created At"
+                          value={
+                            data?.modifiedDate
+                              ? format(
+                                  new Date(data.modifiedDate),
+                                  "dd MMM yyyy, hh:mm a"
+                                )
+                              : "-"
+                          }
+                        />
+                        <Detail label="Comment" value={data?.comment || "-"} />
+                      </div>
+                    </Card>
+                  );
+                })
+              ) : (
+                <p className="text-muted-foreground text-sm">
+                  No Review and Approval
+                </p>
+              )}
+              {/* </ScrollArea> */}
             </div>
           </CardContent>
         </Card>

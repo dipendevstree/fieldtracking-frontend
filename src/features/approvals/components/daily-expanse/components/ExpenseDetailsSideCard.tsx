@@ -1,7 +1,6 @@
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
@@ -243,7 +242,7 @@ export function ExpenseDetailsSideCard(
   };
 
   return (
-    <ScrollArea className="h-[calc(100vh-12rem)] space-y-4 pr-4">
+    <div className="space-y-4 pr-4">
       {entries.map((item: any, idx) => {
         const id = isLumpSum
           ? (item as TravelLumpSum).travelLumpSumId
@@ -296,9 +295,22 @@ export function ExpenseDetailsSideCard(
                     />
                   </>
                 )}
-                <Detail label="Amount" value={
-                  <p>{currentUser?.organization?.currency || "₹"}{item.amount} {resultObj?.warningMessageForAmount ? <span className="text-red-500">({resultObj?.warningMessageForAmount})</span>: ``}</p>
-                } />
+                <Detail
+                  label="Amount"
+                  value={
+                    <p>
+                      {currentUser?.organization?.currency || "₹"}
+                      {item.amount}{" "}
+                      {resultObj?.warningMessageForAmount ? (
+                        <span className="text-red-500">
+                          ({resultObj?.warningMessageForAmount})
+                        </span>
+                      ) : (
+                        ``
+                      )}
+                    </p>
+                  }
+                />
                 {"notes" in item && item.notes && (
                   <Detail label="Notes" value={item.notes} />
                 )}
@@ -465,6 +477,6 @@ export function ExpenseDetailsSideCard(
           </Card>
         );
       })}
-    </ScrollArea>
+    </div>
   );
 }

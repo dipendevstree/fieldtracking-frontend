@@ -291,3 +291,16 @@ export const useGetExpenseCategoriesDropDownList = (
     error: query.error,
   };
 };
+
+export const useGetAllTiers = () => {
+  const query = useFetchData<any>({
+    url: API.approvals.tierList,
+  });
+
+  return {
+    ...query,
+    data: query.data,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
