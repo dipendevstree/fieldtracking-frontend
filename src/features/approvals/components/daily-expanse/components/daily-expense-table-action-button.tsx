@@ -46,9 +46,9 @@ export function DataTableRowActions({ row }: RowProps) {
       </PermissionGate>
       {row?.original?.isApprovalLevel && (
         <>
-          {row?.original?.showApprove ? (
+          {(row?.original?.showApprove && !row?.original?.updateAction) ? (
             <PermissionGate requiredPermission="daily_expense" action="viewGlobal">
-              <CustomTooltip title="Approve">
+              <CustomTooltip title={`${row?.original?.updateAction ? "Update ": ""}Approve`}>
                 <Button variant="ghost" className="h-8 w-8 p-0 text-green-500" onClick={() => handleActionOnExpense(EXPENSE_STATUS.APPROVED)}>
                   <ClipboardCheck size={16} />
                 </Button>
@@ -56,20 +56,22 @@ export function DataTableRowActions({ row }: RowProps) {
             </PermissionGate>
           ): (
             <PermissionGate requiredPermission="daily_expense" action="viewGlobal">
-              <CustomTooltip title="Review">
+              <CustomTooltip title={`${row?.original?.updateAction ? "Update ": ""}Review`}>
                 <Button variant="ghost" className="h-8 w-8 p-0 text-green-500" onClick={() => handleActionOnExpense(EXPENSE_STATUS.REVIEWED)}>
                   <CircleCheck size={16} />
                 </Button>
               </CustomTooltip>
             </PermissionGate>
           )}
-          <PermissionGate requiredPermission="daily_expense" action="viewGlobal">
-            <CustomTooltip title="Reject">
-              <Button variant="ghost" className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700" onClick={() => handleActionOnExpense(EXPENSE_STATUS.REJECT)}>
-                <CircleX size={16} />
-              </Button>
-            </CustomTooltip>
-          </PermissionGate>
+          {!row?.original?.updateAction && (
+            <PermissionGate requiredPermission="daily_expense" action="viewGlobal">
+              <CustomTooltip title="Reject">
+                <Button variant="ghost" className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700" onClick={() => handleActionOnExpense(EXPENSE_STATUS.REJECT)}>
+                  <CircleX size={16} />
+                </Button>
+              </CustomTooltip>
+            </PermissionGate>
+          )}
         </>
       )}
 

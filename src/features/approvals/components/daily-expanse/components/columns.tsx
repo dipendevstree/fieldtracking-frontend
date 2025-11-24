@@ -31,7 +31,7 @@ export const createColumns = (
       </div>
     ),
     cell: ({ row }) => {
-      if (!row?.original?.isApprovalLevel) {
+      if (!row?.original?.isApprovalLevel || row?.original?.updateAction) {
         return (
           <CustomTooltip title={row?.original?.warningMessageForAmount || "No further actions."}>
             <Info size={16}/>
