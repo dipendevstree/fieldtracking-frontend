@@ -111,10 +111,22 @@ export function ApproverFormNew() {
     onConfirm: () => void;
   } | null>(null);
 
+  const { allTerritories = [] } = useGetAllTerritoriesForDropdown();
+
   // -------- FORM HOOK --------
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: { territory: "", levels: [] },
+    defaultValues: useMemo(() => {
+      const defaultTerritory =
+        allowAddUsersBasedOnTerritories && allTerritories?.length > 0
+          ? String(allTerritories[0].id)
+          : "";
+
+      return {
+        territory: defaultTerritory,
+        levels: [],
+      };
+    }, [allTerritories, allowAddUsersBasedOnTerritories]),
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -137,7 +149,6 @@ export function ApproverFormNew() {
   const { mutateAsync: deleteApproval, isPending: isDeleting } =
     useDeleteApprovalsLevel();
 
-  const { allTerritories = [] } = useGetAllTerritoriesForDropdown();
   const { expenseCategories: expenseCategoriesData } =
     useGetExpenseCategoriesDropDownList({ defaultCategory: true });
   const { data: allTiersData } = useGetAllTiers();
@@ -607,19 +618,6 @@ export function ApproverFormNew() {
       },
     });
   };
-
-  //-------- Pre-fill form with first territory if allowed ------------
-  useEffect(() => {
-    if (
-      allTerritories?.length > 0 &&
-      allowAddUsersBasedOnTerritories &&
-      !form.getValues("territory")
-    ) {
-      const firstTerritoryId = String(allTerritories[0].id);
-      form.setValue("territory", firstTerritoryId);
-      hasPopulatedForm.current = false;
-    }
-  }, [allTerritories, allowAddUsersBasedOnTerritories, form]);
 
   //--------- styling ------------
   const dynamicGridStyle = {
