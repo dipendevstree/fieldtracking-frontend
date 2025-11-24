@@ -11,8 +11,6 @@ export interface IMonthlyExpensesParams {
   searchFor?: string
   roleId?: string
   salesRepresentativeUserId?: string
-  year: number
-  month: number
   [key: string]: unknown
 }
 
