@@ -68,8 +68,13 @@ const DailyExpenseTable = ({
 
   // Create columns with selection handlers
   const columns = useMemo(
-    () => createColumns(selectedRows, toggleRowSelection, toggleSelectAll, isAllSelected || false),
-    [selectedRows, isAllSelected]
+    () => {
+      const hasSelectableRows = data?.some(
+        (row) => row?.isApprovalLevel && !row?.updateAction
+      )
+      return createColumns(selectedRows, toggleRowSelection, toggleSelectAll, isAllSelected || false, hasSelectableRows)
+    },
+    [selectedRows, isAllSelected, data]
   )
 
   const handleActionOnExpense = (types: EXPENSE_STATUS[]) => {
@@ -77,7 +82,7 @@ const DailyExpenseTable = ({
     setCurrentRow({ actionType: types.join(",") });
     setOpen("action");
   }
-console.log("selectedRows.size", selectedRows.size);
+
   return (
     <>
       <Card className="p-4 gap-0">

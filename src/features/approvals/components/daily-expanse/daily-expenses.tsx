@@ -180,84 +180,35 @@ export default function DailyExpenses() {
   ];
 
   const handleConfirm = (actionType: EXPENSE_STATUS, reason: string) => {
-    if (selectedIds && selectedIds.size > 0) {
-      let expenseReviewsAndApprovals = Array.from(selectedIds).map((id) => {
-        const data = dailyExpanses.find((expense: any) => String(expense.id) === String(id));
-        if (!data) return undefined;
-        if (actionType === EXPENSE_STATUS.REJECT) actionType = EXPENSE_STATUS.REJECTED;
-        if (data?.expenseType === EXPENSE_TYPE.TRAVEL) {
-          return {
-            expenseId: data.id,
-            status: actionType === EXPENSE_STATUS.REJECTED ? EXPENSE_STATUS.REJECTED : (data.showApprove ? EXPENSE_STATUS.APPROVED : EXPENSE_STATUS.REVIEWED),
-            comment: reason,
-            isApprovalLevel: data.isApprovalLevel,
-            ...(data?.expenseSubType === "travel_lump_sum"
-              ? { travelLumpSumId: data.travelLumpSums[0].travelLumpSumId }
-              : { travelRouteId: data.travelRoutes[0].travelRouteId }),
-          }
-        } else {
-          if (data?.dailyAllowances && data?.dailyAllowances?.length) {
-            const result = [];
-            for (let dailyAllowances of data?.dailyAllowances) {
-              if (dailyAllowances?.dailyAllowancesDetails && dailyAllowances?.dailyAllowancesDetails?.length) {
-                for (let dailyAllowancesDetails of dailyAllowances?.dailyAllowancesDetails) {
-                  const payload = {
-                    expenseId: data.id,
-                    status: actionType === EXPENSE_STATUS.REJECTED ? EXPENSE_STATUS.REJECTED : (data.showApprove ? EXPENSE_STATUS.APPROVED : EXPENSE_STATUS.REVIEWED),
-                    comment: reason,
-                    isApprovalLevel: data.isApprovalLevel,
-                    dailyAllowanceId: dailyAllowances?.dailyAllowanceId,
-                    dailyAllowanceDetailsId: dailyAllowancesDetails?.id,
-                  };
-                  result.push(payload);
-                }
-              }
-            }
-            return result;
-          }
-        }
-      });
-      expenseReviewsAndApprovals = expenseReviewsAndApprovals.flat() as any[];
-      expenseReviewAndApproval({ expenseReviewsAndApprovals });
-    } else {
-      const expense: any = currentRow;
-      if (expense && expense?.expenseType) {
-        if (actionType === EXPENSE_STATUS.REJECT) actionType = EXPENSE_STATUS.REJECTED;
-        if (expense?.expenseType === EXPENSE_TYPE.TRAVEL) {
-          const payload = {
-            expenseId: expense.id,
-            status: actionType,
-            comment: reason,
-            isApprovalLevel: expense.isApprovalLevel,
-            ...(expense?.expenseSubType === "travel_lump_sum"
-              ? { travelLumpSumId: expense.travelLumpSums[0].travelLumpSumId }
-              : { travelRouteId: expense.travelRoutes[0].travelRouteId }),
-          };
-          expenseReviewAndApproval({ expenseReviewsAndApprovals: [payload] });
-        } else {
-          if (expense?.dailyAllowances && expense?.dailyAllowances?.length) {
-            const data = [];
-            for (let dailyAllowances of expense?.dailyAllowances) {
-              if (dailyAllowances?.dailyAllowancesDetails && dailyAllowances?.dailyAllowancesDetails?.length) {
-                for (let dailyAllowancesDetails of dailyAllowances?.dailyAllowancesDetails) {
-                  const payload = {
-                    expenseId: expense.id,
-                    status: actionType,
-                    comment: reason,
-                    isApprovalLevel: expense.isApprovalLevel,
-                    dailyAllowanceId: dailyAllowances?.dailyAllowanceId,
-                    dailyAllowanceDetailsId: dailyAllowancesDetails?.id,
-                  };
-                  data.push(payload);
-                }
-              }
-            }
-            expenseReviewAndApproval({ expenseReviewsAndApprovals: data });
-          }
-        }
+    const ids = selectedIds && selectedIds?.size > 0 ? Array.from(selectedIds) : null;
+    const expenses = ids ? ids.map(id => dailyExpanses.find((e: any) => String(e.id) === String(id))).filter(Boolean) : [currentRow];
+    
+    if (!expenses[0]?.expenseType) return;
+    
+    const buildPayload = (expense: any, detailId: string, detailType: string) => {
+      return {
+        expenseId: expense.id,
+        status: actionType === EXPENSE_STATUS.REJECT ? EXPENSE_STATUS.REJECTED : (expense.showApprove ? EXPENSE_STATUS.APPROVED : EXPENSE_STATUS.REVIEWED),
+        comment: reason,
+        isApprovalLevel: expense.isApprovalLevel,
+        ...(detailType === 'travel' ? (expense?.expenseSubType === EXPENSE_SUB_TYPE.TRAVEL_LUMP_SUM ? { travelLumpSumId: detailId }: { travelRouteId: detailId }) : {}),
+        ...(detailType === 'allowance' ? { dailyAllowanceId: detailId.split('|')[0], dailyAllowanceDetailsId: detailId.split('|')[1] } : {}),
       }
-    }
-  }
+    };
+
+    const expenseReviewsAndApprovals = expenses.flatMap(expense => {
+      if (expense?.expenseType === EXPENSE_TYPE.TRAVEL) {
+        const data = expense?.expenseSubType === EXPENSE_SUB_TYPE.TRAVEL_LUMP_SUM ? expense.travelLumpSums : expense.travelRoutes;
+        return data.map((item: any) => buildPayload(expense, expense?.expenseSubType === EXPENSE_SUB_TYPE.TRAVEL_LUMP_SUM ? item.travelLumpSumId : item.travelRouteId, 'travel'));
+      } else {
+        return (expense?.dailyAllowances || []).flatMap((da: any) => 
+          (da?.dailyAllowancesDetails || []).map((dad: any) => buildPayload(expense, `${da.dailyAllowanceId}|${dad.id}`, 'allowance'))
+        );
+      }
+    });
+
+    expenseReviewAndApproval({ expenseReviewsAndApprovals: expenseReviewsAndApprovals.filter(Boolean) });
+  };
   
   return (
     <>

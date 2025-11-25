@@ -16,18 +16,20 @@ export const createColumns = (
   selectedRows: Set<string>,
   toggleRowSelection: (rowId: string) => void,
   toggleSelectAll: () => void,
-  isAllSelected: boolean
+  isAllSelected: boolean,
+  hasSelectableRows?: boolean,
 ): ColumnDef<any>[] => [
   {
     accessorKey: "manageExpense",
     header: () => (
       <div>
-        <Checkbox
-          id="manage-all-expense"
-          checked={isAllSelected}
-          onCheckedChange={toggleSelectAll}
-        />
-        {/* <label htmlFor="manage-all-expense" className="text-sm pl-2">Select All</label> */}
+        {(hasSelectableRows) && (
+          <Checkbox
+            id="manage-all-expense"
+            checked={isAllSelected}
+            onCheckedChange={toggleSelectAll}
+          />
+        )}
       </div>
     ),
     cell: ({ row }) => {
