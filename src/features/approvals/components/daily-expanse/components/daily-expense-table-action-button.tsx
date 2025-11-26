@@ -44,7 +44,7 @@ export function DataTableRowActions({ row }: RowProps) {
           </Button>
         </CustomTooltip>
       </PermissionGate>
-      {row?.original?.isApprovalLevel && (
+      {(row?.original?.isApprovalLevel && !row?.original?.updateAction) && (
         <>
           {(row?.original?.showApprove && !row?.original?.updateAction) ? (
             <PermissionGate requiredPermission="daily_expense" action="viewGlobal">
