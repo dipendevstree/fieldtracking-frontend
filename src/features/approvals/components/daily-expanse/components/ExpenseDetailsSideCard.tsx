@@ -375,6 +375,7 @@ export function ExpenseDetailsSideCard(
                   placeholder="Add Comment (Optional)"
                   value={comments[id] ?? ""}
                   onChange={(e) => handleChangeComment(id, e.target.value)}
+                  disabled={dailyExpanse?.status === "approved"}
                 />
                 {myReview ? (
                   myReview.status === "rejected" ? (
@@ -416,7 +417,7 @@ export function ExpenseDetailsSideCard(
                   ) : (
                     <Button
                       className="bg-green-600 text-white hover:bg-green-700 w-full"
-                      disabled={resultObj?.isDisable || isUpdatingApprove}
+                      disabled={(resultObj?.isDisable || isUpdatingApprove) || (dailyExpanse?.status === "approved")}
                       onClick={() =>
                         handleUpdateReview(myReview.id, myReview.status, id)
                       }
@@ -426,8 +427,10 @@ export function ExpenseDetailsSideCard(
                           <Loader2 className="h-4 w-4 animate-spin mr-2" />
                           Updating...
                         </>
+                      ) : resultObj?.status == "reviewed" ? (
+                        "Review Expense"
                       ) : (
-                        "Update Review"
+                        "Approve Expense"
                       )}
                     </Button>
                   )
