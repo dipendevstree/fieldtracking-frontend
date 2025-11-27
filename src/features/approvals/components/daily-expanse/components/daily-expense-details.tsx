@@ -301,7 +301,7 @@ export default function DailyExpenseDetails() {
                         />
                         <Detail label="Level" value={getUserLevelLabel(data)} />
                         <Detail label={label} value={value} />
-                        <Detail label="Amount" value={amount} />
+                        <Detail label="Amount" value={`${currentUser?.organization?.currency}${amount}`} />
                         <Detail
                           label="Status"
                           value={<StatusBadge status={data?.status} />}
