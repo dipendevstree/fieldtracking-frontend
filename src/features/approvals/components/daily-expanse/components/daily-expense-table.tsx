@@ -6,7 +6,7 @@ import { createColumns } from './columns'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { userUpcomingVisitStoreState } from '@/features/approvals/store/upcoming-visits.store'
-import { EXPENSE_STATUS } from '@/data/app.data'
+import { EXPENSE_STATUS, LIMIT_TYPE } from '@/data/app.data'
 interface DailyExpensesTableProps {
   data: any[]
   totalCount: number
@@ -24,7 +24,7 @@ const DailyExpenseTable = ({
   paginationCallbacks,
   currentPage,
   defaultPageSize,
-  pagination: _pagination
+  pagination
 }: DailyExpensesTableProps) => {
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
   const { setOpen, setSelectedIds, setCurrentRow } = userUpcomingVisitStoreState();
@@ -85,21 +85,22 @@ const DailyExpenseTable = ({
 
   return (
     <>
-      <Card className="p-4 gap-0">
-        <div className="-mx-4 px-4 py-1 flex gap-2 justify-between">
-          <div className="">
-            <div className="text-2xl font-semibold">Bulk Action</div>
-            <div className="text-sm font-normal text-muted-foreground">
-              Select options to perform bulk action
+      {(selectedRows.size > 0) && (
+        <Card className="p-4 gap-0">
+          <div className="-mx-4 px-4 py-1 flex gap-2 justify-between">
+            <div className="">
+              <div className="text-2xl font-semibold">Bulk Action</div>
+              <div className="text-sm font-normal text-muted-foreground">
+                Select options to perform bulk action
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <Button disabled={!selectedRows.size} className="bg-green-600 text-white hover:bg-green-700" onClick={() => handleActionOnExpense(pagination?.limitType ? (pagination?.limitType === LIMIT_TYPE.UNDER_LIMIT ? [EXPENSE_STATUS.APPROVED]: [EXPENSE_STATUS.REVIEWED]): [EXPENSE_STATUS.APPROVED, EXPENSE_STATUS.REVIEWED])}>{pagination?.limitType ? (pagination?.limitType === LIMIT_TYPE.UNDER_LIMIT ? `Approve`: `Review`): `Approve/Review`}</Button>
+              <Button disabled={!selectedRows.size} variant="destructive" onClick={() => handleActionOnExpense([EXPENSE_STATUS.REJECT])}>Reject</Button>
             </div>
           </div>
-          <div className="flex gap-2">
-            <Button disabled={!selectedRows.size} className="bg-green-600 text-white hover:bg-green-700" onClick={() => handleActionOnExpense([EXPENSE_STATUS.APPROVED, EXPENSE_STATUS.REVIEWED])}>Approve/Review</Button>
-            {/* <Button disabled={!selectedRows.size} className="bg-green-600 text-white hover:bg-green-700">Review</Button> */}
-            <Button disabled={!selectedRows.size} variant="destructive" onClick={() => handleActionOnExpense([EXPENSE_STATUS.REJECT])}>Reject</Button>
-          </div>
-        </div>
-      </Card>
+        </Card>
+      )}
       <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
         <CustomDataTable
           paginationCallbacks={paginationCallbacks}
