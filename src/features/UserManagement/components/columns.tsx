@@ -74,7 +74,7 @@ export const columns: ColumnDef<any>[] = [
       <CustomDataTableColumnHeader column={column} title="Tier" />
     ),
     cell: ({ row }) => {
-      const tier = row.original.tierkey || "-";
+      const tier = row.original.role.tierkey || "-";
       return (
         <div className="text-sm">
           {tier ? tier.replace(/^tier_/, "Tier ") : "-"}

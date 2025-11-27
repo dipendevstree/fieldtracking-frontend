@@ -7,7 +7,6 @@ import { AlertCircle } from "lucide-react";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { useSelectOptions } from "@/hooks/use-select-option";
-import { TIER } from "@/data/app.data";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -99,11 +98,6 @@ export function UserActionForm({
     labelKey: "departmentName",
     valueKey: "departmentId",
   });
-  // Define tier options using the TIER enum from app.data.ts
-  const tiers = Object.values(TIER).map((tierValue) => ({
-    label: tierValue.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase()),
-    value: tierValue,
-  }));
   const formatPhoneToE164 = (phone: string, countryCode: string) => {
     if (!phone) return "";
 
@@ -141,7 +135,6 @@ export function UserActionForm({
       isWebUser: currentRow?.isWebUser ?? false,
       departmentId: currentRow?.departmentId,
       reportingToRoleId: currentRow?.reportingToRoleId,
-      tierkey: currentRow?.tierkey,
       reportingToIds: [],
       // include the hide flag so the resolver can see it and validate conditionally
       hideReportingToField: hideReportingToField,
@@ -243,7 +236,6 @@ export function UserActionForm({
         isWebUser: currentRow.isWebUser ?? false,
         departmentId: currentRow.departmentId,
         reportingToRoleId: currentRow.reportingToRoleId,
-        tierkey: currentRow.tierkey,
         reportingToIds: processedReportingToIds,
         hideReportingToField: hideField,
       });
@@ -523,79 +515,43 @@ export function UserActionForm({
               </div>
 
               {/* Row 4: Territory & User Tier */}
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {allowTerritoryFilter && (
-                  <div className="space-y-2">
-                    <Label htmlFor="territoryId">Territory</Label>
-                    <Controller
-                      name="territoryId"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          value={getFieldValue(field.value)}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select territories..." />
-                          </SelectTrigger>
-                          <SelectContent className="!w-full">
-                            {territories.map((option) => (
-                              <SelectItem
-                                key={option.value}
-                                value={String(option.value)}
-                              >
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+              {allowTerritoryFilter && (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="territoryId">Territory</Label>
+                      <Controller
+                        name="territoryId"
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            value={getFieldValue(field.value)}
+                            onValueChange={field.onChange}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select territories..." />
+                            </SelectTrigger>
+                            <SelectContent className="!w-full">
+                              {territories.map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={String(option.value)}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      />
+                      {errors.territoryId && (
+                        <p className="flex items-center gap-1 text-xs text-red-500">
+                          <AlertCircle className="h-3 w-3" />
+                          {errors.territoryId.message}
+                        </p>
                       )}
-                    />
-                    {errors.territoryId && (
-                      <p className="flex items-center gap-1 text-xs text-red-500">
-                        <AlertCircle className="h-3 w-3" />
-                        {errors.territoryId.message}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label htmlFor="tierkey">
-                    User Tier <span className="text-red-500">*</span>
-                  </Label>
-                  <Controller
-                    name="tierkey"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        value={getFieldValue(field.value)}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select User Tier..." />
-                        </SelectTrigger>
-                        <SelectContent className="!w-full">
-                          {tiers.map((option) => (
-                            <SelectItem
-                              key={option.value}
-                              value={String(option.value)}
-                            >
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
-                  {errors.tierkey && (
-                    <p className="flex items-center gap-1 text-xs text-red-500">
-                      <AlertCircle className="h-3 w-3" />
-                      {errors.tierkey.message}
-                    </p>
-                  )}
+                    </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Reporting Structure Section */}
@@ -657,15 +613,6 @@ export function UserActionForm({
                         const displayValue = currentValue
                           ? String(currentValue)
                           : "";
-
-                        console.log("=== SELECT RENDER DEBUG ===");
-                        console.log("field.value:", field.value);
-                        console.log("currentValue:", currentValue);
-                        console.log("displayValue:", displayValue);
-                        console.log(
-                          "available users:",
-                          users.map((u) => ({ id: u.value, name: u.label }))
-                        );
 
                         return (
                           <Select

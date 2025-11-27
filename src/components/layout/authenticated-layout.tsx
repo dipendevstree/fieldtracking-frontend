@@ -63,7 +63,6 @@ export function AuthenticatedLayout({
     if ("serviceWorker" in navigator) {
       const handler = (event: any) => {
         if (event.data?.type === "navigate" && event.data.url) {
-          console.log("[SW message] Navigate to:", event.data.url);
           // Focus the window and navigate internally
           window.focus();
           navigate({ to: event.data.url});
