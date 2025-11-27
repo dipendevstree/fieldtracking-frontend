@@ -24,6 +24,8 @@ import {
 } from "../services/Roles.hook";
 import { useRolesStore } from "../store/roles.store";
 import { MenuItem, OrganizationMenu, Permission, Props } from "../types";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
   const navigate = useNavigate();
@@ -182,11 +184,35 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
   const {
     control,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
     watch,
     setValue,
     getValues,
+    reset,
   } = form;
+
+  const { showExitPrompt, confirmExit, cancelExit } =
+    useUnsavedChanges(isDirty);
+
+  // We must mark the form as "clean" (reset) before navigating on success,
+  // otherwise the blocker will trigger.
+  useEffect(() => {
+    if (
+      (isCreateSuccess && !isCreateError) ||
+      (isUpdateSuccess && !isUpdateError)
+    ) {
+      // ✅ Reset form with current values to mark it as "Pristine/Not Dirty"
+      reset(getValues());
+      handleCancel();
+    }
+  }, [
+    isCreateSuccess,
+    isCreateError,
+    isUpdateSuccess,
+    isUpdateError,
+    reset,
+    getValues,
+  ]);
 
   useEffect(() => {
     if (formInitialized.current || processMenuItems.length === 0) {
@@ -304,9 +330,14 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
     }
   };
 
+  useEffect(() => {
+    return () => {
+      setCurrentRow(null);
+      formInitialized.current = false;
+    };
+  }, [setCurrentRow]);
+
   const handleCancel = () => {
-    setCurrentRow(null);
-    formInitialized.current = false;
     navigate({ to: "/user-management/roles" });
   };
 
@@ -360,7 +391,7 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
     ) {
       item.viewOwn = false;
     }
-    
+
     if (item?.id) {
       const currentMenu = organizationMenus.find(
         (m: OrganizationMenu) => m.organizationMenuId === item?.id
@@ -392,11 +423,7 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
           // true if ALL child permissions are false
           const allChildFalse = childMenus.every(
             (m) =>
-              !m.add &&
-              !m.deleteValue &&
-              !m.edit &&
-              !m.viewGlobal &&
-              !m.viewOwn
+              !m.add && !m.deleteValue && !m.edit && !m.viewGlobal && !m.viewOwn
           );
 
           if (parentPermission) {
@@ -628,6 +655,18 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
           {isEdit ? "Update Role" : "Create Role"}
         </CustomButton>
       </div>
+      <ConfirmDialog
+        open={showExitPrompt}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) cancelExit();
+        }}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+        handleConfirm={confirmExit}
+      />
     </Main>
   );
 }

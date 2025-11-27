@@ -2,25 +2,18 @@ import { useState } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Main } from "@/components/layout/main";
-import { cn } from "@/lib/utils";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
-// Import the actual page components
+// Page Components
 import ExpenseCategoriesPage from "./Expense-categories";
-// import LimitsControlsPage from "./Limits-&-Controls";
-import ApproversPage from "./Approvers";
-import GeneralSettingsPage from "./General";
+
 import Notifications from "./notifications/components/Notifications";
+import GeneralApplicationSettings from "./General";
+import { ApproverFormNew } from "./Approvers/components/Approvers-new";
+import { useUnsavedChangesStore } from "./store/use-unsaved-changes-store";
 
-// Define valid tab values with proper typing
-export type SettingsTabValue =
-  | "/settings"
-  | "/settings/expense-categories"
-  // | "/settings/limits-controls"
-  | "/settings/approvers"
-  | "/settings/notifications"
-  | "/settings/general";
-
-// Tab configuration for better maintainability
+// Tab Config
 const SETTINGS_TABS = [
   {
     value: "/settings/expense-categories",
@@ -35,7 +28,7 @@ const SETTINGS_TABS = [
   {
     value: "/settings/approvers",
     label: "Approvers",
-    component: ApproversPage,
+    component: ApproverFormNew,
   },
   {
     value: "/settings/notifications",
@@ -45,30 +38,70 @@ const SETTINGS_TABS = [
   {
     value: "/settings/general",
     label: "General",
-    component: GeneralSettingsPage,
+    component: GeneralApplicationSettings,
   },
 ] as const;
 
 // Configurable default tab - change this to set the default tab
-const DEFAULT_SETTINGS_TAB: SettingsTabValue = "/settings/expense-categories";
+const DEFAULT_SETTINGS_TAB = "/settings/expense-categories";
 
 export default function SettingsPage() {
   const { latestLocation } = useRouter();
-  const pathname = latestLocation.pathname;
 
-  // Initialize with URL-based default or fallback to configured default
-  const [activeTab, setActiveTab] = useState<SettingsTabValue>(
-    pathname.includes("/settings/")
-      ? (pathname as SettingsTabValue)
+  // 1. Tab State
+  const [activeTab, setActiveTab] = useState(
+    latestLocation.pathname.includes("/settings/")
+      ? latestLocation.pathname
       : DEFAULT_SETTINGS_TAB
   );
 
-  const handleTabChange = (value: string) => {
-    setActiveTab(value as SettingsTabValue);
+  // Track intended tab destination
+  const [pendingTab, setPendingTab] = useState<string | null>(null);
+
+  // 2. Global Dirty State (Zustand)
+  const isDirty = useUnsavedChangesStore((state) => state.isDirty);
+  const { reset } = useUnsavedChangesStore((state) => state.actions);
+
+  // 3. Navigation Blockers
+  // A. Route Blocker (Browser/Sidebar)
+  const { showExitPrompt, confirmExit, cancelExit } =
+    useUnsavedChanges(isDirty);
+
+  // B. Tab Blocker
+  const handleTabChange = (newValue: string) => {
+    if (activeTab === newValue) return;
+
+    if (isDirty) {
+      setPendingTab(newValue); // Trigger Dialog
+    } else {
+      setActiveTab(newValue);
+    }
+  };
+
+  // 4. Unified Dialog Handlers
+  const isDialogOpen = showExitPrompt || !!pendingTab;
+
+  const handleConfirm = () => {
+    if (showExitPrompt) {
+      // User is leaving the route
+      confirmExit();
+    } else if (pendingTab) {
+      // User is switching tabs
+      reset(); // Reset dirty state
+      setActiveTab(pendingTab);
+      setPendingTab(null);
+    }
+  };
+
+  const handleCancel = (isOpen: boolean) => {
+    if (!isOpen) {
+      if (showExitPrompt) cancelExit(); // Stay on route
+      setPendingTab(null); // Stay on tab
+    }
   };
 
   return (
-    <Main className={cn("flex flex-col")}>
+    <Main className="flex flex-col">
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
@@ -88,13 +121,25 @@ export default function SettingsPage() {
             <TabsContent
               key={tab.value}
               value={tab.value}
-              className="space-y-4"
+              forceMount={false as any}
             >
-              <Component />
+              {activeTab === tab.value && <Component />}
             </TabsContent>
           );
         })}
       </Tabs>
+
+      {/* --- Single Common Dialog --- */}
+      <ConfirmDialog
+        open={isDialogOpen}
+        onOpenChange={handleCancel}
+        handleConfirm={handleConfirm}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+      />
     </Main>
   );
 }

@@ -70,6 +70,8 @@ import {
 } from "../type/type";
 import { TimePicker } from "@/components/ui/TimePicker";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 function DeleteVisitDialog({
   visit,
@@ -156,8 +158,11 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
     reset,
     setValue,
     watch,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = form;
+
+  const { showExitPrompt, confirmExit, cancelExit } =
+    useUnsavedChanges(isDirty);
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -402,16 +407,37 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
   ) => {
     setValue(`visits.${index}.location`, data.address, {
       shouldValidate: true,
+      shouldDirty: true,
     });
-    setValue(`visits.${index}.address`, data.address, { shouldValidate: true });
-    setValue(`visits.${index}.city`, data.city, { shouldValidate: true });
-    setValue(`visits.${index}.state`, data.state, { shouldValidate: true });
+    setValue(`visits.${index}.address`, data.address, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    setValue(`visits.${index}.city`, data.city, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    setValue(`visits.${index}.state`, data.state, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
     setValue(`visits.${index}.zipCode`, data.postalCode, {
       shouldValidate: true,
+      shouldDirty: true,
     });
-    setValue(`visits.${index}.country`, data.country, { shouldValidate: true });
-    setValue(`visits.${index}.latitude`, data.lat, { shouldValidate: true });
-    setValue(`visits.${index}.longitude`, data.lng, { shouldValidate: true });
+    setValue(`visits.${index}.country`, data.country, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    setValue(`visits.${index}.latitude`, data.lat, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    setValue(`visits.${index}.longitude`, data.lng, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+
     setLocationStates((prev) =>
       prev.map((state, i) =>
         i === index ? { ...state, isMapModalOpen: false } : state
@@ -1201,6 +1227,18 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
           </CardContent>
         </Card>
       </div>
+      <ConfirmDialog
+        open={showExitPrompt}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) cancelExit();
+        }}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+        handleConfirm={confirmExit}
+      />
     </Main>
   );
 }

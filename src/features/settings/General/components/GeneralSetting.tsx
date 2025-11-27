@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/stores/use-auth-store";
 import {
@@ -28,6 +28,7 @@ import FixedDayExpenses from "./FixedDayExpenses";
 import { Country, State, City } from "country-state-city";
 import type { ICountry, IState, ICity } from "country-state-city";
 import { CircleX } from "lucide-react";
+import { useDirtyTracker } from "../../store/use-unsaved-changes-store";
 
 interface GeneralApplicationSettingsProps {
   onDataChange?: (data: any) => void;
@@ -87,6 +88,7 @@ export default function GeneralApplicationSettings({
   const [countries, setCountries] = useState<ICountry[]>([]);
   const [states, setStates] = useState<IState[]>([]);
   const [cities, setCities] = useState<ICity[]>([]);
+  const [initialState, setInitialState] = useState<any>(null);
 
   // Fetch organization types from API
   const {
@@ -156,6 +158,15 @@ export default function GeneralApplicationSettings({
       setAllowAddUsersBasedOnTerritories(
         org.allowAddUsersBasedOnTerritories || false
       );
+
+      // ✅  Capture the baseline state for dirty checking
+      setInitialState({
+        formData: newFormData,
+        autoExpenseApproval: org.isAutoExpense || false,
+        fixedDayExpense: org.isFixedDayExpense || false,
+        allowAddUsersBasedOnTerritories:
+          org.allowAddUsersBasedOnTerritories || false,
+      });
     }
   }, [user]);
 
@@ -314,6 +325,59 @@ export default function GeneralApplicationSettings({
       </div>
     );
   }
+
+  // --- Dirty Checking Logic ---
+  const isDirty = useMemo(() => {
+    if (!initialState) return false;
+
+    // 1. Check Child Component (FixedDayExpenses)
+    if (isFixedExpenseDirty) return true;
+
+    // 2. Check Toggles
+    if (autoExpenseApproval !== initialState.autoExpenseApproval) return true;
+    if (fixedDayExpense !== initialState.fixedDayExpense) return true;
+    if (
+      allowAddUsersBasedOnTerritories !==
+      initialState.allowAddUsersBasedOnTerritories
+    )
+      return true;
+
+    // 3. Check Files (New uploads or removals)
+    // If a file object exists in state, user selected a new file
+    if (formData.orgIcon !== null || formData.profileImage !== null)
+      return true;
+    // If remove flags are set
+    if (formData.removeOrgIcon || formData.removeProfileImage) return true;
+
+    // 4. Check Text Fields
+    // We compare the JSON string of the text fields.
+    // We exclude the file/flag keys from this comparison as they are handled above.
+    const getDataPayload = (data: typeof formData) => {
+      const {
+        orgIcon,
+        profileImage,
+        removeOrgIcon,
+        removeProfileImage, // Exclude these
+        ...textFields
+      } = data;
+      return textFields;
+    };
+
+    const currentJson = JSON.stringify(getDataPayload(formData));
+    const initialJson = JSON.stringify(getDataPayload(initialState.formData));
+
+    return currentJson !== initialJson;
+  }, [
+    formData,
+    autoExpenseApproval,
+    fixedDayExpense,
+    allowAddUsersBasedOnTerritories,
+    initialState,
+    isFixedExpenseDirty,
+  ]);
+
+  // ✅ SYNC WITH GLOBAL STORE
+  useDirtyTracker(isDirty);
 
   return (
     <div className="space-y-6">
@@ -1080,7 +1144,8 @@ export default function GeneralApplicationSettings({
                       htmlFor="rate-per-km"
                       className="text-sm font-medium text-gray-700"
                     >
-                      Rate Per KM ({user?.organization?.currency || "₹"}) <span className="text-red-500">*</span>
+                      Rate Per KM ({user?.organization?.currency || "₹"})
+                      <span className="text-red-500">*</span>
                     </Label>
                     <Input
                       id="rate-per-km"

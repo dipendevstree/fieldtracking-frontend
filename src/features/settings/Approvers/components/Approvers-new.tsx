@@ -21,6 +21,7 @@ import { useGetAllTerritoriesForDropdown } from "@/features/userterritory/servic
 import { DeleteModal } from "@/components/shared/common-delete-modal";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { useDirtyTracker } from "../../store/use-unsaved-changes-store";
 
 // ------------------- ZOD Schema -------------------------
 const tierSchema = z
@@ -206,6 +207,9 @@ export function ApproverFormNew() {
 
   // Watch for form changes to enable/disable save button
   const isFormDirty = form.formState.isDirty;
+
+  //---------------unsaved changes tracker tab------------
+  useDirtyTracker(isFormDirty);
 
   // Create original records map for change detection
   const originalRecordsMap = useMemo(() => {
