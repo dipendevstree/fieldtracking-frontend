@@ -23,8 +23,6 @@ export const formSchema = z.object({
   // Accept null/undefined as well just in case
   hideReportingToField: z.boolean().nullable().optional(),
 
-  tierkey: z.string().min(1, "Tier to is required"),
-
   permissions: z.array(z.string()).optional(),
 
   jobTitle: z.string().optional(),

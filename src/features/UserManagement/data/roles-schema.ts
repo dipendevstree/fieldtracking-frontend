@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 export const roleFormSchema = z.object({
   roleName: z.string().min(1, 'Role name is required'),
+  tierkey: z.string().min(1, 'Tier key is required'),
   menuIds: z
     .array(
       z.object({

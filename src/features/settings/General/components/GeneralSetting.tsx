@@ -29,6 +29,8 @@ import { Country, State, City } from "country-state-city";
 import type { ICountry, IState, ICity } from "country-state-city";
 import { CircleX } from "lucide-react";
 import { useDirtyTracker } from "../../store/use-unsaved-changes-store";
+import { IconAlertTriangle } from "@tabler/icons-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface GeneralApplicationSettingsProps {
   onDataChange?: (data: any) => void;
@@ -1102,14 +1104,8 @@ export default function GeneralApplicationSettings({
                   id="territory-users"
                   checked={allowAddUsersBasedOnTerritories}
                   onCheckedChange={(value) => {
-                    if (!value) {
-                      // User is turning it OFF → show confirmation
-                      setPendingToggle(value);
-                      setShowTerritoryConfirm(true);
-                    } else {
-                      // User is turning it ON → allow directly
-                      setAllowAddUsersBasedOnTerritories(value);
-                    }
+                    setPendingToggle(value);
+                    setShowTerritoryConfirm(true);
                   }}
                 />
               </div>
@@ -1196,15 +1192,35 @@ export default function GeneralApplicationSettings({
           <ConfirmDialog
             open={showTerritoryConfirm}
             onOpenChange={setShowTerritoryConfirm}
-            title="Disable Territory-Based Users?"
-            desc="Are you sure you want to disable adding users based on territories? This action may affect user assignments."
+            title={
+              <span className="text-destructive">
+                <IconAlertTriangle
+                  className="stroke-destructive mr-1 inline-block"
+                  size={18}
+                />{" "}
+                <span>Warning: {allowAddUsersBasedOnTerritories ? "Disable": "Enable"} Territory-Based Users?</span>
+              </span>
+            }
+            desc={
+              <div className="space-y-4">
+                <p className="mb-2">
+                  If you will change the settings of Territories wise Users, it may cause issues in the existing Users Settings and its relevant functionalities.
+                </p>
+                <Alert variant="destructive">
+                  <AlertTitle>Warning!</AlertTitle>
+                  <AlertDescription>
+                    Are you sure that you want to make changes?
+                  </AlertDescription>
+                </Alert>
+              </div>
+            }
             destructive
             handleConfirm={() => {
               setAllowAddUsersBasedOnTerritories(pendingToggle); // apply toggle
               setShowTerritoryConfirm(false); // close dialog
             }}
             cancelBtnText="Cancel"
-            confirmText="Yes, Disable"
+            confirmText="Yes"
           />
         </CardContent>
       </Card>

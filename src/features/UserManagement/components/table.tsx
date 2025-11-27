@@ -25,8 +25,6 @@ const AllUsersTable = ({
   const allowTerritoryFilter =
     user?.organization?.allowAddUsersBasedOnTerritories;
   const filteredColumns = columns.filter((column: any) => {
-    console.log("Column ID:", column);
-
     if (hideActions && column.id === "actions") return false;
     if (!allowTerritoryFilter && column.accessorKey === "territory")
       return false;

@@ -26,10 +26,15 @@ import { useRolesStore } from "../store/roles.store";
 import { MenuItem, OrganizationMenu, Permission, Props } from "../types";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { toast } from "sonner";
+import { TIER } from "@/data/app.data";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
   const navigate = useNavigate();
   const params = useParams({ strict: false });
+  const { user } = useAuthStore();
   const { currentRow: storeCurrentRow, setCurrentRow } = useRolesStore();
 
   const formInitialized = useRef(false);
@@ -51,6 +56,22 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
     useGetRolesAndPermissionById(effectiveRoleId, {
       enabled: isEdit && !!effectiveRoleId,
     });
+  
+  const tiers = Object.values(TIER).map((tierValue) => ({
+    label: tierValue.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+    value: tierValue,
+  }));
+
+  const isAdminRole = rolePermission?.roleName?.toLowerCase() === "admin";
+  const isUserOwnRole = user?.role?.roleId === rolePermission?.roleId;
+  
+  useEffect(() => {
+    if (isAdminRole || isUserOwnRole) {
+      toast.error((isAdminRole ? "Admin role cannot be edited": (isUserOwnRole ? "You cannot edit your own role": "")))
+      navigate({ to: "/user-management/roles" });
+      return;
+    }
+  }, [isAdminRole, isUserOwnRole]);
 
   useEffect(() => {
     if (rolePermission && !storeCurrentRow && roleIdFromUrl) {
@@ -177,6 +198,7 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
     mode: "onChange",
     defaultValues: {
       roleName: "",
+      tierkey: "",
       menuIds: [],
     },
   });
@@ -221,10 +243,12 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
 
     if (isEdit && rolePermission && initialMenuIds.length > 0) {
       setValue("roleName", rolePermission.roleName);
+      setValue("tierkey", rolePermission.tierkey);
       setValue("menuIds", initialMenuIds);
       formInitialized.current = true;
     } else if (!isEdit && initialMenuIds.length > 0) {
       setValue("roleName", "");
+      setValue("tierkey", "");
       setValue("menuIds", initialMenuIds);
       formInitialized.current = true;
     }
@@ -557,6 +581,40 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
                 {errors.roleName && (
                   <p className="text-sm text-red-500">
                     {errors.roleName.message}
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="tierkey">
+                  Tier <span className="text-red-500">*</span>
+                </Label>
+                <Controller
+                  name="tierkey"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select Tier Key" />
+                      </SelectTrigger>
+                      <SelectContent className="!w-full">
+                        {tiers.map((option) => (
+                          <SelectItem
+                            key={option.value}
+                            value={String(option.value)}
+                          >
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+                {errors.tierkey && (
+                  <p className="text-sm text-red-500">
+                    {errors.tierkey.message}
                   </p>
                 )}
               </div>
