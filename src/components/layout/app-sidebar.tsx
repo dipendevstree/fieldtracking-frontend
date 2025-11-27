@@ -20,7 +20,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       user?.organization?.allowAddUsersBasedOnTerritories,
   });
   const isSuperAdmin = user?.isSuperAdmin;
-  console.log("SUPER_ADMIN_SIDEBAR_DATA", isSuperAdmin);
   const SIDEBAR_DATA = isSuperAdmin ? SUPER_ADMIN_SIDEBAR_DATA : sidebarData;
   return (
     <Sidebar collapsible="icon" variant="floating" {...props}>
