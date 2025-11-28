@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { useRouter } from "@tanstack/react-router";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import { cn } from "@/lib/utils";
@@ -147,6 +147,14 @@ const AllUsers = () => {
   const onPaginationChange = (page: number, pageSize: number) => {
     setPagination((prev) => ({ ...prev, page, limit: pageSize }));
   };
+
+  useEffect(() => {
+    return () => {
+      if (open) {
+        setOpen(null);
+      }
+    };
+  }, [open]);
 
   return (
     <Main className={cn("flex flex-col gap-2")}>
