@@ -21,6 +21,7 @@ import { useGetAllTerritoriesForDropdown } from "@/features/userterritory/servic
 import { DeleteModal } from "@/components/shared/common-delete-modal";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { useDirtyTracker } from "../../store/use-unsaved-changes-store";
 
 // ------------------- ZOD Schema -------------------------
 const tierSchema = z
@@ -111,22 +112,15 @@ export function ApproverFormNew() {
     onConfirm: () => void;
   } | null>(null);
 
-  const { allTerritories = [] } = useGetAllTerritoriesForDropdown();
+  const { allTerritories = [], isLoading: isTerritoriesLoading } =
+    useGetAllTerritoriesForDropdown();
 
-  // -------- FORM HOOK --------
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
-    defaultValues: useMemo(() => {
-      const defaultTerritory =
-        allowAddUsersBasedOnTerritories && allTerritories?.length > 0
-          ? String(allTerritories[0].id)
-          : "";
-
-      return {
-        territory: defaultTerritory,
-        levels: [],
-      };
-    }, [allTerritories, allowAddUsersBasedOnTerritories]),
+    defaultValues: {
+      territory: "",
+      levels: [],
+    },
   });
 
   const { fields, append, remove } = useFieldArray({
@@ -137,21 +131,23 @@ export function ApproverFormNew() {
   const selectedTerritory = form.watch("territory");
 
   // API Hooks
-  const { data: allApprovalsLevelList = {}, isLoading } =
+  const { data: allApprovalsLevelList = {}, isLoading: isApprovalsLoading } =
     useGetAllApprovalsLevel();
 
   const { mutateAsync: createApprovalLevel, isPending: isCreating } =
     useCreateApprovalsLevel();
-
   const { mutateAsync: updateApprovalLevel, isPending: isUpdating } =
     useUpdateApprovalsLevel();
-
   const { mutateAsync: deleteApproval, isPending: isDeleting } =
     useDeleteApprovalsLevel();
 
-  const { expenseCategories: expenseCategoriesData } =
-    useGetExpenseCategoriesDropDownList({ defaultCategory: true });
-  const { data: allTiersData } = useGetAllTiers();
+  const {
+    expenseCategories: expenseCategoriesData,
+    isLoading: isCategoriesLoading,
+  } = useGetExpenseCategoriesDropDownList({ defaultCategory: true });
+
+  const { data: allTiersData, isLoading: isTiersLoading } = useGetAllTiers();
+
   const { listData: allUsersList = [] } = useGetUsersDropDownList({
     territoryId: selectedTerritory,
   });
@@ -207,7 +203,36 @@ export function ApproverFormNew() {
   // Watch for form changes to enable/disable save button
   const isFormDirty = form.formState.isDirty;
 
-  // Create original records map for change detection
+  //---------------unsaved changes tracker tab------------
+  useDirtyTracker(isFormDirty);
+
+  // Calculate strict data readiness
+  // This ensures we don't try to transform data until we have columns, rows, and the filter (territory)
+  const isDataReady =
+    !isApprovalsLoading &&
+    !isCategoriesLoading &&
+    !isTiersLoading &&
+    !isTerritoriesLoading &&
+    categories.length > 0 &&
+    dynamicTiers.length > 0 &&
+    // If territory logic is enabled, we MUST have a selected territory before populating
+    (!allowAddUsersBasedOnTerritories || !!selectedTerritory);
+
+  // Sync Default Territory Effect
+  // This fixes the issue where data loads late and the form stays on empty territory
+  useEffect(() => {
+    if (allowAddUsersBasedOnTerritories && allTerritories.length > 0) {
+      const currentVal = form.getValues("territory");
+      // If no territory selected yet, select the first one
+      if (!currentVal) {
+        const defaultId = String(allTerritories[0].id);
+        form.setValue("territory", defaultId);
+        // Reset population flag so the main effect runs again with the correct territory
+        hasPopulatedForm.current = false;
+      }
+    }
+  }, [allTerritories, allowAddUsersBasedOnTerritories, form]);
+
   const originalRecordsMap = useMemo(() => {
     return Object.values(allApprovalsLevelList || {})
       .flat()
@@ -346,14 +371,10 @@ export function ApproverFormNew() {
     [expenseCategoriesData, findCategoryNameById]
   );
 
-  // -------- Populate form from API data when allApprovalsLevelList or territory changes --------
+  // Now strictly relies on isDataReady.
   useEffect(() => {
-    if (
-      isLoading ||
-      !expenseCategoriesData ||
-      categories.length === 0 ||
-      dynamicTiers.length === 0
-    ) {
+    // If we are missing categories, tiers, approvals, or territory ID (when required), do nothing yet.
+    if (!isDataReady) {
       return;
     }
 
@@ -372,12 +393,11 @@ export function ApproverFormNew() {
       hasPopulatedForm.current = true;
     }
   }, [
+    isDataReady,
     allApprovalsLevelList,
-    isLoading,
     categories,
     form,
     selectedTerritory,
-    expenseCategoriesData,
     transformApiDataToForm,
     dynamicTiers,
   ]);
@@ -454,7 +474,7 @@ export function ApproverFormNew() {
         dynamicTiers
       )
     );
-    form.setValue("levels", form.getValues("levels"), { shouldDirty: true }); // Mark form as dirty
+    form.setValue("levels", form.getValues("levels"), { shouldDirty: true });
   };
 
   // -------- ON SUBMIT (Handles Create, Update AND Delete) --------
@@ -580,7 +600,7 @@ export function ApproverFormNew() {
 
       // Reset form state to pristine using the submitted data
       form.reset(data);
-      hasPopulatedForm.current = false; // Force re-population from API on next render
+      hasPopulatedForm.current = false;
     } catch (error) {
       toast.error("Failed to save configuration. Please try again.");
       console.error("Submission error:", error);
@@ -630,9 +650,13 @@ export function ApproverFormNew() {
     maxWidth: `${levelColumnWidth}px`,
   };
 
-  // Show loading state while initial data is being fetched
-  if ((isLoading || !dynamicTiers.length) && !hasPopulatedForm.current) {
-    return <div>Loading configuration...</div>;
+  // Use the strict flag. If hasPopulatedForm is true, we allow render (e.g. during background refetch)
+  if (!isDataReady && !hasPopulatedForm.current) {
+    return (
+      <div className="p-8 text-center text-muted-foreground">
+        Loading configuration...
+      </div>
+    );
   }
 
   //---------------delete------------
@@ -659,14 +683,8 @@ export function ApproverFormNew() {
                           value={field.value}
                           onChange={(value) => {
                             field.onChange(value);
-                            // Reset form to trigger re-population based on new territory
-                            // This also marks the form as pristine again
                             hasPopulatedForm.current = false;
                           }}
-                          // onCancelPress={() => {
-                          //   field.onChange("");
-                          //   hasPopulatedForm.current = false;
-                          // }}
                           placeholder="Select Territory"
                           options={territoryOptions}
                         />
@@ -683,7 +701,7 @@ export function ApproverFormNew() {
         {/* ------------------------------- MAIN TABLE -------------------------------- */}
         <div className="overflow-x-auto">
           <div className="border bg-card w-fit relative">
-            {/* ---- Top Row ---- */}
+            {/* ... Header Row ... */}
             <div className="flex sticky top-0 bg-card z-40">
               <div className="w-64 p-4 border-r border-b font-semibold text-lg sticky left-0 bg-card z-50">
                 Expense Category
@@ -710,7 +728,6 @@ export function ApproverFormNew() {
                       Level {index + 1} {index === 0 && "(Default)"}
                     </div>
 
-                    {/* ---- SEARCHABLE SELECT ---- */}
                     <div className="max-w-64">
                       <FormField
                         control={form.control}
@@ -779,7 +796,7 @@ export function ApproverFormNew() {
               </div>
             </div>
 
-            {/* ----------------------- ROWS ----------------------- */}
+            {/* ... Data Rows ... */}
             {categories.map((category: string) => (
               <div key={category} className="flex border-b">
                 <div className="w-64 p-4 border-r font-medium sticky left-0 bg-card z-20">

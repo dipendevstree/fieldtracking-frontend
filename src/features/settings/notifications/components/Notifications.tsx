@@ -9,6 +9,7 @@ import {
   useUpdateNotifications,
 } from "../services/notifications.hook";
 import { Card } from "@/components/ui/card";
+import { useDirtyTracker } from "../../store/use-unsaved-changes-store";
 
 const activityNotifications = [
   "Notify me when the Sales Rep reaches to the visit location",
@@ -41,8 +42,12 @@ export default function Notifications() {
     },
   });
 
-  const { data, isLoading, isFetched } = useGetNotificationData();
+  const { isDirty } = form.formState;
 
+  // Sync with Global Store (Handles Tabs & Navigation blocking)
+  useDirtyTracker(isDirty);
+
+  const { data, isLoading, isFetched } = useGetNotificationData();
   const { mutate: updateNotifications, isPending } = useUpdateNotifications();
 
   // Populate form with API data
@@ -57,7 +62,7 @@ export default function Notifications() {
         notifications: Array(activityNotificationsApiKeys.length).fill(false),
       });
     }
-  }, [form, isFetched]);
+  }, [form, isFetched, data]);
 
   // Submit handler
   const onSubmit = (values: FormValues) => {
@@ -73,7 +78,11 @@ export default function Notifications() {
       ...payload,
     };
 
-    updateNotifications(finalPayload);
+    updateNotifications(finalPayload, {
+      onSuccess: () => {
+        form.reset({ notifications: values.notifications });
+      },
+    });
   };
 
   if (isLoading) {
@@ -105,7 +114,7 @@ export default function Notifications() {
       </Card>
 
       <div className="flex justify-end">
-        <Button type="submit" disabled={isPending}>
+        <Button type="submit" disabled={isPending || !isDirty}>
           {isPending ? "Saving..." : "Save"}
         </Button>
       </div>

@@ -41,6 +41,8 @@ import type { CreateCustomerPayload } from "../services/Customers.hook";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import LocationPicker from "./LocationPicker";
 import { formatDropDownLabel } from "@/utils/commonFunction";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 // Define Zod schema
 const customerFormSchema = z.object({
@@ -105,14 +107,19 @@ export default function AddCustomerPage({
 
   const { mutate: updateCustomer, isPending: updatePending } =
     useUpdateCustomer(customerId ?? "", () => {
-      navigate({ to: "/customers" });
+      form.reset(form.getValues());
+      setTimeout(() => {
+        navigate({ to: "/customers" });
+      }, 0);
     });
 
   // Add create customer mutation
   const { mutate: createCustomer, isPending: createPending } =
     useCreateCustomer(() => {
-      form.reset(); // Reset form on success
-      navigate({ to: "/customers" });
+      form.reset(form.getValues());
+      setTimeout(() => {
+        navigate({ to: "/customers" });
+      }, 0);
     });
 
   const isPending = updatePending || createPending;
@@ -147,6 +154,15 @@ export default function AddCustomerPage({
     },
   });
 
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isDirty },
+    getValues,
+    reset,
+    setValue,
+  } = form;
+
   // *** HANDLER FUNCTION TO RECEIVE DATA FROM LOCATION PICKER ***
   const handleMapLocationSelect = (data: {
     lat: number;
@@ -157,22 +173,30 @@ export default function AddCustomerPage({
     country: string;
     postalCode: string;
   }) => {
-    form.setValue("latitude", data.lat, { shouldValidate: true });
-    form.setValue("longitude", data.lng, { shouldValidate: true });
-    form.setValue("address", data.address, { shouldValidate: true });
-    form.setValue("city", data.city, { shouldValidate: true });
-    form.setValue("state", data.state, { shouldValidate: true });
-    form.setValue("country", data.country, { shouldValidate: true });
-    form.setValue("zipCode", data.postalCode, { shouldValidate: true });
+    setValue("latitude", data.lat, { shouldValidate: true, shouldDirty: true });
+    setValue("longitude", data.lng, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    setValue("address", data.address, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    setValue("city", data.city, { shouldValidate: true, shouldDirty: true });
+    setValue("state", data.state, { shouldValidate: true, shouldDirty: true });
+    setValue("country", data.country, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+    setValue("zipCode", data.postalCode, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
   };
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-    getValues,
-    reset,
-  } = form;
+  const { showExitPrompt, confirmExit, cancelExit } =
+    useUnsavedChanges(isDirty);
+
   const { fields, append, remove, update, replace } = useFieldArray({
     control,
     name: "contacts",
@@ -1230,6 +1254,7 @@ export default function AddCustomerPage({
                     </div>
                     <div className="flex justify-end gap-2 pt-6">
                       <Button
+                        type="button"
                         className="px-8"
                         onClick={() => navigate({ to: "/customers" })}
                         variant={"outline"}
@@ -1309,6 +1334,18 @@ export default function AddCustomerPage({
           </CardContent>
         </TabsContent> */}
       </Tabs>
+      <ConfirmDialog
+        open={showExitPrompt}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) cancelExit();
+        }}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+        handleConfirm={confirmExit}
+      />
     </div>
   );
 }
