@@ -19,11 +19,11 @@ import {
   // CommandSeparator,
 } from "@/components/ui/command";
 import {
-  sidebarData,
   SUPER_ADMIN_SIDEBAR_DATA,
 } from "./layout/data/sidebar-data";
 import { ScrollArea } from "./ui/scroll-area";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { useRoleBasedNavigation } from "@/permissions/hooks/use-role-base-navigation";
 
 export function CommandMenu() {
   const navigate = useNavigate();
@@ -38,7 +38,10 @@ export function CommandMenu() {
     },
     [setOpen]
   );
-
+  const { sidebarData } = useRoleBasedNavigation(user?.role, {
+    allowAddUsersBasedOnTerritories:
+      user?.organization?.allowAddUsersBasedOnTerritories,
+  });
   const isSuperAdmin = user?.isSuperAdmin;
 
   const SIDEBAR_DATA = isSuperAdmin ? SUPER_ADMIN_SIDEBAR_DATA : sidebarData;
