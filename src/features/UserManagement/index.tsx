@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import { useRouter } from "@tanstack/react-router";
+import { useRouter, useSearch } from "@tanstack/react-router";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import { cn } from "@/lib/utils";
 import { Main } from "@/components/layout/main";
@@ -29,12 +29,13 @@ const AllUsers = () => {
     user?.organization?.allowAddUsersBasedOnTerritories;
 
   const { filters, setFilters, setOpen, open } = useUsersStore();
-
+  const { noAdmin } = useSearch({ from: "/_authenticated/user-management/" } as any);
   const queryParams = useMemo((): any => {
     const params: any = {
       ...pagination,
       searchFor: filters.search || "",
       roleId: filters.roleId || "",
+      noAdmin
     };
 
     if (allowTerritoryFilter) {
@@ -42,7 +43,7 @@ const AllUsers = () => {
     }
 
     return params;
-  }, [pagination, filters, allowTerritoryFilter]);
+  }, [pagination, filters, allowTerritoryFilter, noAdmin]);
 
   // Organizations data
   const {

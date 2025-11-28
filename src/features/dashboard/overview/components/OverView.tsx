@@ -464,7 +464,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
         <PermissionGate requiredPermission="all_users">
-          <Card className="gap-2">
+          <Card className="gap-2" onClick={() => navigate({ to: "/user-management", search: { noAdmin: true } })}>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-sm font-medium">
                 Total Sales Reps
@@ -482,7 +482,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
           </Card>
         </PermissionGate>
         <PermissionGate requiredPermission="live_tracking">
-          <Card className="gap-2">
+          <Card className="gap-2" onClick={() => navigate({ to: "/livetracking" })}>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-sm font-medium">
                 Active in Field
