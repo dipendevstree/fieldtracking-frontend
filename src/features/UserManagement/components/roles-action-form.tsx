@@ -29,7 +29,13 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { toast } from "sonner";
 import { TIER } from "@/data/app.data";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
   const navigate = useNavigate();
@@ -56,7 +62,7 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
     useGetRolesAndPermissionById(effectiveRoleId, {
       enabled: isEdit && !!effectiveRoleId,
     });
-  
+
   const tiers = Object.values(TIER).map((tierValue) => ({
     label: tierValue.replace("_", " ").replace(/\b\w/g, (l) => l.toUpperCase()),
     value: tierValue,
@@ -64,10 +70,16 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
 
   const isAdminRole = rolePermission?.roleName?.toLowerCase() === "admin";
   const isUserOwnRole = user?.role?.roleId === rolePermission?.roleId;
-  
+
   useEffect(() => {
     if (isAdminRole || isUserOwnRole) {
-      toast.error((isAdminRole ? "Admin role cannot be edited": (isUserOwnRole ? "You cannot edit your own role": "")))
+      toast.error(
+        isAdminRole
+          ? "Admin role cannot be edited"
+          : isUserOwnRole
+            ? "You cannot edit your own role"
+            : ""
+      );
       navigate({ to: "/user-management/roles" });
       return;
     }
@@ -242,23 +254,23 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
     }
 
     if (isEdit && rolePermission && initialMenuIds.length > 0) {
-      setValue("roleName", rolePermission.roleName);
-      setValue("tierkey", rolePermission.tierkey);
-      setValue("menuIds", initialMenuIds);
+      reset({
+        roleName: rolePermission.roleName,
+        tierkey: rolePermission.tierkey,
+        menuIds: initialMenuIds,
+      });
+
       formInitialized.current = true;
     } else if (!isEdit && initialMenuIds.length > 0) {
-      setValue("roleName", "");
-      setValue("tierkey", "");
-      setValue("menuIds", initialMenuIds);
+      reset({
+        roleName: "",
+        tierkey: "",
+        menuIds: initialMenuIds,
+      });
+
       formInitialized.current = true;
     }
-  }, [
-    isEdit,
-    rolePermission,
-    processMenuItems.length,
-    initialMenuIds,
-    setValue,
-  ]);
+  }, [isEdit, rolePermission, processMenuItems.length, initialMenuIds, reset]);
 
   useEffect(() => {
     formInitialized.current = false;
@@ -592,10 +604,7 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
                   name="tierkey"
                   control={control}
                   render={({ field }) => (
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
+                    <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Select Tier Key" />
                       </SelectTrigger>
