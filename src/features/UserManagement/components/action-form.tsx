@@ -32,6 +32,8 @@ import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
 import { useGetAllTerritoriesForDropdown } from "@/features/userterritory/services/user-territory.hook";
 import { formSchemaConditional, TFormSchemaConditional } from "../data/schema";
 import { useGetAllRolesForDropdown } from "../services/Roles.hook";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 interface Props {
   currentRow?: any;
@@ -52,6 +54,7 @@ export function UserActionForm({
 }: Props) {
   const isEdit = !!currentRow;
   const [hideReportingToField, setHideReportingToField] = useState(false);
+  const [showLocalWarning, setShowLocalWarning] = useState(false);
   const { data: rolesList } = useGetAllRolesForDropdown();
 
   // Initialize selectedRoleId with current row's reportingToRoleId for edit mode
@@ -148,8 +151,9 @@ export function UserActionForm({
   const {
     control,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
     setValue,
+    getValues,
   } = form;
 
   useEffect(() => {
@@ -179,11 +183,6 @@ export function UserActionForm({
 
       // Process reportingToIds properly for the form
       let processedReportingToIds = [];
-
-      console.log("=== EDIT MODE DEBUG ===");
-      console.log("currentRow:", currentRow);
-      console.log("currentRow.reportingToIds:", currentRow.reportingToIds);
-      console.log("currentRow.reportingTo:", currentRow.reportingTo);
 
       if (Array.isArray(currentRow.reportingToIds)) {
         // If it's already an array, check if it contains user objects or just IDs
@@ -252,17 +251,6 @@ export function UserActionForm({
     onSubmitValues(values);
   };
 
-  const handleDialogChange = (state: boolean) => {
-    if (!state) {
-      reset();
-      setSelectedRoleId(""); // Reset selected role ID
-      setHideReportingToField(false);
-      // update form context/value too
-      setValue("hideReportingToField", false, { shouldValidate: true });
-    }
-    onOpenChange(state);
-  };
-
   const getFieldValue = (value: any): string => {
     if (typeof value === "string" || typeof value === "number") {
       return String(value);
@@ -281,9 +269,58 @@ export function UserActionForm({
 
   const roleId = form.watch("roleId");
 
+  const { showExitPrompt, confirmExit, cancelExit } =
+    useUnsavedChanges(isDirty);
+
+  const actualClose = () => {
+    reset();
+    setSelectedRoleId("");
+    setHideReportingToField(false);
+    setValue("hideReportingToField", false);
+    onOpenChange(false);
+  };
+
+  //handle both Open and Close events
+  const handleManualCloseAttempt = (newOpenState: boolean) => {
+    if (newOpenState) {
+      onOpenChange(true);
+      return;
+    }
+    if (isDirty) {
+      setShowLocalWarning(true);
+    } else {
+      actualClose();
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    reset(getValues());
+    setShowLocalWarning(false);
+    onOpenChange(false);
+
+    if (showExitPrompt) {
+      setTimeout(() => {
+        confirmExit();
+      }, 0);
+    }
+  };
+
+  const handleCancelDiscard = (isOpen: boolean) => {
+    if (!isOpen) {
+      setShowLocalWarning(false);
+      if (showExitPrompt) cancelExit();
+    }
+  };
+
+  const isWarningOpen = showLocalWarning || showExitPrompt;
+
   return (
-    <Dialog open={open} onOpenChange={handleDialogChange}>
-      <DialogContent className="max-h-[80vh] !max-w-4xl overflow-y-auto">
+    <Dialog open={open} onOpenChange={handleManualCloseAttempt}>
+      <DialogContent
+        className="max-h-[80vh] !max-w-4xl overflow-y-auto"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
         <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div>
             <DialogTitle className="text-xl font-semibold">
@@ -517,39 +554,39 @@ export function UserActionForm({
               {/* Row 4: Territory & User Tier */}
               {allowTerritoryFilter && (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="territoryId">Territory</Label>
-                      <Controller
-                        name="territoryId"
-                        control={control}
-                        render={({ field }) => (
-                          <Select
-                            value={getFieldValue(field.value)}
-                            onValueChange={field.onChange}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select territories..." />
-                            </SelectTrigger>
-                            <SelectContent className="!w-full">
-                              {territories.map((option) => (
-                                <SelectItem
-                                  key={option.value}
-                                  value={String(option.value)}
-                                >
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        )}
-                      />
-                      {errors.territoryId && (
-                        <p className="flex items-center gap-1 text-xs text-red-500">
-                          <AlertCircle className="h-3 w-3" />
-                          {errors.territoryId.message}
-                        </p>
+                  <div className="space-y-2">
+                    <Label htmlFor="territoryId">Territory</Label>
+                    <Controller
+                      name="territoryId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={getFieldValue(field.value)}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select territories..." />
+                          </SelectTrigger>
+                          <SelectContent className="!w-full">
+                            {territories.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={String(option.value)}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       )}
-                    </div>
+                    />
+                    {errors.territoryId && (
+                      <p className="flex items-center gap-1 text-xs text-red-500">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.territoryId.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -762,13 +799,29 @@ export function UserActionForm({
 
         <DialogFooter className="flex gap-2 border-t pt-4">
           <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => handleManualCloseAttempt(false)}
+            >
+              Cancel
+            </Button>
           </DialogClose>
           <CustomButton type="submit" loading={loading} form="user-form">
             {isEdit ? "Update User" : "Create User"}
           </CustomButton>
         </DialogFooter>
       </DialogContent>
+      <ConfirmDialog
+        open={isWarningOpen}
+        onOpenChange={handleCancelDiscard}
+        handleConfirm={handleConfirmDiscard}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+      />
     </Dialog>
   );
 }
