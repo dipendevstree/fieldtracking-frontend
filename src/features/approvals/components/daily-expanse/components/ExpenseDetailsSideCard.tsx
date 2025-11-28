@@ -394,8 +394,11 @@ export function ExpenseDetailsSideCard(
                             Processing...
                           </>
                         ) : (
-                          "Review Expense"
-                        )}
+                          resultObj?.status == "reviewed" ? (
+                        "Review Expense"
+                      ) : (
+                        "Approve Expense"
+                      ))}
                       </Button>
                       <Button
                         variant="destructive"
@@ -427,11 +430,11 @@ export function ExpenseDetailsSideCard(
                           <Loader2 className="h-4 w-4 animate-spin mr-2" />
                           Updating...
                         </>
-                      ) : resultObj?.status == "reviewed" ? (
+                      ) : (resultObj?.status == "reviewed" ? (
                         "Review Expense"
                       ) : (
                         "Approve Expense"
-                      )}
+                      ))}
                     </Button>
                   )
                 ) : (
@@ -442,7 +445,7 @@ export function ExpenseDetailsSideCard(
                     <div className="grid w-full grid-cols-2 gap-2">
                       <Button
                         className="bg-green-600 text-white hover:bg-green-700"
-                        disabled={resultObj?.isDisable || isProcessingApprove}
+                        disabled={(resultObj?.isDisable || isProcessingApprove) || (dailyExpanse?.status === "approved")}
                         onClick={() =>
                           handleReviewAction(id, resultObj?.status)
                         }
@@ -452,15 +455,15 @@ export function ExpenseDetailsSideCard(
                             <Loader2 className="h-4 w-4 animate-spin mr-2" />
                             Processing...
                           </>
-                        ) : resultObj?.status == "reviewed" ? (
+                        ) : (resultObj?.status == "reviewed" ? (
                           "Review Expense"
                         ) : (
                           "Approve Expense"
-                        )}
+                        ))}
                       </Button>
                       <Button
                         variant="destructive"
-                        disabled={resultObj?.isDisable || isProcessingReject}
+                        disabled={(resultObj?.isDisable || isProcessingReject) || (dailyExpanse?.status === "approved")}
                         onClick={() => handleReviewAction(id, "rejected")}
                       >
                         {isProcessingReject ? (

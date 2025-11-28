@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { userUpcomingVisitStoreState } from '@/features/approvals/store/upcoming-visits.store'
 import { EXPENSE_STATUS, LIMIT_TYPE } from '@/data/app.data'
+import { useAuthStore } from '@/stores/use-auth-store'
 interface DailyExpensesTableProps {
   data: any[]
   totalCount: number
@@ -29,6 +30,7 @@ const DailyExpenseTable = ({
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set())
   const { setOpen, setSelectedIds, setCurrentRow } = userUpcomingVisitStoreState();
   const [selectableData, setSelectableData] = useState<any[]>([]);
+  const { user } = useAuthStore();
   // Clear selected rows when data changes (pagination, filtering, etc.)
   useEffect(() => {
     setSelectedRows(new Set())
@@ -72,7 +74,7 @@ const DailyExpenseTable = ({
       const hasSelectableRows = data?.some(
         (row) => row?.isApprovalLevel && !row?.updateAction
       )
-      return createColumns(selectedRows, toggleRowSelection, toggleSelectAll, isAllSelected || false, hasSelectableRows)
+      return createColumns(selectedRows, toggleRowSelection, toggleSelectAll, isAllSelected || false, hasSelectableRows, user)
     },
     [selectedRows, isAllSelected, data]
   )

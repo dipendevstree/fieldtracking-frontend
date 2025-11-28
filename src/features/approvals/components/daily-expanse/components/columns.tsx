@@ -18,6 +18,7 @@ export const createColumns = (
   toggleSelectAll: () => void,
   isAllSelected: boolean,
   hasSelectableRows?: boolean,
+  user?: any
 ): ColumnDef<any>[] => [
   {
     accessorKey: "manageExpense",
@@ -88,7 +89,7 @@ export const createColumns = (
       <CustomDataTableColumnHeader column={column} title="Amount" />
     ),
     cell: ({ row }:any) => {
-      return <div className="text-sm">{row.original.totalAmount || 0}{row?.original?.isApprovalLevel && row?.original?.warningMessageForAmount ? ` (${row?.original?.warningMessageForAmount})`: ``}</div>;
+      return <div className="text-sm">{user?.organization?.currency || "₹"}{row.original.totalAmount || 0}{row?.original?.isApprovalLevel && row?.original?.warningMessageForAmount ? ` (${row?.original?.warningMessageForAmount})`: ``}</div>;
     },
     enableSorting: false,
   },
