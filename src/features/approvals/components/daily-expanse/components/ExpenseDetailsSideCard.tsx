@@ -385,7 +385,7 @@ export function ExpenseDetailsSideCard(
                         className="bg-green-600 text-white hover:bg-green-700"
                         disabled={resultObj?.isDisable || isUpdatingApprove}
                         onClick={() =>
-                          handleUpdateReview(myReview.id, "reviewed", id)
+                          handleUpdateReview(myReview.id, resultObj?.status as "approved" | "reviewed" | "rejected", id)
                         }
                       >
                         {isUpdatingApprove ? (
