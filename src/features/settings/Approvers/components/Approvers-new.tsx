@@ -283,7 +283,7 @@ export function ApproverFormNew() {
       categories: string[],
       currentTerritory: string | undefined,
       availableTiers: { key: string; label: string }[]
-    ): FormData => {
+    ): any => {
       const levelsMap = new Map<number, any>();
 
       // Filter API data for the current territory
@@ -319,7 +319,7 @@ export function ApproverFormNew() {
                 currentLevelData.categories[categoryName] = {
                   tiers: Array(availableTiers.length)
                     .fill(null)
-                    .map(() => ({ min: 0, max: 0 })),
+                    .map(() => ({ min: "0", max: "0" })),
                 };
               }
 
@@ -330,8 +330,8 @@ export function ApproverFormNew() {
 
               if (tierIndex >= 0) {
                 currentLevelData.categories[categoryName].tiers[tierIndex] = {
-                  min: item.minAmount,
-                  max: item.maxAmount,
+                  min: String(item.minAmount),
+                  max: String(item.maxAmount),
                 };
               }
             }
@@ -346,7 +346,7 @@ export function ApproverFormNew() {
             levelData.categories[category] = {
               tiers: Array(availableTiers.length)
                 .fill(null)
-                .map(() => ({ min: 0, max: 0 })),
+                .map(() => ({ min: "0", max: "0" })),
             };
           }
         });
@@ -410,7 +410,7 @@ export function ApproverFormNew() {
       prevLevels: FormData["levels"],
       availableUsers: { label: string; value: string }[],
       availableTiers: { key: string; label: string }[]
-    ) => {
+    ): any => {
       const defaultUser =
         availableUsers.length > 0 ? availableUsers[0].value : "";
       return {
@@ -426,12 +426,12 @@ export function ApproverFormNew() {
               {
                 tiers: availableTiers.map((_, tierIdx) => {
                   if (!prevLevel) {
-                    return { min: 0, max: 0 };
+                    return { min: "0", max: "0" };
                   }
                   const prevMax = Number(prevTiers[tierIdx]?.max ?? 0);
                   return {
-                    min: prevMax + 1,
-                    max: prevMax + 1,
+                    min: String(prevMax + 1),
+                    max: String(prevMax + 1),
                   };
                 }),
               },
