@@ -360,7 +360,7 @@ export function UserActionForm({
                       <Input
                         {...field}
                         id="firstName"
-                        placeholder="Enter first name"
+                        placeholder="Enter First Name"
                         value={getFieldValue(field.value)}
                       />
                     )}
@@ -384,7 +384,7 @@ export function UserActionForm({
                       <Input
                         {...field}
                         id="lastName"
-                        placeholder="Enter last name"
+                        placeholder="Enter Last Name"
                         value={getFieldValue(field.value)}
                       />
                     )}
@@ -411,7 +411,7 @@ export function UserActionForm({
                       <Input
                         {...field}
                         id="email"
-                        placeholder="user@company.com"
+                        placeholder="Enter Email Address"
                         type="email"
                         value={getFieldValue(field.value)}
                       />
@@ -491,7 +491,7 @@ export function UserActionForm({
                         onValueChange={field.onChange}
                       >
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select department..." />
+                          <SelectValue placeholder="Select Department..." />
                         </SelectTrigger>
                         <SelectContent className="!w-full">
                           {department.map((option) => (
@@ -527,7 +527,7 @@ export function UserActionForm({
                         onValueChange={field.onChange}
                       >
                         <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select role..." />
+                          <SelectValue placeholder="Select Role..." />
                         </SelectTrigger>
                         <SelectContent className="!w-full">
                           {roles.map((option) => (
@@ -565,7 +565,7 @@ export function UserActionForm({
                           onValueChange={field.onChange}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select territories..." />
+                            <SelectValue placeholder="Select Territories..." />
                           </SelectTrigger>
                           <SelectContent className="!w-full">
                             {territories.map((option) => (
@@ -612,7 +612,7 @@ export function UserActionForm({
                           }}
                         >
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select role..." />
+                            <SelectValue placeholder="Select Role..." />
                           </SelectTrigger>
                           <SelectContent className="!w-full">
                             {roles
@@ -660,7 +660,7 @@ export function UserActionForm({
                             }}
                           >
                             <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select user..." />
+                              <SelectValue placeholder="Select User..." />
                             </SelectTrigger>
                             <SelectContent className="!w-full">
                               {users.map((option) => (
@@ -780,6 +780,7 @@ export function UserActionForm({
                           id="isWebUser"
                           checked={field.value ?? false}
                           onCheckedChange={field.onChange}
+                          disabled={isEdit}
                         />
                         <Label
                           htmlFor="isWebUser"
