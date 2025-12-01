@@ -16,6 +16,7 @@ export function useUnsavedChanges(isDirty: boolean) {
   const blocker = useBlocker({
     shouldBlockFn: () => isDirty, // Block if dirty
     withResolver: true, // Enable proceed/reset
+    disabled: !isDirty,
   });
 
   return {
