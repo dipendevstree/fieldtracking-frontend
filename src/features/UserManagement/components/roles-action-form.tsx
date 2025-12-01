@@ -606,7 +606,7 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
                   render={({ field }) => (
                     <Select value={field.value} onValueChange={field.onChange}>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select Tier Key" />
+                        <SelectValue placeholder="Select Tier" />
                       </SelectTrigger>
                       <SelectContent className="!w-full">
                         {tiers.map((option) => (

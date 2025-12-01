@@ -780,6 +780,7 @@ export function UserActionForm({
                           id="isWebUser"
                           checked={field.value ?? false}
                           onCheckedChange={field.onChange}
+                          disabled={!!currentRow?.id}
                         />
                         <Label
                           htmlFor="isWebUser"
