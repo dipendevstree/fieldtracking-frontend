@@ -616,7 +616,7 @@ export default function AddCustomerPage({
                               <Textarea
                                 {...field}
                                 id="notes"
-                                placeholder="Any additional information about the customer..."
+                                placeholder="Enter Additional Notes..."
                                 rows={3}
                                 aria-describedby={
                                   errors.notes ? "notes-error" : undefined

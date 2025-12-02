@@ -116,7 +116,7 @@ export function TimePicker({
       ? format === "12h"
         ? `${hour}:${minute} ${period}`
         : `${hour}:${minute}`
-      : "Select a time...";
+      : "Select A Time...";
 
   const hourList = format === "12h" ? hours12 : hours24;
 

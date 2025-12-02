@@ -113,7 +113,7 @@ export const CustomerDirectoryPage = () => {
     {
       key: "search",
       type: "search",
-      placeholder: "Search customers...",
+      placeholder: "Search Customers...",
       value: filters.search,
       onChange: handleGlobalSearchChange,
     },

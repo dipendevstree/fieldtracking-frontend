@@ -98,7 +98,7 @@ const AllUsers = () => {
     {
       key: "search",
       type: "search",
-      placeholder: "Search users...",
+      placeholder: "Search Users...",
       value: filters.search,
       onChange: handleGlobalSearchChange,
     },

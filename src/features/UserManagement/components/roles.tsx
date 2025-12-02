@@ -122,7 +122,7 @@ const Roles = () => {
     {
       key: "search",
       type: "search",
-      placeholder: "Search roles...",
+      placeholder: "Search Roles...",
       value: filters.search,
       onChange: handleGlobalSearchChange,
     },
