@@ -420,7 +420,7 @@ export function ExpenseDetailsSideCard(
                   ) : (
                     <Button
                       className="bg-green-600 text-white hover:bg-green-700 w-full"
-                      disabled={(resultObj?.isDisable || isUpdatingApprove) || (dailyExpanse?.status === "approved")}
+                      disabled={(resultObj?.isDisable || isUpdatingApprove) || (dailyExpanse?.status === "approved" || dailyExpanse?.status === "reject")}
                       onClick={() =>
                         handleUpdateReview(myReview.id, myReview.status, id)
                       }
@@ -463,7 +463,7 @@ export function ExpenseDetailsSideCard(
                       </Button>
                       <Button
                         variant="destructive"
-                        disabled={(resultObj?.isDisable || isProcessingReject) || (dailyExpanse?.status === "approved")}
+                        disabled={(resultObj?.isDisable || isProcessingReject) || (dailyExpanse?.status === "approved" || dailyExpanse?.status === "reject")}
                         onClick={() => handleReviewAction(id, "rejected")}
                       >
                         {isProcessingReject ? (

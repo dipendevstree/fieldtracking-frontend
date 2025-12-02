@@ -368,7 +368,7 @@ export function DailyAllowanceDetailsCard({
                               onClick={() =>
                                 handleUpdateReview(
                                   myReview.id,
-                                  "reviewed",
+                                  resultObj?.status as "approved" | "reviewed" | "rejected",
                                   detail.id
                                 )
                               }
@@ -379,12 +379,15 @@ export function DailyAllowanceDetailsCard({
                                   Processing...
                                 </>
                               ) : (
+                                  resultObj?.status == "reviewed" ? (
                                 "Review Expense"
-                              )}
+                              ) : (
+                                "Approve Expense"
+                              ))}
                             </Button>
                             <Button
                               variant="destructive"
-                              disabled={resultObj.isDisable || isUpdatingReject}
+                              disabled={(resultObj.isDisable || isUpdatingReject) || (dailyExpanse?.status === "approved" || dailyExpanse?.status === "reject")}
                               onClick={() =>
                                 handleUpdateReview(
                                   myReview.id,
@@ -406,7 +409,7 @@ export function DailyAllowanceDetailsCard({
                         ) : (
                           <Button
                             className="bg-green-600 text-white hover:bg-green-700 w-full"
-                            disabled={resultObj.isDisable || isUpdatingApprove}
+                            disabled={(resultObj.isDisable || isUpdatingApprove) || (dailyExpanse?.status === "approved" || dailyExpanse?.status === "reject")}
                             onClick={() =>
                               handleUpdateReview(
                                 myReview.id,
@@ -420,9 +423,11 @@ export function DailyAllowanceDetailsCard({
                                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
                                 Updating...
                               </>
+                            ) : (resultObj?.status == "reviewed" ? (
+                              "Review Expense"
                             ) : (
-                              "Update Review"
-                            )}
+                              "Approve Expense"
+                            ))}
                           </Button>
                         )
                       ) : (
@@ -451,15 +456,16 @@ export function DailyAllowanceDetailsCard({
                                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                                   Processing...
                                 </>
+                              ) : (resultObj?.status == "reviewed" ? (
+                                "Review Expense"
                               ) : (
-                                resultObj.buttonText
-                              )}
-                              Expense
+                                "Approve Expense"
+                              ))}
                             </Button>
                             <Button
                               variant="destructive"
                               disabled={
-                                resultObj.isDisable || isProcessingReject
+                                (resultObj.isDisable || isProcessingReject) || (dailyExpanse?.status === "approved" || dailyExpanse?.status === "reject")
                               }
                               onClick={() =>
                                 handleReviewAction(
