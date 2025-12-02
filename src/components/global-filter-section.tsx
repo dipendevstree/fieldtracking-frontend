@@ -67,7 +67,7 @@ export function DataTableToolbarCompact({
                 placeholder={filter.placeholder ?? "Search..."}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-[150px] lg:w-[350px]"
+                className="w-[150px] lg:w-[350px] truncate"
               />
             );
           }

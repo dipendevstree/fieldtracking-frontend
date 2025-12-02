@@ -425,7 +425,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
     {
       key: "date-range",
       type: "date-range",
-      placeholder: "Filter by date",
+      placeholder: "Filter By Date",
       dateRangeValue: selectedDateRange,
       onDateRangeChange: setSelectedDateRange,
       dataRangeClassName: "w-full max-w-xs",
@@ -464,7 +464,12 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
       {/* KPI Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
         <PermissionGate requiredPermission="all_users">
-          <Card className="gap-2" onClick={() => navigate({ to: "/user-management", search: { noAdmin: true } })}>
+          <Card
+            className="gap-2 cursor-pointer"
+            onClick={() =>
+              navigate({ to: "/user-management", search: { noAdmin: true } })
+            }
+          >
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-sm font-medium">
                 Total Sales Reps
@@ -482,10 +487,13 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
           </Card>
         </PermissionGate>
         <PermissionGate requiredPermission="live_tracking">
-          <Card className="gap-2" onClick={() => navigate({ to: "/livetracking" })}>
+          <Card
+            className="gap-2 cursor-pointer"
+            onClick={() => navigate({ to: "/livetracking" })}
+          >
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-sm font-medium">
-                Active in Field
+                Active In Field
               </CardTitle>
               <MapPin className="h-4 w-4 text-muted-foreground" />
             </CardHeader>

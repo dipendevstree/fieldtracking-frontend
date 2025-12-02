@@ -621,7 +621,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                             value={field.value}
                             onChange={field.onChange}
                             placeholder={
-                              isUsersLoading ? "Loading..." : "Select user..."
+                              isUsersLoading ? "Loading..." : "Select User..."
                             }
                             disabled={isUsersLoading || isEditMode}
                             onCancelPress={() => {
@@ -683,7 +683,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                               render={({ field }) => (
                                 <Input
                                   id={`visits.${index}.purpose`}
-                                  placeholder="Enter purpose of visit"
+                                  placeholder="Enter Purpose of Visit"
                                   {...field}
                                 />
                               )}
@@ -778,7 +778,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                                   placeholder={
                                     isCustomersLoading
                                       ? "Loading..."
-                                      : "Select customer..."
+                                      : "Select Customer..."
                                   }
                                   disabled={isCustomersLoading}
                                 />
@@ -917,7 +917,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                             render={({ field }) => (
                               <Input
                                 id={`visits.${index}.preparationNotes`}
-                                placeholder="Any special preparation or notes for the visit..."
+                                placeholder="Enter Preparation Notes..."
                                 {...field}
                               />
                             )}
@@ -1101,7 +1101,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardDescription>
-                Visits scheduled for{" "}
+                Visits Scheduled For{" "}
                 <span className="font-semibold text-primary">
                   {moment(selectedDate).format("ddd, DD-MM-YYYY")}
                 </span>{" "}

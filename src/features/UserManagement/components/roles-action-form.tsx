@@ -585,7 +585,7 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
                     <Input
                       {...field}
                       id="roleName"
-                      placeholder="Enter role name"
+                      placeholder="Enter Role Name"
                       className={errors.roleName ? "border-red-500" : ""}
                     />
                   )}

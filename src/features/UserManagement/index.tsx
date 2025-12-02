@@ -29,13 +29,15 @@ const AllUsers = () => {
     user?.organization?.allowAddUsersBasedOnTerritories;
 
   const { filters, setFilters, setOpen, open } = useUsersStore();
-  const { noAdmin } = useSearch({ from: "/_authenticated/user-management/" } as any);
+  const { noAdmin } = useSearch({
+    from: "/_authenticated/user-management/",
+  } as any);
   const queryParams = useMemo((): any => {
     const params: any = {
       ...pagination,
       searchFor: filters.search || "",
       roleId: filters.roleId || "",
-      noAdmin
+      noAdmin,
     };
 
     if (allowTerritoryFilter) {
@@ -98,7 +100,7 @@ const AllUsers = () => {
     {
       key: "search",
       type: "search",
-      placeholder: "Search users...",
+      placeholder: "Search Users...",
       value: filters.search,
       onChange: handleGlobalSearchChange,
     },
@@ -119,7 +121,7 @@ const AllUsers = () => {
     {
       key: "roleId",
       type: "searchable-select",
-      placeholder: "Role",
+      placeholder: "Select Role",
       value: filters.roleId,
       onChange: (value) => setFilters({ roleId: value ?? "" }),
       onCancelPress: () => setFilters({ roleId: "" }),
