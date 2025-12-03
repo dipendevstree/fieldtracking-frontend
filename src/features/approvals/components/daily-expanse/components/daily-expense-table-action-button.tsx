@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import { CircleCheck, CircleX, ClipboardCheck, Eye } from "lucide-react";
 import Button from "@/components/shared/custom-button";
@@ -18,16 +18,6 @@ type RowProps = {
 
 export function DataTableRowActions({ row }: RowProps) {
   const { setOpen, setCurrentRow } = userUpcomingVisitStoreState();
-  const navigate = useNavigate();
-
-  const handleView = () => {
-    setCurrentRow(row.original);
-    console.log("row.original", row.original);
-    navigate({
-      to: `daily-expense-details/${row.original.id}`,
-      params: { id: row.original.id },
-    });
-  };
 
   const handleActionOnExpense = (actionType: EXPENSE_STATUS) => {
     setCurrentRow({ ...row.original, actionType });
@@ -39,9 +29,9 @@ export function DataTableRowActions({ row }: RowProps) {
     <div className="flex items-center space-x-2">
       <PermissionGate requiredPermission="daily_expense" action="viewGlobal">
         <CustomTooltip title="View">
-          <Button variant="ghost" className="h-8 w-8 p-0 text-orange-500" onClick={handleView}>
+          <Link to="/approvals/daily-expense-details/$id" params={{ id: row.original.id }} className="h-8 w-8 p-0 text-orange-500">
             <Eye size={16} />
-          </Button>
+          </Link>
         </CustomTooltip>
       </PermissionGate>
       {(row?.original?.isApprovalLevel && !row?.original?.updateAction) && (

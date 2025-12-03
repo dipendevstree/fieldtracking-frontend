@@ -1,7 +1,7 @@
 import { useLocation } from "@tanstack/react-router";
 
 const MODULE_NAME_MAP: Record<string, string> = {
-  customers: "Customer Management",
+  customers: "Customer Directory",
   livetracking: "Live Tracking",
   roles: "Roles Management",
   calendar: "Calendar & Visit Management",

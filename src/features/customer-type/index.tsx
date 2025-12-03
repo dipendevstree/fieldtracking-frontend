@@ -48,7 +48,7 @@ const CustomerType = () => {
       {/* Customer Type Management Section */}
 
       <TablePageLayout
-        title="All Customer Types"
+        title="Customer Type"
         description="Manage customer type assignments and coverage areas"
         onAddButtonClick={handleAddCustomerType}
         addButtonText="Add Customer Type"

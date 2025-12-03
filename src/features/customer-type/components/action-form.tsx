@@ -124,7 +124,7 @@ export function CustomerTypeActionForm({
             loading={loading}
             form="customerType-form"
           >
-            {isEdit ? "Update Customer Type" : "Create Type"}
+            {isEdit ? "Update Customer Type" : "Create Customer Type"}
           </CustomButton>
         </DialogFooter>
       </DialogContent>

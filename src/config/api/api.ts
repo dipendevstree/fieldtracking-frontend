@@ -167,6 +167,7 @@ const API = {
     delete: "notification/delete",
     details: "notification/detail",
     sendNotification: "notification/send",
+    unreadCount: "notification/unreadNotificationCount",
   },
   settings: {
     list: "settings/list",

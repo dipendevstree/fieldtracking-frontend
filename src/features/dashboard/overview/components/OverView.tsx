@@ -481,7 +481,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
                 {isStatsLoading ? "..." : stats?.totalUsers}
               </div>
               <p className="text-xs text-muted-foreground">
-                From today's schedule
+                From Today's Schedule
               </p>
             </CardContent>
           </Card>
@@ -501,7 +501,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
               <div className="text-2xl font-bold mb-1">
                 {isStatsLoading ? "..." : stats?.onlineUsers}
               </div>
-              <p className="text-xs text-muted-foreground">Currently online</p>
+              <p className="text-xs text-muted-foreground">Currently Online</p>
             </CardContent>
           </Card>
         </PermissionGate>
@@ -546,7 +546,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
           <CardHeader>
             <div className="flex items-center justify-between mb-4">
               <div>
-                <CardTitle>Customer List</CardTitle>
+                <CardTitle>Customers</CardTitle>
               </div>
               <Button onClick={() => handleNavigation("/customers")}>
                 View All

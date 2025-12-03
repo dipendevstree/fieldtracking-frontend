@@ -1,6 +1,8 @@
 import { Button } from '@/components/ui/button'
+import { useSEO } from '@/config/seo'
 
 export default function MaintenanceError() {
+  useSEO("503 Maintenance Error");
   return (
     <div className='h-svh'>
       <div className='m-auto flex h-full w-full flex-col items-center justify-center gap-2'>

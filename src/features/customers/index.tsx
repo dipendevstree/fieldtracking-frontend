@@ -109,7 +109,7 @@ const Customers = () => {
       <div className="mt-2 flex items-center justify-between space-y-2">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">
-            Customer Management
+            Customer Directory
           </h2>
           <p className="text-muted-foreground">
             Manage customers and approve admin registrations

@@ -42,7 +42,7 @@ const AVATAR_SIZES = {
 const DEFAULT_MENU_ITEMS: MenuItem[] = [
   {
     label: "Profile",
-    href: "/settings",
+    href: "/settings/general",
     shortcut: "⇧⌘P",
   },
   {
@@ -86,11 +86,22 @@ export function ProfileDropdown({
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm leading-none font-medium">{user?.name}</p>
-            <p className="text-muted-foreground text-xs leading-none break-all">
-              {user?.email}
-            </p>
+          <div className="flex flex-row space-x-2">
+            <div>
+              <Avatar className={`${avatarSizeClass} cursor-pointer`}>
+                <AvatarImage
+                  src={user?.profileUrl || userName}
+                  alt={`@${user?.name}`}
+                />
+                <AvatarFallback>{userName}</AvatarFallback>
+              </Avatar>
+            </div>
+            <div className="flex flex-col justify-center">
+              <p className="text-sm leading-none font-medium mb-1">{user?.isSuperAdmin ? user?.name?.replace(/^./, c => c.toUpperCase()): (user?.firstName + " " + user?.lastName)}</p>
+              <p className="text-muted-foreground text-xs leading-none break-all truncate max-w-[150px]">
+                {user?.email}
+              </p>
+            </div>
           </div>
         </DropdownMenuLabel>
 

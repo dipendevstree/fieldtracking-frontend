@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useGetNotifications } from "../services/notifications.hook";
+import { useGetNotifications, useGetUnreadCount } from "../services/notifications.hook";
 import { useState } from "react";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -27,8 +27,10 @@ export function NotificationList() {
     limit: DEFAULT_PAGE_SIZE,
     isMobile: false,
     sort: "desc",
+    showUnreadCount: true,
   });
   const notifications = useGetNotifications(pagination);
+  const { data: unreadCount } = useGetUnreadCount(pagination);
   const notificationData = notifications.allData ?? [];
   const { newNotification: _newNotification } = useFcm((notification) => {
     if (notification && window.document.visibilityState === "visible") {
@@ -78,7 +80,12 @@ export function NotificationList() {
           size="icon"
           className="hover:bg-accent/20 relative"
         >
-          <IconBell className="!w-5 !h-5" />
+          <IconBell className="!w-7 !h-7" />
+          {unreadCount > 0 && (
+            <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 h-4 w-fit rounded-full bg-black text-xs font-medium text-white">
+              {unreadCount > 100 ? "99+" : unreadCount}
+            </span>
+          )}
           <span className="sr-only">Notifications</span>
         </Button>
       </DropdownMenuTrigger>

@@ -100,7 +100,7 @@ export default function BulkImport() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: { "text/csv": [".csv"] },
     multiple: false,
-    noClick: true,
+    // noClick: true, // enbled div click to upload file
     onDrop: (acceptedFiles: any) => {
       if (acceptedFiles.length > 0) {
         handleFileChange(acceptedFiles[0]);

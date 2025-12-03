@@ -6,6 +6,7 @@ import { useModuleName } from "@/hooks/use-module-name";
 import { socketForVisit as socket } from "../../socket/socket";
 import { useAuth } from "@/stores/use-auth-store";
 import { usePermissionData } from "@/hooks/use-permission-data";
+import { useSEO } from "@/config/seo";
 
 interface HeaderProps extends React.HTMLAttributes<HTMLElement> {
   fixed?: boolean;
@@ -78,6 +79,8 @@ export const Header = ({
       server.off("setting_change", handleLiveRolesAndSettingChange);
     };
   }, []);
+
+  useSEO(pathName);
 
   return (
     <header
