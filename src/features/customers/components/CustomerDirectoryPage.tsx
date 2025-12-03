@@ -188,7 +188,7 @@ export const CustomerDirectoryPage = () => {
       <Card className="px-4">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-xl">Customer List</CardTitle>
+            <CardTitle className="text-xl">Customer Directory</CardTitle>
             <p className="text-muted-foreground text-sm mt-1">
               Manage your customer database and relationships.
             </p>

@@ -1,9 +1,11 @@
 import { useNavigate, useRouter } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
+import { useSEO } from '@/config/seo'
 
 export default function ForbiddenError() {
   const navigate = useNavigate()
   const { history } = useRouter()
+  useSEO("403 Forbidden");
   return (
     <div className='h-svh'>
       <div className='m-auto flex h-full w-full flex-col items-center justify-center gap-2'>

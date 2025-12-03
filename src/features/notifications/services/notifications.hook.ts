@@ -65,3 +65,17 @@ export const useGetAllNotifications = (
     error: query.error,
   };
 }
+
+export const useGetUnreadCount = (params?: any) => {
+  const query = useFetchData<any>({
+    url: API.notifications.unreadCount,
+    params,
+    enabled: true,
+  });
+
+  return {
+    ...query,
+    data: query.data,
+    error: query.error,
+  };
+}

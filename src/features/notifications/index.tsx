@@ -30,7 +30,8 @@ export default function Notifications() {
         sort: "desc",
         isMobile: false,
         search: undefined,
-        fromUser: undefined
+        fromUser: undefined,
+        showUnreadCount: false,
     });
     const notifications = useGetAllNotifications(pagination);
     const notificationData = notifications?.list ?? [];
