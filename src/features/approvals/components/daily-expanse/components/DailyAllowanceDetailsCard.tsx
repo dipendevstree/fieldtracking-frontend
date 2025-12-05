@@ -217,7 +217,7 @@ export function DailyAllowanceDetailsCard({
     onUpdateExpanseDetails({
       id,
       status,
-      comment: comments[commentId],
+      comment: comments[commentId] ?? "",
     });
   };
 
