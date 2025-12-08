@@ -215,15 +215,16 @@ export default function Livetracking() {
     }
   };
 
+  const userterritoryFilter: FilterConfig = {
+    key: "UserTerritory",
+    type: "select",
+    onChange: handleChangeTerritory,
+    placeholder: "Select User Territory",
+    value: pagination.territoryId,
+    options: territories as Option[],
+  };
+
   const filters: FilterConfig[] = [
-    {
-      key: "UserTerritory",
-      type: "select",
-      onChange: handleChangeTerritory,
-      placeholder: "Select User Territory",
-      value: pagination.territoryId,
-      options: territories as Option[],
-    },
     {
       key: "role",
       type: "select",
@@ -343,7 +344,7 @@ export default function Livetracking() {
     <Main className={cn("flex flex-col p-4")}>
       <GlobalFilterSection
         key="calendar-view-filters"
-        filters={filters}
+        filters={userAuth?.organization?.allowAddUsersBasedOnTerritories ? [userterritoryFilter, ...filters] : filters}
         onCancelPress={() => {
           setSelectedUserId("");
           setPagination({
