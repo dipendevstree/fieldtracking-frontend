@@ -80,18 +80,18 @@ export function NotificationList() {
           size="icon"
           className="hover:bg-accent/20 relative"
         >
-          <IconBell className="!w-7 !h-7" />
-          {unreadCount > 0 && (
+          <IconBell className="!w-7 !h-7" strokeWidth={1.5}/>
+          {/* {unreadCount > 0 && (
             <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 h-4 w-fit rounded-full bg-black text-xs font-medium text-white">
               {unreadCount > 100 ? "99+" : unreadCount}
             </span>
-          )}
+          )} */}
           <span className="sr-only">Notifications</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-100" align="end">
         <DropdownMenuLabel className="flex justify-between mb-2 border-b">
-          Notifications
+          Notifications ({unreadCount})
           <Link to={"/notifications"} onClick={() => setOpen(false)}>
             <span>View All</span>
           </Link>
