@@ -27,6 +27,7 @@ export interface FilterConfig {
   dataRangeClassName?: string;
   searchableSelectClassName?: string;
   disablePastDates?: boolean;
+  disableFutureDates?: boolean;
 }
 
 interface DataTableToolbarProps {
@@ -126,6 +127,7 @@ export function DataTableToolbarCompact({
                   dateRange={filter.dateRangeValue}
                   setDateRange={filter.onDateRangeChange ?? (() => {})}
                   disablePastDates={filter.disablePastDates}
+                  disableFutureDates={filter.disableFutureDates}
                 />
               </div>
             );

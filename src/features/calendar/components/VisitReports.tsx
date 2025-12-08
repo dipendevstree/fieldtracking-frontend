@@ -132,6 +132,7 @@ export default function VisitReports() {
       placeholder: "Select Date Range",
       dateRangeValue: selectedRange,
       onDateRangeChange: handleDateRangeChange,
+      disableFutureDates: true,
       dataRangeClassName: "w-full max-w-xs",
     },
     {

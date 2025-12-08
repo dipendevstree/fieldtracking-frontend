@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/popover";
 import { CalendarIcon, XIcon } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
-import { format, isBefore, startOfDay } from "date-fns";
+import { format, isBefore, isAfter, startOfDay } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +19,7 @@ interface DateRangeFilterProps {
   size?: "sm" | "md" | "lg";
   placeholder?: string;
   disablePastDates?: boolean;
+  disableFutureDates?: boolean;
 }
 
 export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
@@ -29,6 +30,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
   size = "md",
   placeholder = "Pick a date range",
   disablePastDates = false,
+  disableFutureDates = false,
 }) => {
   const sizeClasses = {
     sm: "h-8 text-sm",
@@ -79,11 +81,21 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
               selected={dateRange}
               onSelect={setDateRange}
               numberOfMonths={2}
-              disabled={
-                disablePastDates
-                  ? (date) => isBefore(startOfDay(date), startOfDay(new Date()))
-                  : undefined
-              }
+              disabled={(date) => {
+                if (
+                  disablePastDates &&
+                  isBefore(startOfDay(date), startOfDay(new Date()))
+                ) {
+                  return true;
+                }
+                if (
+                  disableFutureDates &&
+                  isAfter(startOfDay(date), startOfDay(new Date()))
+                ) {
+                  return true;
+                }
+                return false;
+              }}
             />
           </PopoverContent>
         </Popover>
