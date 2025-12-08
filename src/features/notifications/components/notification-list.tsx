@@ -27,7 +27,6 @@ export function NotificationList() {
     limit: DEFAULT_PAGE_SIZE,
     isMobile: false,
     sort: "desc",
-    showUnreadCount: true,
   });
   const notifications = useGetNotifications(pagination);
   const { data: unreadCount } = useGetUnreadCount(pagination);
