@@ -467,7 +467,8 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
           <Card
             className="gap-2 cursor-pointer"
             onClick={() =>
-              navigate({ to: "/user-management", search: { noAdmin: true } })
+              navigate({ to: "/calendar" })
+              // navigate({ to: "/user-management", search: { noAdmin: true } })
             }
           >
             <CardHeader className="flex flex-row items-center justify-between">
