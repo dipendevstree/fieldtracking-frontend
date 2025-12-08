@@ -1,3 +1,4 @@
+import CustomTooltip from "@/components/shared/custom-tooltip";
 import { Badge } from "@/components/ui/badge";
 import { ColumnDef } from "@tanstack/react-table";
 
@@ -34,9 +35,11 @@ export const scheduleColumns: ColumnDef<unknown>[] = [
     accessorKey: "location",
     header: "Location",
     cell: ({ row }) => (
-      <div title={(row.original as any).location}>
+      <CustomTooltip
+        title={(row.original as any).location}
+      >
         {truncateLocation((row.original as any).location)}
-      </div>
+      </CustomTooltip>
     ),
   },
   {
