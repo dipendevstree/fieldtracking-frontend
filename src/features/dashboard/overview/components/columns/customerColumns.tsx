@@ -1,3 +1,4 @@
+import CustomTooltip from "@/components/shared/custom-tooltip";
 import { ColumnDef } from "@tanstack/react-table";
 
 const truncateLocation = (location: string, maxLength: number = 50) => {
@@ -29,7 +30,7 @@ export const customerColumns: ColumnDef<unknown>[] = [
     accessorKey: "streetAddress",
     header: "Location",
     cell: ({ row }) => (
-      <div
+      <CustomTooltip
         title={
           (row.original as any).streetAddress ||
           (row.original as any).adminName ||
@@ -41,7 +42,7 @@ export const customerColumns: ColumnDef<unknown>[] = [
             (row.original as any).adminName ||
             "N/A"
         )}
-      </div>
+      </CustomTooltip>
     ),
   },
   {
