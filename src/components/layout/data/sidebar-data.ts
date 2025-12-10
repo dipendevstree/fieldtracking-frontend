@@ -10,6 +10,9 @@ import {
   ShieldCheck,
   ChartPie,
   FileText,
+  CalendarOff,
+  Clock,
+  Banknote,
 } from "lucide-react";
 import { type SidebarData } from "../types";
 
@@ -142,7 +145,30 @@ export const sidebarData: SidebarData = {
           url: "/reports",
           icon: ChartPie,
           menuKey: "reports",
-        }
+        },
+      ],
+    },
+    {
+      title: "HR Management",
+      items: [
+        {
+          title: "Leave Management",
+          url: "/leave-management",
+          icon: CalendarOff,
+          // menuKey: "leave_management",
+        },
+        {
+          title: "Attendance",
+          url: "/attendance-management",
+          icon: Clock,
+          // menuKey: "attendance_management",
+        },
+        {
+          title: "Payroll",
+          url: "/payroll-management",
+          icon: Banknote,
+          // menuKey: "payroll_management",
+        },
       ],
     },
     {
@@ -378,6 +404,21 @@ export const ROUTE_PERMISSIONS: Record<
     requiredRoles: ["admin"],
     requireAll: false,
   },
+  "/leave-management": {
+    requiredPermissions: ["leave_management.read"],
+    requiredRoles: ["admin"],
+    requireAll: false,
+  },
+  "/attendance-management": {
+    requiredPermissions: ["attendance_management.read"],
+    requiredRoles: ["admin"],
+    requireAll: false,
+  },
+  "/payroll-management": {
+    requiredPermissions: ["payroll_management.read"],
+    requiredRoles: ["admin"],
+    requireAll: false,
+  },
 };
 
 export const VIEW_ROUTE_PERMISSIONS: Record<
@@ -530,6 +571,24 @@ export const VIEW_ROUTE_PERMISSIONS: Record<
   },
   "/user-territory": {
     requiredPermissions: "user-territory",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/leave-management": {
+    requiredPermissions: "leave_management",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/attendance-management": {
+    requiredPermissions: "attendance_management",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/payroll-management": {
+    requiredPermissions: "payroll_management",
     requiredRoles: ["admin"],
     action: "viewOwn",
     requireAll: false,
