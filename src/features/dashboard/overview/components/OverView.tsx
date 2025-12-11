@@ -429,6 +429,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
       dateRangeValue: selectedDateRange,
       onDateRangeChange: setSelectedDateRange,
       dataRangeClassName: "w-full max-w-xs",
+      disableFutureDates: true,
     },
     {
       key: "search",
