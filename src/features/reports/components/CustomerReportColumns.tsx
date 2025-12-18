@@ -47,7 +47,7 @@ export const CustomerReportColumns: ColumnDef<CustomerReportRow>[] = [
     cell: ({ row }) => row.original.completionRate || "0%",
   },
   {
-    header: "Total Visit Duration (min)",
+    header: "Total Visit Duration (Hrs)",
     accessorKey: "totalVisitDuration",
     cell: ({ row }) => row.original.totalVisitDuration || "0",
   },
