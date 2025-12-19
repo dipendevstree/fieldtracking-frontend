@@ -1,0 +1,310 @@
+import { Calendar, momentLocalizer, View, Views } from "react-big-calendar";
+import moment from "moment";
+import "react-big-calendar/lib/css/react-big-calendar.css";
+import { useCallback, useState } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Calendar as CalendarIcon,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const localizer = momentLocalizer(moment);
+
+interface CalendarViewProps {
+  events?: any[];
+  onSelectEvent?: (event: any) => void;
+  onSelectSlot?: (slotInfo: { start: Date; end: Date; action: string }) => void;
+  defaultView?: View;
+  currentMode: "holiday" | "leave";
+  onModeChange: (mode: "holiday" | "leave") => void;
+  date: Date;
+  onNavigate: (date: Date) => void;
+}
+
+export default function CalendarView({
+  events = [],
+  onSelectEvent,
+  onSelectSlot,
+  defaultView = Views.MONTH,
+  currentMode,
+  onModeChange,
+  date,
+  onNavigate,
+}: CalendarViewProps) {
+  const [view, setView] = useState<View>(defaultView);
+
+  const onView = useCallback((newView: View) => setView(newView), []);
+
+  const eventPropGetter = useCallback((event: any) => {
+    const type = event.resource?.type || "National";
+
+    // We use inline styles to ensure we override any default library CSS
+    const style: React.CSSProperties = {
+      borderLeftWidth: "4px",
+      borderLeftStyle: "solid",
+      fontSize: "0.75rem",
+      fontWeight: 600,
+      padding: "2px 6px",
+      borderRadius: "4px",
+      marginBottom: "2px",
+      outline: "none",
+      boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+      cursor: "pointer",
+      color: "#374151", // Default text color
+    };
+
+    switch (type) {
+      case "National":
+        style.borderLeftColor = "#3b82f6"; // blue-500
+        style.backgroundColor = "#eff6ff"; // blue-50
+        style.color = "#1d4ed8"; // blue-700
+        break;
+      case "Regional":
+        style.borderLeftColor = "#a855f7"; // purple-500
+        style.backgroundColor = "#faf5ff"; // purple-50
+        style.color = "#7e22ce"; // purple-700
+        break;
+      case "Festival":
+      case "Optional":
+        style.borderLeftColor = "#22c55e"; // green-500
+        style.backgroundColor = "#f0fdf4"; // green-50
+        style.color = "#15803d"; // green-700
+        break;
+      case "leave":
+        style.borderLeftColor = "#f97316"; // orange-500
+        style.backgroundColor = "#fff7ed"; // orange-50
+        style.color = "#c2410c"; // orange-700
+        break;
+      default:
+        style.borderLeftColor = "#6b7280";
+        style.backgroundColor = "#f3f4f6";
+    }
+
+    return { style };
+  }, []);
+
+  return (
+    <div className="space-y-4">
+      <style>{`
+        /* Header Styling */
+        .rbc-header { background-color: #f8fafc; padding: 12px 0 !important; font-size: 0.85rem; font-weight: 600; color: #64748b; border-bottom: 1px solid #e2e8f0; }
+        
+        /* Grid Borders & Radius */
+        .rbc-month-view { border-radius: 0.75rem; overflow: hidden; border: 1px solid #e2e8f0; }
+        .rbc-month-row { border-top: 1px solid #e2e8f0; }
+        .rbc-day-bg + .rbc-day-bg { border-left: 1px solid #e2e8f0; }
+        .rbc-off-range-bg { background-color: #f9fafb; }
+        
+        /* Highlight Today */
+        .rbc-today { background-color: #eff6ff !important; } 
+        
+        /* 
+           Reset default event styles BUT do NOT use !important on background/border 
+           so that inline styles from eventPropGetter can take effect 
+        */
+        .rbc-event { 
+            background-color: transparent; 
+            border: none; 
+            padding: 0;
+            border-radius: 0;
+        }
+        .rbc-event:focus { outline: none; }
+      `}</style>
+
+      <Calendar
+        localizer={localizer}
+        events={events}
+        startAccessor="start"
+        endAccessor="end"
+        style={{ height: 800 }}
+        view={view}
+        date={date}
+        onNavigate={onNavigate}
+        onView={onView}
+        onSelectEvent={onSelectEvent}
+        onSelectSlot={onSelectSlot}
+        selectable
+        eventPropGetter={eventPropGetter}
+        components={{
+          toolbar: (props) => (
+            <CustomToolbar
+              {...props}
+              currentMode={currentMode}
+              onModeChange={onModeChange}
+            />
+          ),
+          month: {
+            dateHeader: (props) => (
+              <div className="p-2 text-sm font-medium text-gray-500 flex justify-between">
+                <span>{props.label}</span>
+              </div>
+            ),
+          },
+        }}
+        className="bg-white p-6 rounded-lg"
+      />
+
+      {/* Legend */}
+      <div className="flex flex-wrap gap-6 mt-4 justify-center md:justify-start px-6 pb-2">
+        {currentMode === "holiday" ? (
+          <>
+            <LegendItem color="bg-blue-500" label="National Holiday" />
+            <LegendItem color="bg-green-500" label="Festival" />
+            <LegendItem color="bg-purple-500" label="Regional Holiday" />
+            <LegendItem color="bg-orange-300" label="Sunday" />
+          </>
+        ) : (
+          <>
+            <LegendItem color="bg-orange-500" label="My Leave" />
+            <LegendItem color="bg-gray-400" label="Pending Request" />
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const LegendItem = ({ color, label }: { color: string; label: string }) => (
+  <div className="flex items-center gap-2">
+    <span className={cn("w-3 h-3 rounded-full shadow-sm", color)}></span>
+    <span className="text-xs text-gray-600 font-medium">{label}</span>
+  </div>
+);
+
+const CustomToolbar = ({
+  date,
+  onNavigate,
+  label,
+  currentMode,
+  onModeChange,
+}: any) => {
+  const currentDate = moment(date);
+  const goToBack = () => onNavigate("PREV");
+  const goToNext = () => onNavigate("NEXT");
+  const goToToday = () => onNavigate("TODAY");
+  const handleMonthChange = (value: string) =>
+    onNavigate("DATE", currentDate.clone().month(parseInt(value)).toDate());
+  const handleYearChange = (value: string) =>
+    onNavigate("DATE", currentDate.clone().year(parseInt(value)).toDate());
+
+  return (
+    <div className="flex flex-col gap-6 mb-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <CalendarIcon className="h-5 w-5 text-gray-700" />
+            <h2 className="text-lg font-bold text-gray-900">
+              {currentMode === "holiday"
+                ? "Holiday Calendar"
+                : "Leave Calendar"}
+            </h2>
+          </div>
+          <p className="text-sm text-muted-foreground">
+            View upcoming {currentMode === "holiday" ? "holidays" : "leaves"}{" "}
+            for the selected period
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <Select
+            value={currentDate.month().toString()}
+            onValueChange={handleMonthChange}
+          >
+            <SelectTrigger className="w-[140px] bg-white border-slate-200 shadow-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 12 }).map((_, i) => (
+                <SelectItem key={i} value={i.toString()}>
+                  {moment().month(i).format("MMMM")}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={currentDate.year().toString()}
+            onValueChange={handleYearChange}
+          >
+            <SelectTrigger className="w-[100px] bg-white border-slate-200 shadow-sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: 5 }).map((_, i) => {
+                const year = moment().year() - 2 + i;
+                return (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div>
+        <div className="bg-slate-100 p-1 rounded-lg inline-flex items-center">
+          <button
+            onClick={() => onModeChange("holiday")}
+            className={cn(
+              "px-6 py-2 text-sm font-semibold rounded-md transition-all",
+              currentMode === "holiday"
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-500 hover:text-slate-900"
+            )}
+          >
+            Holiday Calendar
+          </button>
+          <button
+            onClick={() => onModeChange("leave")}
+            className={cn(
+              "px-6 py-2 text-sm font-semibold rounded-md transition-all",
+              currentMode === "leave"
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-500 hover:text-slate-900"
+            )}
+          >
+            Leave Calendar
+          </button>
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between mt-2">
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8 border-slate-200 text-slate-500 hover:text-slate-900 bg-white"
+          onClick={goToBack}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <div className="flex items-baseline gap-4">
+          <h2 className="text-xl font-bold text-slate-900">{label}</h2>
+          <button
+            onClick={goToToday}
+            className="text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors"
+          >
+            Today
+          </button>
+        </div>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-8 w-8 border-slate-200 text-slate-500 hover:text-slate-900 bg-white"
+          onClick={goToNext}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+    </div>
+  );
+};
