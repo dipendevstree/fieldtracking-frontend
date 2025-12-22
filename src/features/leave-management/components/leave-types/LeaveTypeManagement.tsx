@@ -24,7 +24,7 @@ import {
   Trash2,
   Pencil,
 } from "lucide-react";
-import { useLeaveStore } from "../store/use-leave-store";
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -47,7 +47,8 @@ import {
 } from "@/components/ui/dialog";
 import { useState } from "react";
 import { toast } from "sonner";
-import { LeaveType, LeaveTypeSchema } from "../data/schema";
+import { useLeaveStore } from "../../store/use-leave-store";
+import { LeaveType, LeaveTypeSchema } from "../../data/schema";
 
 export default function LeaveTypeManagement() {
   const { leaveTypes, addLeaveType, deleteLeaveType, updateLeaveType } =

@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Main } from "@/components/layout/main";
-import HolidayCalendarTemplates from "./components/HolidayCalendarTemplates";
-import LeaveTypeManagement from "./components/LeaveTypeManagement";
-import EmployeeTierManagement from "./components/EmployeeTierManagement";
-import LeaveRulesConfiguration from "./components/LeaveRulesConfiguration";
-import MyLeaveBalance from "./components/MyLeaveBalance";
+import HolidayCalendarTemplates from "./components/holiday-templetes/HolidayCalendarTemplates";
+import EmployeeTierManagement from "./components/employee-tiers/EmployeeTierManagement";
+import LeaveRulesConfiguration from "./components/leave-rules/LeaveRulesConfiguration";
+import MyLeaveBalance from "./components/user-view/MyLeaveBalance";
 import {
   Users,
   Calendar,
@@ -13,6 +12,7 @@ import {
   ShieldCheck,
   CalendarRange,
 } from "lucide-react";
+import LeaveTypeManagement from "./components/leave-types/LeaveTypeManagement";
 
 // Tab Config
 const LEAVE_Tabs = [

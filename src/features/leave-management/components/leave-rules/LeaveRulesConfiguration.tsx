@@ -9,7 +9,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { CheckCircle2, Settings } from "lucide-react";
-import { useLeaveStore } from "../store/use-leave-store";
+import { useLeaveStore } from "../../store/use-leave-store";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { LeaveRulesSchema } from "../data/schema";
+import { LeaveRulesSchema } from "../../data/schema";
 
 export default function LeaveRulesConfiguration() {
   const { leaveRules, updateLeaveRules } = useLeaveStore();

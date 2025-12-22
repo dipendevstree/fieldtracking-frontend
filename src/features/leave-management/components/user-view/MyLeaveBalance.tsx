@@ -2,8 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarIcon, Plus, Trash2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
-import CalendarView from "./CalendarView";
-import { useLeaveStore } from "../store/use-leave-store";
+import CalendarView from "./components/CalendarView";
+import { useLeaveStore } from "../../store/use-leave-store";
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { format, isBefore, startOfDay } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { ApplyLeave, ApplyLeaveSchema, HolidaySchema } from "../data/schema";
+import { ApplyLeave, ApplyLeaveSchema, HolidaySchema } from "../../data/schema";
 import { Textarea } from "@/components/ui/textarea";
 import { SimpleDatePicker } from "@/components/ui/datepicker";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";

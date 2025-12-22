@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useLeaveStore } from "../store/use-leave-store";
+import { useLeaveStore } from "../../store/use-leave-store";
 import {
   Dialog,
   DialogContent,
@@ -35,7 +35,7 @@ import { z } from "zod";
 import { useState } from "react";
 import { toast } from "sonner";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { EmployeeTier, EmployeeTierSchema } from "../data/schema";
+import { EmployeeTier, EmployeeTierSchema } from "../../data/schema";
 
 function TierCard({
   tier,

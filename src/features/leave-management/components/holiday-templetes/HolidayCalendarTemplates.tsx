@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useLeaveStore } from "../store/use-leave-store";
+import { useLeaveStore } from "../../store/use-leave-store";
 import {
   Form,
   FormControl,
@@ -40,7 +40,7 @@ import { cn } from "@/lib/utils";
 import { Calendar } from "@/components/ui/calendar";
 import { z } from "zod";
 import { useState } from "react";
-import { HolidayTemplate, HolidayTemplateSchema } from "../data/schema";
+import { HolidayTemplate, HolidayTemplateSchema } from "../../data/schema";
 
 type HolidayTemplateFormValues = z.infer<typeof HolidayTemplateSchema>;
 
