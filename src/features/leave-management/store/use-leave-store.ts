@@ -47,6 +47,7 @@ interface LeaveState {
   deleteHolidayFromTemplate: (templateId: string, holidayId: string) => void;
 
   updateLeaveRules: (rules: Partial<LeaveRules>) => void;
+  
   addEmployeeTier: (tier: EmployeeTier) => void;
   updateEmployeeTier: (id: string, tier: Partial<EmployeeTier>) => void;
   deleteEmployeeTier: (id: string) => void;

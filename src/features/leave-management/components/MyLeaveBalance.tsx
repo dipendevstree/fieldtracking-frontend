@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarIcon, Plus, Info, Trash2 } from "lucide-react";
+import { CalendarIcon, Plus, Trash2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import CalendarView from "./CalendarView";
 import { useLeaveStore } from "../store/use-leave-store";
@@ -462,9 +462,8 @@ export default function MyLeaveBalance() {
         </CardContent>
       </Card>
 
-      <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-md flex items-start gap-3">
-        <Info className="h-5 w-5 text-blue-600 mt-0.5" />
-        <div className="text-sm text-blue-900">
+      <div className="bg-muted border-l-4 border-blue-500 p-4 rounded-md flex items-start gap-3">
+        <div className="text-sm text-900">
           <span className="font-bold">Note:</span> Leave balances are updated
           quarterly. Your next update will be on{" "}
           <span className="font-bold">January 1, 2026</span>. Click "Apply for

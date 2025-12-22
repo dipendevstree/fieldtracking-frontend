@@ -69,6 +69,7 @@ export const EmployeeTierSchema = z.object({
 
 export type EmployeeTier = z.infer<typeof EmployeeTierSchema> & { id: string };
 
+// --- 5. Apply Leave ---
 export const ApplyLeaveSchema = z.object({
   leaveTypeId: z.string().min(1, "Leave type is required"),
   startDate: z.date({ required_error: "Start date is required" }),
