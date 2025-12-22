@@ -5,13 +5,6 @@ import HolidayCalendarTemplates from "./components/holiday-templetes/HolidayCale
 import EmployeeTierManagement from "./components/employee-tiers/EmployeeTierManagement";
 import LeaveRulesConfiguration from "./components/leave-rules/LeaveRulesConfiguration";
 import MyLeaveBalance from "./components/user-view/MyLeaveBalance";
-import {
-  Users,
-  Calendar,
-  Layers,
-  ShieldCheck,
-  CalendarRange,
-} from "lucide-react";
 import LeaveTypeManagement from "./components/leave-types/LeaveTypeManagement";
 
 // Tab Config
@@ -20,31 +13,26 @@ const LEAVE_Tabs = [
     value: "user-view",
     label: "User View",
     component: MyLeaveBalance,
-    icon: Users,
   },
   {
     value: "leave-types",
     label: "Leave Types",
     component: LeaveTypeManagement,
-    icon: Layers,
   },
   {
     value: "employee-tiers",
     label: "Employee Tiers",
     component: EmployeeTierManagement,
-    icon: ShieldCheck,
   },
   {
     value: "leave-rules",
     label: "Leave Rules",
     component: LeaveRulesConfiguration,
-    icon: CalendarRange,
   },
   {
     value: "holiday-templates",
     label: "Holiday Templates",
     component: HolidayCalendarTemplates,
-    icon: Calendar,
   },
 ] as const;
 
@@ -68,14 +56,12 @@ export default function LeaveManagementPage() {
         <div className="overflow-x-auto pb-2">
           <TabsList className="w-full justify-start h-12 bg-muted/50 p-1">
             {LEAVE_Tabs.map((tab) => {
-              const Icon = tab.icon;
               return (
                 <TabsTrigger
                   key={tab.value}
                   value={tab.value}
                   className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
                 >
-                  <Icon className="h-4 w-4" />
                   {tab.label}
                 </TabsTrigger>
               );

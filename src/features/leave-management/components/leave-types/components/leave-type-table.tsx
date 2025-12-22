@@ -1,0 +1,36 @@
+import { ColumnDef } from "@tanstack/react-table";
+import { CustomDataTable } from "@/components/shared/custom-data-table";
+import { PaginationCallbacks } from "@/components/shared/custom-table-pagination";
+import { leaveTypeColumns } from "./leave-type-columns";
+
+interface Props {
+  data: any[];
+  totalCount: number;
+  loading?: boolean;
+  paginationCallbacks: PaginationCallbacks;
+  currentPage?: number;
+}
+
+const LeaveTypeTable = ({
+  data,
+  totalCount,
+  loading,
+  paginationCallbacks,
+  currentPage,
+}: Props) => {
+  return (
+    <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12">
+      <CustomDataTable
+        paginationCallbacks={paginationCallbacks}
+        loading={loading}
+        data={data}
+        currentPage={currentPage}
+        columns={leaveTypeColumns as ColumnDef<unknown>[]}
+        totalCount={totalCount}
+        key={"leave-types"}
+      />
+    </div>
+  );
+};
+
+export default LeaveTypeTable;

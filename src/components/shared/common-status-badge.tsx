@@ -69,6 +69,16 @@ const statusColors: Record<string, { text: string; bg: string; dot: string }> =
       bg: "bg-red-100",
       dot: "bg-red-500",
     },
+    inactive: {
+      text: "text-gray-600",
+      bg: "bg-gray-100",
+      dot: "bg-gray-500",
+    },
+    active: {
+      text: "text-green-600",
+      bg: "bg-green-100",
+      dot: "bg-green-500",
+    },
   };
 
 function formatStatusTitle(status: string): string {
