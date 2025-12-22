@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar as CalendarIcon, Settings, Plus } from "lucide-react";
 import { useState } from "react";
-import { useLeaveStore } from "../../store/use-leave-store";
+import { useGetAllLeaveTypes } from "@/features/leave-management/services/leave-type.action.hook";
 
 import LeaveTypeTable from "./components/leave-type-table";
 import LeaveTypeActionModal from "./components/leave-type-action-modal";
@@ -10,17 +10,23 @@ import { useLeaveTypeStore } from "../../store/leave-type.store";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 
 export default function LeaveTypeManagement() {
-  const { leaveTypes } = useLeaveStore();
+  const [pagination, setPagination] = useState({
+    page: DEFAULT_PAGE_NUMBER,
+    limit: DEFAULT_PAGE_SIZE,
+  });
+  const {
+    data: leaveTypes = [],
+    totalCount = 0,
+    isLoading,
+  } = useGetAllLeaveTypes({
+    page: pagination.page,
+    limit: pagination.limit,
+  });
   const { setOpen } = useLeaveTypeStore();
 
   const openAddDialog = () => {
     setOpen("add");
   };
-
-  const [pagination, setPagination] = useState({
-    page: DEFAULT_PAGE_NUMBER,
-    limit: DEFAULT_PAGE_SIZE,
-  });
 
   const onPaginationChange = (page: number, pageSize: number) => {
     setPagination((prev) => ({ ...prev, page, limit: pageSize }));
@@ -84,10 +90,11 @@ export default function LeaveTypeManagement() {
 
         <LeaveTypeTable
           data={leaveTypes}
-          totalCount={leaveTypes.length}
-          loading={false}
+          totalCount={totalCount}
+          loading={isLoading}
           currentPage={pagination.page}
           paginationCallbacks={{ onPaginationChange }}
+          defaultPageSize={pagination.limit}
         />
       </div>
     </div>

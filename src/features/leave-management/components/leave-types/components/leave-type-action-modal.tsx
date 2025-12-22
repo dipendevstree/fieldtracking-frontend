@@ -7,30 +7,28 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { z } from "zod";
 import { useLeaveTypeStore } from "@/features/leave-management/store/leave-type.store";
-import { useLeaveStore } from "@/features/leave-management/store/use-leave-store";
+import {
+  useCreateLeaveType,
+  useUpdateLeaveType,
+  useDeleteLeaveType,
+} from "@/features/leave-management/services/leave-type.action.hook";
 import { LeaveTypeSchema } from "@/features/leave-management/data/schema";
 import LeaveTypeActionForm from "./leave-type-action-form";
 
 export function LeaveTypeActionModal() {
   const { open, setOpen, currentRow, setCurrentRow } = useLeaveTypeStore();
-  const { addLeaveType, updateLeaveType, deleteLeaveType } = useLeaveStore();
 
-  const form = useForm<z.infer<typeof LeaveTypeSchema>>({
-    resolver: zodResolver(LeaveTypeSchema) as any,
-    defaultValues: {
-      name: "",
-      balance: 0,
-      allocationPeriod: "yearly",
-      description: "",
-      status: "Active",
-    },
-  });
+  const {
+    mutate: createLeaveType,
+    isSuccess: isCreateSuccess,
+    isError: isCreateError,
+  } = useCreateLeaveType();
 
-  useEffect(() => {
-    if (currentRow && open === "edit") {
-      form.reset(currentRow);
-    }
-  }, [currentRow, open]);
+  const {
+    mutate: updateLeaveTypeMutate,
+    isSuccess: isUpdateSuccess,
+    isError: isUpdateError,
+  } = useUpdateLeaveType(currentRow?.id || "");
 
   const closeModal = () => {
     setOpen(null);
@@ -38,19 +36,59 @@ export function LeaveTypeActionModal() {
     form.reset();
   };
 
+  const { mutate: deleteLeaveType } = useDeleteLeaveType(
+    currentRow?.id || "",
+    () => {
+      closeModal();
+    }
+  );
+  const form = useForm<z.infer<typeof LeaveTypeSchema>>({
+    resolver: zodResolver(LeaveTypeSchema) as any,
+    defaultValues: {
+      name: "",
+      leaveBalance: 0,
+      allocationPeriod: "Yearly",
+      requiresAttachment: false,
+      description: "",
+    },
+  });
+
+  // Reset form when modal mode changes:
+  useEffect(() => {
+    if (open === "add") {
+      form.reset({
+        name: "",
+        leaveBalance: 0,
+        allocationPeriod: "Yearly",
+        requiresAttachment: false,
+        description: "",
+      });
+      setCurrentRow(null);
+    } else if (open === "edit" && currentRow) {
+      form.reset(currentRow);
+    }
+  }, [open, currentRow]);
+
+  // Auto-close on successful create/update
+  useEffect(() => {
+    if (
+      (isCreateSuccess && !isCreateError) ||
+      (isUpdateSuccess && !isUpdateError)
+    ) {
+      closeModal();
+    }
+  }, [isCreateSuccess, isCreateError, isUpdateSuccess, isUpdateError]);
+
   const handleCreate = (values: any) => {
-    addLeaveType(values);
-    closeModal();
+    createLeaveType(values);
   };
 
   const handleUpdate = (values: any) => {
-    if (currentRow?.id) updateLeaveType(currentRow.id, values);
-    closeModal();
+    if (currentRow?.id) updateLeaveTypeMutate(values);
   };
 
   const handleDelete = () => {
-    if (currentRow?.id) deleteLeaveType(currentRow.id);
-    closeModal();
+    if (currentRow?.id) deleteLeaveType();
   };
 
   return (

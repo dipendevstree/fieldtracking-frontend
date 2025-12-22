@@ -1,10 +1,5 @@
 import { create } from "zustand";
-import {
-  EmployeeTier,
-  HolidayTemplate,
-  LeaveRules,
-  LeaveType,
-} from "../data/schema";
+import { EmployeeTier, HolidayTemplate, LeaveRules } from "../data/schema";
 
 export interface LeaveRequest {
   id: string;
@@ -16,16 +11,12 @@ export interface LeaveRequest {
 }
 
 interface LeaveState {
-  leaveTypes: LeaveType[];
   holidayTemplates: HolidayTemplate[];
   leaveRules: LeaveRules;
   employeeTiers: EmployeeTier[];
   leaveRequests: LeaveRequest[];
 
   // Actions
-  addLeaveType: (leave: LeaveType) => void;
-  updateLeaveType: (id: string, leave: Partial<LeaveType>) => void;
-  deleteLeaveType: (id: string) => void;
 
   addLeaveRequest: (request: LeaveRequest) => void;
   updateLeaveRequest: (id: string, request: Partial<LeaveRequest>) => void;
@@ -47,7 +38,7 @@ interface LeaveState {
   deleteHolidayFromTemplate: (templateId: string, holidayId: string) => void;
 
   updateLeaveRules: (rules: Partial<LeaveRules>) => void;
-  
+
   addEmployeeTier: (tier: EmployeeTier) => void;
   updateEmployeeTier: (id: string, tier: Partial<EmployeeTier>) => void;
   deleteEmployeeTier: (id: string) => void;
@@ -96,37 +87,6 @@ const INITIAL_HOLIDAYS: HolidayTemplate[] = [
   },
 ];
 
-const INITIAL_LEAVE_TYPES: LeaveType[] = [
-  {
-    id: "1",
-    name: "Annual Leave",
-    balance: 20,
-    allocationPeriod: "yearly",
-    status: "Active",
-  },
-  {
-    id: "2",
-    name: "Sick Leave",
-    balance: 12,
-    allocationPeriod: "yearly",
-    status: "Active",
-  },
-  {
-    id: "3",
-    name: "Casual Leave",
-    balance: 10,
-    allocationPeriod: "yearly",
-    status: "Active",
-  },
-  {
-    id: "4",
-    name: "Work From Home",
-    balance: 24,
-    allocationPeriod: "yearly",
-    status: "Active",
-  },
-];
-
 const INITIAL_LEAVE_REQUESTS: LeaveRequest[] = [
   {
     id: "lr1",
@@ -139,7 +99,6 @@ const INITIAL_LEAVE_REQUESTS: LeaveRequest[] = [
 ];
 
 export const useLeaveStore = create<LeaveState>((set) => ({
-  leaveTypes: INITIAL_LEAVE_TYPES,
   holidayTemplates: INITIAL_HOLIDAYS,
   leaveRules: {
     sandwich: { enabled: true, maxDays: 2 },
@@ -149,20 +108,7 @@ export const useLeaveStore = create<LeaveState>((set) => ({
   employeeTiers: [],
   leaveRequests: INITIAL_LEAVE_REQUESTS,
 
-  addLeaveType: (leave) =>
-    set((state) => ({
-      leaveTypes: [...state.leaveTypes, { ...leave, id: crypto.randomUUID() }],
-    })),
-  updateLeaveType: (id, leave) =>
-    set((state) => ({
-      leaveTypes: state.leaveTypes.map((t) =>
-        t.id === id ? { ...t, ...leave } : t
-      ),
-    })),
-  deleteLeaveType: (id) =>
-    set((state) => ({
-      leaveTypes: state.leaveTypes.filter((t) => t.id !== id),
-    })),
+  // leave type CRUD now handled via API hooks. Keep store focused on local-only state.
 
   addLeaveRequest: (request) =>
     set((state) => ({

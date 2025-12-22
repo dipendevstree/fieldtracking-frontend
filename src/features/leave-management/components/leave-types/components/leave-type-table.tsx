@@ -9,6 +9,7 @@ interface Props {
   loading?: boolean;
   paginationCallbacks: PaginationCallbacks;
   currentPage?: number;
+  defaultPageSize?: number;
 }
 
 const LeaveTypeTable = ({
@@ -17,6 +18,7 @@ const LeaveTypeTable = ({
   loading,
   paginationCallbacks,
   currentPage,
+  defaultPageSize,
 }: Props) => {
   return (
     <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12">
@@ -28,6 +30,7 @@ const LeaveTypeTable = ({
         columns={leaveTypeColumns as ColumnDef<unknown>[]}
         totalCount={totalCount}
         key={"leave-types"}
+        defaultPageSize={defaultPageSize}
       />
     </div>
   );

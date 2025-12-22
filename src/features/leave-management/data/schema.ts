@@ -2,12 +2,11 @@ import { z } from "zod";
 
 // --- 1. Leave Type ---
 export const LeaveTypeSchema = z.object({
-  id: z.string().optional(),
   name: z.string().min(1, "Leave name is required"),
-  balance: z.coerce.number().min(0, "Balance cannot be negative"),
-  allocationPeriod: z.enum(["yearly", "monthly", "quarterly"]),
+  leaveBalance: z.coerce.number().min(0, "Balance cannot be negative"),
+  allocationPeriod: z.enum(["Yearly", "Monthly", "Quarterly"]),
+  requiresAttachment: z.boolean().default(false),
   description: z.string().optional(),
-  status: z.enum(["Active", "Inactive"]).default("Active"),
 });
 
 export type LeaveType = z.infer<typeof LeaveTypeSchema> & { id: string };

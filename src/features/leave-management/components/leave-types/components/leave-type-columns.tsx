@@ -13,12 +13,12 @@ export const leaveTypeColumns: ColumnDef<any>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: "balance",
+    accessorKey: "leaveBalance",
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Balance (Days)" />
     ),
     cell: ({ row }) => {
-      return <div className="text-sm ">{row.original.balance} </div>;
+      return <div className="text-sm ">{row.original.leaveBalance} </div>;
     },
     enableHiding: false,
     enableSorting: false,

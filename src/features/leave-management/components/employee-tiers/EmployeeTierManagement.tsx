@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useLeaveStore } from "../../store/use-leave-store";
+import { useGetAllLeaveTypes } from "@/features/leave-management/services/leave-type.action.hook";
 import {
   Dialog,
   DialogContent,
@@ -133,8 +134,10 @@ export default function EmployeeTierManagement() {
     addEmployeeTier,
     updateEmployeeTier,
     deleteEmployeeTier,
-    leaveTypes,
   } = useLeaveStore();
+
+  // Fetch leave types from API (fall back to store if API empty)
+  const { data: leaveTypes = [] } = useGetAllLeaveTypes();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -154,9 +157,9 @@ export default function EmployeeTierManagement() {
   const openAddDialog = () => {
     setEditingId(null);
     // Pre-populate with all active leave types for convenience
-    const defaultAllocations = leaveTypes.map((lt) => ({
+    const defaultAllocations = leaveTypes.map((lt: any) => ({
       leaveTypeId: lt.id,
-      days: lt.balance, // Default to the base balance
+      days: lt.leaveBalance, // Default to the base balance
     }));
 
     form.reset({
@@ -246,8 +249,9 @@ export default function EmployeeTierManagement() {
                       {fields.map((field, index) => {
                         // Find the leave type name for label
                         const leaveName =
-                          leaveTypes.find((l) => l.id === field.leaveTypeId)
-                            ?.name || "Unknown Leave";
+                          leaveTypes.find(
+                            (l: any) => l.id === field.leaveTypeId
+                          )?.name || "Unknown Leave";
                         return (
                           <div
                             key={field.id}

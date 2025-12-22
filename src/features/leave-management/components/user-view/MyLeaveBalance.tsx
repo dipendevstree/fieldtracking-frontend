@@ -4,6 +4,7 @@ import { CalendarIcon, Plus, Trash2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import CalendarView from "./components/CalendarView";
 import { useLeaveStore } from "../../store/use-leave-store";
+import { useGetAllLeaveTypes } from "@/features/leave-management/services/leave-type.action.hook";
 import { useState, useEffect } from "react";
 import {
   Dialog,
@@ -113,12 +114,13 @@ export default function MyLeaveBalance() {
     addHolidayToTemplate,
     updateHolidayInTemplate,
     deleteHolidayFromTemplate,
-    leaveTypes,
     leaveRequests,
     addLeaveRequest,
     updateLeaveRequest,
     deleteLeaveRequest,
   } = useLeaveStore();
+
+  const { data: leaveTypes = [] } = useGetAllLeaveTypes();
 
   const [calendarMode, setCalendarMode] = useState<"holiday" | "leave">(
     "holiday"
@@ -274,7 +276,7 @@ export default function MyLeaveBalance() {
     } else {
       return leaveRequests.map((lr) => {
         const typeName =
-          leaveTypes.find((t) => t.id === lr.leaveTypeId)?.name || "Leave";
+          leaveTypes.find((t: any) => t.id === lr.leaveTypeId)?.name || "Leave";
         return {
           id: lr.id,
           title: `${typeName}`,
@@ -380,13 +382,13 @@ export default function MyLeaveBalance() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        {leaveTypes.slice(0, 4).map((lt, index) => (
+        {leaveTypes.slice(0, 4).map((lt: any, index: number) => (
           <LeaveBalanceCard
             key={lt.id}
             title={lt.name}
-            total={lt.balance}
+            total={lt.leaveBalance}
             taken={5}
-            balance={lt.balance - 5}
+            balance={lt.leaveBalance - 5}
             percentage={40}
             headerBg={cardStyles[index % cardStyles.length].headerBg}
             titleColor={cardStyles[index % cardStyles.length].titleColor}
@@ -606,7 +608,7 @@ export default function MyLeaveBalance() {
                     <FormLabel>Leave Type</FormLabel>
                     <FormControl>
                       <SearchableSelect
-                        options={leaveTypes.map((type) => ({
+                        options={leaveTypes.map((type: any) => ({
                           value: type.id,
                           label: type.name,
                         }))}

@@ -23,6 +23,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Props<T> {
   form: any;
@@ -57,7 +60,7 @@ export function LeaveTypeActionForm<T>({
                 name="name"
                 render={({ field }: any) => (
                   <FormItem>
-                    <FormLabel>Leave Type Name</FormLabel>
+                    <FormLabel>Leave Type Name *</FormLabel>
                     <FormControl>
                       <Input placeholder="e.g., Maternity Leave" {...field} />
                     </FormControl>
@@ -67,7 +70,7 @@ export function LeaveTypeActionForm<T>({
               />
               <FormField
                 control={form.control as any}
-                name="balance"
+                name="leaveBalance"
                 render={({ field }: any) => (
                   <FormItem>
                     <FormLabel>Leave Balance (Days)</FormLabel>
@@ -96,11 +99,11 @@ export function LeaveTypeActionForm<T>({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="yearly">
+                      <SelectItem value="Yearly">
                         Yearly (Annual allocation)
                       </SelectItem>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                      <SelectItem value="quarterly">Quarterly</SelectItem>
+                      <SelectItem value="Monthly">Monthly</SelectItem>
+                      <SelectItem value="Quarterly">Quarterly</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -113,13 +116,38 @@ export function LeaveTypeActionForm<T>({
               name="description"
               render={({ field }: any) => (
                 <FormItem>
-                  <FormLabel>Description (Optional)</FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Input
+                    <Textarea
                       placeholder="e.g. For medical emergencies..."
                       {...field}
                     />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control as any}
+              name="requiresAttachment"
+              render={({ field }: any) => (
+                <FormItem>
+                  <div className="flex items-center gap-2">
+                    <FormControl>
+                      <Checkbox
+                        id="requiresAttachment"
+                        checked={!!field.value}
+                        onCheckedChange={(val: boolean) => field.onChange(val)}
+                      />
+                    </FormControl>
+                    <Label
+                      htmlFor="requiresAttachment"
+                      className="cursor-pointer text-sm"
+                    >
+                      Requires Document
+                    </Label>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}

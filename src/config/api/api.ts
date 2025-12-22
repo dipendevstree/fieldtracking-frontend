@@ -140,7 +140,8 @@ const API = {
     list: "expenses/list",
     getById: "expenses",
     expenseReviewAndApproval: "expenseReviewAndApproval/create",
-    expenseReviewAndApprovalMultiple: "expenseReviewAndApproval/create-multiple",
+    expenseReviewAndApprovalMultiple:
+      "expenseReviewAndApproval/create-multiple",
     expenseReviewAndApprovalUpdate: "expenseReviewAndApproval/patch",
     delete: "expenses/delete",
   },
@@ -236,6 +237,12 @@ const API = {
     update: "termsAndConditions/update",
     delete: "termsAndConditions/delete",
     getTerms: "termsAndConditions/active",
+  },
+  leaveType: {
+    list: "leaveType/list",
+    create: "leaveType/create",
+    update: "leaveType/patch",
+    delete: "leaveType/delete",
   },
 };
 
