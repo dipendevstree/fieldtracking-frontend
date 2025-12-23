@@ -61,17 +61,16 @@ export type LeaveRules = z.infer<typeof LeaveRulesSchema>;
 
 // --- 4. Employee Tier ---
 export const EmployeeTierSchema = z.object({
-  id: z.string().optional(),
-  name: z.string().min(1, "Tier name is required"),
-  leaveAllocations: z.array(
+  tierName: z.string().min(1, "Name is required"),
+  leaveConfigs: z.array(
     z.object({
       leaveTypeId: z.string(),
-      days: z.coerce.number().min(0),
+      allowedDays: z.coerce.number().min(0),
     })
   ),
 });
 
-export type EmployeeTier = z.infer<typeof EmployeeTierSchema> & { id: string };
+export type EmployeeTierFormValues = z.infer<typeof EmployeeTierSchema>;
 
 // --- 5. Apply Leave ---
 export const ApplyLeaveSchema = z.object({
