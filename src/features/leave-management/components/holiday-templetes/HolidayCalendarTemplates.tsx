@@ -1,27 +1,30 @@
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { format } from "date-fns";
 import {
   Calendar as CalendarIcon,
   MapPin,
   Users,
-  Plus,
-  Pencil,
-  Trash2,
   CalendarDays,
-  X,
+  Plus,
 } from "lucide-react";
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useLeaveStore } from "../../store/use-leave-store";
+import { IconEdit, IconTrash } from "@tabler/icons-react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -30,94 +33,83 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
-import { z } from "zod";
-import { useState } from "react";
+import MultiSelect from "@/components/ui/MultiSelect";
+import CustomTooltip from "@/components/shared/custom-tooltip";
+import { DeleteModal } from "@/components/shared/common-delete-modal";
+import { useLeaveStore } from "../../store/use-leave-store";
 import { HolidayTemplate, HolidayTemplateSchema } from "../../data/schema";
-
-type HolidayTemplateFormValues = z.infer<typeof HolidayTemplateSchema>;
 
 export default function HolidayCalendarTemplates() {
   const {
     holidayTemplates,
+    holidays: masterHolidays,
     addHolidayTemplate,
     deleteHolidayTemplate,
     updateHolidayTemplate,
   } = useLeaveStore();
-  const [editingId, setEditingId] = useState<string | null>(null);
 
-  const form = useForm<HolidayTemplateFormValues>({
+  const [modalType, setModalType] = useState<"add" | "edit" | "delete" | null>(
+    null
+  );
+  const [selectedRow, setSelectedRow] = useState<HolidayTemplate | null>(null);
+
+  const form = useForm<z.infer<typeof HolidayTemplateSchema>>({
     resolver: zodResolver(HolidayTemplateSchema) as any,
     defaultValues: {
       name: "",
       region: "",
       description: "",
-      holidays: [],
+      holidayIds: [],
     },
   });
 
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "holidays",
-  });
+  const handleOpenAdd = () => {
+    setSelectedRow(null);
+    form.reset({ name: "", region: "", description: "", holidayIds: [] });
+    setModalType("add");
+  };
 
-  // State for new holiday input before adding to array (optional UX choice,
-  // currently implementing direct append for simplicity or we can add empty row)
-  const addEmptyHoliday = () => {
-    append({
-      name: "",
-      date: new Date(),
-      type: "National",
-      id: crypto.randomUUID(),
+  const handleOpenEdit = (template: HolidayTemplate) => {
+    setSelectedRow(template);
+    form.reset({
+      name: template.name,
+      region: template.region,
+      description: template.description || "",
+      holidayIds: template.holidayIds || [],
     });
+    setModalType("edit");
+  };
+
+  const handleOpenDelete = (template: HolidayTemplate) => {
+    setSelectedRow(template);
+    setModalType("delete");
+  };
+
+  const handleClose = () => {
+    setModalType(null);
+    setTimeout(() => setSelectedRow(null), 300);
   };
 
   const onSubmit = (data: z.infer<typeof HolidayTemplateSchema>) => {
-    if (editingId) {
-      updateHolidayTemplate(editingId, data);
-      setEditingId(null);
+    if (modalType === "edit" && selectedRow) {
+      updateHolidayTemplate(selectedRow.id, data);
+      toast.success("Template updated successfully");
     } else {
       addHolidayTemplate({
         ...data,
         id: crypto.randomUUID(),
       } as HolidayTemplate);
+      toast.success("Template created successfully");
     }
-    form.reset({
-      name: "",
-      region: "",
-      description: "",
-      holidays: [],
-    });
+    handleClose();
   };
 
-  const handleEdit = (template: HolidayTemplate) => {
-    setEditingId(template.id);
-    form.reset({
-      name: template.name,
-      region: template.region,
-      description: template.description || "",
-      holidays: template.holidays.map((h) => ({
-        ...h,
-        date: new Date(h.date),
-      })),
-    });
-  };
-
-  const handleCancel = () => {
-    setEditingId(null);
-    form.reset({
-      name: "",
-      region: "",
-      description: "",
-      holidays: [],
-    });
+  const onConfirmDelete = () => {
+    if (selectedRow) {
+      deleteHolidayTemplate(selectedRow.id);
+      toast.success("Template deleted successfully");
+      handleClose();
+    }
   };
 
   return (
@@ -154,166 +146,19 @@ export default function HolidayCalendarTemplates() {
             </p>
           </CardContent>
         </Card>
-        {/* ... similar stats ... */}
       </div>
 
-      {/* Create Template Form */}
-      <Card className="border-blue-100 bg-blue-50/20">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {editingId ? (
-              <Pencil className="h-4 w-4" />
-            ) : (
-              <Plus className="h-4 w-4" />
-            )}
-            {editingId
-              ? "Edit Holiday Calendar Template"
-              : "Create Holiday Calendar Template"}
-          </CardTitle>
-          <CardDescription>
-            Define holidays for specific regions
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control as any}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Template Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Gujarat Region" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control as any}
-                  name="region"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Region / Category</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Gujarat" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <FormField
-                control={form.control as any}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Description..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+      {/* Action Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+          Holiday Templates
+        </h2>
+        <Button onClick={handleOpenAdd}>
+          <Plus className="mr-2 h-4 w-4" /> Add Holiday Template
+        </Button>
+      </div>
 
-              {/* Holidays Field Array */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center">
-                  <Label>Holidays List</Label>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addEmptyHoliday}
-                  >
-                    + Add Holiday
-                  </Button>
-                </div>
-                <div className="space-y-2">
-                  {fields.map((field, index) => (
-                    <div key={field.id} className="flex gap-2 items-start">
-                      <FormField
-                        control={form.control as any}
-                        name={`holidays.${index}.name`}
-                        render={({ field }) => (
-                          <FormItem className="flex-1">
-                            <FormControl>
-                              <Input placeholder="Holiday Name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={form.control as any}
-                        name={`holidays.${index}.date`}
-                        render={({ field }) => (
-                          <FormItem className="flex-none w-[200px]">
-                            <Popover>
-                              <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant={"outline"}
-                                    className={cn(
-                                      "w-full pl-3 text-left font-normal",
-                                      !field.value && "text-muted-foreground"
-                                    )}
-                                  >
-                                    {field.value ? (
-                                      format(field.value, "PPP")
-                                    ) : (
-                                      <span>Pick a date</span>
-                                    )}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                  </Button>
-                                </FormControl>
-                              </PopoverTrigger>
-                              <PopoverContent
-                                className="w-auto p-0"
-                                align="start"
-                              >
-                                <Calendar
-                                  mode="single"
-                                  selected={field.value}
-                                  onSelect={field.onChange}
-                                  initialFocus
-                                />
-                              </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => remove(index)}
-                      >
-                        <X className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex gap-2">
-                <Button type="submit">
-                  {editingId ? "Update Template" : "Save Template"}
-                </Button>
-                <Button type="button" variant="outline" onClick={handleCancel}>
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-
-      {/* Existing Templates List */}
+      {/* Templates Grid/List */}
       <div className="space-y-4">
         {holidayTemplates.map((template) => (
           <Card key={template.id}>
@@ -333,33 +178,165 @@ export default function HolidayCalendarTemplates() {
                     </Badge>
                     <Badge variant="secondary" className="font-normal">
                       <CalendarIcon className="h-3 w-3 mr-1" />{" "}
-                      {template.holidays.length} holidays
+                      {template.holidayIds?.length || 0} holidays
                     </Badge>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8"
-                    onClick={() => handleEdit(template)}
-                  >
-                    <Pencil className="h-3 w-3 mr-2" /> Edit
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 text-red-600 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => deleteHolidayTemplate(template.id)}
-                  >
-                    <Trash2 className="h-3 w-3 mr-2" /> Delete
-                  </Button>
+                <div className="flex items-center space-x-2">
+                  <CustomTooltip title="Edit">
+                    <Button
+                      variant="ghost"
+                      className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
+                      onClick={() => handleOpenEdit(template)}
+                    >
+                      <IconEdit size={16} />
+                    </Button>
+                  </CustomTooltip>
+
+                  <CustomTooltip title="Delete">
+                    <Button
+                      variant="ghost"
+                      className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                      onClick={() => handleOpenDelete(template)}
+                    >
+                      <IconTrash size={16} />
+                    </Button>
+                  </CustomTooltip>
                 </div>
               </div>
             </CardContent>
           </Card>
         ))}
+
+        {holidayTemplates.length === 0 && (
+          <Card>
+            <CardContent className="text-center py-10">
+              <div className="text-lg font-semibold">
+                No holiday templates yet
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                Create a holiday template to group holidays by region.
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
+
+      {/* --- MODALS --- */}
+
+      {/* 1. Add/Edit Dialog */}
+      <Dialog
+        open={modalType === "add" || modalType === "edit"}
+        onOpenChange={(open) => !open && handleClose()}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {modalType === "edit"
+                ? "Edit Holiday Template"
+                : "Create Holiday Template"}
+            </DialogTitle>
+            <DialogDescription>
+              Define holidays for specific regions or categories.
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Template Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Gujarat Region" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="region"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Region</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g., Gujarat" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Description..." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {masterHolidays && masterHolidays.length > 0 && (
+                <div className="space-y-2">
+                  <Label>Choose Holidays</Label>
+                  <FormField
+                    control={form.control}
+                    name="holidayIds"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <MultiSelect
+                            options={masterHolidays.map((h: any) => ({
+                              value: h.id,
+                              label: `${h.name} (${format(new Date(h.date), "PPP")})`,
+                            }))}
+                            value={field.value || []}
+                            onChange={field.onChange}
+                            placeholder="Select holidays"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="text-xs text-muted-foreground">
+                    {form.watch("holidayIds")?.length || 0} holidays selected
+                  </div>
+                </div>
+              )}
+
+              <DialogFooter>
+                <Button variant="outline" type="button" onClick={handleClose}>
+                  Cancel
+                </Button>
+                <Button type="submit">
+                  {modalType === "edit" ? "Update Template" : "Save Template"}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* 2. Delete Modal */}
+      {modalType === "delete" && selectedRow && (
+        <DeleteModal
+          open={modalType === "delete"}
+          onOpenChange={(val) => !val && handleClose()}
+          currentRow={selectedRow}
+          onDelete={onConfirmDelete}
+          itemName="Holiday Template"
+          itemIdentifier="name"
+        />
+      )}
     </div>
   );
 }

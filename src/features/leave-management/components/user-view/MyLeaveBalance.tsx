@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarIcon, Plus, Trash2 } from "lucide-react";
+import { CalendarIcon, Plus } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import CalendarView from "./components/CalendarView";
 import { useLeaveStore } from "../../store/use-leave-store";
@@ -33,6 +33,7 @@ import { ApplyLeave, ApplyLeaveSchema, HolidaySchema } from "../../data/schema";
 import { Textarea } from "@/components/ui/textarea";
 import { SimpleDatePicker } from "@/components/ui/datepicker";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import MultiSelect from "@/components/ui/MultiSelect";
 import { DateRangeFilter } from "@/features/reports/components/DateRangeFilter";
 
 function LeaveBalanceCard({
@@ -109,11 +110,14 @@ function LeaveBalanceCard({
 
 export default function MyLeaveBalance() {
   const {
+    holidays,
     holidayTemplates,
     addHolidayTemplate,
     addHolidayToTemplate,
-    updateHolidayInTemplate,
     deleteHolidayFromTemplate,
+    addHoliday,
+    updateHoliday,
+    deleteHoliday,
     leaveRequests,
     addLeaveRequest,
     updateLeaveRequest,
@@ -138,7 +142,12 @@ export default function MyLeaveBalance() {
   });
   const holidayForm = useForm<z.infer<typeof HolidaySchema>>({
     resolver: zodResolver(HolidaySchema) as any,
-    defaultValues: { name: "", date: new Date(), type: "National" },
+    defaultValues: {
+      name: "",
+      date: new Date(),
+      type: "National",
+      holidayTemplateId: [],
+    },
   });
 
   const onApplyLeaveSubmit = (data: ApplyLeave) => {
@@ -173,22 +182,72 @@ export default function MyLeaveBalance() {
   };
 
   const onHolidaySubmit = (data: z.infer<typeof HolidaySchema>) => {
-    const templateId = holidayTemplates[0]?.id || "default";
+    const selectedTemplates = data.holidayTemplateId ?? [];
+
     if (editingHolidayId) {
-      updateHolidayInTemplate(templateId, editingHolidayId, data);
+      // Update holiday details in top-level list
+      updateHoliday(editingHolidayId, {
+        name: data.name,
+        date: data.date,
+        type: data.type,
+        holidayTemplateId: selectedTemplates,
+      });
+
+      // Find templates that currently contain the holiday
+      const templatesContaining = holidayTemplates.filter((t) =>
+        t.holidayIds.includes(editingHolidayId)
+      );
+
+      // For templates where holiday exists but is no longer selected -> remove
+      templatesContaining.forEach((t) => {
+        if (!selectedTemplates.includes(t.id)) {
+          deleteHolidayFromTemplate(t.id, editingHolidayId);
+        }
+      });
+
+      // For selected templates -> add reference if not present
+      selectedTemplates.forEach((tid) => {
+        const contains = holidayTemplates
+          .find((t) => t.id === tid)
+          ?.holidayIds.includes(editingHolidayId);
+        if (!contains) {
+          addHolidayToTemplate(tid, editingHolidayId);
+        }
+      });
+
       toast.success("Holiday updated");
     } else {
-      if (holidayTemplates.length === 0) {
-        addHolidayTemplate({
-          id: templateId,
-          name: "General",
-          region: "National",
-          description: "Default",
-          holidays: [{ ...data, id: crypto.randomUUID() }],
-        });
+      // New holiday: create top-level holiday and attach to selected templates
+      const newId = crypto.randomUUID();
+      const newHoliday = {
+        id: newId,
+        name: data.name,
+        date: data.date,
+        type: data.type,
+        holidayTemplateId: selectedTemplates,
+      };
+
+      addHoliday(newHoliday as any);
+
+      if (selectedTemplates.length === 0) {
+        const templateId = holidayTemplates[0]?.id || "default";
+        if (holidayTemplates.length === 0) {
+          addHolidayTemplate({
+            id: templateId,
+            name: "General",
+            region: "National",
+            description: "Default",
+            holidayIds: [newId],
+          });
+        } else {
+          addHolidayToTemplate(templateId, newId);
+        }
       } else {
-        addHolidayToTemplate(templateId, data);
+        selectedTemplates.forEach((tid) => {
+          addHolidayToTemplate(tid, newId);
+        });
       }
+
       toast.success("Holiday added");
     }
     setIsHolidayDialogOpen(false);
@@ -196,8 +255,7 @@ export default function MyLeaveBalance() {
 
   const handleDeleteHoliday = () => {
     if (editingHolidayId) {
-      const templateId = holidayTemplates[0]?.id || "default";
-      deleteHolidayFromTemplate(templateId, editingHolidayId);
+      deleteHoliday(editingHolidayId);
       toast.success("Holiday deleted");
       setIsHolidayDialogOpen(false);
     }
@@ -217,7 +275,12 @@ export default function MyLeaveBalance() {
 
   const openHolidayDialog = (date: Date) => {
     setEditingHolidayId(null);
-    holidayForm.reset({ name: "", date: date, type: "National" });
+    holidayForm.reset({
+      name: "",
+      date: date,
+      type: "National",
+      holidayTemplateId: [],
+    });
     setIsHolidayDialogOpen(true);
   };
 
@@ -242,10 +305,15 @@ export default function MyLeaveBalance() {
   const handleEventSelect = (event: any) => {
     if (calendarMode === "holiday") {
       setEditingHolidayId(event.id);
+      // determine which templates currently contain this holiday
+      const containingTemplateIds = holidayTemplates
+        .filter((t) => t.holidayIds.includes(event.id))
+        .map((t) => t.id);
       holidayForm.reset({
         name: event.title,
         date: event.start,
         type: event.resource.originalData.type || "National",
+        holidayTemplateId: containingTemplateIds,
       });
       setIsHolidayDialogOpen(true);
     } else {
@@ -263,16 +331,14 @@ export default function MyLeaveBalance() {
 
   const getCalendarEvents = () => {
     if (calendarMode === "holiday") {
-      return holidayTemplates.flatMap((t) =>
-        t.holidays.map((h: any) => ({
-          id: h.id,
-          title: h.name,
-          start: new Date(h.date),
-          end: new Date(h.date),
-          allDay: true,
-          resource: { type: h.type || "National", originalData: h },
-        }))
-      );
+      return holidays.map((h) => ({
+        id: h.id,
+        title: h.name,
+        start: new Date(h.date),
+        end: new Date(h.date),
+        allDay: true,
+        resource: { type: h.type || "National", originalData: h },
+      }));
     } else {
       return leaveRequests.map((lr) => {
         const typeName =
@@ -557,6 +623,31 @@ export default function MyLeaveBalance() {
                   </FormItem>
                 )}
               />
+              <div>
+                <FormLabel>Select Templates</FormLabel>
+                <div className="pt-2">
+                  <FormField
+                    control={holidayForm.control as any}
+                    name="holidayTemplateId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <MultiSelect
+                            options={holidayTemplates.map((t) => ({
+                              value: t.id,
+                              label: t.name,
+                            }))}
+                            value={field.value || []}
+                            onChange={(vals) => field.onChange(vals)}
+                            placeholder="Select templates"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
               <DialogFooter className="gap-2">
                 {editingHolidayId && (
                   <Button
@@ -682,7 +773,7 @@ export default function MyLeaveBalance() {
                     variant="destructive"
                     onClick={handleDeleteLeave}
                   >
-                    <Trash2 className="w-4 h-4 mr-2" /> Delete
+                    Delete
                   </Button>
                 )}
                 <Button type="submit">Submit Request</Button>

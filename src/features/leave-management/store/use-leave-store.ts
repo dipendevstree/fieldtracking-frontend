@@ -1,5 +1,10 @@
 import { create } from "zustand";
-import { EmployeeTier, HolidayTemplate, LeaveRules } from "../data/schema";
+import {
+  EmployeeTier,
+  HolidayTemplate,
+  LeaveRules,
+  Holiday,
+} from "../data/schema";
 
 export interface LeaveRequest {
   id: string;
@@ -11,6 +16,7 @@ export interface LeaveRequest {
 }
 
 interface LeaveState {
+  holidays: Holiday[];
   holidayTemplates: HolidayTemplate[];
   leaveRules: LeaveRules;
   employeeTiers: EmployeeTier[];
@@ -29,12 +35,12 @@ interface LeaveState {
   ) => void;
   deleteHolidayTemplate: (id: string) => void;
 
-  addHolidayToTemplate: (templateId: string, holiday: any) => void;
-  updateHolidayInTemplate: (
-    templateId: string,
-    holidayId: string,
-    data: any
-  ) => void;
+  addHoliday: (holiday: Holiday) => void;
+  updateHoliday: (id: string, holiday: Partial<Holiday>) => void;
+  deleteHoliday: (id: string) => void;
+
+  addHolidayToTemplate: (templateId: string, holidayId: string) => void;
+  updateHolidayInTemplate: (templateId: string, holidayId: string) => void;
   deleteHolidayFromTemplate: (templateId: string, holidayId: string) => void;
 
   updateLeaveRules: (rules: Partial<LeaveRules>) => void;
@@ -46,44 +52,51 @@ interface LeaveState {
 
 const currentYear = new Date().getFullYear();
 
-const INITIAL_HOLIDAYS: HolidayTemplate[] = [
+const INITIAL_HOLIDAY_LIST: Holiday[] = [
+  {
+    id: "h1",
+    name: "New Year's Day",
+    date: new Date(currentYear, 0, 1),
+    type: "National",
+    holidayTemplateId: ["default-template"],
+  },
+  {
+    id: "h2",
+    name: "Republic Day",
+    date: new Date(currentYear, 0, 26),
+    type: "National",
+    holidayTemplateId: ["default-template"],
+  },
+  {
+    id: "h3",
+    name: "Independence Day",
+    date: new Date(currentYear, 7, 15),
+    type: "National",
+    holidayTemplateId: ["default-template"],
+  },
+  {
+    id: "h4",
+    name: "Gandhi Jayanti",
+    date: new Date(currentYear, 9, 2),
+    type: "National",
+    holidayTemplateId: ["default-template"],
+  },
+  {
+    id: "h5",
+    name: "Christmas",
+    date: new Date(currentYear, 11, 25),
+    type: "National",
+    holidayTemplateId: ["default-template"],
+  },
+];
+
+const INITIAL_HOLIDAY_TEMPLATES: HolidayTemplate[] = [
   {
     id: "default-template",
     name: "General Holidays",
     region: "National",
     description: "Standard list",
-    holidays: [
-      {
-        id: "h1",
-        name: "New Year's Day",
-        date: new Date(currentYear, 0, 1),
-        type: "National",
-      },
-      {
-        id: "h2",
-        name: "Republic Day",
-        date: new Date(currentYear, 0, 26),
-        type: "National",
-      },
-      {
-        id: "h3",
-        name: "Independence Day",
-        date: new Date(currentYear, 7, 15),
-        type: "National",
-      },
-      {
-        id: "h4",
-        name: "Gandhi Jayanti",
-        date: new Date(currentYear, 9, 2),
-        type: "National",
-      },
-      {
-        id: "h5",
-        name: "Christmas",
-        date: new Date(currentYear, 11, 25),
-        type: "National",
-      },
-    ],
+    holidayIds: INITIAL_HOLIDAY_LIST.map((h) => h.id),
   },
 ];
 
@@ -99,7 +112,8 @@ const INITIAL_LEAVE_REQUESTS: LeaveRequest[] = [
 ];
 
 export const useLeaveStore = create<LeaveState>((set) => ({
-  holidayTemplates: INITIAL_HOLIDAYS,
+  holidays: INITIAL_HOLIDAY_LIST,
+  holidayTemplates: INITIAL_HOLIDAY_TEMPLATES,
   leaveRules: {
     sandwich: { enabled: true, maxDays: 2 },
     carryForward: { enabled: true, maxDays: 10, expiryMonths: 3 },
@@ -145,39 +159,44 @@ export const useLeaveStore = create<LeaveState>((set) => ({
     set((state) => ({
       holidayTemplates: state.holidayTemplates.filter((t) => t.id !== id),
     })),
+  addHoliday: (holiday) =>
+    set((state) => ({
+      holidays: [...state.holidays, { ...holiday, id: crypto.randomUUID() }],
+    })),
+  updateHoliday: (id, holiday) =>
+    set((state) => ({
+      holidays: state.holidays.map((h) =>
+        h.id === id ? { ...h, ...holiday } : h
+      ),
+    })),
+  deleteHoliday: (id) =>
+    set((state) => ({
+      holidays: state.holidays.filter((h) => h.id !== id),
+      holidayTemplates: state.holidayTemplates.map((t) => ({
+        ...t,
+        holidayIds: t.holidayIds.filter((hid) => hid !== id),
+      })),
+    })),
 
-  addHolidayToTemplate: (templateId, holiday) =>
+  addHolidayToTemplate: (templateId, holidayId) =>
     set((state) => ({
       holidayTemplates: state.holidayTemplates.map((t) =>
         t.id === templateId
-          ? {
-              ...t,
-              holidays: [
-                ...t.holidays,
-                { ...holiday, id: crypto.randomUUID() },
-              ],
-            }
+          ? { ...t, holidayIds: [...t.holidayIds, holidayId] }
           : t
       ),
     })),
-  updateHolidayInTemplate: (templateId, holidayId, data) =>
-    set((state) => ({
-      holidayTemplates: state.holidayTemplates.map((t) =>
-        t.id === templateId
-          ? {
-              ...t,
-              holidays: t.holidays.map((h) =>
-                h.id === holidayId ? { ...h, ...data } : h
-              ),
-            }
-          : t
-      ),
-    })),
+  updateHolidayInTemplate: () =>
+    // templates now only reference ids; updating holiday details is handled by updateHoliday
+    set((state) => ({ ...state })),
   deleteHolidayFromTemplate: (templateId, holidayId) =>
     set((state) => ({
       holidayTemplates: state.holidayTemplates.map((t) =>
         t.id === templateId
-          ? { ...t, holidays: t.holidays.filter((h) => h.id !== holidayId) }
+          ? {
+              ...t,
+              holidayIds: t.holidayIds.filter((hid) => hid !== holidayId),
+            }
           : t
       ),
     })),
