@@ -2,8 +2,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar as CalendarIcon, Settings, Plus } from "lucide-react";
 import { useState } from "react";
-import { useGetAllLeaveTypes } from "@/features/leave-management/services/leave-type.action.hook";
-
+import {
+  useGetAllLeaveTypes,
+  useGetLeaveTypeStats,
+} from "@/features/leave-management/services/leave-type.action.hook";
 import LeaveTypeTable from "./components/leave-type-table";
 import LeaveTypeActionModal from "./components/leave-type-action-modal";
 import { useLeaveTypeStore } from "../../store/leave-type.store";
@@ -14,6 +16,7 @@ export default function LeaveTypeManagement() {
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
   });
+
   const {
     data: leaveTypes = [],
     totalCount = 0,
@@ -22,6 +25,10 @@ export default function LeaveTypeManagement() {
     page: pagination.page,
     limit: pagination.limit,
   });
+
+  // Fetch Stats
+  const { data: leaveTypeStats } = useGetLeaveTypeStats();
+
   const { setOpen } = useLeaveTypeStore();
 
   const openAddDialog = () => {
@@ -36,6 +43,7 @@ export default function LeaveTypeManagement() {
     <div className="space-y-6">
       {/* Header Stats */}
       <div className="grid gap-4 md:grid-cols-3">
+        {/* Total Leave Types Card */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -44,12 +52,16 @@ export default function LeaveTypeManagement() {
             <Settings className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{leaveTypes.length} types</div>
+            <div className="text-2xl font-bold">
+              {leaveTypeStats?.totalLeaveTypes || 0}
+            </div>
             <p className="text-xs text-muted-foreground">
               Currently configured
             </p>
           </CardContent>
         </Card>
+
+        {/* Active Employees Card */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -58,12 +70,16 @@ export default function LeaveTypeManagement() {
             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">156</div>
+            <div className="text-2xl font-bold">
+              {leaveTypeStats?.activeEmployees || 0}
+            </div>
             <p className="text-xs text-muted-foreground">
               With leave allocations
             </p>
           </CardContent>
         </Card>
+
+        {/* Total Allocation Card */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -72,13 +88,15 @@ export default function LeaveTypeManagement() {
             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">66 days</div>
+            <div className="text-2xl font-bold">
+              {leaveTypeStats?.totalAllocation || 0} days
+            </div>
             <p className="text-xs text-muted-foreground">Per employee/year</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Configured Leave Types Table (Prominent now) */}
+      {/* Configured Leave Types Table */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Configured Leave Types</h3>

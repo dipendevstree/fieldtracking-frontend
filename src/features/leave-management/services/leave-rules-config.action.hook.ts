@@ -1,23 +1,15 @@
 import API from "@/config/api/api";
 import useFetchData from "@/hooks/use-fetch-data";
 import usePutData from "@/hooks/use-put-data";
+import { IListParams } from "../types";
 
-const LEAVE_TYPE_QUERY = API.leaveRulesConfig.list;
 
-export interface IListParams1 {
-  [key: string]: unknown;
-}
-export interface IListParams {
-  sort?: string;
-  limit: number;
-  page: number;
-  [key: string]: unknown;
-}
+const LEAVE_RULES_CONFIG_QUERY = API.leaveRulesConfig.list;
 
 export const useUpdateLeaveRulesConfig = (onSuccess?: () => void) => {
   return usePutData({
     url: `${API.leaveRulesConfig.update}`,
-    refetchQueries: [LEAVE_TYPE_QUERY],
+    refetchQueries: [LEAVE_RULES_CONFIG_QUERY],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
@@ -31,7 +23,7 @@ export const useGetLeaveRulesConfig = (
   options?: { enabled?: boolean }
 ) => {
   const query = useFetchData<any>({
-    url: LEAVE_TYPE_QUERY,
+    url: LEAVE_RULES_CONFIG_QUERY,
     params,
     enabled: options?.enabled ?? true,
   });

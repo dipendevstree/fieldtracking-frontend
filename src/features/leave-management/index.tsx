@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Main } from "@/components/layout/main";
-import HolidayCalendarTemplates from "./components/holiday-templetes/HolidayCalendarTemplates";
+import HolidayCalendarTemplates from "./components/holiday-templates/HolidayTemplates";
 import EmployeeTierManagement from "./components/employee-tiers/EmployeeTierManagement";
 import LeaveRulesConfiguration from "./components/leave-rules/LeaveRulesConfiguration";
 import MyLeaveBalance from "./components/user-view/MyLeaveBalance";

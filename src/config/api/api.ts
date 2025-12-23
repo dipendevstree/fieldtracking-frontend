@@ -243,10 +243,31 @@ const API = {
     create: "leaveType/create",
     update: "leaveType/patch",
     delete: "leaveType/delete",
+    stats: "leaveType/stats",
   },
   leaveRulesConfig: {
     list: "leave-rule-configuration",
     update: "leave-rule-configuration",
+  },
+  holidayTemplate: {
+    list: "holiday-template/list",
+    create: "holiday-template/create",
+    update: "holiday-template/patch",
+    delete: "holiday-template/delete",
+    stats: "holiday-template/stats",
+  },
+  holiday: {
+    list: "holiday/list",
+    create: "holiday/create",
+    update: "holiday/patch",
+    delete: "holiday/delete",
+  },
+  employeeTier: {
+    list: "user-tiers/list",
+    create: "user-tiers/create",
+    update: "user-tiers/patch",
+    delete: "user-tiers/delete",
+    stats: "user-tiers/stats",
   },
 };
 
