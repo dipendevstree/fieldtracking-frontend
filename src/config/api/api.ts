@@ -269,6 +269,14 @@ const API = {
     delete: "user-tiers/delete",
     stats: "user-tiers/stats",
   },
+  leave: {
+    list: "leave/list",
+    myLeave: "leave/my",
+    create: "leave/create",
+    update: "leave/patch",
+    delete: "leave/delete",
+    stats: "leave/stats",
+  },
 };
 
 Object.freeze(API);

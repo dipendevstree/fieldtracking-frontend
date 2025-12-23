@@ -89,5 +89,10 @@ export enum VISIT_STATUS {
 
 export enum LIMIT_TYPE {
   OVER_LIMIT = "Over Limit",
-  UNDER_LIMIT = "Under Limit"
+  UNDER_LIMIT = "Under Limit",
+}
+
+export enum LEAVE_HALF_DAY_TYPE {
+  FIRST_HALF = "first_half",
+  SECOND_HALF = "second_half",
 }
