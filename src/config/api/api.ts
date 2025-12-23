@@ -244,6 +244,10 @@ const API = {
     update: "leaveType/patch",
     delete: "leaveType/delete",
   },
+  leaveRulesConfig: {
+    list: "leave-rule-configuration",
+    update: "leave-rule-configuration",
+  },
 };
 
 Object.freeze(API);

@@ -304,9 +304,17 @@ export default function EmployeeTierManagement() {
       {/* Tiers List */}
       <div className="space-y-6">
         {employeeTiers.length === 0 ? (
-          <div className="text-center py-10 text-muted-foreground">
-            No employee tiers configured. Click "Add Employee Tier" to start.
-          </div>
+          <Card>
+            <CardContent className="text-center py-10">
+              <div className="text-lg font-semibold">
+                No employee tiers configured yet.
+              </div>
+              <p className="text-sm text-muted-foreground mt-2">
+                No employee tiers configured. Click "Add Employee Tier" to
+                start.
+              </p>
+            </CardContent>
+          </Card>
         ) : (
           employeeTiers.map((tier) => (
             <TierCard

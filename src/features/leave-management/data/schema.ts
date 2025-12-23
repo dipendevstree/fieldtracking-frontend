@@ -37,20 +37,24 @@ export type HolidayTemplate = z.infer<typeof HolidayTemplateSchema> & {
 
 // --- 3. Leave Rules ---
 export const LeaveRulesSchema = z.object({
-  sandwich: z.object({
-    enabled: z.boolean(),
-    maxDays: z.coerce.number().min(0),
-  }),
-  carryForward: z.object({
-    enabled: z.boolean(),
-    maxDays: z.coerce.number().min(0),
-    expiryMonths: z.coerce.number().min(0),
-  }),
-  encashment: z.object({
-    enabled: z.boolean(),
-    maxDays: z.coerce.number().min(0),
-    minBalance: z.coerce.number().min(0),
-  }),
+  // Sandwich
+  sandwichLeaveRuleActive: z.boolean(),
+  maximumSandwichLeaveDays: z.coerce.number().min(0),
+
+  // Cross Leave
+  crossLeaveDeductionRuleActive: z.boolean(),
+  primaryLeaveType: z.string().optional(),
+  secondaryLeaveTypes: z.array(z.string()).optional(),
+
+  // Carry Forward
+  leaveCarryForwardRuleActive: z.boolean(),
+  maximumCarryForwardDays: z.coerce.number().min(0),
+  carryForwardExpiryMonths: z.coerce.number().min(0),
+
+  // Encashment
+  leaveEncashmentRuleActive: z.boolean(),
+  maximumEncashmentDays: z.coerce.number().min(0),
+  minimumEncashmentDaysRequired: z.coerce.number().min(0),
 });
 
 export type LeaveRules = z.infer<typeof LeaveRulesSchema>;

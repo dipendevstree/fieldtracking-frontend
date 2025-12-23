@@ -1,10 +1,5 @@
 import { create } from "zustand";
-import {
-  EmployeeTier,
-  HolidayTemplate,
-  LeaveRules,
-  Holiday,
-} from "../data/schema";
+import { EmployeeTier, HolidayTemplate, Holiday } from "../data/schema";
 
 export interface LeaveRequest {
   id: string;
@@ -18,7 +13,6 @@ export interface LeaveRequest {
 interface LeaveState {
   holidays: Holiday[];
   holidayTemplates: HolidayTemplate[];
-  leaveRules: LeaveRules;
   employeeTiers: EmployeeTier[];
   leaveRequests: LeaveRequest[];
 
@@ -42,8 +36,6 @@ interface LeaveState {
   addHolidayToTemplate: (templateId: string, holidayId: string) => void;
   updateHolidayInTemplate: (templateId: string, holidayId: string) => void;
   deleteHolidayFromTemplate: (templateId: string, holidayId: string) => void;
-
-  updateLeaveRules: (rules: Partial<LeaveRules>) => void;
 
   addEmployeeTier: (tier: EmployeeTier) => void;
   updateEmployeeTier: (id: string, tier: Partial<EmployeeTier>) => void;
@@ -201,8 +193,6 @@ export const useLeaveStore = create<LeaveState>((set) => ({
       ),
     })),
 
-  updateLeaveRules: (rules) =>
-    set((state) => ({ leaveRules: { ...state.leaveRules, ...rules } })),
   addEmployeeTier: (tier) =>
     set((state) => ({
       employeeTiers: [
