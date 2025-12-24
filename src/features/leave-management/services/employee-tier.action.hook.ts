@@ -76,3 +76,17 @@ export const useGetEmployeeTierStats = (options?: { enabled?: boolean }) => {
     error: query.error,
   };
 };
+
+export const useAssignEmployeeOnTier = (id: string, onSuccess?: () => void) => {
+  return usePatchData({
+    url: `${API.employeeTier.assign}/${id}`,
+    refetchQueries: [EMPLOYEE_TIER_STATS_QUERY],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};
+
+

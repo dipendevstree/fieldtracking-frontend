@@ -8,8 +8,8 @@ const USEALLUSERS_QUERY = 'users-list'
 
 export interface IListParams {
   sort?: string
-  limit: number
-  page: number
+  limit?: number
+  page?: number
   [key: string]: unknown
 }
 

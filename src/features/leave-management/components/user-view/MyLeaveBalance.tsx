@@ -680,7 +680,12 @@ export default function MyLeaveBalance() {
                     }
                   }
 
-                  const isOneDay = isSameDay(evt.start, evt.end);
+                  const displayEnd =
+                    evt.allDay && evt.end.getTime() > evt.start.getTime()
+                      ? addDays(evt.end, -1)
+                      : evt.end;
+
+                  const isOneDay = isSameDay(evt.start, displayEnd);
 
                   return (
                     <div
@@ -719,7 +724,7 @@ export default function MyLeaveBalance() {
                             {isOneDay
                               ? format(evt.start, "PPP")
                               : `${format(evt.start, "PPP")} - ${format(
-                                  evt.end,
+                                  displayEnd,
                                   "PPP"
                                 )}`}
                           </span>

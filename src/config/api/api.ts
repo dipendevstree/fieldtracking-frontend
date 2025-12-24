@@ -269,6 +269,7 @@ const API = {
     update: "user-tiers/patch",
     delete: "user-tiers/delete",
     stats: "user-tiers/stats",
+    assign: "user-tiers/assign",
   },
   leave: {
     byId: "leave",
