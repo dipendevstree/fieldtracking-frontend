@@ -19,6 +19,85 @@ import {
 
 const localizer = momentLocalizer(moment);
 
+// Base style common to all events
+const BASE_EVENT_STYLE: React.CSSProperties = {
+  borderLeftWidth: "4px",
+  borderLeftStyle: "solid",
+  fontSize: "0.75rem",
+  fontWeight: 600,
+  padding: "2px 6px",
+  borderRadius: "4px",
+  marginBottom: "2px",
+  outline: "none",
+  boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+  cursor: "pointer",
+  color: "#374151",
+};
+
+// Configuration for Leave Statuses
+const LEAVE_STYLES: Record<string, React.CSSProperties> = {
+  approved: {
+    borderLeftColor: "#22c55e", // green-500
+    backgroundColor: "#f0fdf4", // green-50
+    color: "#15803d", // green-700
+  },
+  rejected: {
+    borderLeftColor: "#ef4444", // red-500
+    backgroundColor: "#fef2f2", // red-50
+    color: "#b91c1c", // red-700
+    textDecoration: "line-through",
+  },
+  pending: {
+    borderLeftColor: "#f97316", // orange-500
+    backgroundColor: "#fff7ed", // orange-50
+    color: "#c2410c", // orange-700
+  },
+  default: {
+    borderLeftColor: "#f97316",
+    backgroundColor: "#fff7ed",
+    color: "#c2410c",
+  },
+};
+
+// Configuration for Holiday Types
+const HOLIDAY_STYLES: Record<string, React.CSSProperties> = {
+  National: {
+    borderLeftColor: "#3b82f6", // blue-500
+    backgroundColor: "#eff6ff", // blue-50
+    color: "#1d4ed8", // blue-700
+  },
+  "National Holiday": {
+    borderLeftColor: "#3b82f6",
+    backgroundColor: "#eff6ff",
+    color: "#1d4ed8",
+  },
+  Regional: {
+    borderLeftColor: "#a855f7", // purple-500
+    backgroundColor: "#faf5ff", // purple-50
+    color: "#7e22ce", // purple-700
+  },
+  "Regional Holiday": {
+    borderLeftColor: "#a855f7",
+    backgroundColor: "#faf5ff",
+    color: "#7e22ce",
+  },
+  Festival: {
+    borderLeftColor: "#10b981", // emerald-500
+    backgroundColor: "#ecfdf5", // emerald-50
+    color: "#047857", // emerald-700
+  },
+  Optional: {
+    borderLeftColor: "#10b981",
+    backgroundColor: "#ecfdf5",
+    color: "#047857",
+  },
+  default: {
+    borderLeftColor: "#6b7280", // gray-500
+    backgroundColor: "#f3f4f6", // gray-100
+    color: "#374151", // gray-700
+  },
+};
+
 interface CalendarViewProps {
   events?: any[];
   onSelectEvent?: (event: any) => void;
@@ -44,52 +123,24 @@ export default function CalendarView({
 
   const onView = useCallback((newView: View) => setView(newView), []);
 
+  // Optimized Event Prop Getter
   const eventPropGetter = useCallback((event: any) => {
     const type = event.resource?.type || "National";
+    const status = event.resource?.originalData?.status?.toLowerCase();
 
-    // We use inline styles to ensure we override any default library CSS
-    const style: React.CSSProperties = {
-      borderLeftWidth: "4px",
-      borderLeftStyle: "solid",
-      fontSize: "0.75rem",
-      fontWeight: 600,
-      padding: "2px 6px",
-      borderRadius: "4px",
-      marginBottom: "2px",
-      outline: "none",
-      boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)",
-      cursor: "pointer",
-      color: "#374151", // Default text color
-    };
+    let specificStyle = {};
 
-    switch (type) {
-      case "National":
-        style.borderLeftColor = "#3b82f6"; // blue-500
-        style.backgroundColor = "#eff6ff"; // blue-50
-        style.color = "#1d4ed8"; // blue-700
-        break;
-      case "Regional":
-        style.borderLeftColor = "#a855f7"; // purple-500
-        style.backgroundColor = "#faf5ff"; // purple-50
-        style.color = "#7e22ce"; // purple-700
-        break;
-      case "Festival":
-      case "Optional":
-        style.borderLeftColor = "#22c55e"; // green-500
-        style.backgroundColor = "#f0fdf4"; // green-50
-        style.color = "#15803d"; // green-700
-        break;
-      case "leave":
-        style.borderLeftColor = "#f97316"; // orange-500
-        style.backgroundColor = "#fff7ed"; // orange-50
-        style.color = "#c2410c"; // orange-700
-        break;
-      default:
-        style.borderLeftColor = "#6b7280";
-        style.backgroundColor = "#f3f4f6";
+    if (type === "leave") {
+      // Lookup leave style by status, fallback to pending/default
+      specificStyle = LEAVE_STYLES[status] || LEAVE_STYLES.default;
+    } else {
+      // Lookup holiday style by type, fallback to default
+      specificStyle = HOLIDAY_STYLES[type] || HOLIDAY_STYLES.default;
     }
 
-    return { style };
+    return {
+      style: { ...BASE_EVENT_STYLE, ...specificStyle },
+    };
   }, []);
 
   return (
@@ -107,10 +158,7 @@ export default function CalendarView({
         /* Highlight Today */
         .rbc-today { background-color: #eff6ff !important; } 
         
-        /* 
-           Reset default event styles BUT do NOT use !important on background/border 
-           so that inline styles from eventPropGetter can take effect 
-        */
+        /* Reset default event styles */
         .rbc-event { 
             background-color: transparent; 
             border: none; 
@@ -158,14 +206,14 @@ export default function CalendarView({
         {currentMode === "holiday" ? (
           <>
             <LegendItem color="bg-blue-500" label="National Holiday" />
-            <LegendItem color="bg-green-500" label="Festival" />
+            <LegendItem color="bg-emerald-500" label="Festival/Optional" />
             <LegendItem color="bg-purple-500" label="Regional Holiday" />
-            <LegendItem color="bg-orange-300" label="Sunday" />
           </>
         ) : (
           <>
-            <LegendItem color="bg-orange-500" label="My Leave" />
-            <LegendItem color="bg-gray-400" label="Pending Request" />
+            <LegendItem color="bg-green-500" label="Approved" />
+            <LegendItem color="bg-orange-500" label="Pending" />
+            <LegendItem color="bg-red-500" label="Rejected" />
           </>
         )}
       </div>

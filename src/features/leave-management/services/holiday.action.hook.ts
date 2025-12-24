@@ -3,7 +3,6 @@ import useDeleteData from "@/hooks/use-delete-data";
 import useFetchData from "@/hooks/use-fetch-data";
 import usePatchData from "@/hooks/use-patch-data";
 import usePostData from "@/hooks/use-post-data";
-import { IListParams } from "../types";
 
 const HOLIDAY_QUERY = API.holiday.list;
 
@@ -44,7 +43,7 @@ export const useDeleteHoliday = (id: string, onSuccess?: () => void) => {
 };
 
 export const useGetAllHolidays = (
-  params?: IListParams,
+  params?: any,
   options?: { enabled?: boolean }
 ) => {
   const query = useFetchData<any>({

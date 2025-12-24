@@ -270,6 +270,7 @@ const API = {
     stats: "user-tiers/stats",
   },
   leave: {
+    ById: "leave",
     list: "leave/list",
     myLeave: "leave/my",
     create: "leave/create",
