@@ -257,6 +257,7 @@ const API = {
     stats: "holiday-template/stats",
   },
   holiday: {
+    byId: "holiday",
     list: "holiday/list",
     create: "holiday/create",
     update: "holiday/patch",
@@ -270,7 +271,7 @@ const API = {
     stats: "user-tiers/stats",
   },
   leave: {
-    ById: "leave",
+    byId: "leave",
     list: "leave/list",
     myLeave: "leave/my",
     create: "leave/create",

@@ -42,6 +42,23 @@ export const useDeleteHoliday = (id: string, onSuccess?: () => void) => {
   });
 };
 
+export const useGetHolidayById = (
+  id?: any,
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<any>({
+    url: `${API.holiday.byId}/${id}`,
+    enabled: !!id && (options?.enabled ?? true),
+  });
+
+  return {
+    ...query,
+    data: query.data,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
 export const useGetAllHolidays = (
   params?: any,
   options?: { enabled?: boolean }

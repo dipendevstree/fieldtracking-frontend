@@ -46,7 +46,7 @@ export const useDeleteLeave = (id: string, onSuccess?: () => void) => {
 
 export const useGetLeaveById = (id?: any, options?: { enabled?: boolean }) => {
   const query = useFetchData<any>({
-    url: `${API.leave.ById}/${id}`,
+    url: `${API.leave.byId}/${id}`,
     enabled: !!id && (options?.enabled ?? true),
   });
 
