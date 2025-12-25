@@ -34,67 +34,52 @@ const BASE_EVENT_STYLE: React.CSSProperties = {
   color: "#374151",
 };
 
-// Configuration for Leave Statuses
-const LEAVE_STYLES: Record<string, React.CSSProperties> = {
+// --- STYLE CONFIGURATION ---
+const EVENT_STYLES: Record<string, React.CSSProperties> = {
+  // Leaves
   approved: {
-    borderLeftColor: "#22c55e", // green-500
-    backgroundColor: "#f0fdf4", // green-50
-    color: "#15803d", // green-700
-  },
-  rejected: {
-    borderLeftColor: "#ef4444", // red-500
-    backgroundColor: "#fef2f2", // red-50
-    color: "#b91c1c", // red-700
-    textDecoration: "line-through",
+    borderLeftColor: "#22c55e",
+    backgroundColor: "#f0fdf4",
+    color: "#15803d",
   },
   pending: {
-    borderLeftColor: "#f97316", // orange-500
-    backgroundColor: "#fff7ed", // orange-50
-    color: "#c2410c", // orange-700
-  },
-  default: {
     borderLeftColor: "#f97316",
     backgroundColor: "#fff7ed",
     color: "#c2410c",
   },
-};
-
-// Configuration for Holiday Types
-const HOLIDAY_STYLES: Record<string, React.CSSProperties> = {
-  National: {
-    borderLeftColor: "#3b82f6", // blue-500
-    backgroundColor: "#eff6ff", // blue-50
-    color: "#1d4ed8", // blue-700
+  rejected: {
+    borderLeftColor: "#ef4444",
+    backgroundColor: "#fef2f2",
+    color: "#b91c1c",
   },
-  "National Holiday": {
+
+  // Holidays
+  national: {
     borderLeftColor: "#3b82f6",
     backgroundColor: "#eff6ff",
     color: "#1d4ed8",
   },
-  Regional: {
-    borderLeftColor: "#a855f7", // purple-500
-    backgroundColor: "#faf5ff", // purple-50
-    color: "#7e22ce", // purple-700
-  },
-  "Regional Holiday": {
+  festival: {
     borderLeftColor: "#a855f7",
     backgroundColor: "#faf5ff",
     color: "#7e22ce",
   },
-  Festival: {
-    borderLeftColor: "#10b981", // emerald-500
-    backgroundColor: "#ecfdf5", // emerald-50
-    color: "#047857", // emerald-700
+  regional: {
+    borderLeftColor: "#a855f7", // Purple
+    backgroundColor: "#faf5ff",
+    color: "#7e22ce",
   },
-  Optional: {
+  optional: {
     borderLeftColor: "#10b981",
     backgroundColor: "#ecfdf5",
     color: "#047857",
   },
+
+  // Default
   default: {
-    borderLeftColor: "#6b7280", // gray-500
-    backgroundColor: "#f3f4f6", // gray-100
-    color: "#374151", // gray-700
+    borderLeftColor: "#6b7280",
+    backgroundColor: "#f3f4f6",
+    color: "#374151",
   },
 };
 
@@ -125,21 +110,17 @@ export default function CalendarView({
 
   // Optimized Event Prop Getter
   const eventPropGetter = useCallback((event: any) => {
-    const type = event.resource?.type || "National";
-    const status = event.resource?.originalData?.status?.toLowerCase();
+    // Look up based on passed status key
+    const statusKey = event.resource?.statusKey?.toLowerCase();
 
-    let specificStyle = {};
-
-    if (type === "leave") {
-      // Lookup leave style by status, fallback to pending/default
-      specificStyle = LEAVE_STYLES[status] || LEAVE_STYLES.default;
-    } else {
-      // Lookup holiday style by type, fallback to default
-      specificStyle = HOLIDAY_STYLES[type] || HOLIDAY_STYLES.default;
-    }
+    // Find style or fallback
+    const specificStyle = EVENT_STYLES[statusKey] || EVENT_STYLES.default;
 
     return {
-      style: { ...BASE_EVENT_STYLE, ...specificStyle },
+      style: {
+        ...BASE_EVENT_STYLE,
+        ...specificStyle,
+      },
     };
   }, []);
 
@@ -202,13 +183,13 @@ export default function CalendarView({
         className="bg-white p-6 rounded-lg"
       />
 
-      {/* Legend */}
+      {/* Legend - Manual for Simplicity */}
       <div className="flex flex-wrap gap-6 mt-4 justify-center md:justify-start px-6 pb-2">
         {currentMode === "holiday" ? (
           <>
             <LegendItem color="bg-blue-500" label="National Holiday" />
-            <LegendItem color="bg-emerald-500" label="Festival/Optional" />
-            <LegendItem color="bg-purple-500" label="Regional Holiday" />
+            <LegendItem color="bg-purple-500" label="Festival/Regional" />
+            <LegendItem color="bg-emerald-500" label="Optional" />
           </>
         ) : (
           <>

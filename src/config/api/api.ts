@@ -281,6 +281,12 @@ const API = {
     delete: "leave/delete",
     stats: "leave/stats",
   },
+  holidayType: {
+    list: "holidayType/list",
+    create: "holidayType/create",
+    update: "holidayType/patch",
+    delete: "holidayType/delete",
+  },
 };
 
 Object.freeze(API);
