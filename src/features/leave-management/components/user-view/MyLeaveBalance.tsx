@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   format,
-  differenceInBusinessDays,
   addDays,
   startOfMonth,
   endOfMonth,
@@ -213,18 +212,10 @@ export default function MyLeaveBalance() {
   const [existingFiles, setExistingFiles] = useState<string[]>([]);
 
   // Services
-  const { data: leaveTypesResponse } = useGetAllLeaveTypes();
+  const { data: leaveTypesList } = useGetAllLeaveTypes();
   const { data: stats } = useGetLeaveStats();
-  const { data: myLeavesResponse } = useGetMyLeaves();
+  const { data: myLeavesList } = useGetMyLeaves();
   const { data: holidays = [] } = useGetAllHolidays();
-
-  const leaveTypesList = useMemo(() => {
-    if (!leaveTypesResponse) return [];
-    if (leaveTypesResponse.data?.list) return leaveTypesResponse.data.list;
-    if (leaveTypesResponse.list) return leaveTypesResponse.list;
-    if (Array.isArray(leaveTypesResponse)) return leaveTypesResponse;
-    return [];
-  }, [leaveTypesResponse]);
 
   const { data: singleLeaveData, isLoading: isLoadingSingleLeave } =
     useGetLeaveById(editingLeaveId || "");
@@ -237,34 +228,17 @@ export default function MyLeaveBalance() {
     [viewDate]
   );
 
-  const { data: allLeavesResponse, isLoading: isLoadingLeaves } =
+  const { data: allLeavesList, isLoading: isLoadingLeaves } =
     useGetAllLeaves(calendarQueryParams);
 
-  const normalizeList = (response: any) => {
-    if (!response) return [];
-    if (Array.isArray(response)) return response;
-    if (response.list && Array.isArray(response.list)) return response.list;
-    return [];
-  };
-
-  const myLeavesList = useMemo(
-    () => normalizeList(myLeavesResponse),
-    [myLeavesResponse]
-  );
-  const allLeavesList = useMemo(
-    () => normalizeList(allLeavesResponse),
-    [allLeavesResponse]
-  );
-
-  // CHANGED: Logic to determine ID based on delete object or edit ID
-  const targetLeaveId = leaveToDelete?.id || editingLeaveId || "";
+  const deleteLeaveId = leaveToDelete?.id || "";
 
   // Mutations
   const createLeaveMutation = useCreateLeave(() => setIsApplyLeaveOpen(false));
   const updateLeaveMutation = useUpdateLeave(editingLeaveId || "", () =>
     setIsApplyLeaveOpen(false)
   );
-  const deleteLeaveMutation = useDeleteLeave(targetLeaveId, () => {
+  const deleteLeaveMutation = useDeleteLeave(deleteLeaveId, () => {
     setIsApplyLeaveOpen(false);
     setIsDeleteDialogOpen(false);
     setLeaveToDelete(null); // Reset
@@ -287,7 +261,7 @@ export default function MyLeaveBalance() {
   const watchLeaveTypeId = applyLeaveForm.watch("leaveTypeId");
 
   const requiresAttachment = useMemo(() => {
-    const selected = leaveTypesList.find(
+    const selected = leaveTypesList?.find(
       (lt: any) => lt.id === watchLeaveTypeId
     );
     return selected?.requiresAttachment === true;
@@ -425,7 +399,7 @@ export default function MyLeaveBalance() {
   };
 
   const confirmDelete = () => {
-    if (targetLeaveId) {
+    if (deleteLeaveId) {
       deleteLeaveMutation.mutate();
     }
   };
@@ -496,28 +470,6 @@ export default function MyLeaveBalance() {
       );
     })
     .sort((a: any, b: any) => a.start.getTime() - b.start.getTime());
-
-  const calculateTaken = (typeId: string) => {
-    if (stats?.leaveBalances) {
-      const statItem = stats.leaveBalances.find(
-        (b: any) => b.leaveTypeId === typeId
-      );
-      if (statItem) return statItem.taken;
-    }
-    return myLeavesList
-      .filter(
-        (l: any) =>
-          l.leaveTypeId === typeId && l.status?.toLowerCase() === "approved"
-      )
-      .reduce((acc: number, curr: any) => {
-        if (curr.halfDay) return acc + 0.5;
-        const days = differenceInBusinessDays(
-          addDays(new Date(curr.endDate), 1),
-          new Date(curr.startDate)
-        );
-        return acc + Math.max(days, 1);
-      }, 0);
-  };
 
   const cardStyles = [
     { headerBg: "bg-blue-50", titleColor: "text-blue-700" },
@@ -592,24 +544,29 @@ export default function MyLeaveBalance() {
       </div>
 
       {/* Leave Type Cards */}
+
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {leaveTypesList.map((lt: any, index: number) => {
-          const total = lt.leaveBalance ? Number(lt.leaveBalance) : 0;
-          const taken = calculateTaken(lt.id);
-          const balance = total - taken;
-          const percentage = total > 0 ? Math.round((taken / total) * 100) : 0;
+        {myLeavesList?.map((item: any, index: number) => {
+          const bal = item.leaveBalance || {};
+          const earned = parseFloat(bal.earned || "0");
+          const carryForward = parseFloat(bal.carryForward || "0");
+          const used = parseFloat(bal.used || "0");
+          const remaining = parseFloat(bal.remaining || "0");
+          const totalQuota = earned + carryForward;
+          const percentage =
+            totalQuota > 0 ? Math.round((used / totalQuota) * 100) : 0;
 
           return (
             <LeaveBalanceCard
-              key={lt.id}
-              title={lt.name}
-              total={total}
-              taken={taken}
-              balance={balance > 0 ? balance : 0}
+              key={item.id}
+              title={item.name}
+              total={totalQuota}
+              taken={used}
+              balance={remaining}
               percentage={percentage}
               headerBg={cardStyles[index % cardStyles.length].headerBg}
               titleColor={cardStyles[index % cardStyles.length].titleColor}
-              onApply={() => openApplyLeaveDialog(lt.id)}
+              onApply={() => openApplyLeaveDialog(item.id)}
             />
           );
         })}

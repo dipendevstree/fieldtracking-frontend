@@ -68,6 +68,7 @@ export const EmployeeTierSchema = z.object({
       allowedDays: z.coerce.number().min(0),
     })
   ),
+  userIds: z.array(z.string()).default([]),
 });
 
 export type EmployeeTierFormValues = z.infer<typeof EmployeeTierSchema>;

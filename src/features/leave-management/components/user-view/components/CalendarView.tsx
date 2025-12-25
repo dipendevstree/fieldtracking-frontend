@@ -178,6 +178,7 @@ export default function CalendarView({
         date={date}
         onNavigate={onNavigate}
         onView={onView}
+        popup
         onSelectEvent={onSelectEvent}
         onSelectSlot={onSelectSlot}
         selectable
