@@ -67,6 +67,73 @@ import {
 import { ApplyLeaveFormValues, getApplyLeaveSchema } from "../../data/schema";
 import { LEAVE_HALF_DAY_TYPE } from "@/data/app.data";
 
+// --- 1. CONFIGURATION  ---
+const STYLE_CONFIG: Record<string, { badge: string; dot: string }> = {
+  // Leaves
+  approved: {
+    badge: "bg-green-50 text-green-700 border-green-200",
+    dot: "bg-green-500",
+  },
+  rejected: {
+    badge: "bg-red-50 text-red-700 border-red-200",
+    dot: "bg-red-500",
+  },
+  pending: {
+    badge: "bg-orange-50 text-orange-700 border-orange-200",
+    dot: "bg-orange-500",
+  },
+
+  // Holidays
+  national: {
+    badge: "bg-blue-50 text-blue-700 border-blue-200",
+    dot: "bg-blue-500",
+  },
+  festival: {
+    badge: "bg-purple-50 text-purple-700 border-purple-200",
+    dot: "bg-purple-500",
+  },
+  regional: {
+    badge: "bg-cyan-50 text-cyan-700 border-cyan-200",
+    dot: "bg-cyan-500",
+  },
+
+  // Weekend (Sunday)
+  weekend: {
+    badge: "bg-orange-50 text-orange-700 border-orange-200",
+    dot: "bg-orange-500",
+  },
+
+  // Fallbacks
+  optional: {
+    badge: "bg-slate-100 text-slate-600 border-slate-200",
+    dot: "bg-slate-400",
+  },
+  default: {
+    badge: "bg-slate-100 text-slate-700 border-slate-200",
+    dot: "bg-slate-400",
+  },
+};
+
+// --- 2. LOGIC HELPER ---
+const getEventStyleKey = (isHoliday: boolean, text: string, date: Date) => {
+  const lowerText = text?.toLowerCase() || "";
+
+  if (!isHoliday) {
+    return STYLE_CONFIG[lowerText] ? lowerText : "default";
+  }
+
+  // Holiday Priorities (Order matters!)
+  if (lowerText.includes("national")) return "national";
+  if (lowerText.includes("festival")) return "festival";
+  if (lowerText.includes("regional")) return "regional";
+  if (lowerText.includes("optional")) return "optional";
+
+  // Check for Weekend (Sunday is day 0) OR explicit "Sunday" text
+  if (date.getDay() === 0 || lowerText.includes("sunday")) return "weekend";
+
+  return "national"; // Default fallback for generic holidays
+};
+
 // --- HELPER COMPONENT: Attachment Item ---
 const AttachmentItem = ({
   name,
@@ -215,7 +282,6 @@ export default function MyLeaveBalance() {
   const { data: leaveTypesList = [] } = useGetAllLeaveTypes();
   const { data: stats } = useGetLeaveStats();
   const { data: myLeavesList } = useGetMyLeaves();
-  const { data: holidays = [] } = useGetAllHolidays();
 
   const { data: singleLeaveData, isLoading: isLoadingSingleLeave } =
     useGetLeaveById(editingLeaveId || "");
@@ -228,6 +294,7 @@ export default function MyLeaveBalance() {
     [viewDate]
   );
 
+  const { data: holidays = [] } = useGetAllHolidays(calendarQueryParams);
   const { data: allLeavesList, isLoading: isLoadingLeaves } =
     useGetAllLeaves(calendarQueryParams);
 
@@ -272,7 +339,7 @@ export default function MyLeaveBalance() {
     watch,
     setValue,
     reset,
-    formState: { errors },
+    formState: { errors, isSubmitted },
   } = applyLeaveForm;
 
   const watchStartDate = watch("startDate");
@@ -286,11 +353,12 @@ export default function MyLeaveBalance() {
   // --- 2. SYNC FILES TO FORM ---
   useEffect(() => {
     const combinedFiles = [...existingFiles, ...selectedFiles];
+    const shouldValidate = isSubmitted || combinedFiles.length > 0;
     setValue("attachments", combinedFiles, {
-      shouldValidate: true,
+      shouldValidate: shouldValidate,
       shouldDirty: true,
     });
-  }, [selectedFiles, existingFiles, setValue]);
+  }, [selectedFiles, existingFiles, setValue, isSubmitted]);
 
   const [dateRange, setDateRange] = useState<{
     from: Date | undefined;
@@ -475,6 +543,7 @@ export default function MyLeaveBalance() {
     { headerBg: "bg-purple-50", titleColor: "text-purple-700" },
     { headerBg: "bg-orange-50", titleColor: "text-orange-700" },
   ];
+
   const isSaving =
     createLeaveMutation.isPending || updateLeaveMutation.isPending;
 
@@ -601,23 +670,16 @@ export default function MyLeaveBalance() {
                     ? evt.resource.type
                     : originalData.status;
 
-                  // Badge Color Logic
-                  let badgeClass = "bg-slate-100 text-slate-700";
-                  if (isHoliday) {
-                    badgeClass = "bg-blue-50 text-blue-700 border-blue-200";
-                    if (statusText?.toLowerCase()?.includes("optional"))
-                      badgeClass =
-                        "bg-purple-50 text-purple-700 border-purple-200";
-                  } else {
-                    if (statusText === "approved")
-                      badgeClass =
-                        "bg-green-50 text-green-700 border-green-200";
-                    else if (statusText === "rejected")
-                      badgeClass = "bg-red-50 text-red-700 border-red-200";
-                    else if (statusText === "pending")
-                      badgeClass =
-                        "bg-orange-50 text-orange-700 border-orange-200";
-                  }
+                  // 1. Get the Key
+                  const styleKey = getEventStyleKey(
+                    isHoliday,
+                    statusText,
+                    evt.start
+                  );
+
+                  // 2. Get the Styles (with safety fallback)
+                  const styles =
+                    STYLE_CONFIG[styleKey] || STYLE_CONFIG["default"];
 
                   return (
                     <div
@@ -625,23 +687,21 @@ export default function MyLeaveBalance() {
                       className="flex items-center justify-between bg-white border border-slate-100 p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow group"
                     >
                       <div className="flex items-center gap-3 flex-1 cursor-default">
+                        {/* Dynamic Dot */}
                         <div
-                          className={cn(
-                            "w-1 h-9 rounded-full",
-                            isHoliday
-                              ? "bg-blue-500"
-                              : evt.resource.color || "bg-orange-500"
-                          )}
+                          className={cn("w-1 h-9 rounded-full", styles.dot)}
                         />
+
                         <div>
                           <div className="flex items-center gap-2">
                             <p className="text-sm font-medium text-slate-800">
                               {evt.title}
                             </p>
+                            {/* Dynamic Badge */}
                             <span
                               className={cn(
                                 "text-[10px] px-2 py-[1px] rounded-full border uppercase font-semibold tracking-wide",
-                                badgeClass
+                                styles.badge
                               )}
                             >
                               {statusText}
@@ -650,15 +710,13 @@ export default function MyLeaveBalance() {
                           <span className="text-xs text-slate-500">
                             {isSameDay(evt.start, evt.end)
                               ? format(evt.start, "PPP")
-                              : `${format(evt.start, "PPP")} - ${format(
-                                  evt.end,
-                                  "PPP"
-                                )}`}
+                              : `${format(evt.start, "PPP")} - ${format(evt.end, "PPP")}`}
                           </span>
                         </div>
                       </div>
 
-                      {calendarMode === "leave" &&
+                      {/* Buttons (Only show for pending leaves) */}
+                      {!isHoliday &&
                         statusText?.toLowerCase() === "pending" && (
                           <div className="flex items-center space-x-2">
                             <CustomTooltip title="Edit">
@@ -743,7 +801,7 @@ export default function MyLeaveBalance() {
                   name="leaveTypeId"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Leave Type</FormLabel>
+                      <FormLabel>Leave Type *</FormLabel>
                       <FormControl>
                         <SearchableSelect
                           options={leaveTypesList.map((type: any) => ({
@@ -763,7 +821,7 @@ export default function MyLeaveBalance() {
                   <FormLabel
                     className={cn(errors.startDate && "text-destructive")}
                   >
-                    Duration <span className="text-destructive">*</span>
+                    Duration *
                   </FormLabel>
                   <DateRangeFilter
                     dateRange={dateRange}
@@ -857,7 +915,7 @@ export default function MyLeaveBalance() {
                   name="reason"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Reason</FormLabel>
+                      <FormLabel>Reason *</FormLabel>
                       <FormControl>
                         <Textarea placeholder="Enter reason..." {...field} />
                       </FormControl>
