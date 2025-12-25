@@ -73,26 +73,40 @@ export const EmployeeTierSchema = z.object({
 
 export type EmployeeTierFormValues = z.infer<typeof EmployeeTierSchema>;
 
-// --- 5. Apply Leave ---
-export const ApplyLeaveSchema = z
-  .object({
-    leaveTypeId: z.string().min(1, "Leave type is required"),
-    startDate: z.date({ required_error: "Start date is required" }),
-    endDate: z.date({ required_error: "End date is required" }),
-    reason: z.string().min(1, "Reason is required"),
-    halfDay: z.boolean().default(false),
-    halfDayType: z.string().optional(),
-    attachments: z.any().optional(),
-  })
-  .refine(
-    (data) => {
-      if (data.halfDay && !data.halfDayType) return false;
-      return true;
-    },
-    {
-      message: "Half day type is required when half day is selected",
-      path: ["halfDayType"],
-    }
-  );
+// --- 5. Apply Leave (DYNAMIC VALIDATION) ---
+export const getApplyLeaveSchema = (requiredAttachmentIds: string[] = []) =>
+  z
+    .object({
+      leaveTypeId: z.string().min(1, "Leave type is required"),
+      startDate: z.date({ required_error: "Start date is required" }),
+      endDate: z.date({ required_error: "End date is required" }),
+      reason: z.string().min(1, "Reason is required"),
+      halfDay: z.boolean().default(false),
+      halfDayType: z.string().optional(),
+      attachments: z.array(z.any()).optional(),
+    })
+    .superRefine((data, ctx) => {
+      // 1. Half Day Validation
+      if (data.halfDay && !data.halfDayType) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Half day type is required when half day is selected",
+          path: ["halfDayType"],
+        });
+      }
 
-export type ApplyLeaveFormValues = z.infer<typeof ApplyLeaveSchema>;
+      // 2. Attachment Validation
+      if (requiredAttachmentIds.includes(data.leaveTypeId)) {
+        if (!data.attachments || data.attachments.length === 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Proof/Attachment is required for this leave type",
+            path: ["attachments"],
+          });
+        }
+      }
+    });
+
+export type ApplyLeaveFormValues = z.infer<
+  ReturnType<typeof getApplyLeaveSchema>
+>;

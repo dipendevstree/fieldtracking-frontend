@@ -46,11 +46,14 @@ import { Switch } from "@/components/ui/switch";
 // Custom Components
 import CalendarView from "./components/CalendarView";
 import { DateRangeFilter } from "@/features/reports/components/DateRangeFilter";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import CustomTooltip from "@/components/shared/custom-tooltip";
+import { IconEdit, IconTrash } from "@tabler/icons-react";
+import { DeleteModal } from "@/components/shared/common-delete-modal";
 
 // Services & Hooks
 import { useGetAllLeaveTypes } from "@/features/leave-management/services/leave-type.action.hook";
 import { useGetAllHolidays } from "@/features/leave-management/services/holiday.action.hook";
-
 import {
   useCreateLeave,
   useDeleteLeave,
@@ -60,12 +63,9 @@ import {
   useGetMyLeaves,
   useUpdateLeave,
 } from "../../services/leave-action.hook";
-import { ApplyLeaveFormValues, ApplyLeaveSchema } from "../../data/schema";
+
+import { ApplyLeaveFormValues, getApplyLeaveSchema } from "../../data/schema";
 import { LEAVE_HALF_DAY_TYPE } from "@/data/app.data";
-import { SearchableSelect } from "@/components/ui/SearchableSelect";
-import CustomTooltip from "@/components/shared/custom-tooltip";
-import { IconEdit, IconTrash } from "@tabler/icons-react";
-import { DeleteModal } from "@/components/shared/common-delete-modal";
 
 // --- HELPER COMPONENT: Attachment Item ---
 const AttachmentItem = ({
@@ -212,7 +212,7 @@ export default function MyLeaveBalance() {
   const [existingFiles, setExistingFiles] = useState<string[]>([]);
 
   // Services
-  const { data: leaveTypesList } = useGetAllLeaveTypes();
+  const { data: leaveTypesList = [] } = useGetAllLeaveTypes();
   const { data: stats } = useGetLeaveStats();
   const { data: myLeavesList } = useGetMyLeaves();
   const { data: holidays = [] } = useGetAllHolidays();
@@ -233,6 +233,18 @@ export default function MyLeaveBalance() {
 
   const deleteLeaveId = leaveToDelete?.id || "";
 
+  // --- 1. DYNAMIC SCHEMA GENERATION ---
+  const requiredAttachmentIds = useMemo(() => {
+    return leaveTypesList
+      .filter((lt: any) => lt.requiresAttachment)
+      .map((lt: any) => lt.id);
+  }, [leaveTypesList]);
+
+  const formSchema = useMemo(
+    () => getApplyLeaveSchema(requiredAttachmentIds),
+    [requiredAttachmentIds]
+  );
+
   // Mutations
   const createLeaveMutation = useCreateLeave(() => setIsApplyLeaveOpen(false));
   const updateLeaveMutation = useUpdateLeave(editingLeaveId || "", () =>
@@ -241,77 +253,80 @@ export default function MyLeaveBalance() {
   const deleteLeaveMutation = useDeleteLeave(deleteLeaveId, () => {
     setIsApplyLeaveOpen(false);
     setIsDeleteDialogOpen(false);
-    setLeaveToDelete(null); // Reset
+    setLeaveToDelete(null);
   });
 
   // Form
   const applyLeaveForm = useForm<ApplyLeaveFormValues>({
-    resolver: zodResolver(ApplyLeaveSchema) as any,
+    resolver: zodResolver(formSchema) as any,
     defaultValues: {
       leaveTypeId: "",
       reason: "",
       halfDay: false,
       halfDayType: undefined,
+      attachments: [],
     },
   });
 
-  const watchStartDate = applyLeaveForm.watch("startDate");
-  const watchEndDate = applyLeaveForm.watch("endDate");
-  const watchHalfDay = applyLeaveForm.watch("halfDay");
-  const watchLeaveTypeId = applyLeaveForm.watch("leaveTypeId");
+  const {
+    watch,
+    setValue,
+    reset,
+    formState: { errors },
+  } = applyLeaveForm;
 
-  const requiresAttachment = useMemo(() => {
-    const selected = leaveTypesList?.find(
-      (lt: any) => lt.id === watchLeaveTypeId
-    );
-    return selected?.requiresAttachment === true;
-  }, [leaveTypesList, watchLeaveTypeId]);
+  const watchStartDate = watch("startDate");
+  const watchEndDate = watch("endDate");
+  const watchHalfDay = watch("halfDay");
+  const watchLeaveTypeId = watch("leaveTypeId");
 
+  // Determine if current selection needs attachment (for UI label)
+  const requiresAttachment = requiredAttachmentIds.includes(watchLeaveTypeId);
+
+  // --- 2. SYNC FILES TO FORM ---
   useEffect(() => {
-    if (
-      !requiresAttachment &&
-      (selectedFiles.length > 0 || existingFiles.length > 0)
-    ) {
-      if (!editingLeaveId) {
-        setSelectedFiles([]);
-        setExistingFiles([]);
-      }
-    }
-  }, [requiresAttachment, editingLeaveId]);
+    const combinedFiles = [...existingFiles, ...selectedFiles];
+    setValue("attachments", combinedFiles, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+  }, [selectedFiles, existingFiles, setValue]);
 
   const [dateRange, setDateRange] = useState<{
     from: Date | undefined;
     to: Date | undefined;
   }>({ from: undefined, to: undefined });
 
+  // Populate form for Editing
   useEffect(() => {
     if (editingLeaveId && singleLeaveData) {
       const leaveData = singleLeaveData;
-
       const startDate = parseISO(leaveData.startDate);
       const endDate = parseISO(leaveData.endDate);
 
+      // Set local state files
       if (leaveData.attachments && Array.isArray(leaveData.attachments)) {
         setExistingFiles(leaveData.attachments);
       } else {
         setExistingFiles([]);
       }
+      setSelectedFiles([]);
 
       setDateRange({ from: startDate, to: endDate });
 
-      applyLeaveForm.reset({
+      reset({
         leaveTypeId: leaveData.leaveTypeId,
         startDate: startDate,
         endDate: endDate,
         reason: leaveData.reason || "",
         halfDay: Boolean(leaveData.halfDay),
         halfDayType: leaveData.halfDayType || undefined,
+        attachments: leaveData.attachments || [],
       });
-
-      setSelectedFiles([]);
     }
-  }, [editingLeaveId, singleLeaveData, applyLeaveForm]);
+  }, [editingLeaveId, singleLeaveData, reset]);
 
+  // Sync Date Range Picker to Form
   useEffect(() => {
     if (watchStartDate) {
       setDateRange({
@@ -327,7 +342,7 @@ export default function MyLeaveBalance() {
     setSelectedFiles([]);
     setExistingFiles([]);
     setDateRange({ from: undefined, to: undefined });
-    applyLeaveForm.reset({
+    reset({
       startDate: new Date(),
       endDate: new Date(),
       reason: "",
@@ -335,6 +350,7 @@ export default function MyLeaveBalance() {
         leaveTypeId || (leaveTypesList.length > 0 ? leaveTypesList[0].id : ""),
       halfDay: false,
       halfDayType: undefined,
+      attachments: [],
     });
     setIsApplyLeaveOpen(true);
   };
@@ -346,35 +362,27 @@ export default function MyLeaveBalance() {
     }
     setEditingLeaveId(leaveData.id);
     setIsApplyLeaveOpen(true);
-    setSelectedFiles([]);
   };
 
-  // CHANGED: Prepare object with a display property for the custom modal
   const handleDeleteClick = (leaveData: any) => {
     if (leaveData.status?.toLowerCase() === "approved") {
       toast.error("Cannot delete approved leave requests.");
       return;
     }
-
     const typeName =
       leaveData.leaveType?.name ||
       leaveTypesList.find((t: any) => t.id === leaveData.leaveTypeId)?.name ||
       "Leave";
     const dateStr = format(parseISO(leaveData.startDate), "MMM dd, yyyy");
-
-    // Add a custom 'displayLabel' property to identify the item in the modal
-    const preparedData = {
+    setLeaveToDelete({
       ...leaveData,
       displayLabel: `${typeName} on ${dateStr}`,
-    };
-
-    setLeaveToDelete(preparedData);
+    });
     setIsDeleteDialogOpen(true);
   };
 
   const onApplyLeaveSubmit = (data: ApplyLeaveFormValues) => {
     const formData = new FormData();
-
     formData.append("leaveTypeId", data.leaveTypeId);
     formData.append("reason", data.reason || "");
     if (data.startDate)
@@ -385,10 +393,9 @@ export default function MyLeaveBalance() {
     if (data.halfDay && data.halfDayType)
       formData.append("halfDayType", data.halfDayType);
 
-    if (requiresAttachment) {
-      if (selectedFiles.length > 0) {
-        selectedFiles.forEach((file) => formData.append("attachments", file));
-      }
+    // Append actual files
+    if (selectedFiles.length > 0) {
+      selectedFiles.forEach((file) => formData.append("attachments", file));
     }
 
     if (editingLeaveId) {
@@ -399,36 +406,31 @@ export default function MyLeaveBalance() {
   };
 
   const confirmDelete = () => {
-    if (deleteLeaveId) {
-      deleteLeaveMutation.mutate();
-    }
+    if (deleteLeaveId) deleteLeaveMutation.mutate();
   };
 
   const handlePreviewFile = (file: File | string) => {
     if (typeof file === "string") {
       window.open(file, "_blank");
     } else {
-      const url = URL.createObjectURL(file);
-      window.open(url, "_blank");
+      window.open(URL.createObjectURL(file), "_blank");
     }
   };
 
+  // Calendar Logic
   const events = useMemo(() => {
     if (calendarMode === "holiday") {
-      return holidays.map((h: any) => {
-        const holidayDate = new Date(h.date);
-        return {
-          id: h.id,
-          title: h.name,
-          start: holidayDate,
-          end: holidayDate,
-          allDay: true,
-          resource: {
-            type: h.holidayType?.holidayTypeName || "National",
-            originalData: h,
-          },
-        };
-      });
+      return holidays.map((h: any) => ({
+        id: h.id,
+        title: h.name,
+        start: new Date(h.date),
+        end: new Date(h.date),
+        allDay: true,
+        resource: {
+          type: h.holidayType?.holidayTypeName || "National",
+          originalData: h,
+        },
+      }));
     } else {
       return allLeavesList.map((lr: any) => {
         const typeName =
@@ -443,18 +445,14 @@ export default function MyLeaveBalance() {
 
         const start = new Date(lr.startDate);
         let end = new Date(lr.endDate);
-        const isHalfDay = Boolean(lr.halfDay);
-
-        if (!isHalfDay) {
-          end = addDays(end, 1);
-        }
+        if (!lr.halfDay) end = addDays(end, 1);
 
         return {
           id: lr.id,
           title: typeName,
           start,
           end,
-          allDay: !isHalfDay,
+          allDay: !lr.halfDay,
           resource: { type: "leave", originalData: lr, color },
         };
       });
@@ -477,7 +475,6 @@ export default function MyLeaveBalance() {
     { headerBg: "bg-purple-50", titleColor: "text-purple-700" },
     { headerBg: "bg-orange-50", titleColor: "text-orange-700" },
   ];
-
   const isSaving =
     createLeaveMutation.isPending || updateLeaveMutation.isPending;
 
@@ -544,15 +541,12 @@ export default function MyLeaveBalance() {
       </div>
 
       {/* Leave Type Cards */}
-
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {myLeavesList?.map((item: any, index: number) => {
           const bal = item.leaveBalance || {};
-          const earned = parseFloat(bal.earned || "0");
-          const carryForward = parseFloat(bal.carryForward || "0");
+          const totalQuota =
+            parseFloat(bal.earned || "0") + parseFloat(bal.carryForward || "0");
           const used = parseFloat(bal.used || "0");
-          const remaining = parseFloat(bal.remaining || "0");
-          const totalQuota = earned + carryForward;
           const percentage =
             totalQuota > 0 ? Math.round((used / totalQuota) * 100) : 0;
 
@@ -562,7 +556,7 @@ export default function MyLeaveBalance() {
               title={item.name}
               total={totalQuota}
               taken={used}
-              balance={remaining}
+              balance={parseFloat(bal.remaining || "0")}
               percentage={percentage}
               headerBg={cardStyles[index % cardStyles.length].headerBg}
               titleColor={cardStyles[index % cardStyles.length].titleColor}
@@ -602,47 +596,28 @@ export default function MyLeaveBalance() {
               <div className="space-y-2">
                 {currentMonthEvents.map((evt: any) => {
                   const originalData = evt.resource.originalData;
-                  const isPending =
-                    originalData?.status?.toLowerCase() === "pending";
-
                   const isHoliday = evt.resource.type !== "leave";
                   const statusText = isHoliday
                     ? evt.resource.type
                     : originalData.status;
 
-                  // Determine Badge Color
-                  let badgeClass = "";
+                  // Badge Color Logic
+                  let badgeClass = "bg-slate-100 text-slate-700";
                   if (isHoliday) {
                     badgeClass = "bg-blue-50 text-blue-700 border-blue-200";
-                    if (statusText?.toLowerCase()?.includes("optional")) {
+                    if (statusText?.toLowerCase()?.includes("optional"))
                       badgeClass =
                         "bg-purple-50 text-purple-700 border-purple-200";
-                    }
                   } else {
-                    switch (statusText?.toLowerCase()) {
-                      case "approved":
-                        badgeClass =
-                          "bg-green-50 text-green-700 border-green-200";
-                        break;
-                      case "rejected":
-                        badgeClass = "bg-red-50 text-red-700 border-red-200";
-                        break;
-                      case "pending":
-                        badgeClass =
-                          "bg-orange-50 text-orange-700 border-orange-200";
-                        break;
-                      default:
-                        badgeClass =
-                          "bg-slate-100 text-slate-700 border-slate-200";
-                    }
+                    if (statusText === "approved")
+                      badgeClass =
+                        "bg-green-50 text-green-700 border-green-200";
+                    else if (statusText === "rejected")
+                      badgeClass = "bg-red-50 text-red-700 border-red-200";
+                    else if (statusText === "pending")
+                      badgeClass =
+                        "bg-orange-50 text-orange-700 border-orange-200";
                   }
-
-                  const displayEnd =
-                    evt.allDay && evt.end.getTime() > evt.start.getTime()
-                      ? addDays(evt.end, -1)
-                      : evt.end;
-
-                  const isOneDay = isSameDay(evt.start, displayEnd);
 
                   return (
                     <div
@@ -650,19 +625,15 @@ export default function MyLeaveBalance() {
                       className="flex items-center justify-between bg-white border border-slate-100 p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow group"
                     >
                       <div className="flex items-center gap-3 flex-1 cursor-default">
-                        {/* Status Color Strip */}
                         <div
                           className={cn(
                             "w-1 h-9 rounded-full",
-                            evt.resource.type === "National"
+                            isHoliday
                               ? "bg-blue-500"
-                              : evt.resource.type === "leave"
-                                ? evt.resource.color || "bg-orange-500"
-                                : "bg-green-500"
+                              : evt.resource.color || "bg-orange-500"
                           )}
                         />
                         <div>
-                          {/* Name + Badge Row */}
                           <div className="flex items-center gap-2">
                             <p className="text-sm font-medium text-slate-800">
                               {evt.title}
@@ -676,48 +647,46 @@ export default function MyLeaveBalance() {
                               {statusText}
                             </span>
                           </div>
-                          {/* Date Row with Range Logic */}
                           <span className="text-xs text-slate-500">
-                            {isOneDay
+                            {isSameDay(evt.start, evt.end)
                               ? format(evt.start, "PPP")
                               : `${format(evt.start, "PPP")} - ${format(
-                                  displayEnd,
+                                  evt.end,
                                   "PPP"
                                 )}`}
                           </span>
                         </div>
                       </div>
 
-                      {calendarMode === "leave" && isPending && (
-                        <div className="flex items-center space-x-2">
-                          <CustomTooltip title="Edit">
-                            <Button
-                              variant="ghost"
-                              className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleEditClick(originalData);
-                              }}
-                            >
-                              <IconEdit size={16} />
-                            </Button>
-                          </CustomTooltip>
-
-                          <CustomTooltip title="Delete">
-                            <Button
-                              variant="ghost"
-                              className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                // CHANGED: Pass full object for Modal context
-                                handleDeleteClick(originalData);
-                              }}
-                            >
-                              <IconTrash size={16} />
-                            </Button>
-                          </CustomTooltip>
-                        </div>
-                      )}
+                      {calendarMode === "leave" &&
+                        statusText?.toLowerCase() === "pending" && (
+                          <div className="flex items-center space-x-2">
+                            <CustomTooltip title="Edit">
+                              <Button
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-green-600 hover:bg-green-50"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleEditClick(originalData);
+                                }}
+                              >
+                                <IconEdit size={16} />
+                              </Button>
+                            </CustomTooltip>
+                            <CustomTooltip title="Delete">
+                              <Button
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteClick(originalData);
+                                }}
+                              >
+                                <IconTrash size={16} />
+                              </Button>
+                            </CustomTooltip>
+                          </div>
+                        )}
                     </div>
                   );
                 })}
@@ -740,7 +709,7 @@ export default function MyLeaveBalance() {
           if (!open) {
             setTimeout(() => {
               setEditingLeaveId(null);
-              applyLeaveForm.reset();
+              reset();
               setSelectedFiles([]);
               setExistingFiles([]);
               setDateRange({ from: undefined, to: undefined });
@@ -792,12 +761,9 @@ export default function MyLeaveBalance() {
                 />
                 <div className="flex flex-col gap-2">
                   <FormLabel
-                    className={cn(
-                      applyLeaveForm.formState.errors.startDate &&
-                        "text-destructive"
-                    )}
+                    className={cn(errors.startDate && "text-destructive")}
                   >
-                    Duration
+                    Duration <span className="text-destructive">*</span>
                   </FormLabel>
                   <DateRangeFilter
                     dateRange={dateRange}
@@ -809,24 +775,23 @@ export default function MyLeaveBalance() {
                         : { from: undefined, to: undefined };
                       setDateRange(safeRange);
                       if (safeRange.from) {
-                        applyLeaveForm.setValue("startDate", safeRange.from, {
+                        setValue("startDate", safeRange.from, {
                           shouldValidate: true,
                         });
-                        applyLeaveForm.setValue(
-                          "endDate",
-                          safeRange.to || safeRange.from,
-                          { shouldValidate: true }
-                        );
+                        setValue("endDate", safeRange.to || safeRange.from, {
+                          shouldValidate: true,
+                        });
                       }
                     }}
                     placeholder="Select duration"
                   />
-                  {applyLeaveForm.formState.errors.startDate && (
-                    <p className="text-[0.8rem] font-medium text-destructive">
-                      {applyLeaveForm.formState.errors.startDate.message?.toString()}
+                  {errors.startDate && (
+                    <p className="text-[0.9rem] text-destructive">
+                      {errors.startDate.message?.toString()}
                     </p>
                   )}
                 </div>
+
                 <div className="flex flex-row items-center space-x-4 border p-3 rounded-md bg-slate-50">
                   <FormField
                     control={applyLeaveForm.control}
@@ -836,7 +801,19 @@ export default function MyLeaveBalance() {
                         <FormControl>
                           <Switch
                             checked={field.value}
-                            onCheckedChange={field.onChange}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked);
+                              // Auto-select First Half if enabling half day
+                              if (checked) {
+                                setValue(
+                                  "halfDayType",
+                                  LEAVE_HALF_DAY_TYPE.FIRST_HALF,
+                                  { shouldValidate: true }
+                                );
+                              } else {
+                                setValue("halfDayType", undefined);
+                              }
+                            }}
                           />
                         </FormControl>
                         <FormLabel className="cursor-pointer font-medium mt-0">
@@ -874,6 +851,7 @@ export default function MyLeaveBalance() {
                     />
                   )}
                 </div>
+
                 <FormField
                   control={applyLeaveForm.control}
                   name="reason"
@@ -888,9 +866,16 @@ export default function MyLeaveBalance() {
                   )}
                 />
 
-                {requiresAttachment && (
+                {/* --- ATTACHMENTS SECTION --- */}
+                {(requiresAttachment ||
+                  selectedFiles.length > 0 ||
+                  existingFiles.length > 0) && (
                   <div>
-                    <FormLabel>Attachments</FormLabel>
+                    <FormLabel
+                      className={cn(errors.attachments && "text-destructive")}
+                    >
+                      Attachments {requiresAttachment && "*"}
+                    </FormLabel>
                     <div className="mt-2">
                       <label className="flex items-center justify-center w-full h-24 px-4 transition bg-white border-2 border-slate-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-slate-400 focus:outline-none">
                         <span className="flex items-center space-x-2">
@@ -947,6 +932,12 @@ export default function MyLeaveBalance() {
                           ))}
                         </div>
                       </div>
+                    )}
+
+                    {errors.attachments && (
+                      <p className="text-[0.9rem] text-destructive mt-2">
+                        {errors.attachments.message as string}
+                      </p>
                     )}
                   </div>
                 )}
