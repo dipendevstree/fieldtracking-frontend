@@ -89,4 +89,19 @@ export const useAssignEmployeeOnTier = (id: string, onSuccess?: () => void) => {
   });
 };
 
+export const useGetEmployeeTierById = (
+  id?: any,
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<any>({
+    url: `${API.employeeTier.byId}/${id}`,
+    enabled: !!id && (options?.enabled ?? true),
+  });
 
+  return {
+    ...query,
+    data: query.data,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};

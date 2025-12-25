@@ -270,6 +270,7 @@ const API = {
     delete: "user-tiers/delete",
     stats: "user-tiers/stats",
     assign: "user-tiers/assign",
+    byId: "user-tiers",
   },
   leave: {
     byId: "leave",
