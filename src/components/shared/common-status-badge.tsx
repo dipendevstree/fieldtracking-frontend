@@ -12,9 +12,9 @@ export const statusColors: Record<
   { text: string; bg: string; dot: string }
 > = {
   pending: {
-    text: "text-amber-600",
-    bg: "bg-amber-100",
-    dot: "bg-amber-500",
+    text: "text-orange-600",
+    bg: "bg-orange-100",
+    dot: "bg-orange-500",
   },
   partially_approved: {
     text: "text-yellow-600",
