@@ -25,9 +25,23 @@ export const AttachmentItem = ({
           )}
         />
         <span
-          onClick={onPreview}
           className={cn(
-            "truncate max-w-[240px] text-slate-700 cursor-pointer hover:underline text-xs sm:text-sm",
+            "text-[10px] uppercase font-bold px-1.5 py-0.5 rounded shrink-0 border",
+            isNew
+              ? "bg-green-50 text-green-700 border-green-200"
+              : "bg-blue-50 text-blue-700 border-blue-200"
+          )}
+        >
+          {isNew ? "New" : "Existing"}
+        </span>
+        <span
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onPreview();
+          }}
+          className={cn(
+            "truncate max-w-[200px] text-slate-700 cursor-pointer hover:underline text-xs sm:text-sm",
             isNew ? "hover:text-green-700" : "hover:text-blue-700"
           )}
           title={`View ${name}`}
@@ -39,7 +53,11 @@ export const AttachmentItem = ({
         <CustomTooltip title="Preview">
           <button
             type="button"
-            onClick={onPreview}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onPreview();
+            }}
             className="p-1 text-slate-400 hover:text-blue-600 transition-colors rounded-md hover:bg-blue-50"
           >
             <Eye className="h-4 w-4" />
@@ -48,7 +66,11 @@ export const AttachmentItem = ({
         <CustomTooltip title="Remove">
           <button
             type="button"
-            onClick={onRemove}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onRemove();
+            }}
             className="p-1 text-slate-400 hover:text-red-500 transition-colors rounded-md hover:bg-red-50"
           >
             <X className="h-4 w-4" />

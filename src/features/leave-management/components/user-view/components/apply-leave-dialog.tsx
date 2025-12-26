@@ -57,6 +57,7 @@ export function ApplyLeaveDialog({
 }: ApplyLeaveDialogProps) {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [existingFiles, setExistingFiles] = useState<string[]>([]);
+  const [deleteFileKeys, setDeleteFileKeys] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<{
     from: Date | undefined;
     to: Date | undefined;
@@ -133,6 +134,7 @@ export function ApplyLeaveDialog({
         }); // clear form
         setSelectedFiles([]);
         setExistingFiles([]);
+        setDeleteFileKeys([]);
         setDateRange({ from: undefined, to: undefined });
       }, 200);
       return;
@@ -149,6 +151,7 @@ export function ApplyLeaveDialog({
         setExistingFiles([]);
       }
       setSelectedFiles([]);
+      setDeleteFileKeys([]);
 
       setDateRange({ from: startDate, to: endDate });
 
@@ -212,6 +215,11 @@ export function ApplyLeaveDialog({
     // Append actual files
     if (selectedFiles.length > 0) {
       selectedFiles.forEach((file) => formData.append("attachments", file));
+    }
+
+    // Append deleteFileKeys
+    if (deleteFileKeys.length > 0) {
+      deleteFileKeys.forEach((key) => formData.append("deleteFileKeys", key));
     }
 
     if (leaveToEditId) {
@@ -423,11 +431,12 @@ export function ApplyLeaveDialog({
                             name={filePath.split("/").pop() || filePath}
                             isNew={false}
                             onPreview={() => handlePreviewFile(filePath)}
-                            onRemove={() =>
+                            onRemove={() => {
+                              setDeleteFileKeys((prev) => [...prev, filePath]);
                               setExistingFiles((prev) =>
                                 prev.filter((_, i) => i !== idx)
-                              )
-                            }
+                              );
+                            }}
                           />
                         ))}
 
