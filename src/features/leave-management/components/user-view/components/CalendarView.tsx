@@ -97,6 +97,7 @@ interface CalendarViewProps {
   onModeChange: (mode: "holiday" | "leave") => void;
   date: Date;
   onNavigate: (date: Date) => void;
+  weekOffDays?: number[];
 }
 
 export default function CalendarView({
@@ -108,6 +109,7 @@ export default function CalendarView({
   onModeChange,
   date,
   onNavigate,
+  weekOffDays = [],
 }: CalendarViewProps) {
   const [view, setView] = useState<View>(defaultView);
 
@@ -128,6 +130,22 @@ export default function CalendarView({
       },
     };
   }, []);
+
+  const dayPropGetter = useCallback(
+    (date: Date) => {
+      const day = date.getDay();
+      if (weekOffDays.includes(day)) {
+        return {
+          className: "bg-slate-100", // Increased contrast from slate-50
+          style: {
+            backgroundColor: "#f1f5f9", // slate-100
+          },
+        };
+      }
+      return {};
+    },
+    [weekOffDays]
+  );
 
   return (
     <div className="space-y-4">
@@ -153,7 +171,6 @@ export default function CalendarView({
         }
         .rbc-event:focus { outline: none; }
       `}</style>
-
       <Calendar
         localizer={localizer}
         events={events}
@@ -169,6 +186,7 @@ export default function CalendarView({
         onSelectSlot={onSelectSlot}
         selectable
         eventPropGetter={eventPropGetter}
+        dayPropGetter={dayPropGetter}
         components={{
           toolbar: (props) => (
             <CustomToolbar
@@ -189,18 +207,21 @@ export default function CalendarView({
       />
 
       {/* Legend - Manual for Simplicity */}
-      <div className="flex flex-wrap gap-6 mt-4 justify-center md:justify-start px-6 pb-2">
+      {/* Legend */}
+      <div className="flex flex-wrap gap-4 mt-4 justify-center md:justify-start px-6 pb-2 border-t pt-4">
         {currentMode === "holiday" ? (
           <>
             <LegendItem color="bg-blue-500" label="National Holiday" />
             <LegendItem color="bg-purple-500" label="Festival/Regional" />
             <LegendItem color="bg-emerald-500" label="Optional" />
+            <LegendItem color="bg-slate-300" label="Weekend" />
           </>
         ) : (
           <>
             <LegendItem color="bg-green-500" label="Approved" />
             <LegendItem color="bg-orange-500" label="Pending" />
             <LegendItem color="bg-red-500" label="Rejected" />
+            <LegendItem color="bg-slate-300" label="Weekend" />
           </>
         )}
       </div>
@@ -210,8 +231,10 @@ export default function CalendarView({
 
 const LegendItem = ({ color, label }: { color: string; label: string }) => (
   <div className="flex items-center gap-2">
-    <span className={cn("w-3 h-3 rounded-full shadow-sm", color)}></span>
-    <span className="text-xs text-gray-600 font-medium">{label}</span>
+    <span
+      className={cn("w-3 h-3 rounded-full ring-1 ring-slate-200", color)}
+    ></span>
+    <span className="text-sm text-slate-600 font-medium">{label}</span>
   </div>
 );
 

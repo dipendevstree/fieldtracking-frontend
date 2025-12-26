@@ -59,8 +59,12 @@ export default function HolidayManagement() {
     [viewDate]
   );
 
-  const { data: holidays = [], isLoading: isLoadingHolidays } =
-    useGetAllHolidays(calendarQueryParams);
+  const {
+    data: holidays = [],
+    isLoading: isLoadingHolidays,
+    weekOffDays,
+  } = useGetAllHolidays(calendarQueryParams);
+
   const { data: allLeavesList = [], isLoading: isLoadingLeaves } =
     useGetAllLeaves(calendarQueryParams);
 
@@ -171,6 +175,7 @@ export default function HolidayManagement() {
               onModeChange={setCalendarMode}
               date={viewDate}
               onNavigate={setViewDate}
+              weekOffDays={weekOffDays}
             />
           )}
 

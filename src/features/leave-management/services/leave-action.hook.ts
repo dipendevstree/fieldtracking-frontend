@@ -72,6 +72,7 @@ export const useGetAllLeaves = (
     ...query,
     data: query.data?.list,
     totalCount: query.data?.totalCount ?? 0,
+    weekOffDays: query.data?.weekOffDays ?? [],
     isLoading: query.isLoading,
     error: query.error,
   };

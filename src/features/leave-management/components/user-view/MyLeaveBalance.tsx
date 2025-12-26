@@ -65,7 +65,6 @@ export default function MyLeaveBalance() {
   const [calendarMode, setCalendarMode] = useState<"holiday" | "leave">(
     "holiday"
   );
-  // ... (rest)
   const [viewDate, setViewDate] = useState(new Date());
 
   const [isApplyLeaveOpen, setIsApplyLeaveOpen] = useState(false);
@@ -90,8 +89,11 @@ export default function MyLeaveBalance() {
   );
 
   const { data: holidays = [] } = useGetAllHolidays(calendarQueryParams);
-  const { data: allLeavesList, isLoading: isLoadingLeaves } =
-    useGetAllLeaves(calendarQueryParams);
+  const {
+    data: allLeavesList,
+    isLoading: isLoadingLeaves,
+    weekOffDays,
+  } = useGetAllLeaves(calendarQueryParams);
 
   const deleteLeaveId = leaveToDelete?.id || "";
 
@@ -291,6 +293,7 @@ export default function MyLeaveBalance() {
               onModeChange={setCalendarMode}
               date={viewDate}
               onNavigate={setViewDate}
+              weekOffDays={weekOffDays}
             />
           )}
 
