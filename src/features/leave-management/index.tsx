@@ -6,7 +6,7 @@ import EmployeeTierManagement from "./components/employee-tiers/EmployeeTierMana
 import LeaveRulesConfiguration from "./components/leave-rules/LeaveRulesConfiguration";
 import MyLeaveBalance from "./components/user-view/MyLeaveBalance";
 import LeaveTypeManagement from "./components/leave-types/LeaveTypeManagement";
-import HolidayManagement from "./components/holiday/HolidayManagement";
+import HolidayManagement from "./components/holiday-management/HolidayManagement";
 
 // Tab Config
 const LEAVE_Tabs = [
