@@ -1,7 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import { LeaveTypeRowActions } from "./table-action-button";
-import StatusBadge from "@/components/shared/common-status-badge";
 
 export const leaveTypeColumns: ColumnDef<any>[] = [
   {
@@ -30,19 +29,6 @@ export const leaveTypeColumns: ColumnDef<any>[] = [
     ),
     cell: ({ row }) => (
       <div className="text-sm capitalize">{row.original.allocationPeriod}</div>
-    ),
-    enableHiding: false,
-    enableSorting: false,
-  },
-  {
-    accessorKey: "status",
-    header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title="Status" />
-    ),
-    cell: ({ row }) => (
-      <div className="text-sm">
-        {<StatusBadge status={row.original.status} />}
-      </div>
     ),
     enableHiding: false,
     enableSorting: false,

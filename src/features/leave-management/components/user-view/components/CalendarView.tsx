@@ -74,6 +74,11 @@ const EVENT_STYLES: Record<string, React.CSSProperties> = {
     backgroundColor: "#ecfdf5",
     color: "#047857",
   },
+  weekend: {
+    borderLeftColor: "#f97316",
+    backgroundColor: "#fff7ed",
+    color: "#c2410c",
+  },
 
   // Default
   default: {

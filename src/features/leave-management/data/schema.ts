@@ -16,9 +16,9 @@ export const HolidaySchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, "Holiday name is required"),
   date: z.date({ required_error: "Date is required" }),
-  type: z
-    .enum(["National", "Regional", "Festival", "Optional"])
-    .default("National"),
+  description: z.string().optional(),
+  holidayTypeId: z.string().min(1, "Holiday Type is required"),
+  isSpecial: z.boolean().default(false),
   holidayTemplateId: z.array(z.string()).optional(),
 });
 
