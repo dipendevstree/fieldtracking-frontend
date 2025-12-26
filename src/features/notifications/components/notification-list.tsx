@@ -8,7 +8,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { useGetNotifications, useGetUnreadCount } from "../services/notifications.hook";
+import {
+  useGetNotifications,
+  useGetUnreadCount,
+} from "../services/notifications.hook";
 import { useState } from "react";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -79,7 +82,7 @@ export function NotificationList() {
           size="icon"
           className="hover:bg-accent/20 relative"
         >
-          <IconBell className="!w-7 !h-7" strokeWidth={1.5}/>
+          <IconBell className="!w-6 !h-6" strokeWidth={1.5} />
           {/* {unreadCount > 0 && (
             <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 h-4 w-fit rounded-full bg-black text-xs font-medium text-white">
               {unreadCount > 100 ? "99+" : unreadCount}
