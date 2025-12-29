@@ -5,13 +5,13 @@ import usePatchData from "@/hooks/use-patch-data";
 import usePostData from "@/hooks/use-post-data";
 import { IListParams } from "../types";
 
-const EMPLOYEE_TIER_QUERY = API.employeeTier.list;
-const EMPLOYEE_TIER_STATS_QUERY = API.employeeTier.stats;
+const USER_TIER_QUERY = API.userTier.list;
+const USER_TIER_STATS_QUERY = API.userTier.stats;
 
-export const useCreateEmployeeTier = (onSuccess?: () => void) => {
+export const useCreateUserTier = (onSuccess?: () => void) => {
   return usePostData({
-    url: API.employeeTier.create,
-    refetchQueries: [EMPLOYEE_TIER_QUERY, EMPLOYEE_TIER_STATS_QUERY],
+    url: API.userTier.create,
+    refetchQueries: [USER_TIER_QUERY, USER_TIER_STATS_QUERY],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
@@ -20,10 +20,10 @@ export const useCreateEmployeeTier = (onSuccess?: () => void) => {
   });
 };
 
-export const useUpdateEmployeeTier = (id: string, onSuccess?: () => void) => {
+export const useUpdateUserTier = (id: string, onSuccess?: () => void) => {
   return usePatchData({
-    url: `${API.employeeTier.update}/${id}`,
-    refetchQueries: [EMPLOYEE_TIER_QUERY, EMPLOYEE_TIER_STATS_QUERY],
+    url: `${API.userTier.update}/${id}`,
+    refetchQueries: [USER_TIER_QUERY, USER_TIER_STATS_QUERY],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
@@ -32,10 +32,10 @@ export const useUpdateEmployeeTier = (id: string, onSuccess?: () => void) => {
   });
 };
 
-export const useDeleteEmployeeTier = (id: string, onSuccess?: () => void) => {
+export const useDeleteUserTier = (id: string, onSuccess?: () => void) => {
   return useDeleteData({
-    url: `${API.employeeTier.delete}/${id}`,
-    refetchQueries: [EMPLOYEE_TIER_QUERY, EMPLOYEE_TIER_STATS_QUERY],
+    url: `${API.userTier.delete}/${id}`,
+    refetchQueries: [USER_TIER_QUERY, USER_TIER_STATS_QUERY],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
@@ -44,12 +44,12 @@ export const useDeleteEmployeeTier = (id: string, onSuccess?: () => void) => {
   });
 };
 
-export const useGetAllEmployeeTiers = (
+export const useGetAllUserTiers = (
   params?: IListParams,
   options?: { enabled?: boolean }
 ) => {
   const query = useFetchData<any>({
-    url: EMPLOYEE_TIER_QUERY,
+    url: USER_TIER_QUERY,
     params,
     enabled: options?.enabled ?? true,
   });
@@ -63,9 +63,9 @@ export const useGetAllEmployeeTiers = (
   };
 };
 
-export const useGetEmployeeTierStats = (options?: { enabled?: boolean }) => {
+export const useGetUserTierStats = (options?: { enabled?: boolean }) => {
   const query = useFetchData<any>({
-    url: EMPLOYEE_TIER_STATS_QUERY,
+    url: USER_TIER_STATS_QUERY,
     enabled: options?.enabled ?? true,
   });
 
@@ -77,10 +77,10 @@ export const useGetEmployeeTierStats = (options?: { enabled?: boolean }) => {
   };
 };
 
-export const useAssignEmployeeOnTier = (id: string, onSuccess?: () => void) => {
+export const useAssignUserOnTier = (id: string, onSuccess?: () => void) => {
   return usePatchData({
-    url: `${API.employeeTier.assign}/${id}`,
-    refetchQueries: [EMPLOYEE_TIER_STATS_QUERY],
+    url: `${API.userTier.assign}/${id}`,
+    refetchQueries: [USER_TIER_STATS_QUERY],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
@@ -89,12 +89,12 @@ export const useAssignEmployeeOnTier = (id: string, onSuccess?: () => void) => {
   });
 };
 
-export const useGetEmployeeTierById = (
+export const useGetUserTierById = (
   id?: any,
   options?: { enabled?: boolean }
 ) => {
   const query = useFetchData<any>({
-    url: `${API.employeeTier.byId}/${id}`,
+    url: `${API.userTier.byId}/${id}`,
     enabled: !!id && (options?.enabled ?? true),
   });
 

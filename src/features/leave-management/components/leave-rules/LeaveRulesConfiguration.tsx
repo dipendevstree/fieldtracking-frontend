@@ -222,9 +222,9 @@ export default function LeaveRulesConfiguration() {
                 {/* Example Box */}
                 <div className="bg-slate-50 border rounded-md p-4 text-sm text-slate-700">
                   <span className="font-semibold block mb-1">Example:</span>
-                  Employee applies leave on Friday and Monday. If enabled,
-                  Saturday & Sunday (2 days) will be counted as leave, making it
-                  a 4-day leave instead of 2.
+                  User applies leave on Friday and Monday. If enabled, Saturday
+                  & Sunday (2 days) will be counted as leave, making it a 4-day
+                  leave instead of 2.
                 </div>
               </CardContent>
             )}
@@ -241,7 +241,7 @@ export default function LeaveRulesConfiguration() {
                       Cross-Leave Deduction
                     </CardTitle>
                     <CardDescription>
-                      Allow employees to use alternate leave types when primary
+                      Allow users to use alternate leave types when primary
                       leave balance is insufficient
                     </CardDescription>
                   </div>
@@ -365,7 +365,7 @@ export default function LeaveRulesConfiguration() {
                 {/* Example Box */}
                 <div className="bg-slate-50 border rounded-md p-4 text-sm text-slate-700">
                   <span className="font-semibold block mb-1">Example:</span>
-                  Employee applies for 6 days of Sick Leave but only has 4 days
+                  User applies for 6 days of Sick Leave but only has 4 days
                   available. With this rule enabled, the system will
                   automatically deduct 4 days from Sick Leave and 2 days from
                   Annual Leave (primary backup) to fulfill the request.
@@ -385,8 +385,7 @@ export default function LeaveRulesConfiguration() {
                       Leave Carry Forward
                     </CardTitle>
                     <CardDescription>
-                      Allow employees to carry forward unused leaves to next
-                      period
+                      Allow users to carry forward unused leaves to next period
                     </CardDescription>
                   </div>
                 </div>
@@ -459,9 +458,9 @@ export default function LeaveRulesConfiguration() {
                 {/* Example Box */}
                 <div className="bg-slate-50 border rounded-md p-4 text-sm text-slate-700">
                   <span className="font-semibold block mb-1">Example:</span>
-                  Employee has 8 unused leaves at year end. With max carry
-                  forward of 10 days, all 8 days will be added to next year's
-                  balance and must be used within 3 months.
+                  User has 8 unused leaves at year end. With max carry forward
+                  of 10 days, all 8 days will be added to next year's balance
+                  and must be used within 3 months.
                 </div>
               </CardContent>
             )}
@@ -478,7 +477,7 @@ export default function LeaveRulesConfiguration() {
                       Leave Encashment
                     </CardTitle>
                     <CardDescription>
-                      Allow employees to convert unused leaves into cash payment
+                      Allow users to convert unused leaves into cash payment
                     </CardDescription>
                   </div>
                 </div>
@@ -542,7 +541,7 @@ export default function LeaveRulesConfiguration() {
                           </span>
                         </div>
                         <FormDescription>
-                          Minimum leave balance employee must maintain
+                          Minimum leave balance user must maintain
                         </FormDescription>
                       </FormItem>
                     )}
@@ -551,9 +550,9 @@ export default function LeaveRulesConfiguration() {
                 {/* Example Box */}
                 <div className="bg-slate-50 border rounded-md p-4 text-sm text-slate-700">
                   <span className="font-semibold block mb-1">Example:</span>
-                  Employee has 20 unused leaves. With max encashment of 15 days
-                  and min balance of 5 days, they can encash up to 15 days but
-                  must keep at least 5 days in their balance.
+                  User has 20 unused leaves. With max encashment of 15 days and
+                  min balance of 5 days, they can encash up to 15 days but must
+                  keep at least 5 days in their balance.
                 </div>
               </CardContent>
             )}

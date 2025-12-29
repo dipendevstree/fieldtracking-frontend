@@ -35,8 +35,8 @@ export const LeaveRulesSchema = z.object({
 
 export type LeaveRules = z.infer<typeof LeaveRulesSchema>;
 
-// --- 3. Employee Tier ---
-export const EmployeeTierSchema = z.object({
+// --- 3. User Tier ---
+export const UserTierSchema = z.object({
   tierName: z.string().min(1, "Name is required"),
   leaveConfigs: z.array(
     z.object({
@@ -47,7 +47,7 @@ export const EmployeeTierSchema = z.object({
   userIds: z.array(z.string()).default([]),
 });
 
-export type EmployeeTierFormValues = z.infer<typeof EmployeeTierSchema>;
+export type UserTierFormValues = z.infer<typeof UserTierSchema>;
 
 // --- 4. Apply Leave (DYNAMIC VALIDATION) ---
 export const getApplyLeaveSchema = (requiredAttachmentIds: string[] = []) =>

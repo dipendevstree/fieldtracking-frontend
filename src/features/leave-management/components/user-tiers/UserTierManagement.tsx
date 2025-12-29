@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react"; // Added useEffect
+import { useState, useMemo, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Users, Shield, Plus, Loader2 } from "lucide-react";
@@ -38,14 +38,14 @@ import CustomTooltip from "@/components/shared/custom-tooltip";
 // Services & Hooks
 import { useGetAllLeaveTypes } from "@/features/leave-management/services/leave-type.action.hook";
 import {
-  useGetAllEmployeeTiers,
-  useGetEmployeeTierStats,
-  useCreateEmployeeTier,
-  useUpdateEmployeeTier,
-  useDeleteEmployeeTier,
-  useGetEmployeeTierById,
-} from "../../services/employee-tier.action.hook";
-import { EmployeeTierFormValues, EmployeeTierSchema } from "../../data/schema";
+  useGetAllUserTiers,
+  useGetUserTierStats,
+  useCreateUserTier,
+  useUpdateUserTier,
+  useDeleteUserTier,
+  useGetUserTierById,
+} from "../../services/user-tier.action.hook";
+import { UserTierFormValues, UserTierSchema } from "../../data/schema";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 import { useGetAllTiers } from "@/features/settings/Approvers/services/approvers.hook";
@@ -149,16 +149,16 @@ function TierCard({
 }
 
 // --- MAIN COMPONENT ---
-export default function EmployeeTierManagement() {
+export default function UserTierManagement() {
   // 1. Fetch Data
-  const { data: employeeTiers = [], isLoading: isLoadingTiers } =
-    useGetAllEmployeeTiers();
+  const { data: userTiers = [], isLoading: isLoadingTiers } =
+    useGetAllUserTiers();
   const { data: leaveTypes = [] } = useGetAllLeaveTypes();
-  const { data: stats } = useGetEmployeeTierStats();
+  const { data: stats } = useGetUserTierStats();
   const { data: allTiers = [] } = useGetAllTiers();
   const [editingTierId, setEditingTierId] = useState<string | null>(null);
-  const { data: singleEmployeeTier, isLoading: isLoadingSingleTier } =
-    useGetEmployeeTierById(editingTierId || "");
+  const { data: singleUserTier, isLoading: isLoadingSingleTier } =
+    useGetUserTierById(editingTierId || "");
 
   // 2. Prepare Option Lists
   const leaveTypesMap = useMemo(() => {
@@ -191,19 +191,19 @@ export default function EmployeeTierManagement() {
 
   // Filter out tiers that are already created
   const availableTierOptions = useMemo(() => {
-    const usedTiers = employeeTiers.map((t: any) => t.tierName);
+    const usedTiers = userTiers.map((t: any) => t.tierName);
     return allTierOptions.filter((opt: any) => !usedTiers.includes(opt.value));
-  }, [allTierOptions, employeeTiers]);
+  }, [allTierOptions, userTiers]);
 
   const isAllTiersAssigned = availableTierOptions.length === 0;
 
   // 3. Mutations for Create/Edit/Delete
-  const createMutation = useCreateEmployeeTier(() => handleClose());
+  const createMutation = useCreateUserTier(() => handleClose());
   const [selectedRow, setSelectedRow] = useState<any | null>(null);
-  const updateMutation = useUpdateEmployeeTier(selectedRow?.id || "", () =>
+  const updateMutation = useUpdateUserTier(selectedRow?.id || "", () =>
     handleClose()
   );
-  const deleteMutation = useDeleteEmployeeTier(selectedRow?.id || "", () =>
+  const deleteMutation = useDeleteUserTier(selectedRow?.id || "", () =>
     handleClose()
   );
 
@@ -211,8 +211,8 @@ export default function EmployeeTierManagement() {
     null
   );
 
-  const form = useForm<EmployeeTierFormValues>({
-    resolver: zodResolver(EmployeeTierSchema) as any,
+  const form = useForm<UserTierFormValues>({
+    resolver: zodResolver(UserTierSchema) as any,
     defaultValues: {
       tierName: "",
       leaveConfigs: [],
@@ -245,9 +245,9 @@ export default function EmployeeTierManagement() {
 
   // --- NEW: Populate form when Single Tier Data loads ---
   useEffect(() => {
-    if (modalType === "edit" && singleEmployeeTier && !isLoadingSingleTier) {
+    if (modalType === "edit" && singleUserTier && !isLoadingSingleTier) {
       // 1. Map Leave Configs
-      const currentConfigs = singleEmployeeTier.leaveTypeConfig || [];
+      const currentConfigs = singleUserTier.leaveTypeConfig || [];
       const formConfigs = leaveTypes.map((lt: any) => {
         const existing = currentConfigs.find(
           (c: any) => c.leaveTypeId === lt.id
@@ -259,18 +259,18 @@ export default function EmployeeTierManagement() {
       });
 
       // 2. Map Users (Extract IDs from object array)
-      const assignedUserIds = singleEmployeeTier.users
-        ? singleEmployeeTier.users.map((u: any) => u.id)
+      const assignedUserIds = singleUserTier.users
+        ? singleUserTier.users.map((u: any) => u.id)
         : [];
 
       // 3. Reset Form
       form.reset({
-        tierName: singleEmployeeTier.tierName,
+        tierName: singleUserTier.tierName,
         leaveConfigs: formConfigs,
         userIds: assignedUserIds,
       });
     }
-  }, [singleEmployeeTier, modalType, isLoadingSingleTier, leaveTypes, form]);
+  }, [singleUserTier, modalType, isLoadingSingleTier, leaveTypes, form]);
 
   // 4. Handlers
   const handleOpenAdd = () => {
@@ -311,7 +311,7 @@ export default function EmployeeTierManagement() {
     setTimeout(() => setSelectedRow(null), 300);
   };
 
-  const onSubmit = (data: EmployeeTierFormValues) => {
+  const onSubmit = (data: UserTierFormValues) => {
     if (modalType === "edit" && selectedRow) {
       updateMutation.mutate(data);
     } else {
@@ -353,9 +353,7 @@ export default function EmployeeTierManagement() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Employees
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -371,33 +369,33 @@ export default function EmployeeTierManagement() {
           <CustomTooltip title="All available tiers have been configured.">
             <span className="cursor-not-allowed">
               <Button disabled>
-                <Plus className="mr-2 h-4 w-4" /> Add Employee Tier
+                <Plus className="mr-2 h-4 w-4" /> Add User Tier
               </Button>
             </span>
           </CustomTooltip>
         ) : (
           <Button onClick={handleOpenAdd}>
-            <Plus className="mr-2 h-4 w-4" /> Add Employee Tier
+            <Plus className="mr-2 h-4 w-4" /> Add User Tier
           </Button>
         )}
       </div>
 
       {/* Tiers List */}
       <div className="space-y-6">
-        {employeeTiers.length === 0 ? (
+        {userTiers.length === 0 ? (
           <Card>
             <CardContent className="text-center py-10">
               <div className="text-lg font-semibold">
-                No employee tiers configured yet.
+                No user tiers configured yet.
               </div>
 
               <p className="text-sm text-muted-foreground mt-2">
-                Click "Add Employee Tier" to start.
+                Click "Add User Tier" to start.
               </p>
             </CardContent>
           </Card>
         ) : (
-          employeeTiers.map((tier: any) => (
+          userTiers.map((tier: any) => (
             <TierCard
               key={tier.id}
               tier={tier}
@@ -418,7 +416,7 @@ export default function EmployeeTierManagement() {
         <DialogContent className="max-w-xl">
           <DialogHeader>
             <DialogTitle>
-              {modalType === "edit" ? "Edit Tier" : "Create Employee Tier"}
+              {modalType === "edit" ? "Edit Tier" : "Create User Tier"}
             </DialogTitle>
           </DialogHeader>
 
@@ -465,7 +463,7 @@ export default function EmployeeTierManagement() {
                     name="userIds"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Assign Employees</FormLabel>
+                        <FormLabel>Assign Users</FormLabel>
                         <FormControl>
                           {isLoadingUsers ? (
                             <div className="flex items-center text-muted-foreground">
@@ -477,7 +475,7 @@ export default function EmployeeTierManagement() {
                               options={userOptions}
                               value={field.value || []}
                               onChange={field.onChange}
-                              placeholder="Select employees..."
+                              placeholder="Select users..."
                             />
                           )}
                         </FormControl>
@@ -558,7 +556,7 @@ export default function EmployeeTierManagement() {
           onOpenChange={(val) => !val && handleClose()}
           currentRow={selectedRow}
           onDelete={onConfirmDelete}
-          itemName="Employee Tier"
+          itemName="User Tier"
           itemIdentifier="tierName"
         />
       )}

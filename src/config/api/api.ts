@@ -264,7 +264,7 @@ const API = {
     update: "holiday/patch",
     delete: "holiday/delete",
   },
-  employeeTier: {
+  userTier: {
     list: "user-tiers/list",
     create: "user-tiers/create",
     update: "user-tiers/patch",

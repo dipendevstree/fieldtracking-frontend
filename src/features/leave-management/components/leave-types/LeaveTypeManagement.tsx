@@ -64,9 +64,7 @@ export default function LeaveTypeManagement() {
         {/* Active Employees Card */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Active Employees
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
             <CalendarIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -91,7 +89,7 @@ export default function LeaveTypeManagement() {
             <div className="text-2xl font-bold">
               {leaveTypeStats?.totalAllocation || 0} days
             </div>
-            <p className="text-xs text-muted-foreground">Per employee/year</p>
+            <p className="text-xs text-muted-foreground">Per user/year</p>
           </CardContent>
         </Card>
       </div>

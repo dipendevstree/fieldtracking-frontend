@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Main } from "@/components/layout/main";
-import EmployeeTierManagement from "./components/employee-tiers/EmployeeTierManagement";
+import UserTierManagement from "./components/user-tiers/UserTierManagement";
 import LeaveRulesConfiguration from "./components/leave-rules/LeaveRulesConfiguration";
 import MyLeaveBalance from "./components/user-view/MyLeaveBalance";
 import LeaveTypeManagement from "./components/leave-types/LeaveTypeManagement";
@@ -19,9 +19,9 @@ const LEAVE_Tabs = [
     component: LeaveTypeManagement,
   },
   {
-    value: "employee-tiers",
-    label: "Employee Tiers",
-    component: EmployeeTierManagement,
+    value: "user-tiers",
+    label: "User Tiers",
+    component: UserTierManagement,
   },
   {
     value: "leave-rules",
@@ -38,7 +38,7 @@ export default function LeaveManagementPage() {
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold tracking-tight">Leave Management</h1>
         <p className="text-muted-foreground">
-          Manage leave polices, holidays, and employee balances.
+          Manage leave polices, holidays, and user balances.
         </p>
       </div>
 
