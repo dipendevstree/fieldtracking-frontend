@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -49,9 +49,11 @@ import {
   useGetAllHolidayTemplates,
   useGetHolidayTemplateStats,
   useUpdateHolidayTemplate,
+  useGetHolidayTemplateById,
 } from "../../services/holiday-template.action.hook";
 import { useGetAllHolidays } from "../../services/holiday.action.hook";
 import { HolidayTemplate, HolidayTemplateSchema } from "../../data/schema";
+import { useGetAllUsers } from "@/features/UserManagement/services/AllUsers.hook";
 
 export default function HolidayCalendarTemplates() {
   // 1. Fetch Data
@@ -59,6 +61,18 @@ export default function HolidayCalendarTemplates() {
     useGetAllHolidayTemplates();
   const { data: masterHolidays = [] } = useGetAllHolidays();
   const { data: stats } = useGetHolidayTemplateStats();
+  const { data: allUsers = [], isLoading: isLoadingUsers } = useGetAllUsers({});
+
+  const [editingTemplateId, setEditingTemplateId] = useState<string | null>(
+    null
+  );
+  const { data: singleTemplateData, isLoading: isLoadingSingleTemplate } =
+    useGetHolidayTemplateById(editingTemplateId || "");
+
+  const userOptions = allUsers.map((user: any) => ({
+    value: user.id,
+    label: `${user.firstName} ${user.lastName}`,
+  }));
 
   // 2. Local State
   const [modalType, setModalType] = useState<"add" | "edit" | "delete" | null>(
@@ -74,6 +88,7 @@ export default function HolidayCalendarTemplates() {
       region: "",
       description: "",
       specialHolidayIds: [],
+      userIds: [],
     },
   });
 
@@ -93,29 +108,46 @@ export default function HolidayCalendarTemplates() {
   // 5. Handlers
   const handleOpenAdd = () => {
     setSelectedRow(null);
+    setEditingTemplateId(null);
     form.reset({
       name: "",
       region: "",
       description: "",
       specialHolidayIds: [],
+      userIds: [],
     });
     setModalType("add");
   };
 
   const handleOpenEdit = (template: any) => {
     setSelectedRow(template);
-    const currentHolidayIds = template.holidays
-      ? template.holidays.map((h: any) => h.id)
-      : [];
-
-    form.reset({
-      name: template.name,
-      region: template.region,
-      description: template.description || "",
-      specialHolidayIds: currentHolidayIds,
-    });
+    setEditingTemplateId(template.id);
     setModalType("edit");
   };
+
+  useEffect(() => {
+    if (
+      modalType === "edit" &&
+      singleTemplateData &&
+      !isLoadingSingleTemplate
+    ) {
+      const currentHolidayIds = singleTemplateData.holidays
+        ? singleTemplateData.holidays.map((h: any) => h.id)
+        : [];
+
+      const currentUserIds = singleTemplateData.users
+        ? singleTemplateData.users.map((u: any) => u.id)
+        : [];
+
+      form.reset({
+        name: singleTemplateData.name,
+        region: singleTemplateData.region,
+        description: singleTemplateData.description || "",
+        specialHolidayIds: currentHolidayIds,
+        userIds: currentUserIds,
+      });
+    }
+  }, [singleTemplateData, modalType, isLoadingSingleTemplate, form]);
 
   const handleOpenDelete = (template: HolidayTemplate) => {
     setSelectedRow(template);
@@ -124,6 +156,7 @@ export default function HolidayCalendarTemplates() {
 
   const handleClose = () => {
     setModalType(null);
+    setEditingTemplateId(null);
     setTimeout(() => setSelectedRow(null), 300);
   };
 
@@ -224,6 +257,13 @@ export default function HolidayCalendarTemplates() {
                   <h3 className="font-semibold flex items-center gap-2">
                     <CalendarDays className="h-4 w-4 text-blue-600" />
                     {template.name}
+                    <Badge
+                      variant="secondary"
+                      className="ml-3 h-6 px-2 text-xs font-normal text-slate-600"
+                    >
+                      <Users className="mr-1 h-3 w-3" />
+                      {template.users?.length || 0} Users
+                    </Badge>
                   </h3>
                   <p className="text-sm text-muted-foreground">
                     {template.description}
@@ -296,94 +336,143 @@ export default function HolidayCalendarTemplates() {
               Define holidays for specific regions or categories.
             </DialogDescription>
           </DialogHeader>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Template Name *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Gujarat Region" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="region"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Region *</FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g., Gujarat" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Description..." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
 
-              <div className="space-y-2">
-                <Label>Choose Holidays</Label>
-                <FormField
-                  control={form.control}
-                  name="specialHolidayIds"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormControl>
-                        <MultiSelect
-                          options={masterHolidays?.map((h: any) => ({
-                            value: h.id,
-                            label: `${h.name} (${format(new Date(h.date), "PPP")})`,
-                          }))}
-                          value={field.value || []}
-                          onChange={field.onChange}
-                          placeholder="Select holidays"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="text-xs text-muted-foreground">
-                  {form.watch("specialHolidayIds")?.length || 0} holidays
-                  selected
+          {modalType === "edit" && isLoadingSingleTemplate ? (
+            <div className="flex h-64 flex-col items-center justify-center gap-2">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <span className="text-sm text-muted-foreground">
+                Loading template details...
+              </span>
+            </div>
+          ) : (
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Template Name *</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g., Gujarat Region"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="region"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Region *</FormLabel>
+                        <FormControl>
+                          <Input placeholder="e.g., Gujarat" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-              </div>
-
-              <DialogFooter>
-                <Button variant="outline" type="button" onClick={handleClose}>
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSaving}>
-                  {isSaving ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : modalType === "edit" ? (
-                    "Update"
-                  ) : (
-                    "Save"
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Description..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
+                />
+
+                <div className="space-y-2">
+                  <FormField
+                    control={form.control}
+                    name="userIds"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Assign Employees</FormLabel>
+                        <FormControl>
+                          {isLoadingUsers ? (
+                            <div className="flex items-center text-muted-foreground">
+                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                              Loading users...
+                            </div>
+                          ) : (
+                            <MultiSelect
+                              options={userOptions}
+                              value={field.value || []}
+                              onChange={field.onChange}
+                              placeholder="Select employees..."
+                            />
+                          )}
+                        </FormControl>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          {(field.value || []).length} user
+                          {(field.value || []).length !== 1 ? "s" : ""} selected
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Choose Holidays</Label>
+                  <FormField
+                    control={form.control}
+                    name="specialHolidayIds"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <MultiSelect
+                            options={masterHolidays?.map((h: any) => ({
+                              value: h.id,
+                              label: `${h.name} (${format(new Date(h.date), "PPP")})`,
+                              disabled: !h.isSpecial,
+                            }))}
+                            value={field.value || []}
+                            onChange={field.onChange}
+                            placeholder="Select holidays"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="text-xs text-muted-foreground">
+                    {form.watch("specialHolidayIds")?.length || 0} holidays
+                    selected
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button variant="outline" type="button" onClick={handleClose}>
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isSaving}>
+                    {isSaving ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : modalType === "edit" ? (
+                      "Update"
+                    ) : (
+                      "Save"
+                    )}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </Form>
+          )}
         </DialogContent>
       </Dialog>
 

@@ -255,6 +255,7 @@ const API = {
     update: "holiday-template/patch",
     delete: "holiday-template/delete",
     stats: "holiday-template/stats",
+    byId: "holiday-template",
   },
   holiday: {
     byId: "holiday",

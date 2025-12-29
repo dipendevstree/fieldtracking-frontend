@@ -4,7 +4,7 @@ import { CheckIcon, ChevronDownIcon, XIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MultiSelectProps {
-  options: Array<{ value: string; label: string }>;
+  options: Array<{ value: string; label: string; disabled?: boolean }>;
   value?: string[];
   onChange: (values: string[]) => void;
   placeholder?: string;
@@ -28,7 +28,8 @@ export function MultiSelect({
     opt.label.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Toggle single item
+  const enableFiltered = filtered.filter((opt) => !opt.disabled);
+
   const toggle = (val: string) => {
     const set = new Set(value || []);
     if (set.has(val)) set.delete(val);
@@ -36,24 +37,32 @@ export function MultiSelect({
     onChange(Array.from(set));
   };
 
-  // Check if all *currently filtered* options are selected
   const isAllFilteredSelected =
-    filtered.length > 0 && filtered.every((opt) => value.includes(opt.value));
+    enableFiltered.length > 0 &&
+    enableFiltered.every((opt) => value.includes(opt.value));
 
-  // Toggle "Select All" based on current filter
   const toggleSelectAll = () => {
     const currentSet = new Set(value || []);
-
     if (isAllFilteredSelected) {
-      // Uncheck all visible items
-      filtered.forEach((opt) => currentSet.delete(opt.value));
+      enableFiltered.forEach((opt) => currentSet.delete(opt.value));
     } else {
-      // Check all visible items
-      filtered.forEach((opt) => currentSet.add(opt.value));
+      enableFiltered.forEach((opt) => currentSet.add(opt.value));
     }
-
     onChange(Array.from(currentSet));
   };
+
+  const handleClearAll = (e: React.MouseEvent) => {
+    e.stopPropagation();
+
+    const disabledItems = value.filter(
+      (v) => options.find((o) => o.value === v)?.disabled
+    );
+    onChange(disabledItems);
+  };
+
+  const hasRemovableItems = value.some(
+    (v) => !options.find((o) => o.value === v)?.disabled
+  );
 
   return (
     <PopoverPrimitive.Root open={open} onOpenChange={setOpen}>
@@ -74,30 +83,39 @@ export function MultiSelect({
                 {/* Render the first N items */}
                 {value.slice(0, maxDisplay).map((v) => {
                   const opt = options.find((o) => o.value === v);
+                  const isItemDisabled = opt?.disabled;
+
                   return (
                     <span
                       key={v}
-                      className="inline-flex items-center gap-1 rounded-md bg-secondary px-1.5 py-0.5 text-xs font-medium text-secondary-foreground border border-secondary-foreground/10"
-                      onClick={(e) => e.stopPropagation()} // Prevent opening/closing when clicking tag
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium border",
+
+                        isItemDisabled
+                          ? "bg-muted text-muted-foreground border-transparent opacity-80"
+                          : "bg-secondary text-secondary-foreground border-secondary-foreground/10"
+                      )}
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <span className="truncate max-w-[100px]">
                         {opt?.label || v}
                       </span>
-                      <div
-                        role="button"
-                        className="rounded-full p-0.5 hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggle(v);
-                        }}
-                      >
-                        <XIcon className="size-3" />
-                      </div>
+
+                      {!isItemDisabled && (
+                        <div
+                          role="button"
+                          className="rounded-full p-0.5 hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggle(v);
+                          }}
+                        >
+                          <XIcon className="size-3" />
+                        </div>
+                      )}
                     </span>
                   );
                 })}
-
-                {/* Render Count Badge if overflow */}
                 {value.length > maxDisplay && (
                   <span className="inline-flex items-center justify-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground border border-border">
                     +{value.length - maxDisplay} more
@@ -111,15 +129,12 @@ export function MultiSelect({
 
           {/* Right Icons */}
           <div className="flex shrink-0 items-center gap-1 ml-1">
-            {value && value.length > 0 && (
+            {value && value.length > 0 && hasRemovableItems && (
               <div
                 role="button"
                 title="Clear all"
                 className="rounded-full p-0.5 hover:bg-destructive/10 hover:text-destructive transition-colors cursor-pointer mr-1"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onChange([]);
-                }}
+                onClick={handleClearAll}
               >
                 <XIcon className="size-3.5" />
               </div>
@@ -153,9 +168,8 @@ export function MultiSelect({
               className="w-full rounded-sm border bg-transparent px-2 py-1.5 text-sm outline-none placeholder:text-muted-foreground focus:bg-accent/50 transition-colors"
             />
           </div>
-
           {/* Select All Row */}
-          {filtered.length > 0 && (
+          {enableFiltered.length > 0 && (
             <div
               onClick={toggleSelectAll}
               className={cn(
@@ -191,11 +205,15 @@ export function MultiSelect({
                   return (
                     <div
                       key={opt.value}
-                      onClick={() => toggle(opt.value)}
+                      onClick={() => {
+                        if (!opt.disabled) toggle(opt.value);
+                      }}
                       className={cn(
                         "flex w-full cursor-pointer select-none items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-none transition-colors",
-                        "hover:bg-accent hover:text-accent-foreground",
-                        isSelected && "bg-accent/40"
+                        !opt.disabled &&
+                          "hover:bg-accent hover:text-accent-foreground",
+                        isSelected && "bg-accent/40",
+                        opt.disabled && "cursor-not-allowed opacity-50"
                       )}
                     >
                       {/* Checkbox Visual */}
@@ -204,7 +222,8 @@ export function MultiSelect({
                           "flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-primary ring-offset-background transition-colors",
                           isSelected
                             ? "bg-primary text-primary-foreground"
-                            : "border-black"
+                            : "border-black",
+                          opt.disabled && "border-muted-foreground/40"
                         )}
                       >
                         {isSelected && (

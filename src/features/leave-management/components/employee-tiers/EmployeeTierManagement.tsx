@@ -73,8 +73,12 @@ function TierCard({
       <CardHeader className="flex flex-row items-center justify-between pb-2 border-b">
         <div className="flex items-center gap-2">
           <CardTitle className="text-base">{displayName}</CardTitle>
-          <Badge variant="secondary" className="ml-2 ">
-            {tier.userCount || 0} employees
+          <Badge
+            variant="secondary"
+            className="ml-3 h-6 px-2 text-xs font-normal text-slate-600"
+          >
+            <Users className="mr-1 h-3 w-3" />
+            {tier.userCount || 0} Users
           </Badge>
         </div>
         <div className="flex items-center space-x-2">

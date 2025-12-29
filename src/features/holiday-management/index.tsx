@@ -29,15 +29,6 @@ export default function HolidayManagementPage() {
 
   return (
     <Main className="flex flex-col gap-4 p-4">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold tracking-tight">
-          Holiday Management
-        </h1>
-        <p className="text-muted-foreground">
-          Manage holidays and holiday templates.
-        </p>
-      </div>
-
       <Tabs
         value={activeTab}
         onValueChange={setActiveTab}

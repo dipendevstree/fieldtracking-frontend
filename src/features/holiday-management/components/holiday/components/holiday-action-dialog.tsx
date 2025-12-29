@@ -206,10 +206,13 @@ export function HolidayActionDialog({
                   <FormControl>
                     <Checkbox
                       checked={field.value}
+                      disabled={!!holidayToEdit?.id}
                       onCheckedChange={field.onChange}
                     />
                   </FormControl>
-                  <div className="space-y-1 leading-none">
+                  <div
+                    className={`space-y-1 leading-none ${!!holidayToEdit?.id ? "opacity-50" : ""}`}
+                  >
                     <FormLabel>Special Holiday</FormLabel>
                   </div>
                 </FormItem>

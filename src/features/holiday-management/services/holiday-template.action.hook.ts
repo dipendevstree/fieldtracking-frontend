@@ -82,3 +82,20 @@ export const useGetHolidayTemplateStats = (options?: { enabled?: boolean }) => {
     error: query.error,
   };
 };
+
+export const useGetHolidayTemplateById = (
+  id: string,
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<any>({
+    url: `${API.holidayTemplate.byId}/${id}`,
+    enabled: !!id && (options?.enabled ?? true),
+  });
+
+  return {
+    ...query,
+    data: query.data,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
