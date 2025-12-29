@@ -8,6 +8,7 @@ import HolidayTypeActionModal from "./components/holiday-type-action-modal";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import { useHolidayTypeStore } from "../../store/holiday-type.store";
 import { useGetAllHolidayTypes } from "../../services/holiday-type.action.hook";
+import { Main } from "@/components/layout/main";
 
 export default function HolidayTypeManagement() {
   const [pagination, setPagination] = useState({
@@ -35,7 +36,7 @@ export default function HolidayTypeManagement() {
   };
 
   return (
-    <div className="space-y-6">
+    <Main className="space-y-6">
       {/* Header Stats - Simplified for now as we don't have separate stats API for holiday types yet */}
       <div className="grid gap-4 md:grid-cols-3">
         {/* Total Holiday Types Card */}
@@ -74,6 +75,6 @@ export default function HolidayTypeManagement() {
           defaultPageSize={pagination.limit}
         />
       </div>
-    </div>
+    </Main>
   );
 }

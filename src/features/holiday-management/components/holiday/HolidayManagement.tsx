@@ -18,6 +18,7 @@ import {
 } from "@/features/holiday-management/services/holiday.action.hook";
 import { useGetAllLeaves } from "@/features/leave-management/services/leave-action.hook";
 import CalendarView from "@/features/leave-management/components/user-view/components/CalendarView";
+import { Main } from "@/components/layout/main";
 
 // --- LOGIC HELPER ---
 const getEventStatusKey = (isHoliday: boolean, text: string, date: Date) => {
@@ -150,7 +151,7 @@ export default function HolidayManagement() {
   };
 
   return (
-    <div className="space-y-6 pb-10">
+    <Main className="space-y-6 pb-10">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight text-slate-900">
           Holiday Calendar
@@ -283,6 +284,6 @@ export default function HolidayManagement() {
           onOpenChange={setIsDeleteDialogOpen}
         />
       )}
-    </div>
+    </Main>
   );
 }

@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   ChartPie,
   FileText,
+  CalendarDays,
 } from "lucide-react";
 import { type SidebarData } from "../types";
 
@@ -142,7 +143,29 @@ export const sidebarData: SidebarData = {
           url: "/reports",
           icon: ChartPie,
           menuKey: "reports",
-        }
+        },
+        {
+          title: "Holiday Management",
+          icon: CalendarDays,
+          menuKey: "holiday_management",
+          items: [
+            {
+              title: "Holiday Calendar",
+              url: "/holiday-management/holiday-calendar",
+              menuKey: "holiday_calendar",
+            },
+            {
+              title: "Holiday Types",
+              url: "/holiday-management/holiday-types",
+              menuKey: "holiday_types",
+            },
+            {
+              title: "Holiday Templates",
+              url: "/holiday-management/holiday-templates",
+              menuKey: "holiday_templates",
+            },
+          ],
+        },
       ],
     },
     {

@@ -54,6 +54,7 @@ import {
 import { useGetAllHolidays } from "../../services/holiday.action.hook";
 import { HolidayTemplate, HolidayTemplateSchema } from "../../data/schema";
 import { useGetAllUsers } from "@/features/UserManagement/services/AllUsers.hook";
+import { Main } from "@/components/layout/main";
 
 export default function HolidayCalendarTemplates() {
   // 1. Fetch Data
@@ -199,7 +200,7 @@ export default function HolidayCalendarTemplates() {
   }
 
   return (
-    <div className="space-y-6">
+    <Main className="space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
         {/* Total Templates Card */}
         <Card>
@@ -496,6 +497,6 @@ export default function HolidayCalendarTemplates() {
           itemIdentifier="name"
         />
       )}
-    </div>
+    </Main>
   );
 }
