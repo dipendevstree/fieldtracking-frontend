@@ -73,7 +73,7 @@ export default function HolidayCalendarTemplates() {
       name: "",
       region: "",
       description: "",
-      holidayIds: [],
+      specialHolidayIds: [],
     },
   });
 
@@ -93,17 +93,26 @@ export default function HolidayCalendarTemplates() {
   // 5. Handlers
   const handleOpenAdd = () => {
     setSelectedRow(null);
-    form.reset({ name: "", region: "", description: "", holidayIds: [] });
+    form.reset({
+      name: "",
+      region: "",
+      description: "",
+      specialHolidayIds: [],
+    });
     setModalType("add");
   };
 
-  const handleOpenEdit = (template: HolidayTemplate) => {
+  const handleOpenEdit = (template: any) => {
     setSelectedRow(template);
+    const currentHolidayIds = template.holidays
+      ? template.holidays.map((h: any) => h.id)
+      : [];
+
     form.reset({
       name: template.name,
       region: template.region,
       description: template.description || "",
-      holidayIds: template.holidayIds || [],
+      specialHolidayIds: currentHolidayIds,
     });
     setModalType("edit");
   };
@@ -225,7 +234,7 @@ export default function HolidayCalendarTemplates() {
                     </Badge>
                     <Badge variant="secondary" className="font-normal">
                       <CalendarIcon className="h-3 w-3 mr-1" />{" "}
-                      {template.holidayIds?.length || 0} holidays
+                      {template.holidays?.length || 0} holidays
                     </Badge>
                   </div>
                 </div>
@@ -335,7 +344,7 @@ export default function HolidayCalendarTemplates() {
                 <Label>Choose Holidays</Label>
                 <FormField
                   control={form.control}
-                  name="holidayIds"
+                  name="specialHolidayIds"
                   render={({ field }) => (
                     <FormItem>
                       <FormControl>
@@ -354,7 +363,8 @@ export default function HolidayCalendarTemplates() {
                   )}
                 />
                 <div className="text-xs text-muted-foreground">
-                  {form.watch("holidayIds")?.length || 0} holidays selected
+                  {form.watch("specialHolidayIds")?.length || 0} holidays
+                  selected
                 </div>
               </div>
 

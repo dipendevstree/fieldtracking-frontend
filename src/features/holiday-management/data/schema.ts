@@ -15,7 +15,7 @@ export const HolidayTemplateSchema = z.object({
   name: z.string().min(1, "Template name is required"),
   region: z.string().min(1, "Region/Category is required"),
   description: z.string().optional(),
-  holidayIds: z.array(z.string()).default([]),
+  specialHolidayIds: z.array(z.string()).default([]),
 });
 
 export type Holiday = z.infer<typeof HolidaySchema> & { id: string };
