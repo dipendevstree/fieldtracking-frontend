@@ -24,15 +24,14 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-
-import { HolidaySchema } from "@/features/leave-management/data/schema";
 import {
   useCreateHoliday,
   useUpdateHoliday,
-} from "@/features/leave-management/services/holiday.action.hook";
-import { useGetAllHolidayTypes } from "@/features/leave-management/services/holiday-type.action.hook";
+} from "@/features/holiday-management/services/holiday.action.hook";
+import { useGetAllHolidayTypes } from "@/features/holiday-management/services/holiday-type.action.hook";
 import { SimpleDatePicker } from "@/components/ui/datepicker";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { HolidaySchema } from "../../../data/schema";
 
 interface Props {
   open: boolean;

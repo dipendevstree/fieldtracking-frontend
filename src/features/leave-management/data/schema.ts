@@ -11,31 +11,7 @@ export const LeaveTypeSchema = z.object({
 
 export type LeaveType = z.infer<typeof LeaveTypeSchema> & { id: string };
 
-// --- 2. Holiday Template ---
-export const HolidaySchema = z.object({
-  id: z.string().optional(),
-  name: z.string().min(1, "Holiday name is required"),
-  date: z.date({ required_error: "Date is required" }),
-  description: z.string().optional(),
-  holidayTypeId: z.string().min(1, "Holiday Type is required"),
-  isSpecial: z.boolean().default(false),
-  holidayTemplateId: z.array(z.string()).optional(),
-});
-
-export const HolidayTemplateSchema = z.object({
-  id: z.string().optional(),
-  name: z.string().min(1, "Template name is required"),
-  region: z.string().min(1, "Region/Category is required"),
-  description: z.string().optional(),
-  holidayIds: z.array(z.string()).default([]),
-});
-
-export type Holiday = z.infer<typeof HolidaySchema> & { id: string };
-export type HolidayTemplate = z.infer<typeof HolidayTemplateSchema> & {
-  id: string;
-};
-
-// --- 3. Leave Rules ---
+// --- 2. Leave Rules ---
 export const LeaveRulesSchema = z.object({
   // Sandwich
   sandwichLeaveRuleActive: z.boolean(),
@@ -59,7 +35,7 @@ export const LeaveRulesSchema = z.object({
 
 export type LeaveRules = z.infer<typeof LeaveRulesSchema>;
 
-// --- 4. Employee Tier ---
+// --- 3. Employee Tier ---
 export const EmployeeTierSchema = z.object({
   tierName: z.string().min(1, "Name is required"),
   leaveConfigs: z.array(
@@ -73,7 +49,7 @@ export const EmployeeTierSchema = z.object({
 
 export type EmployeeTierFormValues = z.infer<typeof EmployeeTierSchema>;
 
-// --- 5. Apply Leave (DYNAMIC VALIDATION) ---
+// --- 4. Apply Leave (DYNAMIC VALIDATION) ---
 export const getApplyLeaveSchema = (requiredAttachmentIds: string[] = []) =>
   z
     .object({

@@ -10,15 +10,14 @@ import StatusBadge, {
   statusColors,
 } from "@/components/shared/common-status-badge";
 import { cn } from "@/lib/utils";
-
-import CalendarView from "../user-view/components/CalendarView";
 import { HolidayActionDialog } from "./components/holiday-action-dialog";
 
 import {
   useGetAllHolidays,
   useDeleteHoliday,
-} from "@/features/leave-management/services/holiday.action.hook";
+} from "@/features/holiday-management/services/holiday.action.hook";
 import { useGetAllLeaves } from "@/features/leave-management/services/leave-action.hook";
+import CalendarView from "@/features/leave-management/components/user-view/components/CalendarView";
 
 // --- LOGIC HELPER ---
 const getEventStatusKey = (isHoliday: boolean, text: string, date: Date) => {

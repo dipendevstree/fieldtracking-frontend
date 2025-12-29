@@ -27,7 +27,7 @@ import { TopStatsCard } from "../../../../components/ui/TopStatsCard";
 
 // Services & Hooks
 import { useGetAllLeaveTypes } from "@/features/leave-management/services/leave-type.action.hook";
-import { useGetAllHolidays } from "@/features/leave-management/services/holiday.action.hook";
+import { useGetAllHolidays } from "@/features/holiday-management/services/holiday.action.hook";
 import {
   useDeleteLeave,
   useGetAllLeaves,

@@ -3,7 +3,7 @@ import useDeleteData from "@/hooks/use-delete-data";
 import useFetchData from "@/hooks/use-fetch-data";
 import usePatchData from "@/hooks/use-patch-data";
 import usePostData from "@/hooks/use-post-data";
-import { IListParams } from "../types";
+import { IListParams } from "../../leave-management/types";
 
 const HOLIDAY_TYPE_QUERY = API.holidayType.list;
 

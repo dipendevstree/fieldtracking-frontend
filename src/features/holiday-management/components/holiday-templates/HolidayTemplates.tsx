@@ -43,7 +43,6 @@ import CustomTooltip from "@/components/shared/custom-tooltip";
 import { DeleteModal } from "@/components/shared/common-delete-modal";
 
 // Data & Services
-import { HolidayTemplate, HolidayTemplateSchema } from "../../data/schema";
 import {
   useCreateHolidayTemplate,
   useDeleteHolidayTemplate,
@@ -52,6 +51,7 @@ import {
   useUpdateHolidayTemplate,
 } from "../../services/holiday-template.action.hook";
 import { useGetAllHolidays } from "../../services/holiday.action.hook";
+import { HolidayTemplate, HolidayTemplateSchema } from "../../data/schema";
 
 export default function HolidayCalendarTemplates() {
   // 1. Fetch Data

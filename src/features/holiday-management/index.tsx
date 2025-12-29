@@ -1,44 +1,40 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Main } from "@/components/layout/main";
-import EmployeeTierManagement from "./components/employee-tiers/EmployeeTierManagement";
-import LeaveRulesConfiguration from "./components/leave-rules/LeaveRulesConfiguration";
-import MyLeaveBalance from "./components/user-view/MyLeaveBalance";
-import LeaveTypeManagement from "./components/leave-types/LeaveTypeManagement";
+import HolidayCalendarTemplates from "./components/holiday-templates/HolidayTemplates";
+import HolidayManagement from "./components/holiday/HolidayManagement";
+import HolidayTypeManagement from "./components/holiday-types/HolidayTypeManagement";
 
 // Tab Config
-const LEAVE_Tabs = [
+const HOLIDAY_Tabs = [
   {
-    value: "user-view",
-    label: "User View",
-    component: MyLeaveBalance,
+    value: "holiday-calendar",
+    label: "Holiday Calendar",
+    component: HolidayManagement,
   },
   {
-    value: "leave-types",
-    label: "Leave Types",
-    component: LeaveTypeManagement,
+    value: "holiday-types",
+    label: "Holiday Types",
+    component: HolidayTypeManagement,
   },
   {
-    value: "employee-tiers",
-    label: "Employee Tiers",
-    component: EmployeeTierManagement,
-  },
-  {
-    value: "leave-rules",
-    label: "Leave Rules",
-    component: LeaveRulesConfiguration,
+    value: "holiday-templates",
+    label: "Holiday Templates",
+    component: HolidayCalendarTemplates,
   },
 ] as const;
 
-export default function LeaveManagementPage() {
-  const [activeTab, setActiveTab] = useState("user-view");
+export default function HolidayManagementPage() {
+  const [activeTab, setActiveTab] = useState("holiday-calendar");
 
   return (
     <Main className="flex flex-col gap-4 p-4">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold tracking-tight">Leave Management</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          Holiday Management
+        </h1>
         <p className="text-muted-foreground">
-          Manage leave polices, holidays, and employee balances.
+          Manage holidays and holiday templates.
         </p>
       </div>
 
@@ -49,7 +45,7 @@ export default function LeaveManagementPage() {
       >
         <div className="overflow-x-auto pb-2">
           <TabsList className="w-full justify-start h-12 bg-muted/50 p-1">
-            {LEAVE_Tabs.map((tab) => {
+            {HOLIDAY_Tabs.map((tab) => {
               return (
                 <TabsTrigger
                   key={tab.value}
@@ -63,7 +59,7 @@ export default function LeaveManagementPage() {
           </TabsList>
         </div>
 
-        {LEAVE_Tabs.map((tab) => {
+        {HOLIDAY_Tabs.map((tab) => {
           const Component = tab.component;
           return (
             <TabsContent
