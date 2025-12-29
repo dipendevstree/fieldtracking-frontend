@@ -138,11 +138,39 @@ export const sidebarData: SidebarData = {
             },
           ],
         },
+
         {
           title: "Reports",
           url: "/reports",
           icon: ChartPie,
           menuKey: "reports",
+        },
+        {
+          title: "Leave Management",
+          icon: CalendarDays,
+          menuKey: "leave_management",
+          items: [
+            {
+              title: "Leave Balance",
+              url: "/leave-management/leave-balance",
+              menuKey: "leave_balance",
+            },
+            {
+              title: "User Tiers",
+              url: "/leave-management/user-tiers",
+              menuKey: "user_tiers",
+            },
+            {
+              title: "Leave Types",
+              url: "/leave-management/leave-types",
+              menuKey: "leave_types",
+            },
+            {
+              title: "Leave Rules",
+              url: "/leave-management/leave-rules",
+              menuKey: "leave_rules",
+            },
+          ],
         },
         {
           title: "Holiday Management",

@@ -51,6 +51,7 @@ import { IconEdit, IconTrash } from "@tabler/icons-react";
 import { useGetAllTiers } from "@/features/settings/Approvers/services/approvers.hook";
 import { useGetAllUsers } from "@/features/UserManagement/services/AllUsers.hook";
 import MultiSelect from "@/components/ui/MultiSelect";
+import { Main } from "@/components/layout/main";
 
 // --- HELPER COMPONENT: TIER CARD ---
 function TierCard({
@@ -334,7 +335,7 @@ export default function UserTierManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <Main className="space-y-6">
       {/* Header Stats*/}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
@@ -560,6 +561,6 @@ export default function UserTierManagement() {
           itemIdentifier="tierName"
         />
       )}
-    </div>
+    </Main>
   );
 }

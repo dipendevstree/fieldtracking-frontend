@@ -10,6 +10,7 @@ import LeaveTypeTable from "./components/leave-type-table";
 import LeaveTypeActionModal from "./components/leave-type-action-modal";
 import { useLeaveTypeStore } from "../../store/leave-type.store";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
+import { Main } from "@/components/layout/main";
 
 export default function LeaveTypeManagement() {
   const [pagination, setPagination] = useState({
@@ -40,7 +41,7 @@ export default function LeaveTypeManagement() {
   };
 
   return (
-    <div className="space-y-6">
+    <Main className="space-y-6">
       {/* Header Stats */}
       <div className="grid gap-4 md:grid-cols-3">
         {/* Total Leave Types Card */}
@@ -113,6 +114,6 @@ export default function LeaveTypeManagement() {
           defaultPageSize={pagination.limit}
         />
       </div>
-    </div>
+    </Main>
   );
 }

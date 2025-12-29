@@ -39,6 +39,7 @@ import {
 import StatusBadge, {
   statusColors,
 } from "@/components/shared/common-status-badge";
+import { Main } from "@/components/layout/main";
 
 // --- LOGIC HELPER ---
 const getEventStatusKey = (isHoliday: boolean, text: string, date: Date) => {
@@ -217,7 +218,7 @@ export default function MyLeaveBalance() {
   ];
 
   return (
-    <div className="space-y-6 pb-10">
+    <Main className="space-y-6 pb-10">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight text-slate-900">
           My Leave Balance
@@ -412,6 +413,6 @@ export default function MyLeaveBalance() {
           itemIdentifier="displayLabel"
         />
       )}
-    </div>
+    </Main>
   );
 }

@@ -45,6 +45,7 @@ import {
   useGetLeaveRulesConfig,
   useUpdateLeaveRulesConfig,
 } from "../../services/leave-rules-config.action.hook";
+import { Main } from "@/components/layout/main";
 
 export default function LeaveRulesConfiguration() {
   const { data: leaveTypes = [] } = useGetAllLeaveTypes();
@@ -130,7 +131,7 @@ export default function LeaveRulesConfiguration() {
   }
 
   return (
-    <div className="space-y-6">
+    <Main className="space-y-6">
       {/* 1. Top Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <SummaryCard
@@ -576,6 +577,6 @@ export default function LeaveRulesConfiguration() {
           </div>
         </form>
       </Form>
-    </div>
+    </Main>
   );
 }
