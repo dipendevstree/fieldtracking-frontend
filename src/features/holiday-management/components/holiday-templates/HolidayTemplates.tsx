@@ -174,6 +174,19 @@ export default function HolidayCalendarTemplates() {
     }
   };
 
+  const holidayOptions = (masterHolidays || [])
+    .filter((h: any) => {
+      if (modalType === "add") {
+        return h.isSpecial === true;
+      }
+      return true;
+    })
+    .map((h: any) => ({
+      value: h.id,
+      label: `${h.name} (${format(new Date(h.date), "PPP")})`,
+      disabled: !h.isSpecial,
+    }));
+
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
   // 6. Loading State
@@ -436,11 +449,7 @@ export default function HolidayCalendarTemplates() {
                       <FormItem>
                         <FormControl>
                           <MultiSelect
-                            options={masterHolidays?.map((h: any) => ({
-                              value: h.id,
-                              label: `${h.name} (${format(new Date(h.date), "PPP")})`,
-                              disabled: !h.isSpecial,
-                            }))}
+                            options={holidayOptions}
                             value={field.value || []}
                             onChange={field.onChange}
                             placeholder="Select holidays"
