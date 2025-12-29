@@ -288,6 +288,14 @@ const API = {
     update: "holidayType/patch",
     delete: "holidayType/delete",
   },
+  leaveRequest: {
+    list: "leaveApprovals/list",
+    create: "leaveApprovals/create",
+    update: "leaveApprovals/patch",
+    delete: "leaveApprovals/delete",
+    stats: "leaveApprovals/stats",
+    pendingList: "leaveApprovals/pending",
+  },
 };
 
 Object.freeze(API);
