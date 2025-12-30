@@ -18,8 +18,8 @@ import { Card, CardContent } from "@/components/ui/card";
 // Custom Components
 import CalendarView from "./components/CalendarView";
 import CustomTooltip from "@/components/shared/custom-tooltip";
-import { IconEdit, IconTrash } from "@tabler/icons-react";
-import { DeleteModal } from "@/components/shared/common-delete-modal";
+import { IconEdit, IconX } from "@tabler/icons-react";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 import { ApplyLeaveDialog } from "./components/apply-leave-dialog";
 import { LeaveBalanceCard } from "./components/leave-balance-card";
@@ -29,7 +29,7 @@ import { TopStatsCard } from "../../../../components/ui/TopStatsCard";
 import { useGetAllLeaveTypes } from "@/features/leave-management/services/leave-type.action.hook";
 import { useGetAllHolidays } from "@/features/holiday-management/services/holiday.action.hook";
 import {
-  useDeleteLeave,
+  useCancelLeave,
   useGetAllLeaves,
   useGetLeaveStats,
   useGetMyLeaves,
@@ -69,12 +69,12 @@ export default function MyLeaveBalance() {
   const [viewDate, setViewDate] = useState(new Date());
 
   const [isApplyLeaveOpen, setIsApplyLeaveOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [editingLeaveId, setEditingLeaveId] = useState<string | null>(null);
   const [selectedLeaveTypeId, setSelectedLeaveTypeId] = useState<
     string | undefined
   >(undefined);
-  const [leaveToDelete, setLeaveToDelete] = useState<any | null>(null);
+  const [leaveToCancel, setLeaveToCancel] = useState<any | null>(null);
 
   // Services
   const { data: leaveTypesList = [] } = useGetAllLeaveTypes();
@@ -96,13 +96,13 @@ export default function MyLeaveBalance() {
     weekOffDays,
   } = useGetAllLeaves(calendarQueryParams);
 
-  const deleteLeaveId = leaveToDelete?.id || "";
+  const cancelLeaveId = leaveToCancel?.id || "";
 
   // Mutations
-  const deleteLeaveMutation = useDeleteLeave(deleteLeaveId, () => {
+  const cancelLeaveMutation = useCancelLeave(cancelLeaveId, () => {
     setIsApplyLeaveOpen(false);
-    setIsDeleteDialogOpen(false);
-    setLeaveToDelete(null);
+    setIsCancelDialogOpen(false);
+    setLeaveToCancel(null);
   });
 
   // Handlers
@@ -122,9 +122,9 @@ export default function MyLeaveBalance() {
     setIsApplyLeaveOpen(true);
   };
 
-  const handleDeleteClick = (leaveData: any) => {
+  const handleCancelClick = (leaveData: any) => {
     if (leaveData.status?.toLowerCase() === "approved") {
-      toast.error("Cannot delete approved leave requests.");
+      toast.error("Cannot cancel approved leave requests.");
       return;
     }
     const typeName =
@@ -132,15 +132,17 @@ export default function MyLeaveBalance() {
       leaveTypesList.find((t: any) => t.id === leaveData.leaveTypeId)?.name ||
       "Leave";
     const dateStr = format(parseISO(leaveData.startDate), "MMM dd, yyyy");
-    setLeaveToDelete({
+    setLeaveToCancel({
       ...leaveData,
       displayLabel: `${typeName} on ${dateStr}`,
+      typeName,
+      dateStr,
     });
-    setIsDeleteDialogOpen(true);
+    setIsCancelDialogOpen(true);
   };
 
-  const confirmDelete = () => {
-    if (deleteLeaveId) deleteLeaveMutation.mutate();
+  const confirmCancel = () => {
+    if (cancelLeaveId) cancelLeaveMutation.mutate();
   };
 
   // Calendar Logic
@@ -365,16 +367,16 @@ export default function MyLeaveBalance() {
                                 <IconEdit size={16} />
                               </Button>
                             </CustomTooltip>
-                            <CustomTooltip title="Delete">
+                            <CustomTooltip title="Cancel">
                               <Button
                                 variant="ghost"
                                 className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleDeleteClick(originalData);
+                                  handleCancelClick(originalData);
                                 }}
                               >
-                                <IconTrash size={16} />
+                                <IconX size={18} stroke={3} />
                               </Button>
                             </CustomTooltip>
                           </div>
@@ -402,15 +404,28 @@ export default function MyLeaveBalance() {
         leaveTypesList={leaveTypesList}
       />
 
-      {/* --- CONFIRM DELETE MODAL --- */}
-      {leaveToDelete && (
-        <DeleteModal
-          open={isDeleteDialogOpen}
-          onOpenChange={setIsDeleteDialogOpen}
-          currentRow={leaveToDelete}
-          onDelete={confirmDelete}
-          itemName="Leave Request"
-          itemIdentifier="displayLabel"
+      {/* --- CONFIRM CANCEL DIALOG --- */}
+      {leaveToCancel && (
+        <ConfirmDialog
+          open={isCancelDialogOpen}
+          onOpenChange={setIsCancelDialogOpen}
+          title="Cancel Leave Request"
+          desc={
+            <span>
+              Are you sure you want to cancel the leave request for{" "}
+              <strong className="text-slate-900">
+                {leaveToCancel.typeName}
+              </strong>{" "}
+              on{" "}
+              <strong className="text-slate-900">
+                {leaveToCancel.dateStr}
+              </strong>
+              ?
+            </span>
+          }
+          handleConfirm={confirmCancel}
+          confirmText="Yes, Cancel"
+          destructive
         />
       )}
     </Main>

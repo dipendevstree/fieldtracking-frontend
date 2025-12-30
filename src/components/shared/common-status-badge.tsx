@@ -118,6 +118,11 @@ export const statusColors: Record<
     bg: "bg-gray-100",
     dot: "bg-gray-500",
   },
+  cancel: {
+    text: "text-red-600",
+    bg: "bg-red-100",
+    dot: "bg-red-500",
+  },
 };
 
 function formatStatusTitle(status: string): string {

@@ -101,4 +101,5 @@ export enum LEAVE_STATUS {
   PENDING = "pending",
   APPROVED = "approved",
   REJECTED = "rejected",
+  CANCEL = "cancel",
 }

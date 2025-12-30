@@ -1,4 +1,5 @@
 import API from "@/config/api/api";
+import { LEAVE_STATUS } from "@/data/app.data";
 import useDeleteData from "@/hooks/use-delete-data";
 import useFetchData from "@/hooks/use-fetch-data";
 import usePatchData from "@/hooks/use-patch-data";
@@ -42,6 +43,23 @@ export const useDeleteLeave = (id: string, onSuccess?: () => void) => {
       }
     },
   });
+};
+
+export const useCancelLeave = (id: string, onSuccess?: () => void) => {
+  const mutation = usePatchData({
+    url: `${API.leave.update}/${id}`,
+    refetchQueries: [LEAVE_QUERY, MY_LEAVE_QUERY, LEAVE_STATS_QUERY],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+
+  return {
+    ...mutation,
+    mutate: () => mutation.mutate({ status: LEAVE_STATUS.CANCEL }),
+  };
 };
 
 export const useGetLeaveById = (id?: any, options?: { enabled?: boolean }) => {

@@ -52,6 +52,11 @@ const EVENT_STYLES: Record<string, React.CSSProperties> = {
     backgroundColor: "#fef2f2",
     color: "#b91c1c",
   },
+  cancel: {
+    borderLeftColor: "#ef4444",
+    backgroundColor: "#fef2f2",
+    color: "#b91c1c",
+  },
 
   // Holidays
   national: {
@@ -220,7 +225,7 @@ export default function CalendarView({
           <>
             <LegendItem color="bg-green-500" label="Approved" />
             <LegendItem color="bg-orange-500" label="Pending" />
-            <LegendItem color="bg-red-500" label="Rejected" />
+            <LegendItem color="bg-red-500" label="Rejected/Cancel" />
             <LegendItem color="bg-slate-300" label="Weekend" />
           </>
         )}
