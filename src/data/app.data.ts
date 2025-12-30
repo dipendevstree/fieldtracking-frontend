@@ -96,3 +96,9 @@ export enum LEAVE_HALF_DAY_TYPE {
   FIRST_HALF = "first_half",
   SECOND_HALF = "second_half",
 }
+
+export enum LEAVE_STATUS {
+  PENDING = "pending",
+  APPROVED = "approved",
+  REJECTED = "rejected",
+}

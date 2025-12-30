@@ -86,3 +86,9 @@ export const getApplyLeaveSchema = (requiredAttachmentIds: string[] = []) =>
 export type ApplyLeaveFormValues = z.infer<
   ReturnType<typeof getApplyLeaveSchema>
 >;
+
+export const LeaveRequestStatus = {
+  pending: "Pending",
+  approved: "Approved",
+  rejected: "Rejected",
+};
