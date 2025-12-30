@@ -10,7 +10,7 @@ function redirectToUrl(messageType, notification) {
   switch (messageType) {
     // chat messages are never come
     case "CHAT_MESSAGE":
-      return "/"
+      return "/";
 
     case "VIEW_VISIT":
     case "VISIT_CHANGES":
@@ -20,12 +20,19 @@ function redirectToUrl(messageType, notification) {
     case "EXPENSE_REJECT":
     case "EXPENSE_APPROVAL":
     case "EXPENSE_REQUEST":
-      return `${notification.extraData?.id ? "/approvals/daily-expense-details/" + String(notification.extraData?.id): null}`;
+      return `${notification.extraData?.id ? "/approvals/daily-expense-details/" + String(notification.extraData?.id) : null}`;
 
     case "LATE_CHECKIN":
     case "LATE_CHECKOUT":
     case "IDLE_TIME":
-      return "/"
+      return "/";
+
+    case "LEAVE_REQUEST":
+      return "/leave-management/leave-request";
+
+    case "LEAVE_APPROVED":
+    case "LEAVE_REJECTED":
+      return "/leave-management/leave-balance";
   }
 }
 
@@ -50,25 +57,27 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const url = event.notification.data?.url || "/";
   event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
-      // Check if a tab with your app is already open
-      for (const client of clientList) {
-        // Adjust this condition depending on how your app URLs are structured
-        if (client.url.includes(self.location.origin)) {
-          // Focus the existing tab
-          client.focus();
+    clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then((clientList) => {
+        // Check if a tab with your app is already open
+        for (const client of clientList) {
+          // Adjust this condition depending on how your app URLs are structured
+          if (client.url.includes(self.location.origin)) {
+            // Focus the existing tab
+            client.focus();
 
-          // Now navigate inside that tab (using postMessage)
-          client.postMessage({ type: "navigate", url });
-          return;
+            // Now navigate inside that tab (using postMessage)
+            client.postMessage({ type: "navigate", url });
+            return;
+          }
         }
-      }
 
-      // If no open tab, open a new one
-      if (clients.openWindow) {
-        return clients.openWindow(url);
-      }
-    })
+        // If no open tab, open a new one
+        if (clients.openWindow) {
+          return clients.openWindow(url);
+        }
+      })
   );
 });
 
@@ -80,7 +89,7 @@ messaging.onBackgroundMessage(function (payload) {
     body: payload?.data?.body,
     image: payload?.data?.image,
     createdDate: new Date().toISOString(),
-    extraData: payload?.data
+    extraData: payload?.data,
   };
   const title = notification.title || "New Message";
   const options = {

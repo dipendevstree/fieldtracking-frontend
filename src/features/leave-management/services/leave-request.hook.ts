@@ -52,7 +52,7 @@ export const useGetLeaveRequestStats = (params: any, options?: any) => {
 export const useCreateLeaveApproval = (onSuccess?: () => void) => {
   return usePostData({
     url: API.leaveRequest.create,
-    refetchQueries: [API.leaveRequest.pendingList],
+    refetchQueries: [API.leaveRequest.pendingList, API.leaveRequest.list],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();

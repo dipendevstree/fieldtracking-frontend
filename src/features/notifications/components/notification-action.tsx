@@ -32,6 +32,17 @@ export function toUrl(row: any) {
     case NOTIFICATION_TYPE.LATE_CHECKOUT:
     case NOTIFICATION_TYPE.IDLE_TIME:
       return null;
+
+    case NOTIFICATION_TYPE.LEAVE_REQUEST:
+      return {
+        to: "/leave-management/leave-request",
+      };
+
+    case NOTIFICATION_TYPE.LEAVE_APPROVED:
+    case NOTIFICATION_TYPE.LEAVE_REJECTED:
+      return {
+        to: "/leave-management/leave-balance",
+      };
   }
 }
 

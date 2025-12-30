@@ -17,6 +17,7 @@ import PendingRequest from "./components/PendingRequest";
 import LeaveApprovalHistory from "./components/LeaveApprovalHistory";
 import { useGetLeaveRequestStats } from "../../services/leave-request.hook";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { Main } from "@/components/layout/main";
 
 const tabs = [
   {
@@ -46,7 +47,7 @@ export default function LeaveRequest() {
     sort: "desc",
   });
 
-  const { data: usersList = [] } = useGetAllUsers();
+  const { data: usersList = [] } = useGetAllUsers({ onlyTeamMembers: true });
   const { data: leaveRequestStats } = useGetLeaveRequestStats({
     userId: user?.id,
   });
@@ -70,8 +71,8 @@ export default function LeaveRequest() {
 
   const leaveTypeSelectOptions = useSelectOptions<any>({
     listData: Object.entries(LeaveRequestStatus).map(([key, value]) => ({
-      label: formatDropDownLabel(key),
-      value: String(value),
+      label: formatDropDownLabel(value),
+      value: String(key),
     })),
     labelKey: "label",
     valueKey: "value",
@@ -137,7 +138,7 @@ export default function LeaveRequest() {
   ];
 
   return (
-    <div className="space-y-6">
+    <Main className="space-y-6">
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -222,6 +223,6 @@ export default function LeaveRequest() {
           );
         })}
       </Tabs>
-    </div>
+    </Main>
   );
 }

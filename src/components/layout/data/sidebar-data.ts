@@ -162,6 +162,11 @@ export const sidebarData: SidebarData = {
               menuKey: "user_tiers",
             },
             {
+              title: "Leave Request",
+              url: "/leave-management/leave-request",
+              menuKey: "leave_request",
+            },
+            {
               title: "Leave Types",
               url: "/leave-management/leave-types",
               menuKey: "leave_types",
