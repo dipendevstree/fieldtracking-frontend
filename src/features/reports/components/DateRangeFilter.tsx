@@ -20,6 +20,7 @@ interface DateRangeFilterProps {
   placeholder?: string;
   disablePastDates?: boolean;
   disableFutureDates?: boolean;
+  allowClear?: boolean;
 }
 
 export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
@@ -31,6 +32,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
   placeholder = "Pick a date range",
   disablePastDates = false,
   disableFutureDates = false,
+  allowClear = true,
 }) => {
   const [open, setOpen] = useState(false);
   const [tempRange, setTempRange] = useState<DateRange | undefined>(dateRange);
@@ -76,7 +78,8 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
             <Button
               variant="outline"
               className={cn(
-                "w-full justify-start text-left font-normal pr-10",
+                "w-full justify-start text-left font-normal",
+                allowClear && "pr-10",
                 sizeClasses[size]
               )}
             >
@@ -134,7 +137,7 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
           </PopoverContent>
         </Popover>
 
-        {(dateRange?.from || dateRange?.to) && (
+        {allowClear && (dateRange?.from || dateRange?.to) && (
           <button
             type="button"
             onClick={handleClear}

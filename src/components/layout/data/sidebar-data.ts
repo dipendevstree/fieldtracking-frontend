@@ -10,6 +10,8 @@ import {
   ShieldCheck,
   ChartPie,
   FileText,
+  CalendarDays,
+  Briefcase,
 } from "lucide-react";
 import { type SidebarData } from "../types";
 
@@ -137,12 +139,67 @@ export const sidebarData: SidebarData = {
             },
           ],
         },
+
         {
           title: "Reports",
           url: "/reports",
           icon: ChartPie,
           menuKey: "reports",
-        }
+        },
+        {
+          title: "Leave Management",
+          icon: Briefcase,
+          menuKey: "leave_management",
+          items: [
+            {
+              title: "Leave Balance",
+              url: "/leave-management/leave-balance",
+              menuKey: "leave_balance",
+            },
+            {
+              title: "User Tiers",
+              url: "/leave-management/user-tiers",
+              menuKey: "user_tiers",
+            },
+            {
+              title: "Leave Request",
+              url: "/leave-management/leave-request",
+              menuKey: "leave_request",
+            },
+            {
+              title: "Leave Types",
+              url: "/leave-management/leave-types",
+              menuKey: "leave_types",
+            },
+            {
+              title: "Leave Rules",
+              url: "/leave-management/leave-rules",
+              menuKey: "leave_rules",
+            },
+          ],
+        },
+        {
+          title: "Holiday Management",
+          icon: CalendarDays,
+          menuKey: "holiday_management",
+          items: [
+            {
+              title: "Holiday Calendar",
+              url: "/holiday-management/holiday-calendar",
+              menuKey: "holiday_calendar",
+            },
+            {
+              title: "Holiday Types",
+              url: "/holiday-management/holiday-types",
+              menuKey: "holiday_types",
+            },
+            {
+              title: "Holiday Templates",
+              url: "/holiday-management/holiday-templates",
+              menuKey: "holiday_templates",
+            },
+          ],
+        },
       ],
     },
     {

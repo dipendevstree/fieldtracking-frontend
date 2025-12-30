@@ -7,69 +7,123 @@ interface StatusBadgeProps {
   status: StatusType;
 }
 
-const statusColors: Record<string, { text: string; bg: string; dot: string }> =
-  {
-    pending: {
-      text: "text-amber-600",
-      bg: "bg-amber-100",
-      dot: "bg-amber-500",
-    },
-    partially_approved: {
-      text: "text-yellow-600",
-      bg: "bg-yellow-100",
-      dot: "bg-yellow-500",
-    },
-    approved: {
-      text: "text-green-600",
-      bg: "bg-green-100",
-      dot: "bg-green-500",
-    },
-    complete: {
-      text: "text-blue-600",
-      bg: "bg-blue-100",
-      dot: "bg-blue-500",
-    },
-    completed: {
-      text: "text-green-600",
-      bg: "bg-green-100",
-      dot: "bg-green-500",
-    },
-    in_progress: {
-      text: "text-orange-600",
-      bg: "bg-orange-100",
-      dot: "bg-orange-500",
-    },
-    processing: {
-      text: "text-orange-600",
-      bg: "bg-orange-100",
-      dot: "bg-orange-500",
-    },
-    success: {
-      text: "text-green-600",
-      bg: "bg-green-100",
-      dot: "bg-green-500",
-    },
-    verified: {
-      text: "text-green-600",
-      bg: "bg-green-100",
-      dot: "bg-green-500",
-    },
-    rejected: {
-      text: "text-red-600",
-      bg: "bg-red-100",
-      dot: "bg-red-500",
-    },
-    reject: {
-      text: "text-red-600",
-      bg: "bg-red-100",
-      dot: "bg-red-500",
-    },
-    failure: {
-      text: "text-red-600",
-      bg: "bg-red-100",
-      dot: "bg-red-500",
-    },
-  };
+export const statusColors: Record<
+  string,
+  { text: string; bg: string; dot: string }
+> = {
+  pending: {
+    text: "text-orange-600",
+    bg: "bg-orange-100",
+    dot: "bg-orange-500",
+  },
+  partially_approved: {
+    text: "text-yellow-600",
+    bg: "bg-yellow-100",
+    dot: "bg-yellow-500",
+  },
+  approved: {
+    text: "text-green-600",
+    bg: "bg-green-100",
+    dot: "bg-green-500",
+  },
+  complete: {
+    text: "text-blue-600",
+    bg: "bg-blue-100",
+    dot: "bg-blue-500",
+  },
+  completed: {
+    text: "text-green-600",
+    bg: "bg-green-100",
+    dot: "bg-green-500",
+  },
+  in_progress: {
+    text: "text-orange-600",
+    bg: "bg-orange-100",
+    dot: "bg-orange-500",
+  },
+  processing: {
+    text: "text-orange-600",
+    bg: "bg-orange-100",
+    dot: "bg-orange-500",
+  },
+  success: {
+    text: "text-green-600",
+    bg: "bg-green-100",
+    dot: "bg-green-500",
+  },
+  verified: {
+    text: "text-green-600",
+    bg: "bg-green-100",
+    dot: "bg-green-500",
+  },
+  rejected: {
+    text: "text-red-600",
+    bg: "bg-red-100",
+    dot: "bg-red-500",
+  },
+  reject: {
+    text: "text-red-600",
+    bg: "bg-red-100",
+    dot: "bg-red-500",
+  },
+  failure: {
+    text: "text-red-600",
+    bg: "bg-red-100",
+    dot: "bg-red-500",
+  },
+  inactive: {
+    text: "text-gray-600",
+    bg: "bg-gray-100",
+    dot: "bg-gray-500",
+  },
+  active: {
+    text: "text-green-600",
+    bg: "bg-green-100",
+    dot: "bg-green-500",
+  },
+  // Holiday Types
+  national: {
+    text: "text-blue-600",
+    bg: "bg-blue-100",
+    dot: "bg-blue-500",
+  },
+  festival: {
+    text: "text-purple-600",
+    bg: "bg-purple-100",
+    dot: "bg-purple-500",
+  },
+  regional: {
+    text: "text-purple-600",
+    bg: "bg-purple-100",
+    dot: "bg-purple-500",
+  },
+  optional: {
+    text: "text-emerald-600",
+    bg: "bg-emerald-100",
+    dot: "bg-emerald-500",
+  },
+  weekend: {
+    text: "text-orange-600",
+    bg: "bg-orange-100",
+    dot: "bg-orange-500",
+  },
+  // Half Day Types
+  first_half: {
+    text: "text-gray-600",
+    bg: "bg-gray-100",
+    dot: "bg-gray-500",
+  },
+  second_half: {
+    text: "text-gray-600",
+    bg: "bg-gray-100",
+    dot: "bg-gray-500",
+  },
+  cancel: {
+    text: "text-red-600",
+    bg: "bg-red-100",
+    dot: "bg-red-500",
+  },
+};
 
 function formatStatusTitle(status: string): string {
   return status
