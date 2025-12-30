@@ -39,7 +39,7 @@ export function LeaveBalanceCard({
             {title}
           </CardTitle>
           <p className="text-[10px] text-slate-600 font-medium">
-            Balance for current year
+            Balance for {new Date().getFullYear()}
           </p>
         </div>
         <Button
