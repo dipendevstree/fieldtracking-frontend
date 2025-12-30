@@ -1,8 +1,9 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format, parseISO } from "date-fns";
-import { Loader2, Paperclip } from "lucide-react";
+import { Loader2, Paperclip, UploadCloud } from "lucide-react";
+import { useDropzone } from "react-dropzone";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -55,9 +56,6 @@ export function ApplyLeaveDialog({
   defaultLeaveTypeId,
   leaveTypesList,
 }: ApplyLeaveDialogProps) {
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [existingFiles, setExistingFiles] = useState<string[]>([]);
-  const [deleteFileKeys, setDeleteFileKeys] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<{
     from: Date | undefined;
     to: Date | undefined;
@@ -99,42 +97,31 @@ export function ApplyLeaveDialog({
     watch,
     setValue,
     reset,
-    formState: { errors, isSubmitted },
+    getValues,
+    formState: { errors },
   } = form;
 
   const watchStartDate = watch("startDate");
   const watchEndDate = watch("endDate");
   const watchHalfDay = watch("halfDay");
   const watchLeaveTypeId = watch("leaveTypeId");
+  const watchAttachments = watch("attachments") || [];
 
   const requiresAttachment = requiredAttachmentIds.includes(watchLeaveTypeId);
-
-  // Sync files to form
-  useEffect(() => {
-    const combinedFiles = [...existingFiles, ...selectedFiles];
-    const shouldValidate = isSubmitted || combinedFiles.length > 0;
-    setValue("attachments", combinedFiles, {
-      shouldValidate: shouldValidate,
-      shouldDirty: true,
-    });
-  }, [selectedFiles, existingFiles, setValue, isSubmitted]);
 
   // Initial Reset / Population
   useEffect(() => {
     if (!open) {
       setTimeout(() => {
         reset({
-          startDate: new Date(), // default
+          startDate: new Date(),
           endDate: new Date(),
           reason: "",
           leaveTypeId: "",
           halfDay: false,
           halfDayType: undefined,
           attachments: [],
-        }); // clear form
-        setSelectedFiles([]);
-        setExistingFiles([]);
-        setDeleteFileKeys([]);
+        });
         setDateRange({ from: undefined, to: undefined });
       }, 200);
       return;
@@ -144,14 +131,6 @@ export function ApplyLeaveDialog({
       const leaveData = singleLeaveData;
       const startDate = parseISO(leaveData.startDate);
       const endDate = parseISO(leaveData.endDate);
-
-      if (leaveData.attachments && Array.isArray(leaveData.attachments)) {
-        setExistingFiles(leaveData.attachments);
-      } else {
-        setExistingFiles([]);
-      }
-      setSelectedFiles([]);
-      setDeleteFileKeys([]);
 
       setDateRange({ from: startDate, to: endDate });
 
@@ -190,9 +169,6 @@ export function ApplyLeaveDialog({
   // Sync Date Range Picker to Form
   useEffect(() => {
     if (watchStartDate) {
-      // Only update dateRange if it mismatches to avoid cycles,
-      // but typically we drive form from dateRange picker or vice versa.
-      // The original code pushed watch -> dateRange.
       setDateRange({
         from: watchStartDate,
         to: watchEndDate || watchStartDate,
@@ -212,13 +188,24 @@ export function ApplyLeaveDialog({
     if (data.halfDay && data.halfDayType)
       formData.append("halfDayType", data.halfDayType);
 
-    // Append actual files
-    if (selectedFiles.length > 0) {
-      selectedFiles.forEach((file) => formData.append("attachments", file));
-    }
+    // Filter attachments: separate actual new Files and existing string paths
+    const currentAttachments = data.attachments || [];
+    const newFiles = currentAttachments.filter(
+      (a): a is File => a instanceof File
+    );
+    const remainingExisting = currentAttachments.filter(
+      (a): a is string => typeof a === "string"
+    );
 
-    // Append deleteFileKeys
-    if (deleteFileKeys.length > 0) {
+    // Append actual files
+    newFiles.forEach((file) => formData.append("attachments", file));
+
+    // Calculate deleteFileKeys: anything in original but not in current
+    if (leaveToEditId && singleLeaveData?.attachments) {
+      const originalAttachments: string[] = singleLeaveData.attachments;
+      const deleteFileKeys = originalAttachments.filter(
+        (path) => !remainingExisting.includes(path)
+      );
       deleteFileKeys.forEach((key) => formData.append("deleteFileKeys", key));
     }
 
@@ -228,6 +215,24 @@ export function ApplyLeaveDialog({
       createLeaveMutation.mutate(formData);
     }
   };
+
+  const onDropList = useCallback(
+    (acceptedFiles: File[]) => {
+      if (acceptedFiles.length > 0) {
+        const current = getValues("attachments") || [];
+        setValue("attachments", [...current, ...acceptedFiles], {
+          shouldValidate: true,
+          shouldDirty: true,
+        });
+      }
+    },
+    [getValues, setValue]
+  );
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop: onDropList,
+    noClick: false,
+  });
 
   const handlePreviewFile = (file: File | string) => {
     if (typeof file === "string") {
@@ -389,70 +394,72 @@ export function ApplyLeaveDialog({
               />
 
               {/* --- ATTACHMENTS SECTION --- */}
-              {(requiresAttachment ||
-                selectedFiles.length > 0 ||
-                existingFiles.length > 0) && (
+              {(requiresAttachment || watchAttachments.length > 0) && (
                 <div>
                   <FormLabel
                     className={cn(errors.attachments && "text-destructive")}
                   >
                     Attachments {requiresAttachment && "*"}
                   </FormLabel>
-                  <div className="mt-2">
-                    <label className="flex items-center justify-center w-full h-24 px-4 transition bg-white border-2 border-slate-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-slate-400 focus:outline-none">
-                      <span className="flex items-center space-x-2">
-                        <Paperclip className="w-5 h-5 text-slate-600" />
-                        <span className="font-medium text-slate-600 text-sm">
-                          Drop files here or click to upload
+                  <div
+                    {...getRootProps()}
+                    className={cn(
+                      "mt-2 flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-dashed rounded-md appearance-none cursor-pointer focus:outline-none",
+                      isDragActive
+                        ? "border-blue-500 bg-blue-50/50"
+                        : "border-slate-300 hover:border-slate-400"
+                    )}
+                  >
+                    <input {...getInputProps()} />
+                    <div className="flex flex-col items-center space-y-2">
+                      {isDragActive ? (
+                        <UploadCloud className="w-8 h-8 text-blue-500 animate-bounce" />
+                      ) : (
+                        <Paperclip className="w-6 h-6 text-slate-400" />
+                      )}
+                      <div className="text-center">
+                        <span className="font-semibold text-slate-700 text-sm block">
+                          {isDragActive
+                            ? "Drop files now"
+                            : "Click to upload or drag and drop"}
                         </span>
-                      </span>
-                      <input
-                        type="file"
-                        name="file_upload"
-                        className="hidden"
-                        multiple
-                        onChange={(e) => {
-                          if (e.target.files)
-                            setSelectedFiles((prev) => [
-                              ...prev,
-                              ...Array.from(e.target.files as FileList),
-                            ]);
-                        }}
-                      />
-                    </label>
+                        <span className="text-xs text-slate-500 mt-1 block">
+                          PDF, JPG, PNG or DOC (Max 5MB)
+                        </span>
+                      </div>
+                    </div>
                   </div>
 
-                  {(selectedFiles.length > 0 || existingFiles.length > 0) && (
+                  {watchAttachments.length > 0 && (
                     <div className="mt-3 border rounded-md bg-slate-50">
                       <div className="max-h-[150px] overflow-y-auto p-2 space-y-2 custom-scrollbar">
-                        {existingFiles.map((filePath, idx) => (
-                          <AttachmentItem
-                            key={`existing-${idx}`}
-                            name={filePath.split("/").pop() || filePath}
-                            isNew={false}
-                            onPreview={() => handlePreviewFile(filePath)}
-                            onRemove={() => {
-                              setDeleteFileKeys((prev) => [...prev, filePath]);
-                              setExistingFiles((prev) =>
-                                prev.filter((_, i) => i !== idx)
-                              );
-                            }}
-                          />
-                        ))}
+                        {watchAttachments.map((file: any, idx: number) => {
+                          const isNew = file instanceof File;
+                          const name = isNew
+                            ? file.name
+                            : file.split("/").pop() || file;
+                          const attachmentError = (errors.attachments as any)?.[
+                            idx
+                          ]?.message;
 
-                        {selectedFiles.map((file, idx) => (
-                          <AttachmentItem
-                            key={`new-${idx}`}
-                            name={file.name}
-                            isNew={true}
-                            onPreview={() => handlePreviewFile(file)}
-                            onRemove={() =>
-                              setSelectedFiles((prev) =>
-                                prev.filter((_, i) => i !== idx)
-                              )
-                            }
-                          />
-                        ))}
+                          return (
+                            <AttachmentItem
+                              key={idx}
+                              name={name}
+                              isNew={isNew}
+                              error={attachmentError}
+                              onPreview={() => handlePreviewFile(file)}
+                              onRemove={() => {
+                                const current = getValues("attachments") || [];
+                                setValue(
+                                  "attachments",
+                                  current.filter((_, i) => i !== idx),
+                                  { shouldValidate: true, shouldDirty: true }
+                                );
+                              }}
+                            />
+                          );
+                        })}
                       </div>
                     </div>
                   )}
@@ -466,7 +473,10 @@ export function ApplyLeaveDialog({
               )}
 
               <DialogFooter className="gap-2 pt-2">
-                <Button type="submit" disabled={isSaving}>
+                <Button
+                  type="submit"
+                  disabled={isSaving || !!errors.attachments}
+                >
                   {isSaving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : leaveToEditId ? (

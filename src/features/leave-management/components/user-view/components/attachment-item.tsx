@@ -7,6 +7,7 @@ interface AttachmentItemProps {
   isNew: boolean;
   onPreview: () => void;
   onRemove: () => void;
+  error?: string;
 }
 
 export const AttachmentItem = ({
@@ -14,6 +15,7 @@ export const AttachmentItem = ({
   isNew,
   onPreview,
   onRemove,
+  error,
 }: AttachmentItemProps) => {
   return (
     <div className="flex items-center justify-between p-2 bg-white border rounded-md text-sm shadow-sm transition-colors hover:bg-slate-50">
@@ -34,20 +36,28 @@ export const AttachmentItem = ({
         >
           {isNew ? "New" : "Existing"}
         </span>
-        <span
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            onPreview();
-          }}
-          className={cn(
-            "truncate max-w-[200px] text-slate-700 cursor-pointer hover:underline text-xs sm:text-sm",
-            isNew ? "hover:text-green-700" : "hover:text-blue-700"
+        <div className="flex flex-col min-w-0">
+          <span
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onPreview();
+            }}
+            className={cn(
+              "truncate max-w-[200px] text-slate-700 cursor-pointer hover:underline text-xs sm:text-sm font-medium",
+              isNew ? "hover:text-green-700" : "hover:text-blue-700",
+              error && "text-red-600"
+            )}
+            title={`View ${name}`}
+          >
+            {name}
+          </span>
+          {error && (
+            <span className="text-[10px] text-red-500 font-medium leading-tight">
+              {error}
+            </span>
           )}
-          title={`View ${name}`}
-        >
-          {name}
-        </span>
+        </div>
       </div>
       <div className="flex items-center gap-1 shrink-0">
         <CustomTooltip title="Preview">

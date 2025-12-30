@@ -49,6 +49,15 @@ export const UserTierSchema = z.object({
 
 export type UserTierFormValues = z.infer<typeof UserTierSchema>;
 
+export const MAX_LEAVE_ATTACHMENT_SIZE = 5 * 1024 * 1024; // 5MB
+export const ALLOWED_LEAVE_ATTACHMENT_TYPES = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+];
+
 // --- 4. Apply Leave (DYNAMIC VALIDATION) ---
 export const getApplyLeaveSchema = (requiredAttachmentIds: string[] = []) =>
   z
@@ -72,6 +81,29 @@ export const getApplyLeaveSchema = (requiredAttachmentIds: string[] = []) =>
       }
 
       // 2. Attachment Validation
+      if (data.attachments && data.attachments.length > 0) {
+        data.attachments.forEach((file: any, index: number) => {
+          if (file instanceof File) {
+            // Size check
+            if (file.size > MAX_LEAVE_ATTACHMENT_SIZE) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `File "${file.name}" exceeds the 5MB size limit`,
+                path: ["attachments", index],
+              });
+            }
+            // Type check
+            if (!ALLOWED_LEAVE_ATTACHMENT_TYPES.includes(file.type)) {
+              ctx.addIssue({
+                code: z.ZodIssueCode.custom,
+                message: `File "${file.name}" has an unsupported format. Allowed: PDF, JPG, PNG, DOC`,
+                path: ["attachments", index],
+              });
+            }
+          }
+        });
+      }
+
       if (requiredAttachmentIds.includes(data.leaveTypeId)) {
         if (!data.attachments || data.attachments.length === 0) {
           ctx.addIssue({
