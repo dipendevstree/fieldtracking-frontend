@@ -11,6 +11,7 @@ import {
   ChartPie,
   FileText,
   CalendarDays,
+  Briefcase,
 } from "lucide-react";
 import { type SidebarData } from "../types";
 
@@ -147,7 +148,7 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "Leave Management",
-          icon: CalendarDays,
+          icon: Briefcase,
           menuKey: "leave_management",
           items: [
             {

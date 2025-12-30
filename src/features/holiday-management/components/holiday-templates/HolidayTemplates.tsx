@@ -62,23 +62,28 @@ export default function HolidayCalendarTemplates() {
     useGetAllHolidayTemplates();
   const { data: masterHolidays = [] } = useGetAllHolidays();
   const { data: stats } = useGetHolidayTemplateStats();
-  const { data: allUsers = [], isLoading: isLoadingUsers } = useGetAllUsers({});
 
   const [editingTemplateId, setEditingTemplateId] = useState<string | null>(
     null
   );
+
   const { data: singleTemplateData, isLoading: isLoadingSingleTemplate } =
     useGetHolidayTemplateById(editingTemplateId || "");
-
-  const userOptions = allUsers.map((user: any) => ({
-    value: user.id,
-    label: `${user.firstName} ${user.lastName}`,
-  }));
 
   // 2. Local State
   const [modalType, setModalType] = useState<"add" | "edit" | "delete" | null>(
     null
   );
+
+  const { data: allUsers = [], isLoading: isLoadingUsers } = useGetAllUsers({
+    nullHolidayTemplateId: true,
+    holidayTemplateId: modalType === "edit" ? editingTemplateId : undefined,
+  });
+
+  const userOptions = allUsers.map((user: any) => ({
+    value: user.id,
+    label: `${user.firstName} ${user.lastName}`,
+  }));
   const [selectedRow, setSelectedRow] = useState<HolidayTemplate | null>(null);
 
   // 3. Form Setup
@@ -276,7 +281,7 @@ export default function HolidayCalendarTemplates() {
                       className="ml-3 h-6 px-2 text-xs font-normal text-slate-600"
                     >
                       <Users className="mr-1 h-3 w-3" />
-                      {template.users?.length || 0} Users
+                      {template.userCount || 0} Users
                     </Badge>
                   </h3>
                   <p className="text-sm text-muted-foreground">
