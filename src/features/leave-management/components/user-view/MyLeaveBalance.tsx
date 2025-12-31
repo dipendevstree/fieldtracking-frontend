@@ -261,7 +261,7 @@ export default function MyLeaveBalance() {
       {/* Leave Type Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {myLeavesList?.map((item: any, index: number) => {
-          const bal = item.leaveBalance || {};
+          const bal = item?.leaveBalance || {};
           const totalQuota =
             parseFloat(bal.earned || "0") + parseFloat(bal.carryForward || "0");
           const used = parseFloat(bal.used || "0");
@@ -270,8 +270,8 @@ export default function MyLeaveBalance() {
 
           return (
             <LeaveBalanceCard
-              key={item.id}
-              title={item.name}
+              key={item?.id}
+              title={item?.name}
               total={totalQuota}
               taken={used}
               balance={parseFloat(bal.remaining || "0")}
