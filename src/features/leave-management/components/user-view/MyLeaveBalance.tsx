@@ -260,28 +260,31 @@ export default function MyLeaveBalance() {
 
       {/* Leave Type Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {myLeavesList?.map((item: any, index: number) => {
-          const bal = item?.leaveBalance || {};
-          const totalQuota =
-            parseFloat(bal.earned || "0") + parseFloat(bal.carryForward || "0");
-          const used = parseFloat(bal.used || "0");
-          const percentage =
-            totalQuota > 0 ? Math.round((used / totalQuota) * 100) : 0;
+        {myLeavesList
+          ?.filter((item: any) => item && item.id)
+          ?.map((item: any, index: number) => {
+            const bal = item?.leaveBalance || {};
+            const totalQuota =
+              parseFloat(bal.earned || "0") +
+              parseFloat(bal.carryForward || "0");
+            const used = parseFloat(bal.used || "0");
+            const percentage =
+              totalQuota > 0 ? Math.round((used / totalQuota) * 100) : 0;
 
-          return (
-            <LeaveBalanceCard
-              key={item?.id}
-              title={item?.name}
-              total={totalQuota}
-              taken={used}
-              balance={parseFloat(bal.remaining || "0")}
-              percentage={percentage}
-              headerBg={cardStyles[index % cardStyles.length].headerBg}
-              titleColor={cardStyles[index % cardStyles.length].titleColor}
-              onApply={() => openApplyLeaveDialog(item.id)}
-            />
-          );
-        })}
+            return (
+              <LeaveBalanceCard
+                key={item?.id}
+                title={item?.name}
+                total={totalQuota}
+                taken={used}
+                balance={parseFloat(bal.remaining || "0")}
+                percentage={percentage}
+                headerBg={cardStyles[index % cardStyles.length].headerBg}
+                titleColor={cardStyles[index % cardStyles.length].titleColor}
+                onApply={() => openApplyLeaveDialog(item.id)}
+              />
+            );
+          })}
       </div>
 
       {/* Calendar & List Section */}
