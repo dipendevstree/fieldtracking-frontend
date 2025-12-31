@@ -55,6 +55,7 @@ import { useGetAllHolidays } from "../../services/holiday.action.hook";
 import { HolidayTemplate, HolidayTemplateSchema } from "../../data/schema";
 import { useGetAllUsers } from "@/features/UserManagement/services/AllUsers.hook";
 import { Main } from "@/components/layout/main";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 export default function HolidayCalendarTemplates() {
   // 1. Fetch Data
@@ -261,9 +262,11 @@ export default function HolidayCalendarTemplates() {
         <h2 className="text-2xl font-bold tracking-tight text-slate-900">
           Holiday Templates
         </h2>
-        <Button onClick={handleOpenAdd}>
-          <Plus className="mr-2 h-4 w-4" /> Add Holiday Template
-        </Button>
+        <PermissionGate requiredPermission="holiday_templates" action="add">
+          <Button onClick={handleOpenAdd}>
+            <Plus className="mr-2 h-4 w-4" /> Add Holiday Template
+          </Button>
+        </PermissionGate>
       </div>
 
       {/* Templates Grid/List */}
@@ -298,25 +301,34 @@ export default function HolidayCalendarTemplates() {
                   </div>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <CustomTooltip title="Edit">
-                    <Button
-                      variant="ghost"
-                      className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
-                      onClick={() => handleOpenEdit(template)}
-                    >
-                      <IconEdit size={16} />
-                    </Button>
-                  </CustomTooltip>
-
-                  <CustomTooltip title="Delete">
-                    <Button
-                      variant="ghost"
-                      className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-                      onClick={() => handleOpenDelete(template)}
-                    >
-                      <IconTrash size={16} />
-                    </Button>
-                  </CustomTooltip>
+                  <PermissionGate
+                    requiredPermission="holiday_templates"
+                    action="edit"
+                  >
+                    <CustomTooltip title="Edit">
+                      <Button
+                        variant="ghost"
+                        className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
+                        onClick={() => handleOpenEdit(template)}
+                      >
+                        <IconEdit size={16} />
+                      </Button>
+                    </CustomTooltip>
+                  </PermissionGate>
+                  <PermissionGate
+                    requiredPermission="holiday_templates"
+                    action="delete"
+                  >
+                    <CustomTooltip title="Delete">
+                      <Button
+                        variant="ghost"
+                        className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                        onClick={() => handleOpenDelete(template)}
+                      >
+                        <IconTrash size={16} />
+                      </Button>
+                    </CustomTooltip>
+                  </PermissionGate>
                 </div>
               </div>
             </CardContent>

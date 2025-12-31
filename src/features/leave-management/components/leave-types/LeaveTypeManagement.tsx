@@ -11,6 +11,7 @@ import LeaveTypeActionModal from "./components/leave-type-action-modal";
 import { useLeaveTypeStore } from "../../store/leave-type.store";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import { Main } from "@/components/layout/main";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 export default function LeaveTypeManagement() {
   const [pagination, setPagination] = useState({
@@ -99,9 +100,11 @@ export default function LeaveTypeManagement() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Configured Leave Types</h3>
-          <Button onClick={openAddDialog}>
-            <Plus className="mr-2 h-4 w-4" /> Add Leave Type
-          </Button>
+          <PermissionGate requiredPermission="leave_types" action="add">
+            <Button onClick={openAddDialog}>
+              <Plus className="mr-2 h-4 w-4" /> Add Leave Type
+            </Button>
+          </PermissionGate>
           <LeaveTypeActionModal />
         </div>
 

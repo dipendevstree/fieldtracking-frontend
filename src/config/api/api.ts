@@ -263,6 +263,7 @@ const API = {
     create: "holiday/create",
     update: "holiday/patch",
     delete: "holiday/delete",
+    myHoliday: "holiday/my",
   },
   userTier: {
     list: "user-tiers/list",

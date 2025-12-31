@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 interface LeaveBalanceCardProps {
   title: string;
@@ -42,14 +43,16 @@ export function LeaveBalanceCard({
             Balance for {new Date().getFullYear()}
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 bg-white/80 hover:bg-white border-none text-xs"
-          onClick={onApply}
-        >
-          <Plus className="mr-1 h-3 w-3" /> Apply
-        </Button>
+        <PermissionGate requiredPermission="leave_balance" action="add">
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-7 bg-white/80 hover:bg-white border-none text-xs"
+            onClick={onApply}
+          >
+            <Plus className="mr-1 h-3 w-3" /> Apply
+          </Button>
+        </PermissionGate>
       </CardHeader>
       <CardContent className="pt-4">
         <div className="flex justify-between text-sm mb-4">

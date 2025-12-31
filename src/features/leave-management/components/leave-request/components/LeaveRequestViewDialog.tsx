@@ -29,6 +29,7 @@ import {
 } from "@tabler/icons-react";
 import { FileDown } from "lucide-react";
 import { toast } from "sonner";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 interface Props {
   open: boolean;
@@ -243,20 +244,24 @@ export default function LeaveRequestViewDialog({
               Cancel
             </Button>
           </DialogClose>
-          <Button
-            className="bg-green-500 text-white hover:bg-green-600"
-            disabled={isPending}
-            onClick={handleApprove}
-          >
-            Approve
-          </Button>
-          <Button
-            className="bg-red-500 text-white hover:bg-red-600"
-            disabled={isPending}
-            onClick={handleReject}
-          >
-            Reject
-          </Button>
+          <PermissionGate requiredPermission="leave_request" action="add">
+            <Button
+              className="bg-green-500 text-white hover:bg-green-600"
+              disabled={isPending}
+              onClick={handleApprove}
+            >
+              Approve
+            </Button>
+          </PermissionGate>
+          <PermissionGate requiredPermission="leave_request" action="add">
+            <Button
+              className="bg-red-500 text-white hover:bg-red-600"
+              disabled={isPending}
+              onClick={handleReject}
+            >
+              Reject
+            </Button>
+          </PermissionGate>
         </DialogFooter>
       </DialogContent>
     </Dialog>

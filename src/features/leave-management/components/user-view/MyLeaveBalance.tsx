@@ -40,6 +40,7 @@ import StatusBadge, {
   statusColors,
 } from "@/components/shared/common-status-badge";
 import { Main } from "@/components/layout/main";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 // --- LOGIC HELPER ---
 const getEventStatusKey = (isHoliday: boolean, text: string, date: Date) => {
@@ -225,12 +226,14 @@ export default function MyLeaveBalance() {
         <h2 className="text-2xl font-bold tracking-tight text-slate-900">
           My Leave Balance
         </h2>
-        <Button
-          className="ml-auto shadow-sm"
-          onClick={() => openApplyLeaveDialog()}
-        >
-          <Plus className="mr-2 h-4 w-4" /> Apply for Leave
-        </Button>
+        <PermissionGate requiredPermission="leave_balance" action="add">
+          <Button
+            className="ml-auto shadow-sm"
+            onClick={() => openApplyLeaveDialog()}
+          >
+            <Plus className="mr-2 h-4 w-4" /> Apply for Leave
+          </Button>
+        </PermissionGate>
       </div>
 
       {/* Top Stats */}
@@ -355,30 +358,40 @@ export default function MyLeaveBalance() {
                       {!isHoliday &&
                         statusText?.toLowerCase() === "pending" && (
                           <div className="flex items-center space-x-2">
-                            <CustomTooltip title="Edit">
-                              <Button
-                                variant="ghost"
-                                className="h-8 w-8 p-0 text-green-600 hover:bg-green-50"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleEditClick(originalData);
-                                }}
-                              >
-                                <IconEdit size={16} />
-                              </Button>
-                            </CustomTooltip>
-                            <CustomTooltip title="Cancel">
-                              <Button
-                                variant="ghost"
-                                className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleCancelClick(originalData);
-                                }}
-                              >
-                                <IconX size={18} stroke={3} />
-                              </Button>
-                            </CustomTooltip>
+                            <PermissionGate
+                              requiredPermission="leave_balance"
+                              action="edit"
+                            >
+                              <CustomTooltip title="Edit">
+                                <Button
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-green-600 hover:bg-green-50"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditClick(originalData);
+                                  }}
+                                >
+                                  <IconEdit size={16} />
+                                </Button>
+                              </CustomTooltip>
+                            </PermissionGate>
+                            <PermissionGate
+                              requiredPermission="leave_balance"
+                              action="delete"
+                            >
+                              <CustomTooltip title="cancel">
+                                <Button
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCancelClick(originalData);
+                                  }}
+                                >
+                                  <IconX size={18} stroke={3} />
+                                </Button>
+                              </CustomTooltip>
+                            </PermissionGate>
                           </div>
                         )}
                     </div>
