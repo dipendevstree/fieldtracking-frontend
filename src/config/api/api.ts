@@ -297,6 +297,18 @@ const API = {
     stats: "leaveApprovals/stats",
     pendingList: "leaveApprovals/pending",
   },
+  attendance: {
+    myAttendance: "attendance/my-calendar",
+    stats: "attendance/dashboard/live",
+  },
+  attendanceCorrection: {
+    list: "attendance/correction/list",
+    myCorrections: "attendance/correction/my-requests",
+    create: "attendance/correction/request",
+    update: "attendance/correction",
+    cancel: "attendance/correction/cancel",
+    approve: "attendance/correction/approve",
+  },
 };
 
 Object.freeze(API);
