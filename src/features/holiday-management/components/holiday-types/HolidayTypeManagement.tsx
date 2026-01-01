@@ -9,6 +9,7 @@ import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import { useHolidayTypeStore } from "../../store/holiday-type.store";
 import { useGetAllHolidayTypes } from "../../services/holiday-type.action.hook";
 import { Main } from "@/components/layout/main";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 export default function HolidayTypeManagement() {
   const [pagination, setPagination] = useState({
@@ -60,9 +61,11 @@ export default function HolidayTypeManagement() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Configured Holiday Types</h3>
-          <Button onClick={openAddDialog}>
-            <Plus className="mr-2 h-4 w-4" /> Add Holiday Type
-          </Button>
+          <PermissionGate requiredPermission="holiday_types" action="add">
+            <Button onClick={openAddDialog}>
+              <Plus className="mr-2 h-4 w-4" /> Add Holiday Type
+            </Button>
+          </PermissionGate>
           <HolidayTypeActionModal />
         </div>
 

@@ -46,6 +46,8 @@ import {
   useUpdateLeaveRulesConfig,
 } from "../../services/leave-rules-config.action.hook";
 import { Main } from "@/components/layout/main";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
+import { usePermission } from "@/permissions/hooks/use-permission";
 
 export default function LeaveRulesConfiguration() {
   const { data: leaveTypes = [] } = useGetAllLeaveTypes();
@@ -55,6 +57,9 @@ export default function LeaveRulesConfiguration() {
 
   const { mutate: updateRules, isPending: isSaving } =
     useUpdateLeaveRulesConfig();
+
+  const { canPerformAction } = usePermission();
+  const canEdit = canPerformAction("leave_rules", "edit");
 
   const form = useForm<z.infer<typeof LeaveRulesSchema>>({
     resolver: zodResolver(LeaveRulesSchema),
@@ -188,6 +193,7 @@ export default function LeaveRulesConfiguration() {
                         <Switch
                           checked={field.value}
                           onCheckedChange={field.onChange}
+                          disabled={!canEdit}
                         />
                       </FormControl>
                     </FormItem>
@@ -206,7 +212,7 @@ export default function LeaveRulesConfiguration() {
                       <FormLabel>Maximum Sandwich Days</FormLabel>
                       <div className="flex items-center gap-2">
                         <FormControl>
-                          <Input type="number" {...field} />
+                          <Input type="number" {...field} disabled={!canEdit} />
                         </FormControl>
                         <span className="text-sm text-muted-foreground">
                           days
@@ -261,6 +267,7 @@ export default function LeaveRulesConfiguration() {
                         <Switch
                           checked={field.value}
                           onCheckedChange={field.onChange}
+                          disabled={!canEdit}
                         />
                       </FormControl>
                     </FormItem>
@@ -284,7 +291,7 @@ export default function LeaveRulesConfiguration() {
                         value={field.value}
                       >
                         <FormControl>
-                          <SelectTrigger>
+                          <SelectTrigger disabled={!canEdit}>
                             <SelectValue placeholder="Select leave type" />
                           </SelectTrigger>
                         </FormControl>
@@ -341,8 +348,9 @@ export default function LeaveRulesConfiguration() {
                                             );
                                       }}
                                       disabled={
+                                        !canEdit ||
                                         item.id ===
-                                        form.watch("primaryLeaveType")
+                                          form.watch("primaryLeaveType")
                                       }
                                     />
                                   </FormControl>
@@ -404,6 +412,7 @@ export default function LeaveRulesConfiguration() {
                         <Switch
                           checked={field.value}
                           onCheckedChange={field.onChange}
+                          disabled={!canEdit}
                         />
                       </FormControl>
                     </FormItem>
@@ -423,7 +432,11 @@ export default function LeaveRulesConfiguration() {
                         <FormLabel>Maximum Carry Forward Days</FormLabel>
                         <div className="flex items-center gap-2">
                           <FormControl>
-                            <Input type="number" {...field} />
+                            <Input
+                              type="number"
+                              {...field}
+                              disabled={!canEdit}
+                            />
                           </FormControl>
                           <span className="text-sm text-muted-foreground w-12">
                             days
@@ -443,7 +456,11 @@ export default function LeaveRulesConfiguration() {
                         <FormLabel>Carry Forward Expiry</FormLabel>
                         <div className="flex items-center gap-2">
                           <FormControl>
-                            <Input type="number" {...field} />
+                            <Input
+                              type="number"
+                              {...field}
+                              disabled={!canEdit}
+                            />
                           </FormControl>
                           <span className="text-sm text-muted-foreground w-12">
                             months
@@ -496,6 +513,7 @@ export default function LeaveRulesConfiguration() {
                         <Switch
                           checked={field.value}
                           onCheckedChange={field.onChange}
+                          disabled={!canEdit}
                         />
                       </FormControl>
                     </FormItem>
@@ -515,7 +533,11 @@ export default function LeaveRulesConfiguration() {
                         <FormLabel>Maximum Encashment Days</FormLabel>
                         <div className="flex items-center gap-2">
                           <FormControl>
-                            <Input type="number" {...field} />
+                            <Input
+                              type="number"
+                              {...field}
+                              disabled={!canEdit}
+                            />
                           </FormControl>
                           <span className="text-sm text-muted-foreground w-12">
                             days
@@ -535,7 +557,11 @@ export default function LeaveRulesConfiguration() {
                         <FormLabel>Minimum Balance Required</FormLabel>
                         <div className="flex items-center gap-2">
                           <FormControl>
-                            <Input type="number" {...field} />
+                            <Input
+                              type="number"
+                              {...field}
+                              disabled={!canEdit}
+                            />
                           </FormControl>
                           <span className="text-sm text-muted-foreground w-12">
                             days
@@ -559,22 +585,24 @@ export default function LeaveRulesConfiguration() {
             )}
           </Card>
 
-          <div className="flex gap-4 justify-end">
-            <Button
-              type="submit"
-              size="lg"
-              className="w-40"
-              disabled={isSaving}
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
-                </>
-              ) : (
-                "Save All Rules"
-              )}
-            </Button>
-          </div>
+          <PermissionGate requiredPermission="leave_rules" action="edit">
+            <div className="flex gap-4 justify-end">
+              <Button
+                type="submit"
+                size="lg"
+                className="w-40"
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                  </>
+                ) : (
+                  "Save All Rules"
+                )}
+              </Button>
+            </div>
+          </PermissionGate>
         </form>
       </Form>
     </Main>

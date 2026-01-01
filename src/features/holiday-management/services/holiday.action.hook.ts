@@ -5,6 +5,7 @@ import usePatchData from "@/hooks/use-patch-data";
 import usePostData from "@/hooks/use-post-data";
 
 const HOLIDAY_QUERY = API.holiday.list;
+const MY_HOLIDAY_QUERY = API.holiday.myHoliday;
 
 export const useCreateHoliday = (onSuccess?: () => void) => {
   return usePostData({
@@ -66,6 +67,22 @@ export const useGetAllHolidays = (
   const query = useFetchData<any>({
     url: HOLIDAY_QUERY,
     params,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    data: query.data?.list,
+    totalCount: query.data?.totalCount ?? 0,
+    weekOffDays: query.data?.weekOffDays ?? [],
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
+export const useGetMyHolidays = (options?: { enabled?: boolean }) => {
+  const query = useFetchData<any>({
+    url: MY_HOLIDAY_QUERY,
     enabled: options?.enabled ?? true,
   });
 

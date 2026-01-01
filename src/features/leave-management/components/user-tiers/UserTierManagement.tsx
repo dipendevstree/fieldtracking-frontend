@@ -52,6 +52,7 @@ import { useGetAllTiers } from "@/features/settings/Approvers/services/approvers
 import { useGetAllUsers } from "@/features/UserManagement/services/AllUsers.hook";
 import MultiSelect from "@/components/ui/MultiSelect";
 import { Main } from "@/components/layout/main";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 // --- HELPER COMPONENT: TIER CARD ---
 function TierCard({
@@ -83,25 +84,28 @@ function TierCard({
           </Badge>
         </div>
         <div className="flex items-center space-x-2">
-          <CustomTooltip title="Edit">
-            <Button
-              variant="ghost"
-              className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
-              onClick={() => onEdit(tier)}
-            >
-              <IconEdit size={16} />
-            </Button>
-          </CustomTooltip>
-
-          <CustomTooltip title="Delete">
-            <Button
-              variant="ghost"
-              className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-              onClick={() => onDelete(tier)}
-            >
-              <IconTrash size={16} />
-            </Button>
-          </CustomTooltip>
+          <PermissionGate requiredPermission="user_tiers" action="edit">
+            <CustomTooltip title="Edit">
+              <Button
+                variant="ghost"
+                className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
+                onClick={() => onEdit(tier)}
+              >
+                <IconEdit size={16} />
+              </Button>
+            </CustomTooltip>
+          </PermissionGate>
+          <PermissionGate requiredPermission="user_tiers" action="delete">
+            <CustomTooltip title="Delete">
+              <Button
+                variant="ghost"
+                className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                onClick={() => onDelete(tier)}
+              >
+                <IconTrash size={16} />
+              </Button>
+            </CustomTooltip>
+          </PermissionGate>
         </div>
       </CardHeader>
       <CardContent className="pt-4">
@@ -366,19 +370,21 @@ export default function UserTierManagement() {
 
       {/* Action Header */}
       <div className="flex items-center justify-end">
-        {isAllTiersAssigned ? (
-          <CustomTooltip title="All available tiers have been configured.">
-            <span className="cursor-not-allowed">
-              <Button disabled>
-                <Plus className="mr-2 h-4 w-4" /> Add User Tier
-              </Button>
-            </span>
-          </CustomTooltip>
-        ) : (
-          <Button onClick={handleOpenAdd}>
-            <Plus className="mr-2 h-4 w-4" /> Add User Tier
-          </Button>
-        )}
+        <PermissionGate requiredPermission="user_tiers" action="add">
+          {isAllTiersAssigned ? (
+            <CustomTooltip title="All available tiers have been configured.">
+              <span className="cursor-not-allowed">
+                <Button disabled>
+                  <Plus className="mr-2 h-4 w-4" /> Add User Tier
+                </Button>
+              </span>
+            </CustomTooltip>
+          ) : (
+            <Button onClick={handleOpenAdd}>
+              <Plus className="mr-2 h-4 w-4" /> Add User Tier
+            </Button>
+          )}
+        </PermissionGate>
       </div>
 
       {/* Tiers List */}

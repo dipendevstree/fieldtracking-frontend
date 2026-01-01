@@ -11,14 +11,14 @@ import StatusBadge, {
 } from "@/components/shared/common-status-badge";
 import { cn } from "@/lib/utils";
 import { HolidayActionDialog } from "./components/holiday-action-dialog";
-
 import {
-  useGetAllHolidays,
   useDeleteHoliday,
+  useGetMyHolidays,
 } from "@/features/holiday-management/services/holiday.action.hook";
 import { useGetAllLeaves } from "@/features/leave-management/services/leave-action.hook";
 import CalendarView from "@/features/leave-management/components/user-view/components/CalendarView";
 import { Main } from "@/components/layout/main";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 // --- LOGIC HELPER ---
 const getEventStatusKey = (isHoliday: boolean, text: string, date: Date) => {
@@ -63,7 +63,7 @@ export default function HolidayManagement() {
     data: holidays = [],
     isLoading: isLoadingHolidays,
     weekOffDays,
-  } = useGetAllHolidays(calendarQueryParams);
+  } = useGetMyHolidays();
 
   const { data: allLeavesList = [], isLoading: isLoadingLeaves } =
     useGetAllLeaves(calendarQueryParams);
@@ -79,7 +79,7 @@ export default function HolidayManagement() {
   // Calendar Logic
   const events = useMemo(() => {
     if (calendarMode === "holiday") {
-      return holidays.map((h: any) => {
+      return holidays?.map((h: any) => {
         const typeName = h.holidayType?.holidayTypeName || h.type || "National";
         const statusKey = getEventStatusKey(true, typeName, new Date(h.date));
 
@@ -156,9 +156,11 @@ export default function HolidayManagement() {
         <h2 className="text-2xl font-bold tracking-tight text-slate-900">
           Holiday Calendar
         </h2>
-        <Button className="ml-auto shadow-sm" onClick={openAddDialog}>
-          <Plus className="mr-2 h-4 w-4" /> Add Holiday
-        </Button>
+        <PermissionGate requiredPermission="holiday_calendar" action="add">
+          <Button className="ml-auto shadow-sm" onClick={openAddDialog}>
+            <Plus className="mr-2 h-4 w-4" /> Add Holiday
+          </Button>
+        </PermissionGate>
       </div>
 
       <Card className="border-slate-200 shadow-sm overflow-hidden p-0">
@@ -228,30 +230,40 @@ export default function HolidayManagement() {
                       {/* ACTIONS: Only for Holidays now */}
                       {isHoliday && (
                         <div className="flex items-center space-x-2">
-                          <CustomTooltip title="Edit">
-                            <Button
-                              variant="ghost"
-                              className="h-8 w-8 p-0 text-green-600 hover:bg-green-50"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openEditDialog(originalData);
-                              }}
-                            >
-                              <IconEdit size={16} />
-                            </Button>
-                          </CustomTooltip>
-                          <CustomTooltip title="Delete">
-                            <Button
-                              variant="ghost"
-                              className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openDeleteDialog(originalData);
-                              }}
-                            >
-                              <IconTrash size={16} />
-                            </Button>
-                          </CustomTooltip>
+                          <PermissionGate
+                            requiredPermission="holiday_calendar"
+                            action="edit"
+                          >
+                            <CustomTooltip title="Edit">
+                              <Button
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-green-600 hover:bg-green-50"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openEditDialog(originalData);
+                                }}
+                              >
+                                <IconEdit size={16} />
+                              </Button>
+                            </CustomTooltip>
+                          </PermissionGate>
+                          <PermissionGate
+                            requiredPermission="holiday_calendar"
+                            action="delete"
+                          >
+                            <CustomTooltip title="Delete">
+                              <Button
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openDeleteDialog(originalData);
+                                }}
+                              >
+                                <IconTrash size={16} />
+                              </Button>
+                            </CustomTooltip>
+                          </PermissionGate>
                         </div>
                       )}
                     </div>
