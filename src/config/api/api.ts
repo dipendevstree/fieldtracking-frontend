@@ -299,8 +299,9 @@ const API = {
   },
   attendance: {
     myAttendance: "attendance/my-calendar",
-    stats: "attendance/dashboard/live",
+    dashboardStats: "attendance/dashboard/live",
     dashboardUser: "attendance/dashboard/users",
+    dashboardCalendar: "attendance/dashboard/calendar",
   },
   attendanceCorrection: {
     list: "attendance/correction/list",

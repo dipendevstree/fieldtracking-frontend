@@ -2,7 +2,7 @@ import API from "@/config/api/api";
 import useFetchData from "@/hooks/use-fetch-data";
 
 const ATTENDANCE_QUERY = API.attendance.myAttendance;
-const ATTENDANCE_QUERY_STATS = API.attendance.stats;
+const ATTENDANCE_QUERY_STATS = API.attendance.dashboardStats;
 
 export const useGetMyAttendance = (
   params?: any,
@@ -22,7 +22,7 @@ export const useGetMyAttendance = (
   };
 };
 
-export const useGetAttendanceStats = (
+export const useGetDashboardStats = (
   params?: any,
   options?: { enabled?: boolean }
 ) => {
@@ -40,7 +40,7 @@ export const useGetAttendanceStats = (
   };
 };
 
-export const useGetAllDashboardUsers = (
+export const useGetDashboardUsers = (
   params?: {
     page?: number;
     limit?: number;
@@ -60,6 +60,24 @@ export const useGetAllDashboardUsers = (
     ...query,
     data: query.data?.list,
     totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
+export const useGetDashboardCalendarData = (
+  params?: any,
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<any>({
+    url: API.attendance.dashboardCalendar,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    data: query.data?.attendanceData,
     isLoading: query.isLoading,
     error: query.error,
   };
