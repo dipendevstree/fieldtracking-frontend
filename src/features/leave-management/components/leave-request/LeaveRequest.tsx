@@ -32,13 +32,17 @@ const tabs = [
   },
 ];
 
-export default function LeaveRequest() {
+interface Props {
+  dashboardView?: boolean;
+}
+
+export default function LeaveRequest({ dashboardView = false }: Props) {
   const [activeTab, setActiveTab] = useState("pending-request");
   const { user } = useAuthStore();
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
-    limit: DEFAULT_PAGE_SIZE,
+    limit: dashboardView ? 5 : DEFAULT_PAGE_SIZE,
     startDate: dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : "",
     endDate: dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : "",
     userId: "",
@@ -137,55 +141,59 @@ export default function LeaveRequest() {
     },
   ];
 
-  return (
-    <Main className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Total Leave Request
-            </CardTitle>
-            <Settings className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {leaveRequestStats?.totalLeaveRequest || 0}
-            </div>
-            <p className="text-xs text-muted-foreground">Currently</p>
-          </CardContent>
-        </Card>
+  const leaveRequestView = (
+    <>
+      {!dashboardView && (
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Total Leave Request
+              </CardTitle>
+              <Settings className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {leaveRequestStats?.totalLeaveRequest || 0}
+              </div>
+              <p className="text-xs text-muted-foreground">Currently</p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Approved Leave
-            </CardTitle>
-            <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {leaveRequestStats?.approvedLeaveRequest || 0}
-            </div>
-            <p className="text-xs text-muted-foreground">Approved</p>
-          </CardContent>
-        </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Approved Leave
+              </CardTitle>
+              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {leaveRequestStats?.approvedLeaveRequest || 0}
+              </div>
+              <p className="text-xs text-muted-foreground">Approved</p>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Rejected Leave
-            </CardTitle>
-            <CalendarIcon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {leaveRequestStats?.rejectedLeaveRequest || 0}
-            </div>
-            <p className="text-xs text-muted-foreground">Rejected</p>
-          </CardContent>
-        </Card>
-      </div>
-      <GlobalFilterSection key={"calender-view-filters"} filters={filters} />
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Rejected Leave
+              </CardTitle>
+              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {leaveRequestStats?.rejectedLeaveRequest || 0}
+              </div>
+              <p className="text-xs text-muted-foreground">Rejected</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      {!dashboardView && (
+        <GlobalFilterSection key={"calender-view-filters"} filters={filters} />
+      )}
 
       <Tabs
         value={activeTab}
@@ -218,11 +226,18 @@ export default function LeaveRequest() {
               {tab.component({
                 pagination,
                 onPaginationChange,
+                dashboardView,
               })}
             </TabsContent>
           );
         })}
       </Tabs>
-    </Main>
+    </>
+  );
+
+  return dashboardView ? (
+    <div className="space-y-6">{leaveRequestView}</div>
+  ) : (
+    <Main className="space-y-6">{leaveRequestView}</Main>
   );
 }

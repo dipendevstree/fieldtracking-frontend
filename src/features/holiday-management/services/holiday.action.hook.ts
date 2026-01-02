@@ -80,9 +80,13 @@ export const useGetAllHolidays = (
   };
 };
 
-export const useGetMyHolidays = (options?: { enabled?: boolean }) => {
+export const useGetMyHolidays = (
+  params?: any,
+  options?: { enabled?: boolean }
+) => {
   const query = useFetchData<any>({
     url: MY_HOLIDAY_QUERY,
+    params,
     enabled: options?.enabled ?? true,
   });
 
@@ -91,6 +95,20 @@ export const useGetMyHolidays = (options?: { enabled?: boolean }) => {
     data: query.data?.list,
     totalCount: query.data?.totalCount ?? 0,
     weekOffDays: query.data?.weekOffDays ?? [],
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
+export const useGetHolidayStats = (options?: { enabled?: boolean }) => {
+  const query = useFetchData<any>({
+    url: API.holiday.stats,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    data: query.data,
     isLoading: query.isLoading,
     error: query.error,
   };

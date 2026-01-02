@@ -4,14 +4,12 @@ import {
   MapPin,
   Settings,
   Shield,
-  // FileText,
   UserCircle,
   Calendar1Icon,
   ShieldCheck,
   ChartPie,
   FileText,
   CalendarDays,
-  Briefcase,
 } from "lucide-react";
 import { type SidebarData } from "../types";
 
@@ -148,13 +146,13 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "Leave Management",
-          icon: Briefcase,
+          icon: CalendarDays,
           menuKey: "leave_management",
           items: [
             {
-              title: "Leave Balance",
-              url: "/leave-management/leave-balance",
-              menuKey: "leave_balance",
+              title: "Dashboard",
+              url: "/leave-management/dashboard",
+              menuKey: "dashboard",
             },
             {
               title: "User Tiers",
@@ -167,35 +165,18 @@ export const sidebarData: SidebarData = {
               menuKey: "leave_request",
             },
             {
-              title: "Leave Types",
-              url: "/leave-management/leave-types",
-              menuKey: "leave_types",
-            },
-            {
               title: "Leave Rules",
               url: "/leave-management/leave-rules",
               menuKey: "leave_rules",
             },
-          ],
-        },
-        {
-          title: "Holiday Management",
-          icon: CalendarDays,
-          menuKey: "holiday_management",
-          items: [
             {
-              title: "Holiday Calendar",
-              url: "/holiday-management/holiday-calendar",
-              menuKey: "holiday_calendar",
-            },
-            {
-              title: "Holiday Types",
-              url: "/holiday-management/holiday-types",
-              menuKey: "holiday_types",
+              title: "List of Holidays",
+              url: "/leave-management/list-of-holidays",
+              menuKey: "list_of_holidays",
             },
             {
               title: "Holiday Templates",
-              url: "/holiday-management/holiday-templates",
+              url: "/leave-management/holiday-templates",
               menuKey: "holiday_templates",
             },
           ],

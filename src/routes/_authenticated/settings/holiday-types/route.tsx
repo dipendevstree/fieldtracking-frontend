@@ -3,7 +3,7 @@ import HolidayTypeManagement from "@/features/holiday-management/components/holi
 import { ProtectedRoute } from "@/permissions/components/ProtectedRoute";
 
 export const Route = createFileRoute(
-  "/_authenticated/holiday-management/holiday-types"
+  "/_authenticated/settings/holiday-types"
 )({
   component: RouteComponent,
 });

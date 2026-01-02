@@ -1,300 +1,231 @@
-import { useState, useMemo } from "react";
-import { format, startOfMonth, endOfMonth, isSameDay, addDays } from "date-fns";
-import { Plus, Loader2 } from "lucide-react";
-import { IconEdit, IconTrash } from "@tabler/icons-react";
+import { useState } from "react";
+import { format } from "date-fns";
+import { Plus, CalendarIcon, Globe, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import CustomTooltip from "@/components/shared/custom-tooltip";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeleteModal } from "@/components/shared/common-delete-modal";
-import StatusBadge, {
-  statusColors,
-} from "@/components/shared/common-status-badge";
-import { cn } from "@/lib/utils";
 import { HolidayActionDialog } from "./components/holiday-action-dialog";
 import {
   useDeleteHoliday,
-  useGetMyHolidays,
+  useGetAllHolidays,
+  useGetHolidayStats,
 } from "@/features/holiday-management/services/holiday.action.hook";
-import { useGetAllLeaves } from "@/features/leave-management/services/leave-action.hook";
-import CalendarView from "@/features/leave-management/components/user-view/components/CalendarView";
 import { Main } from "@/components/layout/main";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
-
-// --- LOGIC HELPER ---
-const getEventStatusKey = (isHoliday: boolean, text: string, date: Date) => {
-  const lowerText = text?.toLowerCase() || "";
-
-  if (!isHoliday) {
-    return lowerText; // return 'pending', 'approved', etc.
-  }
-
-  // Holiday Priorities
-  if (lowerText.includes("national")) return "national";
-  if (lowerText.includes("festival")) return "festival";
-  if (lowerText.includes("regional")) return "regional";
-  if (lowerText.includes("optional")) return "optional";
-
-  // Check for Weekend
-  if (date.getDay() === 0 || lowerText.includes("sunday")) return "weekend";
-
-  return "national"; // Default fallback
-};
+import GlobalFilterSection from "@/components/global-table-filter-section";
+import { FilterConfig, Option } from "@/components/global-filter-section";
+import { DateRange } from "react-day-picker";
+import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
+import { useGetAllHolidayTypes } from "../../services/holiday-type.action.hook";
+import { useSelectOptions } from "@/hooks/use-select-option";
+import HolidayListTable from "./components/holiday-list-table";
+import { useHolidayStore } from "../../store/holiday-type.store";
 
 export default function HolidayManagement() {
-  const [calendarMode, setCalendarMode] = useState<"holiday" | "leave">(
-    "holiday"
-  );
-  const [viewDate, setViewDate] = useState(new Date());
+  const { open, setOpen, currentRow, setCurrentRow } = useHolidayStore();
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [pagination, setPagination] = useState({
+    page: DEFAULT_PAGE_NUMBER,
+    limit: DEFAULT_PAGE_SIZE,
+    startDate: dateRange?.from ? format(dateRange.from, "yyyy-MM-dd") : "",
+    endDate: dateRange?.to ? format(dateRange.to, "yyyy-MM-dd") : "",
+    holidayTypeId: "",
+    isSpecial: "",
+    sort: "desc",
+  });
+  const { data: holidayStats } = useGetHolidayStats();
+  const { data: holidayTypeList = [] } = useGetAllHolidayTypes();
+  const { data: holidayList = [], isLoading } = useGetAllHolidays(pagination);
+  const isSpecialList = [
+    { value: "true", label: "Special" },
+    { value: "false", label: "Not Special" },
+  ];
 
-  const [isActionDialogOpen, setIsActionDialogOpen] = useState(false);
-  const [editingHoliday, setEditingHoliday] = useState<any | null>(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [holidayToDelete, setHolidayToDelete] = useState<any | null>(null);
+  const holidayTypeOptions = useSelectOptions<any>({
+    listData: holidayTypeList,
+    labelKey: "holidayTypeName",
+    valueKey: "id",
+  }) as Option[];
 
-  const calendarQueryParams = useMemo(
-    () => ({
-      startDate: format(startOfMonth(viewDate), "yyyy-MM-dd"),
-      endDate: format(endOfMonth(viewDate), "yyyy-MM-dd"),
-    }),
-    [viewDate]
-  );
+  const handleDateRangeChange = (newRange: DateRange | undefined) => {
+    setDateRange(newRange);
+    setPagination((prev) => ({
+      ...prev,
+      page: 1,
+      startDate: newRange?.from ? format(newRange.from, "yyyy-MM-dd") : "",
+      endDate: newRange?.to ? format(newRange.to, "yyyy-MM-dd") : "",
+    }));
+  };
 
-  const {
-    data: holidays = [],
-    isLoading: isLoadingHolidays,
-    weekOffDays,
-  } = useGetMyHolidays();
+  const handleFilterChange = (key: string, value: string) => {
+    setPagination((prev) => ({
+      ...prev,
+      page: 1,
+      [key]: value,
+    }));
+  };
 
-  const { data: allLeavesList = [], isLoading: isLoadingLeaves } =
-    useGetAllLeaves(calendarQueryParams);
+  const onPaginationChange = (page: number, pageSize: number) => {
+    setPagination((prev) => ({ ...prev, page, limit: pageSize }));
+  };
 
   const { mutate: deleteHoliday } = useDeleteHoliday(
-    holidayToDelete?.id || "",
+    currentRow?.id || "",
     () => {
-      setIsDeleteDialogOpen(false);
-      setHolidayToDelete(null);
+      setOpen(null);
+      setCurrentRow(null);
     }
   );
-
-  // Calendar Logic
-  const events = useMemo(() => {
-    if (calendarMode === "holiday") {
-      return holidays?.map((h: any) => {
-        const typeName = h.holidayType?.holidayTypeName || h.type || "National";
-        const statusKey = getEventStatusKey(true, typeName, new Date(h.date));
-
-        return {
-          id: h.id,
-          title: h.name,
-          start: new Date(h.date),
-          end: new Date(h.date),
-          allDay: true,
-          resource: {
-            type: typeName,
-            originalData: h,
-            statusKey: statusKey,
-          },
-        };
-      });
-    } else {
-      return allLeavesList.map((lr: any) => {
-        const typeName = lr.leaveType?.name || "Leave";
-        const status = lr.status?.toLowerCase() || "pending";
-
-        // Calculate status key
-        const statusKey = getEventStatusKey(
-          false,
-          status,
-          new Date(lr.startDate)
-        );
-
-        const start = new Date(lr.startDate);
-        let end = new Date(lr.endDate);
-        if (!lr.halfDay) end = addDays(end, 1);
-
-        return {
-          id: lr.id,
-          title: typeName,
-          start,
-          end,
-          allDay: !lr.halfDay,
-          resource: { type: "leave", originalData: lr, statusKey },
-        };
-      });
-    }
-  }, [calendarMode, holidays, allLeavesList]);
-
-  const currentMonthEvents = events
-    .filter((e: any) => {
-      const eDate = new Date(e.start);
-      return (
-        eDate.getMonth() === viewDate.getMonth() &&
-        eDate.getFullYear() === viewDate.getFullYear()
-      );
-    })
-    .sort((a: any, b: any) => a.start.getTime() - b.start.getTime());
 
   // Handlers
   const openAddDialog = () => {
-    setEditingHoliday(null);
-    setIsActionDialogOpen(true);
+    setOpen("add");
+    setCurrentRow(null);
   };
 
-  const openEditDialog = (holiday: any) => {
-    setEditingHoliday(holiday);
-    setIsActionDialogOpen(true);
-  };
-
-  const openDeleteDialog = (holiday: any) => {
-    setHolidayToDelete(holiday);
-    setIsDeleteDialogOpen(true);
-  };
+  const filters: FilterConfig[] = [
+    {
+      key: "date-range",
+      type: "date-range",
+      placeholder: "Filter by date",
+      dateRangeValue: dateRange,
+      onDateRangeChange: handleDateRangeChange,
+      dataRangeClassName: "w-full max-w-xs",
+    },
+    {
+      key: "isSpecial",
+      type: "select",
+      onChange: (value) => handleFilterChange("isSpecial", String(value)),
+      placeholder: "Select Type",
+      value: pagination.isSpecial,
+      options: isSpecialList,
+    },
+    {
+      key: "holidayTypeId",
+      type: "select",
+      onChange: (value) => handleFilterChange("holidayTypeId", String(value)),
+      placeholder: "Select Type",
+      value: pagination.holidayTypeId,
+      options: holidayTypeOptions,
+    },
+  ];
 
   return (
     <Main className="space-y-6 pb-10">
+      <div className="grid gap-4 md:grid-cols-4">
+        {/* Total Templates Card */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Total Holidays
+            </CardTitle>
+            <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {holidayStats?.totalHolidayCount || 0}
+            </div>
+            <p className="text-xs text-muted-foreground">Active holidays</p>
+          </CardContent>
+        </Card>
+
+        {/* Assigned Employees Card */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Special Holidays
+            </CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {holidayStats?.totalSpecialHolidayCount || 0}
+            </div>
+            <p className="text-xs text-muted-foreground">From total holidays</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Holidays of {new Date().getFullYear()}
+            </CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {holidayStats?.currentYearHolidayCount || 0}
+            </div>
+            <p className="text-xs text-muted-foreground">From total holidays</p>
+          </CardContent>
+        </Card>
+
+        {/* Total Regions Card (New) */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Holiday In Holiday Template
+            </CardTitle>
+            <Globe className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {holidayStats?.holidayInHolidayTemplateCount || 0}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Distinct regions configured
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-          Holiday Calendar
+          List of Holidays
         </h2>
-        <PermissionGate requiredPermission="holiday_calendar" action="add">
-          <Button className="ml-auto shadow-sm" onClick={openAddDialog}>
+        <PermissionGate requiredPermission="list_of_holidays" action="add">
+          <Button onClick={openAddDialog}>
             <Plus className="mr-2 h-4 w-4" /> Add Holiday
           </Button>
         </PermissionGate>
       </div>
 
-      <Card className="border-slate-200 shadow-sm overflow-hidden p-0">
-        <CardContent className="p-0">
-          {isLoadingHolidays || isLoadingLeaves ? (
-            <div className="h-96 flex items-center justify-center">
-              <Loader2 className="animate-spin" />
-            </div>
-          ) : (
-            <CalendarView
-              events={events}
-              defaultView="month"
-              currentMode={calendarMode}
-              onModeChange={setCalendarMode}
-              date={viewDate}
-              onNavigate={setViewDate}
-              weekOffDays={weekOffDays}
-            />
-          )}
+      <GlobalFilterSection key={"holiday-filters"} filters={filters} />
 
-          <div className="bg-slate-50/50 border-t border-slate-200 p-6">
-            <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center">
-              {calendarMode === "holiday" ? "Holidays" : "Leaves"} this month
-              <span className="ml-2 bg-slate-200 text-slate-600 text-[10px] px-2 py-0.5 rounded-full">
-                {currentMonthEvents.length}
-              </span>
-            </h3>
-
-            {currentMonthEvents.length > 0 ? (
-              <div className="space-y-2">
-                {currentMonthEvents.map((evt: any) => {
-                  const originalData = evt.resource.originalData;
-                  const isHoliday = evt.resource.type !== "leave";
-
-                  // Get status key from resource
-                  const statusKey = evt.resource.statusKey;
-
-                  // Get styles
-                  const styles = statusColors[statusKey] ||
-                    statusColors["default"] || { dot: "bg-slate-400" };
-
-                  return (
-                    <div
-                      key={evt.id}
-                      className="flex items-center justify-between bg-white border border-slate-100 p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow group"
-                    >
-                      <div className="flex items-center gap-3 flex-1 cursor-default">
-                        <div
-                          className={cn("w-1 h-9 rounded-full", styles.dot)}
-                        />
-
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium text-slate-800">
-                              {evt.title}
-                            </p>
-                            <StatusBadge status={statusKey} />
-                          </div>
-                          <span className="text-xs text-slate-500">
-                            {isSameDay(evt.start, evt.end)
-                              ? format(evt.start, "PPP")
-                              : `${format(evt.start, "PPP")} - ${format(evt.end, "PPP")}`}
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* ACTIONS: Only for Holidays now */}
-                      {isHoliday && (
-                        <div className="flex items-center space-x-2">
-                          <PermissionGate
-                            requiredPermission="holiday_calendar"
-                            action="edit"
-                          >
-                            <CustomTooltip title="Edit">
-                              <Button
-                                variant="ghost"
-                                className="h-8 w-8 p-0 text-green-600 hover:bg-green-50"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openEditDialog(originalData);
-                                }}
-                              >
-                                <IconEdit size={16} />
-                              </Button>
-                            </CustomTooltip>
-                          </PermissionGate>
-                          <PermissionGate
-                            requiredPermission="holiday_calendar"
-                            action="delete"
-                          >
-                            <CustomTooltip title="Delete">
-                              <Button
-                                variant="ghost"
-                                className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  openDeleteDialog(originalData);
-                                }}
-                              >
-                                <IconTrash size={16} />
-                              </Button>
-                            </CustomTooltip>
-                          </PermissionGate>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-slate-400 text-sm italic">
-                No {calendarMode === "holiday" ? "holidays" : "leaves"} found
-                for {format(viewDate, "MMMM yyyy")}.
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <HolidayActionDialog
-        open={isActionDialogOpen}
-        onOpenChange={setIsActionDialogOpen}
-        holidayToEdit={editingHoliday}
+      <HolidayListTable
+        data={holidayList}
+        totalCount={holidayList?.length || 0}
+        loading={isLoading}
+        paginationCallbacks={{ onPaginationChange }}
+        currentPage={pagination.page}
+        defaultPageSize={DEFAULT_PAGE_SIZE}
       />
 
-      {holidayToDelete && (
-        <DeleteModal
-          open={isDeleteDialogOpen}
-          currentRow={holidayToDelete}
-          itemIdentifier="name"
-          itemName="Holiday"
-          onDelete={() => deleteHoliday()}
-          onOpenChange={setIsDeleteDialogOpen}
-        />
+      <HolidayActionDialog
+        open={open === "add"}
+        onOpenChange={() => setOpen(null)}
+        holidayToEdit={null}
+      />
+
+      {currentRow && (
+        <>
+          <HolidayActionDialog
+            open={open === "edit"}
+            onOpenChange={() => setOpen(null)}
+            holidayToEdit={currentRow}
+          />
+          <DeleteModal
+            open={open === "delete"}
+            currentRow={currentRow}
+            itemIdentifier="name"
+            itemName="Holiday"
+            onDelete={() => deleteHoliday()}
+            onOpenChange={(value) => {
+              if (!value) setOpen(null);
+              else setOpen("delete");
+            }}
+          />
+        </>
       )}
     </Main>
   );
