@@ -103,3 +103,14 @@ export enum LEAVE_STATUS {
   REJECTED = "rejected",
   CANCEL = "cancel",
 }
+
+export enum ATTENDANCE_STATUS {
+  PRESENT = "PRESENT",
+  ABSENT = "ABSENT",
+  LATE = "LATE",
+  EARLY_EXIT = "EARLY_EXIT",
+  HALF_DAY = "HALF_DAY",
+  LEAVE = "LEAVE",
+  WEEK_OFF = "WEEK_OFF",
+  HOLIDAY = "HOLIDAY",
+}
