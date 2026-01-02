@@ -15,6 +15,7 @@ interface SimpleDatePickerProps {
   setDate: (date: string) => void;
   className?: string;
   disablePast?: boolean;
+  disableFuture?: boolean;
 }
 
 export function SimpleDatePicker({
@@ -22,6 +23,7 @@ export function SimpleDatePicker({
   setDate,
   className,
   disablePast = false,
+  disableFuture = false,
 }: SimpleDatePickerProps) {
   const [open, setOpen] = useState(false);
   const parsedDate = date ? new Date(date) : undefined;
@@ -54,11 +56,20 @@ export function SimpleDatePicker({
           mode="single"
           selected={parsedDate}
           onSelect={handleSelect}
-          disabled={
-            disablePast
-              ? (date) => date < new Date(new Date().setHours(0, 0, 0, 0))
-              : undefined
-          }
+          disabled={(date) => {
+            // 3. Normalized logic to handle both Past and Future
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Reset time to midnight for accurate comparison
+
+            // If disablePast is true, disable days before today
+            if (disablePast && date < today) return true;
+
+            // If disableFuture is true, disable days after today
+            if (disableFuture && date > today) return true;
+
+            return false;
+          }}
+          initialFocus
         />
       </PopoverContent>
     </Popover>
