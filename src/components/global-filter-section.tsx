@@ -111,6 +111,8 @@ export function DataTableToolbarCompact({
                 key={filter.key}
                 date={filter.value ?? ""}
                 setDate={filter.onChange ?? (() => {})}
+                disablePast={filter.disablePastDates}
+                disableFuture={filter.disableFutureDates}
               />
             );
           }

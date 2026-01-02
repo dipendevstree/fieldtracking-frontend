@@ -300,6 +300,7 @@ const API = {
   attendance: {
     myAttendance: "attendance/my-calendar",
     stats: "attendance/dashboard/live",
+    dashboardUser: "attendance/dashboard/users",
   },
   attendanceCorrection: {
     list: "attendance/correction/list",

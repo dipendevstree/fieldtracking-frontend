@@ -34,7 +34,32 @@ export const useGetAttendanceStats = (
 
   return {
     ...query,
-    data: query.data,
+    stats: query?.data?.stats,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
+export const useGetAllDashboardUsers = (
+  params?: {
+    page?: number;
+    limit?: number;
+    date?: string;
+    departmentId?: string;
+    territoryId?: string;
+  },
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<any>({
+    url: API.attendance.dashboardUser,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    data: query.data?.list,
+    totalCount: query.data?.totalCount ?? 0,
     isLoading: query.isLoading,
     error: query.error,
   };

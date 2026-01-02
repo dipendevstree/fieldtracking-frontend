@@ -7,6 +7,7 @@ import { isSameDay } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ATTENDANCE_STATUS } from "@/data/app.data";
+import { LegendItem } from "@/components/ui/legend-item";
 
 const localizer = momentLocalizer(moment);
 
@@ -233,21 +234,14 @@ export default function AttendanceCalendarView({
       />
 
       <div className="mt-2  py-3 flex flex-wrap gap-4 text-xs text-slate-600">
-        <LegendItem color="bg-green-500" label="Present" />
-        <LegendItem color="bg-yellow-500" label="Late" />
-        <LegendItem color="bg-amber-600" label="Early Exit" />
-        <LegendItem color="bg-blue-500" label="Half Day" />
-        <LegendItem color="bg-orange-500" label="Leave" />
-        <LegendItem color="bg-red-500" label="Absent" />
-        <LegendItem color="bg-slate-300" label="Week Off / Holiday" />
+        <LegendItem label="present" />
+        <LegendItem label="late" />
+        <LegendItem label="early exit" />
+        <LegendItem label="half day" />
+        <LegendItem label="leave" />
+        <LegendItem label="absent" />
+        <LegendItem label="week off / holiday" />
       </div>
     </div>
   );
 }
-
-const LegendItem = ({ color, label }: { color: string; label: string }) => (
-  <div className="flex items-center gap-1.5">
-    <div className={cn("w-2.5 h-2.5 rounded-sm", color)}></div>
-    <span>{label.toUpperCase()}</span>
-  </div>
-);
