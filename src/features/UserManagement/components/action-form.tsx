@@ -30,6 +30,7 @@ import CustomButton from "@/components/shared/custom-button";
 import { useGetDepartment } from "@/features/auth/Admin-sign-up/services/sign-up-services";
 import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
 import { useGetAllTerritoriesForDropdown } from "@/features/userterritory/services/user-territory.hook";
+import { useGetAllShifts } from "@/features/attendance-management/services/shift.action.hook";
 import { formSchemaConditional, TFormSchemaConditional } from "../data/schema";
 import { useGetAllRolesForDropdown } from "../services/Roles.hook";
 import { ConfirmDialog } from "@/components/confirm-dialog";
@@ -101,6 +102,14 @@ export function UserActionForm({
     labelKey: "departmentName",
     valueKey: "departmentId",
   });
+
+  const { data: shiftsList = [] } = useGetAllShifts();
+  const shifts = useSelectOptions<any>({
+    listData: shiftsList ?? [],
+    labelKey: "name",
+    valueKey: "id",
+  });
+
   const formatPhoneToE164 = (phone: string, countryCode: string) => {
     if (!phone) return "";
 
@@ -139,6 +148,7 @@ export function UserActionForm({
       departmentId: currentRow?.departmentId,
       reportingToRoleId: currentRow?.reportingToRoleId,
       reportingToIds: [],
+      shiftId: currentRow?.shiftId ?? "",
       // include the hide flag so the resolver can see it and validate conditionally
       hideReportingToField: hideReportingToField,
     },
@@ -220,8 +230,6 @@ export function UserActionForm({
         ];
       }
 
-      console.log("processedReportingToIds:", processedReportingToIds);
-
       reset({
         id: currentRow.id ?? "",
         firstName: currentRow.firstName ?? "",
@@ -236,6 +244,7 @@ export function UserActionForm({
         departmentId: currentRow.departmentId,
         reportingToRoleId: currentRow.reportingToRoleId,
         reportingToIds: processedReportingToIds,
+        shiftId: currentRow.shiftId ?? "",
         hideReportingToField: hideField,
       });
     }
@@ -551,7 +560,7 @@ export function UserActionForm({
                 </div>
               </div>
 
-              {/* Row 4: Territory & User Tier */}
+              {/* Row 4: Territory & Shift ID */}
               {allowTerritoryFilter && (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
@@ -587,6 +596,77 @@ export function UserActionForm({
                       </p>
                     )}
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="shiftId">Shift</Label>
+                    <Controller
+                      name="shiftId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={getFieldValue(field.value)}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select Shift" />
+                          </SelectTrigger>
+                          <SelectContent className="!w-full">
+                            {shifts.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={String(option.value)}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.shiftId && (
+                      <p className="flex items-center gap-1 text-xs text-red-500">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.shiftId.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+              {!allowTerritoryFilter && (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="shiftId">Shift</Label>
+                    <Controller
+                      name="shiftId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={getFieldValue(field.value)}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select Shift" />
+                          </SelectTrigger>
+                          <SelectContent className="!w-full">
+                            {shifts.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={String(option.value)}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.shiftId && (
+                      <p className="flex items-center gap-1 text-xs text-red-500">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.shiftId.message}
+                      </p>
+                    )}
+                  </div>
+                  <div></div>
                 </div>
               )}
             </div>
