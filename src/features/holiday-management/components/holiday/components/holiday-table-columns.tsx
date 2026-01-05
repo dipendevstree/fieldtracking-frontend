@@ -9,6 +9,7 @@ export const holidayListColumns: ColumnDef<any>[] = [
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Holiday Name" />
     ),
+    enableSorting: false,
   },
   {
     accessorKey: "date",
@@ -16,12 +17,14 @@ export const holidayListColumns: ColumnDef<any>[] = [
       <CustomDataTableColumnHeader column={column} title="Holiday Date" />
     ),
     cell: ({ row }) => format(row.original.date, "dd-MM-yyyy"),
+    enableSorting: false,
   },
   {
     accessorKey: "holidayType.holidayTypeName",
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Holiday Type" />
     ),
+    enableSorting: false,
   },
   {
     accessorKey: "isSpecial",
@@ -32,6 +35,7 @@ export const holidayListColumns: ColumnDef<any>[] = [
       const isSpecial = row.original.isSpecial;
       return isSpecial ? "Yes" : "No";
     },
+    enableSorting: false,
   },
   {
     accessorKey: "HolidayTemplates",
@@ -46,6 +50,7 @@ export const holidayListColumns: ColumnDef<any>[] = [
             .join(", ")
         : "No";
     },
+    enableSorting: false,
   },
   {
     accessorKey: "action",
@@ -53,6 +58,7 @@ export const holidayListColumns: ColumnDef<any>[] = [
       <CustomDataTableColumnHeader column={column} title="Action" />
     ),
     cell: ({ row }) => <HolidayListAction currentRow={row.original} />,
+    enableSorting: false,
   },
 ];
 

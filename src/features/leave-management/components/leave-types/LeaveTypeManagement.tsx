@@ -1,17 +1,22 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar as CalendarIcon, Settings, Plus } from "lucide-react";
+// import { Button } from "@/components/ui/button";
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// import {
+// Calendar as CalendarIcon,
+// Settings,
+//   Plus,
+// } from "lucide-react";
 import { useState } from "react";
 import {
   useGetAllLeaveTypes,
-  useGetLeaveTypeStats,
+  // useGetLeaveTypeStats,
 } from "@/features/leave-management/services/leave-type.action.hook";
 import LeaveTypeTable from "./components/leave-type-table";
-import LeaveTypeActionModal from "./components/leave-type-action-modal";
+// import LeaveTypeActionModal from "./components/leave-type-action-modal";
 import { useLeaveTypeStore } from "../../store/leave-type.store";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
+// import { PermissionGate } from "@/permissions/components/PermissionGate";
 import { Main } from "@/components/layout/main";
-import { PermissionGate } from "@/permissions/components/PermissionGate";
+import TablePageLayout from "@/components/layout/table-page-layout";
 
 export default function LeaveTypeManagement() {
   const [pagination, setPagination] = useState({
@@ -29,7 +34,7 @@ export default function LeaveTypeManagement() {
   });
 
   // Fetch Stats
-  const { data: leaveTypeStats } = useGetLeaveTypeStats();
+  // const { data: leaveTypeStats } = useGetLeaveTypeStats();
 
   const { setOpen } = useLeaveTypeStore();
 
@@ -44,8 +49,7 @@ export default function LeaveTypeManagement() {
   return (
     <Main className="space-y-6">
       {/* Header Stats */}
-      <div className="grid gap-4 md:grid-cols-3">
-        {/* Total Leave Types Card */}
+      {/* <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -62,8 +66,6 @@ export default function LeaveTypeManagement() {
             </p>
           </CardContent>
         </Card>
-
-        {/* Active Employees Card */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Active Users</CardTitle>
@@ -78,8 +80,6 @@ export default function LeaveTypeManagement() {
             </p>
           </CardContent>
         </Card>
-
-        {/* Total Allocation Card */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -94,11 +94,11 @@ export default function LeaveTypeManagement() {
             <p className="text-xs text-muted-foreground">Per user/year</p>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       {/* Configured Leave Types Table */}
       <div>
-        <div className="flex items-center justify-between mb-4">
+        {/* <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Configured Leave Types</h3>
           <PermissionGate requiredPermission="leave_types" action="add">
             <Button onClick={openAddDialog}>
@@ -106,16 +106,26 @@ export default function LeaveTypeManagement() {
             </Button>
           </PermissionGate>
           <LeaveTypeActionModal />
-        </div>
+        </div> */}
 
-        <LeaveTypeTable
-          data={leaveTypes}
-          totalCount={totalCount}
-          loading={isLoading}
-          currentPage={pagination.page}
-          paginationCallbacks={{ onPaginationChange }}
-          defaultPageSize={pagination.limit}
-        />
+        <TablePageLayout
+          title="Configured Leave Types"
+          description="Manage leave type assignments"
+          onAddButtonClick={openAddDialog}
+          addButtonText="Add Leave Type"
+          modulePermission="leave_types"
+          moduleAction="add"
+          className="p-0"
+        >
+          <LeaveTypeTable
+            data={leaveTypes}
+            totalCount={totalCount}
+            loading={isLoading}
+            currentPage={pagination.page}
+            paginationCallbacks={{ onPaginationChange }}
+            defaultPageSize={pagination.limit}
+          />
+        </TablePageLayout>
       </div>
     </Main>
   );

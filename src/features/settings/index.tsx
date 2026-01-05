@@ -12,6 +12,8 @@ import Notifications from "./notifications/components/Notifications";
 import GeneralApplicationSettings from "./General";
 import { ApproverFormNew } from "./Approvers/components/Approvers-new";
 import { useUnsavedChangesStore } from "./store/use-unsaved-changes-store";
+import LeaveTypeManagement from "../leave-management/components/leave-types/LeaveTypeManagement";
+import HolidayTypeManagement from "../holiday-management/components/holiday-types/HolidayTypeManagement";
 
 // Tab Config
 const SETTINGS_TABS = [
@@ -26,6 +28,16 @@ const SETTINGS_TABS = [
   //   component: LimitsControlsPage,
   // },
   {
+    value: "/settings/leave-type",
+    label: "Leave Types",
+    component: LeaveTypeManagement,
+  },
+  {
+    value: "/settings/holiday-type",
+    label: "Holiday Types",
+    component: HolidayTypeManagement,
+  },
+  {
     value: "/settings/approvers",
     label: "Approvers",
     component: ApproverFormNew,
@@ -36,7 +48,7 @@ const SETTINGS_TABS = [
     component: Notifications,
   },
   {
-    value: "/settings/general",
+    value: "/settings/general-settings",
     label: "General",
     component: GeneralApplicationSettings,
   },
@@ -107,7 +119,9 @@ export default function SettingsPage() {
         onValueChange={handleTabChange}
         className="space-y-5"
       >
-        <TabsList className="grid w-full grid-cols-4 h-10">
+        <TabsList
+          className={`grid w-full grid-cols-${SETTINGS_TABS.length || 1} h-10`}
+        >
           {SETTINGS_TABS.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value}>
               {tab.label}

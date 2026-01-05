@@ -22,7 +22,7 @@ export const sidebarData: SidebarData = {
   },
   teams: [
     {
-      name: "FieldTrack Pro",
+      name: "FieldTrack360",
       logo: Building2,
       plan: "Enterprise",
     },
@@ -152,7 +152,7 @@ export const sidebarData: SidebarData = {
             {
               title: "Dashboard",
               url: "/leave-management/dashboard",
-              menuKey: "dashboard",
+              menuKey: "leave_management_dashboard",
             },
             {
               title: "User Tiers",
@@ -188,9 +188,40 @@ export const sidebarData: SidebarData = {
       items: [
         {
           title: "Settings",
-          url: "/settings",
           icon: Settings,
           menuKey: "settings",
+          items: [
+            {
+              title: "Expense Categories",
+              url: "/settings/expense-categories",
+              menuKey: "expense_categories",
+            },
+            {
+              title: "Leave Types",
+              url: "/settings/leave-types",
+              menuKey: "leave_types",
+            },
+            {
+              title: "Holiday Types",
+              url: "/settings/holiday-types",
+              menuKey: "holiday_types",
+            },
+            {
+              title: "Approvers",
+              url: "/settings/approvers",
+              menuKey: "approvers",
+            },
+            {
+              title: "Notification Settings",
+              url: "/settings/notification-settings",
+              menuKey: "notification-settings",
+            },
+            {
+              title: "General Settings",
+              url: "/settings/general-settings",
+              menuKey: "general-settings",
+            },
+          ],
         },
         // {
         //   title: "Documentation",

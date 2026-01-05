@@ -63,7 +63,7 @@ export interface PermissionGroup {
 
 // User data from login response
 export interface LoginUser {
-  id:string;
+  id: string;
   readonly firstName: string;
   readonly lastName: string;
   readonly phoneNumber: string;
@@ -78,9 +78,9 @@ export interface LoginUser {
   readonly profileUrl?: string | null;
   role: any;
   readonly permissions: readonly PermissionGroup[];
-  organizationID:string;
-  organization:any,
-  userName:string,
+  organizationID: string;
+  organization: any;
+  userName: string;
   fcm_token?: string | null;
   superAdminCreatedBy?: string | null;
 }

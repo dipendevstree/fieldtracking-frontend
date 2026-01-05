@@ -1,15 +1,16 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Plus } from "lucide-react";
+// import { Button } from "@/components/ui/button";
+// import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// import { Settings, Plus } from "lucide-react";
 import { useState } from "react";
 import HolidayTypeTable from "./components/holiday-type-table";
-import HolidayTypeActionModal from "./components/holiday-type-action-modal";
+// import HolidayTypeActionModal from "./components/holiday-type-action-modal";
 
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import { useHolidayTypeStore } from "../../store/holiday-type.store";
 import { useGetAllHolidayTypes } from "../../services/holiday-type.action.hook";
 import { Main } from "@/components/layout/main";
-import { PermissionGate } from "@/permissions/components/PermissionGate";
+import TablePageLayout from "@/components/layout/table-page-layout";
+// import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 export default function HolidayTypeManagement() {
   const [pagination, setPagination] = useState({
@@ -39,8 +40,7 @@ export default function HolidayTypeManagement() {
   return (
     <Main className="space-y-6">
       {/* Header Stats - Simplified for now as we don't have separate stats API for holiday types yet */}
-      <div className="grid gap-4 md:grid-cols-3">
-        {/* Total Holiday Types Card */}
+      {/* <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -55,11 +55,11 @@ export default function HolidayTypeManagement() {
             </p>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       {/* Configured Holiday Types Table */}
       <div>
-        <div className="flex items-center justify-between mb-4">
+        {/* <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Configured Holiday Types</h3>
           <PermissionGate requiredPermission="holiday_types" action="add">
             <Button onClick={openAddDialog}>
@@ -67,16 +67,26 @@ export default function HolidayTypeManagement() {
             </Button>
           </PermissionGate>
           <HolidayTypeActionModal />
-        </div>
+        </div> */}
 
-        <HolidayTypeTable
-          data={holidayTypes}
-          totalCount={totalCount}
-          loading={isLoading}
-          currentPage={pagination.page}
-          paginationCallbacks={{ onPaginationChange }}
-          defaultPageSize={pagination.limit}
-        />
+        <TablePageLayout
+          title="Configured Holiday Types"
+          description="Manage holiday type assignments"
+          onAddButtonClick={openAddDialog}
+          addButtonText="Add Holiday Type"
+          modulePermission="holiday_types"
+          moduleAction="add"
+          className="p-0"
+        >
+          <HolidayTypeTable
+            data={holidayTypes}
+            totalCount={totalCount}
+            loading={isLoading}
+            currentPage={pagination.page}
+            paginationCallbacks={{ onPaginationChange }}
+            defaultPageSize={pagination.limit}
+          />
+        </TablePageLayout>
       </div>
     </Main>
   );

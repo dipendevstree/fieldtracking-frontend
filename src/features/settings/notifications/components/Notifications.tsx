@@ -94,8 +94,7 @@ export default function Notifications() {
       onSubmit={form.handleSubmit(onSubmit)}
       className="bg-white rounded-lg space-y-6"
     >
-      <Card className="text-xl font-semibold p-4">Activity Monitoring</Card>
-      <Card className="p-4">
+      <Card className="p-4 mt-6">
         <div className="divide-y divide-gray-200">
           {activityNotifications.map((label, idx) => (
             <div key={idx} className="flex items-center justify-between py-4">

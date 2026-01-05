@@ -668,9 +668,17 @@ export function ApproverFormNew() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
         {/* ---------------------------------- HEADER ---------------------------------- */}
-        <div className="border-b bg-card p-4">
+        <div className="border-b bg-card p-4 border rounded-lg shadow mb-5">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Expense Configuration</h1>
+            <div>
+              <h1 className="text-2xl font-bold">
+                Expense Approvers Configuration
+              </h1>
+              <p className="text-muted-foreground">
+                Configure expense approvers for different expense categories and
+                territories.
+              </p>
+            </div>
             <div className="flex items-center gap-4">
               {allowAddUsersBasedOnTerritories && (
                 <div className="w-64">

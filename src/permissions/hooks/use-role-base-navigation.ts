@@ -7,8 +7,8 @@ export function useRoleBasedNavigation(
   backendPermissions: any,
   options?: { allowAddUsersBasedOnTerritories?: boolean }
 ) {
-  console.log("backendPermissions", backendPermissions);
-  const { hasAccess, canPerformAction, isAuthenticated, user } = usePermission();
+  const { hasAccess, canPerformAction, isAuthenticated, user } =
+    usePermission();
 
   const sidebarData = useMemo(() => {
     if (!isAuthenticated) {

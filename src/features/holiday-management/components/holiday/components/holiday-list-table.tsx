@@ -29,7 +29,7 @@ const HolidayListTable = ({
         currentPage={currentPage}
         columns={holidayListColumns as ColumnDef<unknown>[]}
         totalCount={totalCount}
-        key={"pending-leave"}
+        key={"holiday-list-table"}
         defaultPageSize={defaultPageSize}
       />
     </div>
