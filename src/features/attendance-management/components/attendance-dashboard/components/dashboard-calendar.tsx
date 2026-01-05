@@ -197,6 +197,24 @@ export function TeamAttendanceCalendar({
     []
   );
 
+  // Custom day styling to highlight selected date
+  const dayPropGetter = useCallback(
+    (calendarDate: Date) => {
+      const isSelected =
+        calendarDate.getDate() === date.getDate() &&
+        calendarDate.getMonth() === date.getMonth() &&
+        calendarDate.getFullYear() === date.getFullYear();
+
+      if (isSelected) {
+        return {
+          className: "selected-date",
+        };
+      }
+      return {};
+    },
+    [date]
+  );
+
   return (
     <div className={cn("w-full bg-white", className)}>
       {/* CSS Injection for exact visual match */}
@@ -207,7 +225,7 @@ export function TeamAttendanceCalendar({
         .rbc-month-row { border-bottom: 1px solid #e2e8f0; min-height: 120px; }
         .rbc-date-cell { padding: 8px; text-align: left; font-size: 0.9rem; font-weight: 600; color: #334155; }
         .rbc-today { background-color: transparent !important; }
-        .rbc-month-view .rbc-today { border: 2px solid #3b82f6 !important; }
+        .selected-date { border: 2px solid #3b82f6 !important; }
         .rbc-event { min-height: 0; }
         .rbc-row-segment { padding: 2px 4px !important; }
         .rbc-row-content .rbc-row { display: flex; flex-wrap: wrap; gap: 4px; padding-left: 6px; }
@@ -233,6 +251,7 @@ export function TeamAttendanceCalendar({
             event: EventComponent,
           }}
           eventPropGetter={eventPropGetter}
+          dayPropGetter={dayPropGetter}
           selectable
         />
       </div>
@@ -245,7 +264,7 @@ export function TeamAttendanceCalendar({
               {modalDate ? modalDate.toLocaleDateString() : "Event Details"}
               {modalEvents.length > 1 && (
                 <span className="text-sm font-normal text-gray-500 ml-2">
-                  ({modalEvents.length} employees)
+                  ({modalEvents.length} users)
                 </span>
               )}
             </DialogTitle>

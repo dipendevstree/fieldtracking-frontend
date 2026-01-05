@@ -123,6 +123,62 @@ export const statusColors: Record<
     bg: "bg-red-100",
     dot: "bg-red-500",
   },
+  // Attendance Statuses
+  present: {
+    text: "text-green-600",
+    bg: "bg-green-100",
+    dot: "bg-green-500",
+  },
+  late: {
+    text: "text-yellow-700",
+    bg: "bg-yellow-100",
+    dot: "bg-yellow-500",
+  },
+  "early exit": {
+    text: "text-amber-700",
+    bg: "bg-amber-100",
+    dot: "bg-amber-600",
+  },
+  early_exit: {
+    text: "text-amber-700",
+    bg: "bg-amber-100",
+    dot: "bg-amber-600",
+  },
+  "half day": {
+    text: "text-blue-600",
+    bg: "bg-blue-100",
+    dot: "bg-blue-500",
+  },
+  half_day: {
+    text: "text-blue-600",
+    bg: "bg-blue-100",
+    dot: "bg-blue-500",
+  },
+  leave: {
+    text: "text-orange-600",
+    bg: "bg-orange-100",
+    dot: "bg-orange-500",
+  },
+  absent: {
+    text: "text-red-600",
+    bg: "bg-red-100",
+    dot: "bg-red-500",
+  },
+  "week off / holiday": {
+    text: "text-slate-600",
+    bg: "bg-slate-100",
+    dot: "bg-slate-400",
+  },
+  week_off: {
+    text: "text-slate-600",
+    bg: "bg-slate-100",
+    dot: "bg-slate-400",
+  },
+  holiday: {
+    text: "text-slate-600",
+    bg: "bg-slate-100",
+    dot: "bg-slate-400",
+  },
 };
 
 function formatStatusTitle(status: string): string {
