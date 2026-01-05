@@ -27,11 +27,14 @@ export const formSchema = z.object({
 
   jobTitle: z.string().optional(),
   id: z.string().optional(),
-  departmentId: z.string({
-    required_error: "Department is required",
-    invalid_type_error: "Department is required"
-  }).min(1, "Department is required"),
+  departmentId: z
+    .string({
+      required_error: "Department is required",
+      invalid_type_error: "Department is required",
+    })
+    .min(1, "Department is required"),
   isWebUser: z.boolean().optional(),
+  shiftId: z.string().optional(),
 });
 
 // Conditionally require the reporting fields when hideReportingToField is false/undefined
@@ -50,15 +53,26 @@ export const formSchemaHidden = formSchema.extend({
 // Schema variant when reporting fields should be present
 export const formSchemaShown = formSchema.extend({
   // hideReportingToField can be false/undefined/null in this branch
-  hideReportingToField: z.union([z.literal(false), z.undefined(), z.null()]).optional(),
+  hideReportingToField: z
+    .union([z.literal(false), z.undefined(), z.null()])
+    .optional(),
   // coerce null -> undefined then require a non-empty string
-  reportingToRoleId: z.preprocess((v) => (v === null ? undefined : v), z.string().min(1, "Reporting To Role is required")),
+  reportingToRoleId: z.preprocess(
+    (v) => (v === null ? undefined : v),
+    z.string().min(1, "Reporting To Role is required")
+  ),
   // coerce null -> undefined then require non-empty array
-  reportingToIds: z.preprocess((v) => (v === null ? undefined : v), z.array(z.string()).min(1, "Reporting to is required")),
+  reportingToIds: z.preprocess(
+    (v) => (v === null ? undefined : v),
+    z.array(z.string()).min(1, "Reporting to is required")
+  ),
 });
 
 // Union of the two variants; this avoids using superRefine
-export const formSchemaConditional = z.union([formSchemaHidden, formSchemaShown]);
+export const formSchemaConditional = z.union([
+  formSchemaHidden,
+  formSchemaShown,
+]);
 
 export type TFormSchema = z.infer<typeof formSchema>;
 export type TFormSchemaConditional = z.infer<typeof formSchemaConditional>;
