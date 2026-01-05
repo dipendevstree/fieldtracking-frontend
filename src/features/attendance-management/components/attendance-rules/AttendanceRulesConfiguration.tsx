@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import {
   Form,
   FormControl,
@@ -37,7 +38,10 @@ import {
   useGetAttendanceRulesConfig,
   useUpdateAttendanceRulesConfig,
 } from "../../services/attendance-rules-config.action.hook";
+import { useGetAllTiers } from "@/features/settings/Approvers/services/approvers.hook";
+import MultiSelect from "@/components/ui/MultiSelect";
 import { Main } from "@/components/layout/main";
+import { ATTENDANCE_RULE_FREQUENCY } from "@/data/app.data";
 // import { PermissionGate } from "@/permissions/components/PermissionGate";
 // import { usePermission } from "@/permissions/hooks/use-permission";
 
@@ -52,9 +56,6 @@ const DAYS_OF_WEEK = [
 ];
 
 export default function AttendanceRulesConfiguration() {
-  const [gracePeriodEnabled, setGracePeriodEnabled] = useState(false);
-  const [lateMarkEnabled, setLateMarkEnabled] = useState(false);
-
   const { data: rulesData, isLoading: isRulesLoading } =
     useGetAttendanceRulesConfig();
 
@@ -64,6 +65,28 @@ export default function AttendanceRulesConfiguration() {
     error: updateError,
   } = useUpdateAttendanceRulesConfig();
 
+  const { data: tiersData, isLoading: isTiersLoading } = useGetAllTiers();
+
+  // Create tier options for MultiSelect
+  const tierOptions = useMemo(() => {
+    if (!tiersData) return [];
+    return tiersData.map((tier: any) => ({
+      value: tier.tierkey || tier.key || tier,
+      label:
+        tier.tierName ||
+        tier.label ||
+        tier.replace("_", " ").replace(/\b\w/g, (l: string) => l.toUpperCase()),
+    }));
+  }, [tiersData]);
+
+  // Create frequency options for SearchableSelect
+  const frequencyOptions = useMemo(() => {
+    return Object.values(ATTENDANCE_RULE_FREQUENCY).map((freq) => ({
+      value: freq,
+      label: freq.charAt(0).toUpperCase() + freq.slice(1).toLowerCase(),
+    }));
+  }, []);
+
   //   const { canPerformAction } = usePermission();
   //   const canEdit = canPerformAction("attendance_rules", "edit");
 
@@ -71,29 +94,31 @@ export default function AttendanceRulesConfiguration() {
     resolver: zodResolver(AttendanceRulesSchema),
     defaultValues: {
       gracePeriodMinutes: 0,
-      calculateOvertime: false,
+      enableOvertime: true,
+      enableGracePeriod: true,
+      enableLateMarkRule: true,
       lateMarkLimit: 1,
       leaveDeductionCount: 0,
       weekOffDays: [0], // Default to Sunday
+      applicableTiers: [],
+      frequency: undefined,
     },
   });
 
   useEffect(() => {
     if (rulesData) {
-      const graceEnabled = (rulesData.gracePeriodMinutes ?? 0) > 0;
-      const lateMarkEnabledValue = (rulesData.lateMarkLimit ?? 1) > 0;
-
-      setGracePeriodEnabled(graceEnabled);
-      setLateMarkEnabled(lateMarkEnabledValue);
-
       form.reset({
         gracePeriodMinutes: rulesData.gracePeriodMinutes ?? 0,
-        calculateOvertime: rulesData.calculateOvertime ?? false,
+        enableOvertime: rulesData.enableOvertime ?? true,
+        enableGracePeriod: rulesData.enableGracePeriod ?? true,
+        enableLateMarkRule: rulesData.enableLateMarkRule ?? true,
         lateMarkLimit: rulesData.lateMarkLimit ?? 1,
         leaveDeductionCount: rulesData.leaveDeductionCount ?? 0,
         weekOffDays: (rulesData.weekOffDays ?? [0]).map((day: any) =>
           typeof day === "string" ? parseInt(day, 10) : day
         ),
+        applicableTiers: rulesData.applicableTiers ?? [],
+        frequency: rulesData.frequency,
       });
     }
   }, [rulesData, form]);
@@ -140,17 +165,21 @@ export default function AttendanceRulesConfiguration() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <SummaryCard
           title="Grace Period"
-          enabled={gracePeriodEnabled}
+          enabled={form.watch("enableGracePeriod") ?? true}
           desc="Late check-in allowance"
         />
         <SummaryCard
           title="Overtime Calculation"
-          enabled={form.watch("calculateOvertime")}
+          enabled={form.watch("enableOvertime") ?? true}
           desc="Track extra working hours"
         />
         <SummaryCard
           title="Late Mark Policy"
-          enabled={lateMarkEnabled}
+          enabled={
+            (form.watch("enableLateMarkRule") ?? true) &&
+            (form.watch("applicableTiers")?.length ?? 0) > 0 &&
+            !!form.watch("frequency")
+          }
           desc="Late attendance tracking"
         />
         <SummaryCard
@@ -178,27 +207,18 @@ export default function AttendanceRulesConfiguration() {
                 </div>
                 <FormField
                   control={form.control}
-                  name="gracePeriodMinutes"
+                  name="enableGracePeriod"
                   render={({ field }) => (
                     <FormItem className="flex items-center space-x-2 space-y-0">
-                      {gracePeriodEnabled && (
+                      {field.value && (
                         <Badge className="bg-green-600 hover:bg-green-700">
                           Enabled
                         </Badge>
                       )}
                       <FormControl>
                         <Switch
-                          checked={gracePeriodEnabled}
-                          onCheckedChange={(checked) => {
-                            setGracePeriodEnabled(checked);
-                            field.onChange(
-                              checked
-                                ? Number(field.value) > 0
-                                  ? field.value
-                                  : 15
-                                : 0
-                            );
-                          }}
+                          checked={field.value ?? true}
+                          onCheckedChange={field.onChange}
                           //   disabled={!canEdit}
                         />
                       </FormControl>
@@ -208,7 +228,7 @@ export default function AttendanceRulesConfiguration() {
               </div>
             </CardHeader>
 
-            {gracePeriodEnabled && (
+            {(form.watch("enableGracePeriod") ?? true) && (
               <CardContent className="space-y-6 animate-in slide-in-from-top-2 duration-200">
                 <FormField
                   control={form.control}
@@ -269,7 +289,7 @@ export default function AttendanceRulesConfiguration() {
                 </div>
                 <FormField
                   control={form.control}
-                  name="calculateOvertime"
+                  name="enableOvertime"
                   render={({ field }) => (
                     <FormItem className="flex items-center space-x-2 space-y-0">
                       {field.value && (
@@ -279,7 +299,7 @@ export default function AttendanceRulesConfiguration() {
                       )}
                       <FormControl>
                         <Switch
-                          checked={field.value}
+                          checked={field.value ?? true}
                           onCheckedChange={field.onChange}
                           //   disabled={!canEdit}
                         />
@@ -290,7 +310,7 @@ export default function AttendanceRulesConfiguration() {
               </div>
             </CardHeader>
 
-            {form.watch("calculateOvertime") && (
+            {(form.watch("enableOvertime") ?? true) && (
               <CardContent className="space-y-6 animate-in slide-in-from-top-2 duration-200">
                 {/* Example Box */}
                 <div className="bg-slate-50 border rounded-md p-4 text-sm text-slate-700">
@@ -324,27 +344,18 @@ export default function AttendanceRulesConfiguration() {
                 </div>
                 <FormField
                   control={form.control}
-                  name="lateMarkLimit"
+                  name="enableLateMarkRule"
                   render={({ field }) => (
                     <FormItem className="flex items-center space-x-2 space-y-0">
-                      {lateMarkEnabled && (
+                      {field.value && (
                         <Badge className="bg-green-600 hover:bg-green-700">
                           Enabled
                         </Badge>
                       )}
                       <FormControl>
                         <Switch
-                          checked={lateMarkEnabled}
-                          onCheckedChange={(checked) => {
-                            setLateMarkEnabled(checked);
-                            field.onChange(
-                              checked
-                                ? Number(field.value) > 0
-                                  ? field.value
-                                  : 3
-                                : 0
-                            );
-                          }}
+                          checked={field.value ?? true}
+                          onCheckedChange={field.onChange}
                           //   disabled={!canEdit}
                         />
                       </FormControl>
@@ -354,75 +365,132 @@ export default function AttendanceRulesConfiguration() {
               </div>
             </CardHeader>
 
-            {lateMarkEnabled && (
+            {(form.watch("enableLateMarkRule") ?? true) && (
               <CardContent className="space-y-6 animate-in slide-in-from-top-2 duration-200">
+                {/* Applicable Tiers and Frequency */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <FormField
                     control={form.control}
-                    name="lateMarkLimit"
+                    name="applicableTiers"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Late Mark Threshold</FormLabel>
-                        <div className="flex items-center gap-2">
-                          <FormControl>
-                            <Input
-                              type="number"
-                              {...field}
-                              //   disabled={!canEdit}
-                            />
-                          </FormControl>
-                          <span className="text-sm text-muted-foreground w-12">
-                            times
-                          </span>
-                        </div>
+                        <FormLabel>Applicable Tiers</FormLabel>
+                        <FormControl>
+                          <MultiSelect
+                            options={tierOptions}
+                            value={field.value || []}
+                            onChange={field.onChange}
+                            placeholder="Select applicable tiers..."
+                            disabled={isTiersLoading}
+                          />
+                        </FormControl>
                         <FormDescription>
-                          Number of late marks before leave deduction
+                          User tiers this rule applies to (leave empty for all
+                          tiers)
                         </FormDescription>
-                        {form.formState.errors.lateMarkLimit && (
-                          <p className="text-sm text-red-600">
-                            {form.formState.errors.lateMarkLimit.message}
-                          </p>
-                        )}
                       </FormItem>
                     )}
                   />
 
                   <FormField
                     control={form.control}
-                    name="leaveDeductionCount"
+                    name="frequency"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Leave Deduction Count</FormLabel>
-                        <div className="flex items-center gap-2">
-                          <FormControl>
-                            <Input
-                              type="number"
-                              {...field}
-                              disabled={Number(form.watch("lateMarkLimit")) < 1}
-                            />
-                          </FormControl>
-                          <span className="text-sm text-muted-foreground w-12">
-                            days
-                          </span>
-                        </div>
+                        <FormLabel>Rule Frequency</FormLabel>
+                        <FormControl>
+                          <SearchableSelect
+                            options={frequencyOptions}
+                            value={field.value}
+                            onChange={field.onChange}
+                            placeholder="Select frequency"
+                          />
+                        </FormControl>
                         <FormDescription>
-                          Days to deduct from leave balance
+                          How often this rule should be applied
                         </FormDescription>
-                        {form.formState.errors.leaveDeductionCount && (
-                          <p className="text-sm text-red-600">
-                            {form.formState.errors.leaveDeductionCount.message}
-                          </p>
-                        )}
                       </FormItem>
                     )}
                   />
                 </div>
 
+                {/* Late Mark Threshold and Leave Deduction - enabled only when applicableTiers and frequency are set */}
+                {(form.watch("applicableTiers")?.length ?? 0) > 0 &&
+                  !!form.watch("frequency") && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-top-2 duration-200">
+                      <FormField
+                        control={form.control}
+                        name="lateMarkLimit"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Late Mark Threshold</FormLabel>
+                            <div className="flex items-center gap-2">
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  {...field}
+                                  //   disabled={!canEdit}
+                                />
+                              </FormControl>
+                              <span className="text-sm text-muted-foreground w-12">
+                                times
+                              </span>
+                            </div>
+                            <FormDescription>
+                              Number of late marks before leave deduction
+                            </FormDescription>
+                            {form.formState.errors.lateMarkLimit && (
+                              <p className="text-sm text-red-600">
+                                {form.formState.errors.lateMarkLimit.message}
+                              </p>
+                            )}
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="leaveDeductionCount"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Leave Deduction Count</FormLabel>
+                            <div className="flex items-center gap-2">
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  {...field}
+                                  disabled={
+                                    Number(form.watch("lateMarkLimit")) < 1
+                                  }
+                                />
+                              </FormControl>
+                              <span className="text-sm text-muted-foreground w-12">
+                                days
+                              </span>
+                            </div>
+                            <FormDescription>
+                              Days to deduct from leave balance
+                            </FormDescription>
+                            {form.formState.errors.leaveDeductionCount && (
+                              <p className="text-sm text-red-600">
+                                {
+                                  form.formState.errors.leaveDeductionCount
+                                    .message
+                                }
+                              </p>
+                            )}
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
+
                 {/* Example Box */}
                 <div className="bg-slate-50 border rounded-md p-4 text-sm text-slate-700">
                   <span className="font-semibold block mb-1">Example:</span>
-                  After 3 late marks in a month, the system will automatically
-                  deduct 1 day from the employee's leave balance.
+                  Configure applicable tiers and frequency to enable late mark
+                  policy. After 3 late marks in a month, the system will
+                  automatically deduct 1 day from the user's leave balance.
                 </div>
               </CardContent>
             )}

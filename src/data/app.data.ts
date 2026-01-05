@@ -114,3 +114,8 @@ export enum ATTENDANCE_STATUS {
   WEEK_OFF = "WEEK_OFF",
   HOLIDAY = "HOLIDAY",
 }
+
+export enum ATTENDANCE_RULE_FREQUENCY {
+  WEEKLY = "weekly",
+  MONTHLY = "monthly",
+}
