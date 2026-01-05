@@ -2,7 +2,7 @@ import AttendanceRulesConfiguration from "@/features/attendance-management/compo
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute(
-  "/_authenticated/attendance-management/attendance-rules"
+  "/_authenticated/attendance-management/rules"
 )({
   component: RouteComponent,
 });

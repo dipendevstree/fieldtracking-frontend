@@ -2,7 +2,7 @@ import AttendanceDashboard from "@/features/attendance-management/components/att
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute(
-  "/_authenticated/attendance-management/attendance-dashboard"
+  "/_authenticated/attendance-management/dashboard"
 )({
   component: RouteComponent,
 });

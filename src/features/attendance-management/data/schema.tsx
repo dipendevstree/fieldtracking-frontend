@@ -29,3 +29,16 @@ export const AttendanceRulesSchema = z.object({
 });
 
 export type AttendanceRules = z.infer<typeof AttendanceRulesSchema>;
+
+// --- Shifts ---
+export const ShiftSchema = z.object({
+  name: z.string().min(1, "Shift name is required"),
+  startTime: z.string().min(1, "Start time is required"),
+  endTime: z.string().min(1, "End time is required"),
+  breakMinutes: z.coerce.number().min(0, "Break minutes cannot be negative"),
+  fullDayHours: z.coerce.number().min(0, "Full day hours cannot be negative"),
+  halfDayHours: z.coerce.number().min(0, "Half day hours cannot be negative"),
+  isDefault: z.boolean().default(false),
+});
+
+export type Shift = z.infer<typeof ShiftSchema> & { id: string };

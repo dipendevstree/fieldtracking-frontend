@@ -245,6 +245,12 @@ const API = {
     delete: "leaveType/delete",
     stats: "leaveType/stats",
   },
+  shifts: {
+    list: "shifts",
+    create: "shifts",
+    update: "shifts",
+    delete: "shifts",
+  },
   leaveRulesConfig: {
     list: "leave-rule-configuration",
     update: "leave-rule-configuration",

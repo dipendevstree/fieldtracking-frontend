@@ -207,8 +207,8 @@ export const sidebarData: SidebarData = {
           menuKey: "attendance_management",
           items: [
             {
-              title: "Attendance Dashboard",
-              url: "/attendance-management/attendance-dashboard",
+              title: "Attendance",
+              url: "/attendance-management/dashboard",
               menuKey: "attendance_dashboard",
             },
             {
@@ -217,9 +217,14 @@ export const sidebarData: SidebarData = {
               menuKey: "attendance_calendar",
             },
             {
-              title: "Attendance Rules",
-              url: "/attendance-management/attendance-rules",
+              title: "Rules",
+              url: "/attendance-management/rules",
               menuKey: "attendance_rules",
+            },
+            {
+              title: "Shifts",
+              url: "/attendance-management/shifts",
+              menuKey: "attendance_shifts",
             },
           ],
         },
