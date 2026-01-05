@@ -202,12 +202,12 @@ export const sidebarData: SidebarData = {
           ],
         },
         {
-          title: "Attendance Management",
+          title: "Attendance",
           icon: Users,
           menuKey: "attendance_management",
           items: [
             {
-              title: "Attendance",
+              title: "Dashboard",
               url: "/attendance-management/dashboard",
               menuKey: "attendance_dashboard",
             },
