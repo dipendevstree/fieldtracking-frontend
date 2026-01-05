@@ -245,6 +245,12 @@ const API = {
     delete: "leaveType/delete",
     stats: "leaveType/stats",
   },
+  shifts: {
+    list: "shifts",
+    create: "shifts",
+    update: "shifts",
+    delete: "shifts",
+  },
   leaveRulesConfig: {
     list: "leave-rule-configuration",
     update: "leave-rule-configuration",
@@ -297,6 +303,24 @@ const API = {
     delete: "leaveApprovals/delete",
     stats: "leaveApprovals/stats",
     pendingList: "leaveApprovals/pending",
+  },
+  attendance: {
+    myAttendance: "attendance/my-calendar",
+    dashboardStats: "attendance/dashboard/live",
+    dashboardUser: "attendance/dashboard/users",
+    dashboardCalendar: "attendance/dashboard/calendar",
+  },
+  attendanceCorrection: {
+    list: "attendance/correction/list",
+    myCorrections: "attendance/correction/my-requests",
+    create: "attendance/correction/request",
+    update: "attendance/correction",
+    cancel: "attendance/correction/cancel",
+    approve: "attendance/correction/approve",
+  },
+  attendanceRules: {
+    rules: "attendance/rules",
+    update: "attendance/rules",
   },
 };
 

@@ -64,6 +64,7 @@ export function UsersActionModal() {
         : values.reportingToIds
           ? [values.reportingToIds]
           : [],
+      shiftId: values.shiftId || null,
       // territoryId: values.territoryId,
     };
 
@@ -95,6 +96,7 @@ export function UsersActionModal() {
         : values.reportingToIds
           ? [values.reportingToIds]
           : [],
+      shiftId: values.shiftId || null,
       // territoryId: values.territoryId,
     };
     if (allowTerritoryFilter) {

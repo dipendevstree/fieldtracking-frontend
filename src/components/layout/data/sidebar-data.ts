@@ -10,6 +10,7 @@ import {
   ChartPie,
   FileText,
   CalendarDays,
+  Users,
 } from "lucide-react";
 import { type SidebarData } from "../types";
 
@@ -178,6 +179,33 @@ export const sidebarData: SidebarData = {
               title: "Holiday Templates",
               url: "/leave-management/holiday-templates",
               menuKey: "holiday_templates",
+            },
+          ],
+        },
+        {
+          title: "Attendance",
+          icon: Users,
+          menuKey: "attendance_management",
+          items: [
+            {
+              title: "Dashboard",
+              url: "/attendance-management/dashboard",
+              menuKey: "attendance_dashboard",
+            },
+            {
+              title: "Attendance Calendar",
+              url: "/attendance-management/attendance-calendar",
+              menuKey: "attendance_calendar",
+            },
+            {
+              title: "Rules",
+              url: "/attendance-management/rules",
+              menuKey: "attendance_rules",
+            },
+            {
+              title: "Shifts",
+              url: "/attendance-management/shifts",
+              menuKey: "attendance_shifts",
             },
           ],
         },
@@ -599,6 +627,24 @@ export const VIEW_ROUTE_PERMISSIONS: Record<
   },
   "/user-territory": {
     requiredPermissions: "user-territory",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/attendance-management/attendance-dashboard": {
+    requiredPermissions: "attendance_management",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/attendance-management/attendance-calendar": {
+    requiredPermissions: "attendance_management",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/attendance-management/attendance-rules": {
+    requiredPermissions: "attendance_rules",
     requiredRoles: ["admin"],
     action: "viewOwn",
     requireAll: false,

@@ -6,6 +6,7 @@ interface StatsCardProps {
   value: string | number;
   description: string;
   icon: LucideIcon;
+  className?: string;
 }
 
 export function TopStatsCard({
@@ -13,9 +14,10 @@ export function TopStatsCard({
   value,
   description,
   icon: Icon,
+  className,
 }: StatsCardProps) {
   return (
-    <Card className="shadow-sm border-slate-200">
+    <Card className={`shadow-sm border-slate-200 ${className}`}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-slate-600">
           {title}
