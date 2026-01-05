@@ -311,6 +311,10 @@ const API = {
     cancel: "attendance/correction/cancel",
     approve: "attendance/correction/approve",
   },
+  attendanceRules: {
+    rules: "attendance/rules",
+    update: "attendance/rules",
+  },
 };
 
 Object.freeze(API);
