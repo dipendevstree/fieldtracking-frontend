@@ -6,8 +6,16 @@ import {
   endOfMonth,
   parseISO,
   isSameDay,
+  isSunday,
+  isSaturday,
+  previousSunday,
+  nextSaturday,
 } from "date-fns";
-import { CalendarIcon, Plus, Loader2 } from "lucide-react";
+import {
+  CalendarIcon,
+  // Plus,
+  Loader2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -22,17 +30,17 @@ import { IconEdit, IconX } from "@tabler/icons-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
 import { ApplyLeaveDialog } from "./components/apply-leave-dialog";
-import { LeaveBalanceCard } from "./components/leave-balance-card";
+// import { LeaveBalanceCard } from "./components/leave-balance-card";
 import { TopStatsCard } from "../../../../components/ui/TopStatsCard";
 
 // Services & Hooks
 import { useGetAllLeaveTypes } from "@/features/leave-management/services/leave-type.action.hook";
-import { useGetAllHolidays } from "@/features/holiday-management/services/holiday.action.hook";
+import { useGetMyHolidays } from "@/features/holiday-management/services/holiday.action.hook";
 import {
   useCancelLeave,
   useGetAllLeaves,
   useGetLeaveStats,
-  useGetMyLeaves,
+  // useGetMyLeaves,
 } from "../../services/leave-action.hook";
 
 // ... (other imports)
@@ -41,6 +49,7 @@ import StatusBadge, {
 } from "@/components/shared/common-status-badge";
 import { Main } from "@/components/layout/main";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
+import LeaveRequest from "../leave-request/LeaveRequest";
 
 // --- LOGIC HELPER ---
 const getEventStatusKey = (isHoliday: boolean, text: string, date: Date) => {
@@ -80,17 +89,29 @@ export default function MyLeaveBalance() {
   // Services
   const { data: leaveTypesList = [] } = useGetAllLeaveTypes();
   const { data: stats } = useGetLeaveStats();
-  const { data: myLeavesList } = useGetMyLeaves();
+  // const { data: myLeavesList } = useGetMyLeaves();
 
-  const calendarQueryParams = useMemo(
-    () => ({
-      startDate: format(startOfMonth(viewDate), "yyyy-MM-dd"),
-      endDate: format(endOfMonth(viewDate), "yyyy-MM-dd"),
-    }),
-    [viewDate]
-  );
+  const calendarQueryParams = useMemo(() => {
+    const monthStart = startOfMonth(viewDate);
+    const monthEnd = endOfMonth(viewDate);
 
-  const { data: holidays = [] } = useGetAllHolidays(calendarQueryParams);
+    // If the month doesn't start on Sunday, get the previous month's last Sunday
+    const calendarStart = isSunday(monthStart)
+      ? monthStart
+      : previousSunday(monthStart);
+
+    // If the month doesn't end on Saturday, get the next month's first Saturday
+    const calendarEnd = isSaturday(monthEnd)
+      ? monthEnd
+      : nextSaturday(monthEnd);
+
+    return {
+      startDate: format(calendarStart, "yyyy-MM-dd"),
+      endDate: format(calendarEnd, "yyyy-MM-dd"),
+    };
+  }, [viewDate]);
+
+  const { data: holidays = [] } = useGetMyHolidays(calendarQueryParams);
   const {
     data: allLeavesList,
     isLoading: isLoadingLeaves,
@@ -107,11 +128,11 @@ export default function MyLeaveBalance() {
   });
 
   // Handlers
-  const openApplyLeaveDialog = (leaveTypeId?: string) => {
-    setEditingLeaveId(null);
-    setSelectedLeaveTypeId(leaveTypeId);
-    setIsApplyLeaveOpen(true);
-  };
+  // const openApplyLeaveDialog = (leaveTypeId?: string) => {
+  //   setEditingLeaveId(null);
+  //   setSelectedLeaveTypeId(leaveTypeId);
+  //   setIsApplyLeaveOpen(true);
+  // };
 
   const handleEditClick = (leaveData: any) => {
     if (leaveData.status?.toLowerCase() === "approved") {
@@ -213,18 +234,18 @@ export default function MyLeaveBalance() {
     })
     .sort((a: any, b: any) => a.start.getTime() - b.start.getTime());
 
-  const cardStyles = [
-    { headerBg: "bg-blue-50", titleColor: "text-blue-700" },
-    { headerBg: "bg-green-50", titleColor: "text-green-700" },
-    { headerBg: "bg-purple-50", titleColor: "text-purple-700" },
-    { headerBg: "bg-orange-50", titleColor: "text-orange-700" },
-  ];
+  // const cardStyles = [
+  //   { headerBg: "bg-blue-50", titleColor: "text-blue-700" },
+  //   { headerBg: "bg-green-50", titleColor: "text-green-700" },
+  //   { headerBg: "bg-purple-50", titleColor: "text-purple-700" },
+  //   { headerBg: "bg-orange-50", titleColor: "text-orange-700" },
+  // ];
 
   return (
     <Main className="space-y-6 pb-10">
-      <div className="flex items-center justify-between">
+      {/* <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-          My Leave Balance
+          Leave Dashboard
         </h2>
         <PermissionGate requiredPermission="leave_balance" action="add">
           <Button
@@ -234,7 +255,7 @@ export default function MyLeaveBalance() {
             <Plus className="mr-2 h-4 w-4" /> Apply for Leave
           </Button>
         </PermissionGate>
-      </div>
+      </div> */}
 
       {/* Top Stats */}
       <div className="grid gap-4 md:grid-cols-3">
@@ -259,7 +280,7 @@ export default function MyLeaveBalance() {
       </div>
 
       {/* Leave Type Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         {myLeavesList
           ?.filter((item: any) => item && item.id)
           ?.map((item: any, index: number) => {
@@ -285,7 +306,7 @@ export default function MyLeaveBalance() {
               />
             );
           })}
-      </div>
+      </div> */}
 
       {/* Calendar & List Section */}
       <Card className="border-slate-200 shadow-sm overflow-hidden p-0">
@@ -444,6 +465,8 @@ export default function MyLeaveBalance() {
           destructive
         />
       )}
+
+      <LeaveRequest dashboardView />
     </Main>
   );
 }

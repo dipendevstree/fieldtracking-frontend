@@ -8,11 +8,13 @@ interface Props {
     limit: number;
   };
   onPaginationChange: (page: number, pageSize: number) => void;
+  dashboardView?: boolean;
 }
 
 export default function LeaveApprovalHistory({
   pagination,
   onPaginationChange,
+  dashboardView,
 }: Props) {
   const { user } = useAuthStore();
   const { data: leaveApprovalHistoryList, isLoading } =
@@ -27,6 +29,7 @@ export default function LeaveApprovalHistory({
         currentPage={pagination.page}
         paginationCallbacks={{ onPaginationChange }}
         defaultPageSize={pagination.limit}
+        dashboardView={dashboardView}
       />
     </>
   );

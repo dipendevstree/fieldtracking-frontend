@@ -4,14 +4,12 @@ import {
   MapPin,
   Settings,
   Shield,
-  // FileText,
   UserCircle,
   Calendar1Icon,
   ShieldCheck,
   ChartPie,
   FileText,
   CalendarDays,
-  Briefcase,
   Users,
 } from "lucide-react";
 import { type SidebarData } from "../types";
@@ -25,7 +23,7 @@ export const sidebarData: SidebarData = {
   },
   teams: [
     {
-      name: "FieldTrack Pro",
+      name: "FieldTrack360",
       logo: Building2,
       plan: "Enterprise",
     },
@@ -149,13 +147,13 @@ export const sidebarData: SidebarData = {
         },
         {
           title: "Leave Management",
-          icon: Briefcase,
+          icon: CalendarDays,
           menuKey: "leave_management",
           items: [
             {
-              title: "Leave Balance",
-              url: "/leave-management/leave-balance",
-              menuKey: "leave_balance",
+              title: "Dashboard",
+              url: "/leave-management/dashboard",
+              menuKey: "leave_management_dashboard",
             },
             {
               title: "User Tiers",
@@ -168,35 +166,18 @@ export const sidebarData: SidebarData = {
               menuKey: "leave_request",
             },
             {
-              title: "Leave Types",
-              url: "/leave-management/leave-types",
-              menuKey: "leave_types",
-            },
-            {
               title: "Leave Rules",
               url: "/leave-management/leave-rules",
               menuKey: "leave_rules",
             },
-          ],
-        },
-        {
-          title: "Holiday Management",
-          icon: CalendarDays,
-          menuKey: "holiday_management",
-          items: [
             {
-              title: "Holiday Calendar",
-              url: "/holiday-management/holiday-calendar",
-              menuKey: "holiday_calendar",
-            },
-            {
-              title: "Holiday Types",
-              url: "/holiday-management/holiday-types",
-              menuKey: "holiday_types",
+              title: "List of Holidays",
+              url: "/leave-management/list-of-holidays",
+              menuKey: "list_of_holidays",
             },
             {
               title: "Holiday Templates",
-              url: "/holiday-management/holiday-templates",
+              url: "/leave-management/holiday-templates",
               menuKey: "holiday_templates",
             },
           ],
@@ -235,9 +216,40 @@ export const sidebarData: SidebarData = {
       items: [
         {
           title: "Settings",
-          url: "/settings",
           icon: Settings,
           menuKey: "settings",
+          items: [
+            {
+              title: "Expense Categories",
+              url: "/settings/expense-categories",
+              menuKey: "expense_categories",
+            },
+            {
+              title: "Leave Types",
+              url: "/settings/leave-types",
+              menuKey: "leave_types",
+            },
+            {
+              title: "Holiday Types",
+              url: "/settings/holiday-types",
+              menuKey: "holiday_types",
+            },
+            {
+              title: "Approvers",
+              url: "/settings/approvers",
+              menuKey: "approvers",
+            },
+            {
+              title: "Notification Settings",
+              url: "/settings/notification-settings",
+              menuKey: "notification-settings",
+            },
+            {
+              title: "General Settings",
+              url: "/settings/general-settings",
+              menuKey: "general-settings",
+            },
+          ],
         },
         // {
         //   title: "Documentation",

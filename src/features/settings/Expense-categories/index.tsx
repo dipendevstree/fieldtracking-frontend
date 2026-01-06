@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
-import { cn } from "@/lib/utils";
 import { Main } from "@/components/layout/main";
 import TablePageLayout from "@/components/layout/table-page-layout";
 import { ErrorPage } from "@/components/shared/custom-error";
@@ -63,7 +62,7 @@ const ExpenseCategoriesPage = () => {
   };
 
   return (
-    <Main className={cn("flex flex-col p-0")}>
+    <Main>
       <TablePageLayout
         title="All Expense Categories"
         description="Manage expense category assignments"

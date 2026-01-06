@@ -42,12 +42,12 @@ const AVATAR_SIZES = {
 const DEFAULT_MENU_ITEMS: MenuItem[] = [
   {
     label: "Profile",
-    href: "/settings/general",
+    href: "/settings/general-settings",
     shortcut: "⇧⌘P",
   },
   {
     label: "Settings",
-    href: "/settings",
+    href: "/settings/general-settings",
     shortcut: "⌘S",
   },
 ];
@@ -97,7 +97,11 @@ export function ProfileDropdown({
               </Avatar>
             </div>
             <div className="flex flex-col justify-center">
-              <p className="text-sm leading-none font-medium mb-1">{user?.isSuperAdmin ? user?.name?.replace(/^./, c => c.toUpperCase()): (user?.firstName + " " + user?.lastName)}</p>
+              <p className="text-sm leading-none font-medium mb-1">
+                {user?.isSuperAdmin
+                  ? user?.name?.replace(/^./, (c) => c.toUpperCase())
+                  : user?.firstName + " " + user?.lastName}
+              </p>
               <p className="text-muted-foreground text-xs leading-none break-all truncate max-w-[150px]">
                 {user?.email}
               </p>
@@ -109,35 +113,40 @@ export function ProfileDropdown({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              {menuItems.map((item, index) => (
-                <DropdownMenuItem
-                  key={index}
-                  asChild={!!item.href}
-                  onClick={item.onClick}
-                  disabled={item.disabled}
-                  className={item.onClick ? "cursor-pointer" : ""}
-                >
-                  {item.href ? (
-                    <Link to={item.href}>
-                      {item.label}
-                      {item.shortcut && (
-                        <DropdownMenuShortcut>
-                          {item.shortcut}
-                        </DropdownMenuShortcut>
-                      )}
-                    </Link>
-                  ) : (
-                    <>
-                      {item.label}
-                      {item.shortcut && (
-                        <DropdownMenuShortcut>
-                          {item.shortcut}
-                        </DropdownMenuShortcut>
-                      )}
-                    </>
-                  )}
-                </DropdownMenuItem>
-              ))}
+              {menuItems.map((item, index) => {
+                if (item.label === "Settings" && !user?.superAdminCreatedBy) {
+                  return;
+                }
+                return (
+                  <DropdownMenuItem
+                    key={index}
+                    asChild={!!item.href}
+                    onClick={item.onClick}
+                    disabled={item.disabled}
+                    className={item.onClick ? "cursor-pointer" : ""}
+                  >
+                    {item.href ? (
+                      <Link to={item.href}>
+                        {item.label}
+                        {item.shortcut && (
+                          <DropdownMenuShortcut>
+                            {item.shortcut}
+                          </DropdownMenuShortcut>
+                        )}
+                      </Link>
+                    ) : (
+                      <>
+                        {item.label}
+                        {item.shortcut && (
+                          <DropdownMenuShortcut>
+                            {item.shortcut}
+                          </DropdownMenuShortcut>
+                        )}
+                      </>
+                    )}
+                  </DropdownMenuItem>
+                );
+              })}
             </DropdownMenuGroup>
           </>
         )}

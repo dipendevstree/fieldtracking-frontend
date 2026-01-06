@@ -9,11 +9,13 @@ interface Props {
     limit: number;
   };
   onPaginationChange: (page: number, pageSize: number) => void;
+  dashboardView?: boolean;
 }
 
 export default function PendingRequest({
   pagination,
   onPaginationChange,
+  dashboardView,
 }: Props) {
   const { open, setOpen, currentRow } = useLeaveRequestStore();
   const { data: leaveRequestList, isLoading } =
@@ -35,6 +37,7 @@ export default function PendingRequest({
         currentPage={pagination.page}
         paginationCallbacks={{ onPaginationChange }}
         defaultPageSize={pagination.limit}
+        dashboardView={dashboardView}
       />
     </>
   );

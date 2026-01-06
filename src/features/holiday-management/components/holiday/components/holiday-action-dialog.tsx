@@ -32,6 +32,7 @@ import { useGetAllHolidayTypes } from "@/features/holiday-management/services/ho
 import { SimpleDatePicker } from "@/components/ui/datepicker";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { HolidaySchema } from "../../../data/schema";
+import { DialogClose } from "@radix-ui/react-dialog";
 
 interface Props {
   open: boolean;
@@ -118,7 +119,7 @@ export function HolidayActionDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
+        <DialogHeader className="mb-3">
           <DialogTitle>
             {holidayToEdit ? "Edit Holiday" : "Add Holiday"}
           </DialogTitle>
@@ -220,6 +221,9 @@ export function HolidayActionDialog({
             />
 
             <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
               <Button type="submit" disabled={isSaving}>
                 {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save Holiday

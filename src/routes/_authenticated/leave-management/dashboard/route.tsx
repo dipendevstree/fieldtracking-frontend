@@ -1,17 +1,17 @@
-import LeaveTypeManagement from "@/features/leave-management/components/leave-types/LeaveTypeManagement";
+import MyLeaveBalance from "@/features/leave-management/components/user-view/MyLeaveBalance";
 import { ProtectedRoute } from "@/permissions/components/ProtectedRoute";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute(
-  "/_authenticated/leave-management/leave-types"
+  "/_authenticated/leave-management/dashboard"
 )({
   component: RouteComponent,
 });
 
 function RouteComponent() {
   return (
-    <ProtectedRoute requiredPermission="leave_types">
-      <LeaveTypeManagement />
+    <ProtectedRoute requiredPermission="dashboard">
+      <MyLeaveBalance />
     </ProtectedRoute>
   );
 }

@@ -1,6 +1,5 @@
 import { useState, useCallback } from "react";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
-import { cn } from "@/lib/utils";
 import { Main } from "@/components/layout/main";
 import { toast } from "sonner";
 import GeneralSettings from "./components/GeneralSetting";
@@ -91,10 +90,7 @@ const GeneralSettingsPage = () => {
       return;
     }
 
-    if (
-      currentSettingsData?.fixedDayExpense &&
-      submitFixedExpenseForm
-    ) {
+    if (currentSettingsData?.fixedDayExpense && submitFixedExpenseForm) {
       const result = await submitFixedExpenseForm();
       if (!result) return;
     }
@@ -186,9 +182,9 @@ const GeneralSettingsPage = () => {
       toast.error("Failed to update settings. Please try again.");
     }
   };
-  
+
   return (
-    <Main className={cn("flex flex-col p-0")}>
+    <Main>
       {/* General Settings Configuration Section */}
 
       <Card className="p-4 gap-1 mb-6">
@@ -202,7 +198,9 @@ const GeneralSettingsPage = () => {
       <div className="mb-2">
         <GeneralSettings
           onDataChange={handleDataChange}
-          setSubmitFixedExpenseForm={setSubmitFixedExpenseForm} isFixedExpenseDirty={isFixedExpenseDirty} setIsFixedExpenseDirty={setIsFixedExpenseDirty} 
+          setSubmitFixedExpenseForm={setSubmitFixedExpenseForm}
+          isFixedExpenseDirty={isFixedExpenseDirty}
+          setIsFixedExpenseDirty={setIsFixedExpenseDirty}
         />
       </div>
 
@@ -210,7 +208,9 @@ const GeneralSettingsPage = () => {
       <div className="flex justify-end gap-4">
         <button
           onClick={handleSaveSettings}
-          disabled={isLoading || (/*!isFixedExpenseDirty ||*/ !currentSettingsData)}
+          disabled={
+            isLoading || /*!isFixedExpenseDirty ||*/ !currentSettingsData
+          }
           className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? "Saving..." : "Save Settings"}
