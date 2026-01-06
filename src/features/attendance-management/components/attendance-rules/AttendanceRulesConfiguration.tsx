@@ -100,7 +100,7 @@ export default function AttendanceRulesConfiguration() {
       lateMarkLimit: 1,
       leaveDeductionCount: 0,
       weekOffDays: [0], // Default to Sunday
-      applicableTiers: [],
+      latemarkApplicableTiers: [],
       frequency: undefined,
     },
   });
@@ -117,7 +117,7 @@ export default function AttendanceRulesConfiguration() {
         weekOffDays: (rulesData.weekOffDays ?? [0]).map((day: any) =>
           typeof day === "string" ? parseInt(day, 10) : day
         ),
-        applicableTiers: rulesData.applicableTiers ?? [],
+        latemarkApplicableTiers: rulesData.latemarkApplicableTiers ?? [],
         frequency: rulesData.frequency,
       });
     }
@@ -177,7 +177,7 @@ export default function AttendanceRulesConfiguration() {
           title="Late Mark Policy"
           enabled={
             (form.watch("enableLateMarkRule") ?? true) &&
-            (form.watch("applicableTiers")?.length ?? 0) > 0 &&
+            (form.watch("latemarkApplicableTiers")?.length ?? 0) > 0 &&
             !!form.watch("frequency")
           }
           desc="Late attendance tracking"
@@ -371,7 +371,7 @@ export default function AttendanceRulesConfiguration() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <FormField
                     control={form.control}
-                    name="applicableTiers"
+                    name="latemarkApplicableTiers"
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Applicable Tiers</FormLabel>
@@ -415,7 +415,7 @@ export default function AttendanceRulesConfiguration() {
                 </div>
 
                 {/* Late Mark Threshold and Leave Deduction - enabled only when applicableTiers and frequency are set */}
-                {(form.watch("applicableTiers")?.length ?? 0) > 0 &&
+                {(form.watch("latemarkApplicableTiers")?.length ?? 0) > 0 &&
                   !!form.watch("frequency") && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-top-2 duration-200">
                       <FormField

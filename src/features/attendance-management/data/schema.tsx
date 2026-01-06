@@ -29,7 +29,7 @@ export const AttendanceRulesSchema = z.object({
   weekOffDays: z
     .array(z.coerce.number().min(0).max(6))
     .min(1, "At least one week off day is required"),
-  applicableTiers: z.array(z.string()).optional(),
+  latemarkApplicableTiers: z.array(z.string()).optional(),
   frequency: z.nativeEnum(ATTENDANCE_RULE_FREQUENCY).optional(),
 });
 
