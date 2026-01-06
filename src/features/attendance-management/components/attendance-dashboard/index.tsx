@@ -56,7 +56,11 @@ export default function AttendanceDashboard() {
   const calendarMonthStart = format(startOfMonth(currentDate), "yyyy-MM-dd");
   const calendarMonthEnd = format(endOfMonth(currentDate), "yyyy-MM-dd");
 
-  const { data: calendarData } = useGetDashboardCalendarData({
+  const {
+    data: calendarData,
+    holidays,
+    weekOffDays,
+  } = useGetDashboardCalendarData({
     startDate: calendarMonthStart,
     endDate: calendarMonthEnd,
   });
@@ -213,6 +217,8 @@ export default function AttendanceDashboard() {
             events={events}
             date={currentDate}
             onNavigate={handleDateChange}
+            holidays={holidays}
+            weekOffDays={weekOffDays}
           />
         </CardContent>
       </Card>

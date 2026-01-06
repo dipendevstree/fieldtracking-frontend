@@ -53,6 +53,8 @@ interface TeamAttendanceCalendarProps {
   date: Date;
   onNavigate: (date: Date) => void;
   className?: string;
+  holidays?: any[];
+  weekOffDays?: number[];
 }
 
 // --- 2. HELPERS ---
@@ -150,6 +152,8 @@ export function TeamAttendanceCalendar({
   date,
   onNavigate,
   className,
+  holidays = [],
+  weekOffDays = [],
 }: TeamAttendanceCalendarProps) {
   const [showModal, setShowModal] = useState(false);
   const [modalEvents, setModalEvents] = useState<AttendanceEvent[]>([]);
@@ -197,7 +201,7 @@ export function TeamAttendanceCalendar({
     []
   );
 
-  // Custom day styling to highlight selected date
+  // Custom day styling to highlight selected date, holidays, and week-off days
   const dayPropGetter = useCallback(
     (calendarDate: Date) => {
       const isSelected =
@@ -205,14 +209,40 @@ export function TeamAttendanceCalendar({
         calendarDate.getMonth() === date.getMonth() &&
         calendarDate.getFullYear() === date.getFullYear();
 
+      // Check if date is a holiday
+      const holiday = holidays.find((holiday: any) => {
+        const holidayDate = new Date(holiday.date);
+        return (
+          holidayDate.getDate() === calendarDate.getDate() &&
+          holidayDate.getMonth() === calendarDate.getMonth() &&
+          holidayDate.getFullYear() === calendarDate.getFullYear()
+        );
+      });
+
+      // Check if date is a week-off day
+      const isWeekOff = weekOffDays.includes(calendarDate.getDay());
+
+      let className = "";
+      let title = "";
+
       if (isSelected) {
-        return {
-          className: "selected-date",
-        };
+        className += " selected-date";
       }
-      return {};
+
+      if (holiday) {
+        className += " holiday-date";
+        title = `${holiday.name}${holiday.description ? ` - ${holiday.description}` : ""}`;
+      } else if (isWeekOff) {
+        className += " weekoff-date";
+        title = "Week Off";
+      }
+
+      return {
+        className: className.trim(),
+        title: title,
+      };
     },
-    [date]
+    [date, holidays, weekOffDays]
   );
 
   return (
@@ -226,6 +256,10 @@ export function TeamAttendanceCalendar({
         .rbc-date-cell { padding: 8px; text-align: left; font-size: 0.9rem; font-weight: 600; color: #334155; }
         .rbc-today { background-color: transparent !important; }
         .selected-date { border: 2px solid #3b82f6 !important; }
+        .holiday-date { background-color: #f1f5f9 !important; position: relative; }
+        .holiday-date .rbc-date-cell { color: #059669 !important; font-weight: 700 !important; }
+        .weekoff-date { background-color: #f8fafc !important; position: relative; }
+        .weekoff-date .rbc-date-cell { color: #64748b !important; font-weight: 600 !important; }
         .rbc-event { min-height: 0; }
         .rbc-row-segment { padding: 2px 4px !important; }
         .rbc-row-content .rbc-row { display: flex; flex-wrap: wrap; gap: 4px; padding-left: 6px; }

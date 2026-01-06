@@ -78,6 +78,8 @@ export const useGetDashboardCalendarData = (
   return {
     ...query,
     data: query.data?.attendanceData,
+    holidays: query.data?.holidays || [],
+    weekOffDays: query.data?.weekOffDays || [],
     isLoading: query.isLoading,
     error: query.error,
   };
