@@ -123,7 +123,16 @@ export default function LeaveApprovals() {
       });
     });
     return tierWiseUserCache;
-  }, [allUsers, selectedTerritory]);
+  }, [userTiers, allUsers]);
+
+  useEffect(() => {
+    if (!selectedTerritoryId) {
+      if (territories.length > 0) {
+        setSelectedTerritoryId(territories[0].id);
+        form.setValue("territoryId", territories[0].id);
+      }
+    }
+  }, [selectedTerritoryId, territories]);
 
   useEffect(() => {
     if (!isLeaveApprovalsLoading) {
@@ -179,6 +188,8 @@ export default function LeaveApprovals() {
     isLeaveApprovalsLoading,
     form,
     selectedTerritoryId,
+    tierWiseUserCache,
+    userTiers,
   ]);
 
   const tierEnabled = form.watch("tierEnabled");
@@ -225,10 +236,11 @@ export default function LeaveApprovals() {
       </div>
     );
   }
-  console.log("error", form.formState.errors);
+
   const rowError = !Array.isArray(form.formState.errors.leaveApprovalsLevels)
     ? form.formState.errors.leaveApprovalsLevels?.message
     : null;
+
   return (
     <Main>
       <Form {...form}>
