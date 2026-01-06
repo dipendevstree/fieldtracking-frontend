@@ -160,7 +160,7 @@ export default function AttendanceDashboard() {
 
   return (
     <Main>
-      <div className="grid gap-4 md:grid-cols-3 mb-6">
+      <div className="grid gap-4 md:grid-cols-4 mb-6">
         {/* 1. Total Employees */}
         <TopStatsCard
           title="Total Users"
@@ -182,10 +182,26 @@ export default function AttendanceDashboard() {
           title="Absent"
           value={stats?.absent || 0}
           description="Not checked in"
-          icon={UserX} // or UserMinus
+          icon={UserX}
         />
 
-        {/* 4. Late Arrivals */}
+        {/* 4. Not Started */}
+        <TopStatsCard
+          title="Not Started"
+          value={stats?.notStarted || 0}
+          description="Not checked in"
+          icon={UserX}
+        />
+
+        {/* 5. Half Day */}
+        <TopStatsCard
+          title="Half Day"
+          value={stats?.halfDay || 0}
+          description="Checked in successfully"
+          icon={UserCheck}
+        />
+
+        {/* 6. Late Arrivals */}
         <TopStatsCard
           title="Late Arrivals"
           value={stats?.late || 0}
@@ -193,7 +209,7 @@ export default function AttendanceDashboard() {
           icon={Clock}
         />
 
-        {/* 5. Early Exits */}
+        {/* 7. Early Exits */}
         <TopStatsCard
           title="Early Exits"
           value={stats?.earlyExit || 0}
@@ -201,7 +217,7 @@ export default function AttendanceDashboard() {
           icon={LogOut}
         />
 
-        {/* 6. On Leave */}
+        {/* 8. On Leave */}
         <TopStatsCard
           title="On Leave"
           value={stats?.onLeave || 0}
