@@ -52,7 +52,7 @@ const ExpenseCategory = () => {
         description="Manage category assignments"
         onAddButtonClick={handleAddCategory}
         addButtonText="Add Category"
-        modulePermission="expense_category"
+        modulePermission="expense_categories"
         moduleAction="add"
       >
         <CategoryTable

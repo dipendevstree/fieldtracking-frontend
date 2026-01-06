@@ -322,6 +322,10 @@ const API = {
     rules: "attendance/rules",
     update: "attendance/rules",
   },
+  leaveApprovals: {
+    list: "leaveApprovalsLevels",
+    create: "leaveApprovalsLevels",
+  },
 };
 
 Object.freeze(API);

@@ -240,6 +240,11 @@ export const sidebarData: SidebarData = {
               menuKey: "approvers",
             },
             {
+              title: "Leave Approvals",
+              url: "/settings/leave-approvals",
+              menuKey: "leave_approvals",
+            },
+            {
               title: "Notification Settings",
               url: "/settings/notification-settings",
               menuKey: "notification-settings",

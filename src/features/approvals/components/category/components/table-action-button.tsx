@@ -19,7 +19,7 @@ export function DataTableRowActions({ row }: any) {
 
   return (
     <div className="flex items-center space-x-2">
-      <PermissionGate requiredPermission="expense_category" action="edit">
+      <PermissionGate requiredPermission="expense_categories" action="edit">
         <CustomTooltip title="Edit">
           <Button
             variant="ghost"
@@ -31,7 +31,7 @@ export function DataTableRowActions({ row }: any) {
         </CustomTooltip>
       </PermissionGate>
 
-      <PermissionGate requiredPermission="expense_category" action="delete">
+      <PermissionGate requiredPermission="expense_categories" action="delete">
         <CustomTooltip title="Delete">
           <Button
             variant="ghost"
