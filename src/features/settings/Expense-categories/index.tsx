@@ -68,7 +68,7 @@ const ExpenseCategoriesPage = () => {
         description="Manage expense category assignments"
         onAddButtonClick={handleAddExpenseCategory}
         addButtonText="Add Expense Category"
-        modulePermission="expense_category"
+        modulePermission="expense_categories"
         moduleAction="add"
         className="p-0"
       >

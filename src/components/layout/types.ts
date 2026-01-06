@@ -83,6 +83,7 @@ export interface LoginUser {
   userName: string;
   fcm_token?: string | null;
   superAdminCreatedBy?: string | null;
+  territoryId?: string | null;
 }
 
 // Complete login response
