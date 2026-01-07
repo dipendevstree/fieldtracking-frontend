@@ -207,6 +207,11 @@ export const sidebarData: SidebarData = {
               url: "/attendance-management/shifts",
               menuKey: "attendance_shifts",
             },
+            {
+              title: "Approvals",
+              url: "/attendance-management/approvals",
+              menuKey: "attendance_approvals",
+            },
           ],
         },
       ],
@@ -650,6 +655,12 @@ export const VIEW_ROUTE_PERMISSIONS: Record<
   },
   "/attendance-management/attendance-rules": {
     requiredPermissions: "attendance_rules",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/attendance-management/approvals": {
+    requiredPermissions: "attendance_approvals",
     requiredRoles: ["admin"],
     action: "viewOwn",
     requireAll: false,

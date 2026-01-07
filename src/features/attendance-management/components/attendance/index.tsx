@@ -44,7 +44,7 @@ const getStatusDot = (status: string) => {
     case "PENDING":
       return "bg-amber-600";
     case "REJECTED":
-      return "bg-orange-500";
+      return "bg-red-500";
     case "CANCEL":
       return "bg-red-500";
     default:
