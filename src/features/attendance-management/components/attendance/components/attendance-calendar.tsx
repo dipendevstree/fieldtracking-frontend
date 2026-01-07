@@ -34,6 +34,7 @@ interface AttendanceCalendarProps {
   onSelectSlot?: (slotInfo: any) => void;
   holidays?: any[];
   weekOffDays?: number[];
+  isSelectable?: boolean;
 }
 
 // --- HELPER: BE Enum -> Tailwind Styles ---
@@ -124,7 +125,7 @@ const AttendanceEventComponent = ({ event }: { event: AttendanceEvent }) => {
   );
 };
 
-const CustomToolbar = ({ onNavigate, label, date }: any) => {
+const CustomToolbar = ({ onNavigate, label, date, isSelectable }: any) => {
   // Check if viewing current or future month
   const isCurrentOrFutureMonth = () => {
     const today = new Date();
@@ -149,10 +150,12 @@ const CustomToolbar = ({ onNavigate, label, date }: any) => {
           <h2 className="text-lg font-bold text-slate-900">
             Attendance Calendar
           </h2>
-          <p className="text-xs text-blue-500 flex items-center gap-1">
-            <IconInfoCircle size={14} />
-            Click on a date to request an attendance correction.
-          </p>
+          {isSelectable && (
+            <p className="text-xs text-blue-500 flex items-center gap-1">
+              <IconInfoCircle size={14} />
+              Click on a date to request an attendance correction.
+            </p>
+          )}
         </div>
       </div>
 
@@ -196,6 +199,7 @@ export default function AttendanceCalendarView({
   onSelectSlot,
   holidays = [],
   weekOffDays = [],
+  isSelectable,
 }: AttendanceCalendarProps) {
   const dayPropGetter = useCallback(
     (currentDate: Date) => {
@@ -284,27 +288,31 @@ export default function AttendanceCalendarView({
         date={date}
         onNavigate={onNavigate}
         toolbar={true}
-        selectable={true}
+        selectable={isSelectable}
         onSelectEvent={onSelectEvent}
-        onSelectSlot={(slotInfo) => {
-          // Prevent selecting future dates
-          const selectedDate = new Date(slotInfo.start);
-          const today = new Date();
-          selectedDate.setHours(0, 0, 0, 0);
-          today.setHours(0, 0, 0, 0);
+        onSelectSlot={
+          onSelectSlot
+            ? (slotInfo) => {
+                // Prevent selecting future dates
+                const selectedDate = new Date(slotInfo.start);
+                const today = new Date();
+                selectedDate.setHours(0, 0, 0, 0);
+                today.setHours(0, 0, 0, 0);
 
-          if (selectedDate > today) {
-            toast.warning("Cannot select future dates");
-            return;
-          }
+                if (selectedDate > today) {
+                  toast.warning("Cannot select future dates");
+                  return;
+                }
 
-          // Call the parent's onSelectSlot handler if provided
-          if (onSelectSlot) {
-            onSelectSlot(slotInfo);
-          }
-        }}
+                // Call the parent's onSelectSlot handler
+                onSelectSlot(slotInfo);
+              }
+            : undefined
+        }
         components={{
-          toolbar: (props) => <CustomToolbar {...props} date={date} />,
+          toolbar: (props) => (
+            <CustomToolbar {...props} date={date} isSelectable={isSelectable} />
+          ),
           event: AttendanceEventComponent,
           ...components,
         }}
