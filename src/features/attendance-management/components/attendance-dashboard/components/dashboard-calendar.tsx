@@ -330,7 +330,7 @@ export function TeamAttendanceCalendar({
       `}</style>
 
       {/* CALENDAR */}
-      <div className="h-[700px]">
+      <div className="h-[750px]">
         <Calendar
           localizer={localizer}
           events={events}
