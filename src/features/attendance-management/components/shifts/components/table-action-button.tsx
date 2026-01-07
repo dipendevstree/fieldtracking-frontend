@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useShiftStore } from "@/features/attendance-management/store/shift.store";
 import CustomTooltip from "@/components/shared/custom-tooltip";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 export function ShiftRowActions({
   row,
@@ -29,42 +30,42 @@ export function ShiftRowActions({
 
   return (
     <div className="flex items-center space-x-2">
-      {/* <PermissionGate requiredPermission="shifts" action="edit"> */}
-      <CustomTooltip title="Edit">
-        <Button
-          variant="ghost"
-          className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
-          onClick={() => handleEdit(row)}
-        >
-          <IconEdit size={16} />
-        </Button>
-      </CustomTooltip>
-      {/* </PermissionGate> */}
+      <PermissionGate requiredPermission="attendance_shifts" action="edit">
+        <CustomTooltip title="Edit">
+          <Button
+            variant="ghost"
+            className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
+            onClick={() => handleEdit(row)}
+          >
+            <IconEdit size={16} />
+          </Button>
+        </CustomTooltip>
+      </PermissionGate>
 
-      {/* <PermissionGate requiredPermission="shifts" action="delete"> */}
-      <CustomTooltip
-        title={
-          !canDelete
-            ? isDefaultShift
-              ? "Cannot delete default shift"
-              : "Cannot delete - at least one shift must exist"
-            : "Delete"
-        }
-      >
-        <Button
-          variant="ghost"
-          onClick={() => handleDelete(row)}
-          disabled={!canDelete}
-          className={`h-8 w-8 p-0 ${
+      <PermissionGate requiredPermission="attendance_shifts" action="delete">
+        <CustomTooltip
+          title={
             !canDelete
-              ? "text-gray-400 cursor-not-allowed"
-              : "text-red-600 hover:bg-red-50 hover:text-red-700"
-          }`}
+              ? isDefaultShift
+                ? "Cannot delete default shift"
+                : "Cannot delete - at least one shift must exist"
+              : "Delete"
+          }
         >
-          <IconTrash size={16} />
-        </Button>
-      </CustomTooltip>
-      {/* </PermissionGate> */}
+          <Button
+            variant="ghost"
+            onClick={() => handleDelete(row)}
+            disabled={!canDelete}
+            className={`h-8 w-8 p-0 ${
+              !canDelete
+                ? "text-gray-400 cursor-not-allowed"
+                : "text-red-600 hover:bg-red-50 hover:text-red-700"
+            }`}
+          >
+            <IconTrash size={16} />
+          </Button>
+        </CustomTooltip>
+      </PermissionGate>
     </div>
   );
 }

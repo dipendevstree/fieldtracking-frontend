@@ -4,11 +4,20 @@ import usePutData from "@/hooks/use-put-data";
 
 const ATTENDANCE_RULES_CONFIG_QUERY = API.attendanceRules.rules;
 
+import { useQueryClient } from "@tanstack/react-query";
+
 export const useUpdateAttendanceRulesConfig = (onSuccess?: () => void) => {
+  const queryClient = useQueryClient();
+
   return usePutData({
     url: `${API.attendanceRules.update}`,
-    refetchQueries: [ATTENDANCE_RULES_CONFIG_QUERY],
-    onSuccess: () => {
+    onSuccess: (data: any) => {
+      // Optimistically update the cache with the response data
+      queryClient.setQueriesData(
+        { queryKey: [ATTENDANCE_RULES_CONFIG_QUERY] },
+        data
+      );
+
       if (onSuccess) {
         onSuccess();
       }

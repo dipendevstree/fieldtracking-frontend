@@ -1,4 +1,5 @@
 import AttendanceRulesConfiguration from "@/features/attendance-management/components/attendance-rules/AttendanceRulesConfiguration";
+import { ProtectedRoute } from "@/permissions/components/ProtectedRoute";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute(
@@ -8,5 +9,9 @@ export const Route = createFileRoute(
 });
 
 function RouteComponent() {
-  return <AttendanceRulesConfiguration />;
+  return (
+    <ProtectedRoute requiredPermission="attendance_rules">
+      <AttendanceRulesConfiguration />
+    </ProtectedRoute>
+  );
 }

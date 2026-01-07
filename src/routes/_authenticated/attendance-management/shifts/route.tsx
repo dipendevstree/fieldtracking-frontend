@@ -1,4 +1,5 @@
 import ShiftManagement from "@/features/attendance-management/components/shifts/ShiftManagement";
+import { ProtectedRoute } from "@/permissions/components/ProtectedRoute";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute(
@@ -8,5 +9,9 @@ export const Route = createFileRoute(
 });
 
 function RouteComponent() {
-  return <ShiftManagement />;
+  return (
+    <ProtectedRoute requiredPermission="attendance_shifts">
+      <ShiftManagement />
+    </ProtectedRoute>
+  );
 }

@@ -8,6 +8,7 @@ import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import { Main } from "@/components/layout/main";
 import ShiftActionModal from "./components/shift-action-modal";
 import ShiftTable from "./components/shift-table";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 export default function ShiftManagement() {
   const [pagination, setPagination] = useState({
@@ -40,11 +41,11 @@ export default function ShiftManagement() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Configured Shifts</h3>
-          {/* <PermissionGate requiredPermission="shifts" action="add"> */}
-          <Button onClick={openAddDialog}>
-            <Plus className="mr-2 h-4 w-4" /> Add Shift
-          </Button>
-          {/* </PermissionGate> */}
+          <PermissionGate requiredPermission="attendance_shifts" action="add">
+            <Button onClick={openAddDialog}>
+              <Plus className="h-4 w-4" /> Add Shift
+            </Button>
+          </PermissionGate>
           <ShiftActionModal />
         </div>
 
