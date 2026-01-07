@@ -53,6 +53,9 @@ import { useGetAllUsers } from "@/features/UserManagement/services/AllUsers.hook
 import MultiSelect from "@/components/ui/MultiSelect";
 import { Main } from "@/components/layout/main";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
+import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 // --- HELPER COMPONENT: TIER CARD ---
 function TierCard({
@@ -164,6 +167,7 @@ export default function UserTierManagement() {
   const [editingTierId, setEditingTierId] = useState<string | null>(null);
   const { data: singleUserTier, isLoading: isLoadingSingleTier } =
     useGetUserTierById(editingTierId || "");
+  const [showLocalWarning, setShowLocalWarning] = useState(false);
 
   // 2. Prepare Option Lists
   const leaveTypesMap = useMemo(() => {
@@ -330,6 +334,50 @@ export default function UserTierManagement() {
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
 
+  const handleDialogChange = (state: boolean) => {
+    if (state) {
+      setModalType(modalType === "edit" ? "edit" : "add");
+      return;
+    }
+    if (form.formState.isDirty) {
+      setShowLocalWarning(true);
+    } else {
+      actualClose();
+    }
+  };
+
+  const actualClose = () => {
+    form.reset();
+    setModalType(null);
+  };
+
+  useDirtyTracker(form.formState.isDirty);
+
+  const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
+    form.formState.isDirty
+  );
+
+  const isWarningOpen = showLocalWarning || showExitPrompt;
+
+  const handleCancelDiscard = (isOpen: boolean) => {
+    if (!isOpen) {
+      setShowLocalWarning(false);
+      if (showExitPrompt) cancelExit();
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    form.reset(form.getValues());
+    setShowLocalWarning(false);
+    actualClose();
+
+    if (showExitPrompt) {
+      setTimeout(() => {
+        confirmExit();
+      }, 0);
+    }
+  };
+
   if (isLoadingTiers) {
     return (
       <div className="flex h-96 items-center justify-center">
@@ -367,6 +415,17 @@ export default function UserTierManagement() {
           </CardContent>
         </Card>
       </div>
+
+      <ConfirmDialog
+        open={isWarningOpen}
+        onOpenChange={handleCancelDiscard}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+        handleConfirm={handleConfirmDiscard}
+      />
 
       {/* Action Header */}
       <div className="flex items-center justify-end">
@@ -418,7 +477,7 @@ export default function UserTierManagement() {
       {/* --- ADD/EDIT MODAL --- */}
       <Dialog
         open={modalType === "add" || modalType === "edit"}
-        onOpenChange={(open) => !open && handleClose()}
+        onOpenChange={handleDialogChange}
       >
         <DialogContent className="max-w-xl">
           <DialogHeader>
@@ -537,7 +596,11 @@ export default function UserTierManagement() {
                 </div>
 
                 <DialogFooter>
-                  <Button variant="outline" type="button" onClick={handleClose}>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => handleDialogChange(false)}
+                  >
                     Cancel
                   </Button>
                   <Button type="submit" disabled={isSaving}>

@@ -14,6 +14,7 @@ import {
 } from "../../services/monthly-expenses.hook";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
+import { Main } from "@/components/layout/main";
 
 // No mock data - using API data only
 
@@ -176,7 +177,7 @@ export default function MonthlyExpenses() {
   ];
 
   return (
-    <>
+    <Main>
       <GlobalFilterSection key={"monthly-expenses-filters"} filters={filters} />
 
       <MonthlyExpenseTable
@@ -186,6 +187,6 @@ export default function MonthlyExpenses() {
         currentPage={pagination.page}
         paginationCallbacks={{ onPaginationChange }}
       />
-    </>
+    </Main>
   );
 }

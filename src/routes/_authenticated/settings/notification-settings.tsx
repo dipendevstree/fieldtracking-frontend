@@ -6,7 +6,7 @@ export const Route = createFileRoute(
   "/_authenticated/settings/notification-settings"
 )({
   component: () => (
-    <ProtectedRoute requiredPermission="notification_settings">
+    <ProtectedRoute requiredPermission="notification-settings">
       <SettingsNotifications />
     </ProtectedRoute>
   ),

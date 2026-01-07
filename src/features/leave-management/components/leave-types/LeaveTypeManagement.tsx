@@ -11,7 +11,7 @@ import {
   // useGetLeaveTypeStats,
 } from "@/features/leave-management/services/leave-type.action.hook";
 import LeaveTypeTable from "./components/leave-type-table";
-// import LeaveTypeActionModal from "./components/leave-type-action-modal";
+import LeaveTypeActionModal from "./components/leave-type-action-modal";
 import { useLeaveTypeStore } from "../../store/leave-type.store";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 // import { PermissionGate } from "@/permissions/components/PermissionGate";
@@ -105,8 +105,8 @@ export default function LeaveTypeManagement() {
               <Plus className="mr-2 h-4 w-4" /> Add Leave Type
             </Button>
           </PermissionGate>
-          <LeaveTypeActionModal />
-        </div> */}
+          </div> */}
+        <LeaveTypeActionModal />
 
         <TablePageLayout
           title="Configured Leave Types"

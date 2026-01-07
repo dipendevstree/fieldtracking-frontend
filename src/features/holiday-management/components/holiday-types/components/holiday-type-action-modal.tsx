@@ -12,9 +12,14 @@ import {
   useUpdateHolidayType,
 } from "@/features/holiday-management/services/holiday-type.action.hook";
 import { HolidayTypeSchema } from "@/features/holiday-management/data/schema";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useState } from "react";
+import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 export function HolidayTypeActionModal() {
   const { open, setOpen, currentRow, setCurrentRow } = useHolidayTypeStore();
+  const [showLocalWarning, setShowLocalWarning] = useState(false);
 
   const {
     mutate: createHolidayType,
@@ -80,6 +85,52 @@ export function HolidayTypeActionModal() {
     if (currentRow?.id) deleteHolidayType();
   };
 
+  const handleDialogChange = (state: boolean) => {
+    if (state) {
+      setOpen(open === "edit" ? "edit" : "add");
+      return;
+    }
+    if (form.formState.isDirty) {
+      setShowLocalWarning(true);
+    } else {
+      actualClose();
+    }
+  };
+
+  const actualClose = () => {
+    form.reset();
+    setOpen(null);
+    setCurrentRow(null);
+  };
+
+  useDirtyTracker(form.formState.isDirty);
+
+  const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
+    form.formState.isDirty
+  );
+
+  const isWarningOpen = showLocalWarning || showExitPrompt;
+
+  const handleCancelDiscard = (isOpen: boolean) => {
+    if (!isOpen) {
+      setShowLocalWarning(false);
+      if (showExitPrompt) cancelExit();
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    form.reset(form.getValues());
+    setShowLocalWarning(false);
+    setOpen(null);
+    setCurrentRow(null);
+
+    if (showExitPrompt) {
+      setTimeout(() => {
+        confirmExit();
+      }, 0);
+    }
+  };
+
   return (
     <>
       <HolidayTypeActionForm
@@ -88,10 +139,18 @@ export function HolidayTypeActionModal() {
         editingId={currentRow?.id || null}
         onSubmit={open === "edit" ? handleUpdate : handleCreate}
         open={open === "add" || open === "edit"}
-        onOpenChange={(value: boolean) => {
-          if (!value) closeModal();
-          else setOpen(open === "edit" ? "edit" : "add");
-        }}
+        onOpenChange={handleDialogChange}
+      />
+
+      <ConfirmDialog
+        open={isWarningOpen}
+        onOpenChange={handleCancelDiscard}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+        handleConfirm={handleConfirmDiscard}
       />
 
       {currentRow && (

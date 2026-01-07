@@ -10,7 +10,7 @@ export const Route = createFileRoute(
 
 function RouteComponent() {
   return (
-    <ProtectedRoute requiredPermission="leave-approvals">
+    <ProtectedRoute requiredPermission="leave_approvals">
       <LeaveApprovals />
     </ProtectedRoute>
   );

@@ -10,6 +10,9 @@ import {
 } from "../services/notifications.hook";
 import { Card } from "@/components/ui/card";
 import { useDirtyTracker } from "../../store/use-unsaved-changes-store";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 const activityNotifications = [
   "Notify me when the Sales Rep reaches to the visit location",
@@ -46,6 +49,9 @@ export default function Notifications() {
 
   // Sync with Global Store (Handles Tabs & Navigation blocking)
   useDirtyTracker(isDirty);
+
+  const { showExitPrompt, confirmExit, cancelExit } =
+    useUnsavedChanges(isDirty);
 
   const { data, isLoading, isFetched } = useGetNotificationData();
   const { mutate: updateNotifications, isPending } = useUpdateNotifications();
@@ -90,33 +96,52 @@ export default function Notifications() {
   }
 
   return (
-    <form
-      onSubmit={form.handleSubmit(onSubmit)}
-      className="bg-white rounded-lg space-y-6"
-    >
-      <Card className="p-4 mt-6">
-        <div className="divide-y divide-gray-200">
-          {activityNotifications.map((label, idx) => (
-            <div key={idx} className="flex items-center justify-between py-4">
-              <span className="text-base font-normal">{label}</span>
-              <Switch
-                checked={form.watch(`notifications.${idx}`)}
-                onCheckedChange={(val) =>
-                  form.setValue(`notifications.${idx}`, val, {
-                    shouldDirty: true,
-                  })
-                }
-              />
-            </div>
-          ))}
-        </div>
-      </Card>
+    <>
+      <ConfirmDialog
+        open={showExitPrompt}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) cancelExit();
+        }}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+        handleConfirm={confirmExit}
+      />
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="bg-white rounded-lg space-y-6"
+      >
+        <Card className="p-4 mt-6">
+          <div className="divide-y divide-gray-200">
+            {activityNotifications.map((label, idx) => (
+              <div key={idx} className="flex items-center justify-between py-4">
+                <span className="text-base font-normal">{label}</span>
+                <Switch
+                  checked={form.watch(`notifications.${idx}`)}
+                  onCheckedChange={(val) =>
+                    form.setValue(`notifications.${idx}`, val, {
+                      shouldDirty: true,
+                    })
+                  }
+                />
+              </div>
+            ))}
+          </div>
+        </Card>
 
-      <div className="flex justify-end">
-        <Button type="submit" disabled={isPending || !isDirty}>
-          {isPending ? "Saving..." : "Save"}
-        </Button>
-      </div>
-    </form>
+        <PermissionGate
+          requiredPermission="notification-settings"
+          action={data && Object.keys(data).length > 0 ? "edit" : "add"}
+        >
+          <div className="flex justify-end">
+            <Button type="submit" disabled={isPending || !isDirty}>
+              {isPending ? "Saving..." : "Save"}
+            </Button>
+          </div>
+        </PermissionGate>
+      </form>
+    </>
   );
 }

@@ -138,12 +138,27 @@ export const sidebarData: SidebarData = {
             },
           ],
         },
-
         {
           title: "Reports",
-          url: "/reports",
           icon: ChartPie,
           menuKey: "reports",
+          items: [
+            {
+              title: "Expense Reports",
+              url: "/reports",
+              menuKey: "reports",
+            },
+            {
+              title: "Custom Reports",
+              url: "/reports/custom-reports",
+              menuKey: "custom_reports",
+            },
+            {
+              title: "Reports History",
+              url: "/reports/reports-history",
+              menuKey: "reports_history",
+            },
+          ],
         },
         {
           title: "Leave Management",

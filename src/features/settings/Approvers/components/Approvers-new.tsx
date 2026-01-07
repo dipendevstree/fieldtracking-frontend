@@ -22,6 +22,8 @@ import { DeleteModal } from "@/components/shared/common-delete-modal";
 import { toast } from "sonner";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useDirtyTracker } from "../../store/use-unsaved-changes-store";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 // ------------------- ZOD Schema -------------------------
 const tierSchema = z
@@ -205,6 +207,10 @@ export function ApproverFormNew() {
 
   //---------------unsaved changes tracker tab------------
   useDirtyTracker(isFormDirty);
+
+  const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
+    form.formState.isDirty
+  );
 
   // Calculate strict data readiness
   // This ensures we don't try to transform data until we have columns, rows, and the filter (territory)
@@ -666,6 +672,19 @@ export function ApproverFormNew() {
 
   return (
     <Form {...form}>
+      <ConfirmDialog
+        open={showExitPrompt}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) cancelExit();
+        }}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+        handleConfirm={confirmExit}
+      />
+
       <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col">
         {/* ---------------------------------- HEADER ---------------------------------- */}
         <div className="border-b bg-card p-4 border rounded-lg shadow mb-5">

@@ -15,7 +15,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import CustomButton from "@/components/shared/custom-button";
 import { formSchema, TFormSchema } from "../data/schema";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 interface Props {
   currentRow?: Partial<TFormSchema>;
@@ -35,6 +38,7 @@ export function CustomerTypeActionForm({
   resetOnSubmitSuccess,
 }: Props) {
   const isEdit = !!currentRow;
+  const [showLocalWarning, setShowLocalWarning] = useState(false);
 
   const form = useForm<TFormSchema>({
     resolver: zodResolver(formSchema),
@@ -54,16 +58,54 @@ export function CustomerTypeActionForm({
     onSubmitValues(values);
   };
 
-  const handleDialogChange = (state: boolean) => {
-    if (!state) reset();
-    onOpenChange(state);
-  };
-
   useEffect(() => {
     if (!loading && !isEdit && resetOnSubmitSuccess) {
       reset({ typeName: "" });
     }
   }, [loading, isEdit, resetOnSubmitSuccess]);
+
+  const handleDialogChange = (state: boolean) => {
+    if (state) {
+      return;
+    }
+    if (form.formState.isDirty) {
+      setShowLocalWarning(true);
+    } else {
+      actualClose();
+    }
+  };
+
+  const actualClose = () => {
+    form.reset();
+    onOpenChange(false);
+  };
+
+  useDirtyTracker(form.formState.isDirty);
+
+  const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
+    form.formState.isDirty
+  );
+
+  const isWarningOpen = showLocalWarning || showExitPrompt;
+
+  const handleCancelDiscard = (isOpen: boolean) => {
+    if (!isOpen) {
+      setShowLocalWarning(false);
+      if (showExitPrompt) cancelExit();
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    form.reset(form.getValues());
+    setShowLocalWarning(false);
+    actualClose();
+
+    if (showExitPrompt) {
+      setTimeout(() => {
+        confirmExit();
+      }, 0);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleDialogChange}>
@@ -90,7 +132,9 @@ export function CustomerTypeActionForm({
           >
             {/* Customer Type Field */}
             <div className="space-y-2">
-              <Label htmlFor="typeName">Customer Type <span className="text-red-500">*</span></Label>
+              <Label htmlFor="typeName">
+                Customer Type <span className="text-red-500">*</span>
+              </Label>
               <Controller
                 name="typeName"
                 control={control}
@@ -128,6 +172,16 @@ export function CustomerTypeActionForm({
           </CustomButton>
         </DialogFooter>
       </DialogContent>
+      <ConfirmDialog
+        open={isWarningOpen}
+        onOpenChange={handleCancelDiscard}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+        handleConfirm={handleConfirmDiscard}
+      />
     </Dialog>
   );
 }

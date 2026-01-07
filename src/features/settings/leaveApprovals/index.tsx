@@ -26,6 +26,9 @@ import { useEffect, useMemo, useState } from "react";
 import { ApprovalRole } from "./type/type";
 import { formatDropDownLabel } from "@/utils/commonFunction";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
+import { useDirtyTracker } from "../store/use-unsaved-changes-store";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 export default function LeaveApprovals() {
   const { user } = useAuthStore();
@@ -105,6 +108,12 @@ export default function LeaveApprovals() {
     },
   });
 
+  useDirtyTracker(form.formState.isDirty);
+
+  const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
+    form.formState.isDirty
+  );
+
   const selectedTerritory = form.watch("territoryId");
   const selectedApprovalRole = form.watch("approvalRole");
 
@@ -123,7 +132,16 @@ export default function LeaveApprovals() {
       });
     });
     return tierWiseUserCache;
-  }, [allUsers, selectedTerritory]);
+  }, [userTiers, allUsers]);
+
+  useEffect(() => {
+    if (!selectedTerritoryId) {
+      if (territories.length > 0) {
+        setSelectedTerritoryId(territories[0].id);
+        form.setValue("territoryId", territories[0].id);
+      }
+    }
+  }, [selectedTerritoryId, territories]);
 
   useEffect(() => {
     if (!isLeaveApprovalsLoading) {
@@ -179,6 +197,8 @@ export default function LeaveApprovals() {
     isLeaveApprovalsLoading,
     form,
     selectedTerritoryId,
+    tierWiseUserCache,
+    userTiers,
   ]);
 
   const tierEnabled = form.watch("tierEnabled");
@@ -191,8 +211,6 @@ export default function LeaveApprovals() {
     (!allowAddUsersBasedOnTerritories || !!selectedTerritory);
 
   const onSubmit = (data: LeaveApprovalsFormSchema) => {
-    console.log(data);
-
     if (!isDataReady) {
       return;
     }
@@ -225,10 +243,11 @@ export default function LeaveApprovals() {
       </div>
     );
   }
-  console.log("error", form.formState.errors);
+
   const rowError = !Array.isArray(form.formState.errors.leaveApprovalsLevels)
     ? form.formState.errors.leaveApprovalsLevels?.message
     : null;
+
   return (
     <Main>
       <Form {...form}>
@@ -480,6 +499,18 @@ export default function LeaveApprovals() {
           </PermissionGate>
         </form>
       </Form>
+      <ConfirmDialog
+        open={showExitPrompt}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) cancelExit();
+        }}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+        handleConfirm={confirmExit}
+      />
     </Main>
   );
 }
