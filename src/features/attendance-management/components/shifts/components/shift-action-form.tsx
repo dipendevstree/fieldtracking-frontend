@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { TimePicker } from "@/components/ui/TimePicker";
 
 interface Props<T> {
   form: any;
@@ -38,7 +39,7 @@ export function ShiftActionForm<T>({
   currentRow,
 }: Props<T>) {
   return (
-    <Dialog open={!!open} onOpenChange={onOpenChange}>
+    <Dialog open={!!open} onOpenChange={onOpenChange} modal={false}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
@@ -67,10 +68,15 @@ export function ShiftActionForm<T>({
                 control={form.control as any}
                 name="startTime"
                 render={({ field }: any) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>Start Time *</FormLabel>
                     <FormControl>
-                      <Input type="time" {...field} />
+                      <TimePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                        format="12h"
+                        className="w-full"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -80,10 +86,15 @@ export function ShiftActionForm<T>({
                 control={form.control as any}
                 name="endTime"
                 render={({ field }: any) => (
-                  <FormItem>
+                  <FormItem className="flex flex-col">
                     <FormLabel>End Time *</FormLabel>
                     <FormControl>
-                      <Input type="time" {...field} />
+                      <TimePicker
+                        value={field.value}
+                        onChange={field.onChange}
+                        format="12h"
+                        className="w-full"
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -92,19 +103,6 @@ export function ShiftActionForm<T>({
             </div>
 
             <div className="grid grid-cols-3 gap-4">
-              <FormField
-                control={form.control as any}
-                name="breakMinutes"
-                render={({ field }: any) => (
-                  <FormItem>
-                    <FormLabel>Break Minutes</FormLabel>
-                    <FormControl>
-                      <Input type="number" placeholder="60" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
               <FormField
                 control={form.control as any}
                 name="fullDayHours"
@@ -136,6 +134,19 @@ export function ShiftActionForm<T>({
                         placeholder="4"
                         {...field}
                       />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control as any}
+                name="breakMinutes"
+                render={({ field }: any) => (
+                  <FormItem>
+                    <FormLabel>Break Minutes</FormLabel>
+                    <FormControl>
+                      <Input type="number" placeholder="60" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

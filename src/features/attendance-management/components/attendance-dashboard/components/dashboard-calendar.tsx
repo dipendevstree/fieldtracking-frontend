@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useMemo } from "react";
 import {
   Calendar,
   momentLocalizer,
@@ -9,6 +9,8 @@ import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ATTENDANCE_STATUS } from "@/data/app.data";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { LegendItem } from "@/components/ui/legend-item";
 import {
@@ -21,16 +23,6 @@ import {
 // --- 1. CONFIG & TYPES ---
 
 const localizer = momentLocalizer(moment);
-
-export enum ATTENDANCE_STATUS {
-  PRESENT = "PRESENT",
-  LATE = "LATE",
-  HALF_DAY = "HALF_DAY",
-  WFH = "WFH",
-  ON_LEAVE = "ON_LEAVE",
-  HOLIDAY = "HOLIDAY",
-  WEEKEND = "WEEKEND",
-}
 
 export interface AttendanceEvent {
   id: string;
@@ -67,13 +59,13 @@ const getStatusStyles = (status: ATTENDANCE_STATUS) => {
       return "bg-yellow-500 text-white";
     case ATTENDANCE_STATUS.HALF_DAY:
       return "bg-blue-500 text-white";
-    case ATTENDANCE_STATUS.WFH:
-      return "bg-purple-500 text-white";
-    case ATTENDANCE_STATUS.ON_LEAVE:
+    // case ATTENDANCE_STATUS.WFH:
+    //   return "bg-purple-500 text-white";
+    case ATTENDANCE_STATUS.LEAVE:
       return "bg-red-500 text-white"; // Changed to match legend "absent" color
     case ATTENDANCE_STATUS.HOLIDAY:
       return "bg-slate-300 text-white"; // Changed to match legend "week off / holiday" color
-    case ATTENDANCE_STATUS.WEEKEND:
+    case ATTENDANCE_STATUS.WEEK_OFF:
       return "bg-gray-200 text-gray-600";
     default:
       return "bg-slate-300 text-white";
@@ -95,10 +87,28 @@ const EventComponent = ({ event }: { event: AttendanceEvent }) => (
 );
 
 // --- CUSTOM TOOLBAR (Matching Reference) ---
-const CustomToolbar = (toolbar: ToolbarProps) => {
+const CustomToolbar = (toolbar: ToolbarProps & { date?: Date }) => {
   const goToBack = () => toolbar.onNavigate("PREV");
   const goToNext = () => toolbar.onNavigate("NEXT");
   const goToCurrent = () => toolbar.onNavigate("TODAY");
+
+  // Check if viewing current or future month
+  const isCurrentOrFutureMonth = () => {
+    if (!toolbar.date) return false;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Get the first day of the NEXT month (where Next button would navigate to)
+    const firstDayOfNextMonth = new Date(
+      toolbar.date.getFullYear(),
+      toolbar.date.getMonth() + 1,
+      1
+    );
+    firstDayOfNextMonth.setHours(0, 0, 0, 0);
+
+    // Disable next if navigating to next month would go into the future
+    return firstDayOfNextMonth > today;
+  };
 
   return (
     <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4 px-1">
@@ -130,6 +140,7 @@ const CustomToolbar = (toolbar: ToolbarProps) => {
           size="icon"
           className="h-8 w-8"
           onClick={goToNext}
+          disabled={isCurrentOrFutureMonth()}
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
@@ -179,6 +190,17 @@ export function TeamAttendanceCalendar({
   // Handle date slot selection (clicking on a date)
   const handleSelectSlot = useCallback(
     (slotInfo: { start: Date; end: Date }) => {
+      // Prevent selecting future dates from manual calendar cell clicks
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selectedDate = new Date(slotInfo.start);
+      selectedDate.setHours(0, 0, 0, 0);
+
+      if (selectedDate > today) {
+        toast.warning("Cannot select future dates");
+        return;
+      }
+
       onNavigate(slotInfo.start);
     },
     [onNavigate]
@@ -245,6 +267,48 @@ export function TeamAttendanceCalendar({
     [date, holidays, weekOffDays]
   );
 
+  const { components } = useMemo(
+    () => ({
+      components: {
+        month: {
+          dateHeader: ({ date, label }: any) => {
+            // Check if date is a holiday
+            const holiday = holidays.find((holiday: any) => {
+              const holidayDate = new Date(holiday.date);
+              return (
+                holidayDate.getDate() === date.getDate() &&
+                holidayDate.getMonth() === date.getMonth() &&
+                holidayDate.getFullYear() === date.getFullYear()
+              );
+            });
+
+            // Check if date is a week-off day
+            const isWeekOff = weekOffDays.includes(date.getDay());
+
+            return (
+              <div className="flex flex-col items-center">
+                <span className="rbc-button-link">{label}</span>
+                {holiday && (
+                  <>
+                    <span className="text-[10px] sm:text-xs text-emerald-600 font-bold truncate max-w-[95%] block mt-1 px-1">
+                      {holiday.name}
+                    </span>
+                  </>
+                )}
+                {!holiday && isWeekOff && (
+                  <span className="text-[10px] sm:text-xs text-slate-500 font-semibold block mt-1">
+                    Week Off
+                  </span>
+                )}
+              </div>
+            );
+          },
+        },
+      },
+    }),
+    [holidays, weekOffDays]
+  );
+
   return (
     <div className={cn("w-full bg-white", className)}>
       {/* CSS Injection for exact visual match */}
@@ -266,7 +330,7 @@ export function TeamAttendanceCalendar({
       `}</style>
 
       {/* CALENDAR */}
-      <div className="h-[700px]">
+      <div className="h-[750px]">
         <Calendar
           localizer={localizer}
           events={events}
@@ -281,8 +345,11 @@ export function TeamAttendanceCalendar({
           onSelectEvent={handleEventClick}
           popup={false}
           components={{
-            toolbar: CustomToolbar as any,
+            toolbar: ((props: any) => (
+              <CustomToolbar {...props} date={date} />
+            )) as any,
             event: EventComponent,
+            ...components,
           }}
           eventPropGetter={eventPropGetter}
           dayPropGetter={dayPropGetter}

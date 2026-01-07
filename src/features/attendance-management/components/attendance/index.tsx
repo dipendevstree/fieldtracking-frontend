@@ -13,13 +13,17 @@ import AttendanceCalendarView, {
   AttendanceEvent,
 } from "./components/attendance-calendar";
 import { AttendanceCorrectionDialog } from "./components/attendance-correction-dialog";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 // Utils & Data
 import { cn } from "@/lib/utils";
 import { ATTENDANCE_STATUS } from "@/data/app.data";
 
 // Hooks & Services
-import { useGetMyAttendance } from "../../services/attendance-action.hook";
+import {
+  useGetMyAttendance,
+  useGetDashboardCalendarData,
+} from "../../services/attendance-action.hook";
 import {
   useAttendanceCorrectionOwnRequestCancel,
   useGetMyAttendanceCorrections,
@@ -41,7 +45,7 @@ const getStatusDot = (status: string) => {
     case "PENDING":
       return "bg-amber-600";
     case "REJECTED":
-      return "bg-orange-500";
+      return "bg-red-500";
     case "CANCEL":
       return "bg-red-500";
     default:
@@ -90,6 +94,10 @@ export default function MyAttendance() {
   const { data: correctionsResponse } =
     useGetMyAttendanceCorrections(calendarQueryParams);
 
+  // Fetch holiday data for calendar
+  const { holidays = [], weekOffDays = [] } =
+    useGetDashboardCalendarData(calendarQueryParams);
+
   const attendanceCorrectionsData = Array.isArray(correctionsResponse)
     ? correctionsResponse
     : correctionsResponse?.list || [];
@@ -133,11 +141,35 @@ export default function MyAttendance() {
     setIsCorrectionDialogOpen(true);
   };
 
-  // Calendar click handler
+  // Calendar click handler for events
   const handleCalendarEventSelect = (event: AttendanceEvent) => {
     const s = event.resource.status;
     if (s !== ATTENDANCE_STATUS.WEEK_OFF && s !== ATTENDANCE_STATUS.HOLIDAY) {
       handleRequestCorrection(event.resource.originalData);
+    }
+  };
+
+  // Calendar click handler for empty slots
+  const handleCalendarSlotSelect = (slotInfo: any) => {
+    const selectedDate = slotInfo.start;
+    // Find the attendance record for this date
+    const attendanceRecord = attendanceData.find((record: any) => {
+      const recordDate = new Date(record.date);
+      return (
+        recordDate.getDate() === selectedDate.getDate() &&
+        recordDate.getMonth() === selectedDate.getMonth() &&
+        recordDate.getFullYear() === selectedDate.getFullYear()
+      );
+    });
+
+    if (attendanceRecord) {
+      const s = attendanceRecord.status;
+      if (s !== ATTENDANCE_STATUS.WEEK_OFF && s !== ATTENDANCE_STATUS.HOLIDAY) {
+        handleRequestCorrection(attendanceRecord);
+      }
+    } else {
+      // No attendance record found for this date
+      toast.info("No attendance record found for this date");
     }
   };
 
@@ -201,12 +233,31 @@ export default function MyAttendance() {
               <Loader2 className="animate-spin text-slate-400" />
             </div>
           ) : (
-            <AttendanceCalendarView
-              events={events}
-              date={viewDate}
-              onNavigate={setViewDate}
-              onSelectEvent={handleCalendarEventSelect}
-            />
+            <PermissionGate
+              requiredPermission="my-attendance"
+              action="add"
+              fallback={
+                <AttendanceCalendarView
+                  events={events}
+                  date={viewDate}
+                  onNavigate={setViewDate}
+                  holidays={holidays}
+                  weekOffDays={weekOffDays}
+                  isSelectable={false}
+                />
+              }
+            >
+              <AttendanceCalendarView
+                events={events}
+                date={viewDate}
+                onNavigate={setViewDate}
+                onSelectEvent={handleCalendarEventSelect}
+                onSelectSlot={handleCalendarSlotSelect}
+                holidays={holidays}
+                weekOffDays={weekOffDays}
+                isSelectable={true}
+              />
+            </PermissionGate>
           )}
 
           <div className="bg-slate-50/50 border-t border-slate-200 p-6">
@@ -289,31 +340,41 @@ export default function MyAttendance() {
                       <div className="flex items-center space-x-2 w-[72px] justify-end">
                         {isPending && (
                           <>
-                            <CustomTooltip title="Edit Request">
-                              <Button
-                                variant="ghost"
-                                className="h-8 w-8 p-0 text-green-600 hover:bg-green-50"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleEditCorrection(item);
-                                }}
-                              >
-                                <IconEdit size={16} />
-                              </Button>
-                            </CustomTooltip>
+                            <PermissionGate
+                              requiredPermission="my-attendance"
+                              action="edit"
+                            >
+                              <CustomTooltip title="Edit Request">
+                                <Button
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-green-600 hover:bg-green-50"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleEditCorrection(item);
+                                  }}
+                                >
+                                  <IconEdit size={16} />
+                                </Button>
+                              </CustomTooltip>
+                            </PermissionGate>
 
-                            <CustomTooltip title="Cancel Request">
-                              <Button
-                                variant="ghost"
-                                className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleCancelClick(item);
-                                }}
-                              >
-                                <IconX size={18} stroke={3} />
-                              </Button>
-                            </CustomTooltip>
+                            <PermissionGate
+                              requiredPermission="my-attendance"
+                              action="delete"
+                            >
+                              <CustomTooltip title="Cancel Request">
+                                <Button
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleCancelClick(item);
+                                  }}
+                                >
+                                  <IconX size={18} stroke={3} />
+                                </Button>
+                              </CustomTooltip>
+                            </PermissionGate>
                           </>
                         )}
                       </div>

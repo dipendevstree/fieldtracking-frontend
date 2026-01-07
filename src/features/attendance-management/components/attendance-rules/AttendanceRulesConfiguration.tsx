@@ -42,11 +42,11 @@ import { useGetAllTiers } from "@/features/settings/Approvers/services/approvers
 import MultiSelect from "@/components/ui/MultiSelect";
 import { Main } from "@/components/layout/main";
 import { ATTENDANCE_RULE_FREQUENCY } from "@/data/app.data";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
+import { usePermission } from "@/permissions/hooks/use-permission";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
-// import { PermissionGate } from "@/permissions/components/PermissionGate";
-// import { usePermission } from "@/permissions/hooks/use-permission";
 
 const DAYS_OF_WEEK = [
   { value: 0, label: "Sunday" },
@@ -62,11 +62,8 @@ export default function AttendanceRulesConfiguration() {
   const { data: rulesData, isLoading: isRulesLoading } =
     useGetAttendanceRulesConfig();
 
-  const {
-    mutate: updateRules,
-    isPending: isSaving,
-    error: updateError,
-  } = useUpdateAttendanceRulesConfig();
+  const { mutate: updateRules, isPending: isSaving } =
+    useUpdateAttendanceRulesConfig();
 
   const { data: tiersData, isLoading: isTiersLoading } = useGetAllTiers();
 
@@ -90,8 +87,8 @@ export default function AttendanceRulesConfiguration() {
     }));
   }, []);
 
-  //   const { canPerformAction } = usePermission();
-  //   const canEdit = canPerformAction("attendance_rules", "edit");
+  const { canPerformAction } = usePermission();
+  const canEdit = canPerformAction("attendance_rules", "edit");
 
   const form = useForm<z.infer<typeof AttendanceRulesSchema>>({
     resolver: zodResolver(AttendanceRulesSchema),
@@ -242,7 +239,7 @@ export default function AttendanceRulesConfiguration() {
                         <Switch
                           checked={field.value ?? true}
                           onCheckedChange={field.onChange}
-                          //   disabled={!canEdit}
+                          disabled={!canEdit}
                         />
                       </FormControl>
                     </FormItem>
@@ -261,11 +258,7 @@ export default function AttendanceRulesConfiguration() {
                       <FormLabel>Grace Period Duration</FormLabel>
                       <div className="flex items-center gap-2">
                         <FormControl>
-                          <Input
-                            type="number"
-                            {...field}
-                            // disabled={!canEdit}
-                          />
+                          <Input type="number" {...field} disabled={!canEdit} />
                         </FormControl>
                         <span className="text-sm text-muted-foreground">
                           minutes
@@ -324,7 +317,7 @@ export default function AttendanceRulesConfiguration() {
                         <Switch
                           checked={field.value ?? true}
                           onCheckedChange={field.onChange}
-                          //   disabled={!canEdit}
+                          disabled={!canEdit}
                         />
                       </FormControl>
                     </FormItem>
@@ -379,7 +372,7 @@ export default function AttendanceRulesConfiguration() {
                         <Switch
                           checked={field.value ?? true}
                           onCheckedChange={field.onChange}
-                          //   disabled={!canEdit}
+                          disabled={!canEdit}
                         />
                       </FormControl>
                     </FormItem>
@@ -404,7 +397,7 @@ export default function AttendanceRulesConfiguration() {
                             value={field.value || []}
                             onChange={field.onChange}
                             placeholder="Select applicable tiers..."
-                            disabled={isTiersLoading}
+                            disabled={isTiersLoading || !canEdit}
                           />
                         </FormControl>
                         <FormDescription>
@@ -415,26 +408,29 @@ export default function AttendanceRulesConfiguration() {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="frequency"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Rule Frequency</FormLabel>
-                        <FormControl>
-                          <SearchableSelect
-                            options={frequencyOptions}
-                            value={field.value}
-                            onChange={field.onChange}
-                            placeholder="Select frequency"
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          How often this rule should be applied
-                        </FormDescription>
-                      </FormItem>
-                    )}
-                  />
+                  {(form.watch("latemarkApplicableTiers")?.length ?? 0) > 0 && (
+                    <FormField
+                      control={form.control}
+                      name="frequency"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Rule Frequency</FormLabel>
+                          <FormControl>
+                            <SearchableSelect
+                              options={frequencyOptions}
+                              value={field.value}
+                              onChange={field.onChange}
+                              placeholder="Select frequency"
+                              disabled={isTiersLoading || !canEdit}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            How often this rule should be applied
+                          </FormDescription>
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </div>
 
                 {/* Late Mark Threshold and Leave Deduction - enabled only when applicableTiers and frequency are set */}
@@ -452,7 +448,7 @@ export default function AttendanceRulesConfiguration() {
                                 <Input
                                   type="number"
                                   {...field}
-                                  //   disabled={!canEdit}
+                                  disabled={!canEdit}
                                 />
                               </FormControl>
                               <span className="text-sm text-muted-foreground w-12">
@@ -483,7 +479,8 @@ export default function AttendanceRulesConfiguration() {
                                   type="number"
                                   {...field}
                                   disabled={
-                                    Number(form.watch("lateMarkLimit")) < 1
+                                    Number(form.watch("lateMarkLimit")) < 1 ||
+                                    !canEdit
                                   }
                                 />
                               </FormControl>
@@ -569,7 +566,7 @@ export default function AttendanceRulesConfiguration() {
                                             )
                                           );
                                     }}
-                                    // disabled={!canEdit}
+                                    disabled={!canEdit}
                                   />
                                 </FormControl>
                                 <FormLabel className="font-normal cursor-pointer">
@@ -604,36 +601,24 @@ export default function AttendanceRulesConfiguration() {
             </CardContent>
           </Card>
 
-          {/* Error and Success Messages */}
-          {updateError && (
-            <div className="bg-red-50 border border-red-200 rounded-md p-4 text-red-800">
-              <p className="text-sm font-medium">
-                Error saving attendance rules
-              </p>
-              <p className="text-sm">
-                {updateError.message || "Please try again."}
-              </p>
+          <PermissionGate requiredPermission="attendance_rules" action="edit">
+            <div className="flex gap-4 justify-end">
+              <Button
+                type="submit"
+                size="lg"
+                className="w-40"
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                  </>
+                ) : (
+                  "Save All Rules"
+                )}
+              </Button>
             </div>
-          )}
-
-          {/* <PermissionGate requiredPermission="attendance_rules" action="edit"> */}
-          <div className="flex gap-4 justify-end">
-            <Button
-              type="submit"
-              size="lg"
-              className="w-40"
-              disabled={isSaving}
-            >
-              {isSaving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
-                </>
-              ) : (
-                "Save All Rules"
-              )}
-            </Button>
-          </div>
-          {/* </PermissionGate> */}
+          </PermissionGate>
         </form>
       </Form>
     </Main>

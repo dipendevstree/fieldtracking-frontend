@@ -203,19 +203,24 @@ export const sidebarData: SidebarData = {
           menuKey: "attendance_management",
           items: [
             {
-              title: "Dashboard",
-              url: "/attendance-management/dashboard",
+              title: "Attendance Dashboard",
+              url: "/attendance-management/attendance-dashboard",
               menuKey: "attendance_dashboard",
             },
             {
-              title: "Attendance Calendar",
-              url: "/attendance-management/attendance-calendar",
-              menuKey: "attendance_calendar",
+              title: "My Attendance",
+              url: "/attendance-management/my-attendance",
+              menuKey: "my_attendance",
             },
             {
-              title: "Rules",
-              url: "/attendance-management/rules",
+              title: "Attendace Rules",
+              url: "/attendance-management/attendance-rules",
               menuKey: "attendance_rules",
+            },
+            {
+              title: "Attendance-Approvals",
+              url: "/attendance-management/attendance-approvals",
+              menuKey: "attendance_approvals",
             },
             {
               title: "Shifts",
@@ -657,14 +662,20 @@ export const VIEW_ROUTE_PERMISSIONS: Record<
     action: "viewOwn",
     requireAll: false,
   },
-  "/attendance-management/attendance-calendar": {
-    requiredPermissions: "attendance_management",
+  "/attendance-management/my-attendance": {
+    requiredPermissions: "my_attendance",
     requiredRoles: ["admin"],
     action: "viewOwn",
     requireAll: false,
   },
   "/attendance-management/attendance-rules": {
     requiredPermissions: "attendance_rules",
+    requiredRoles: ["admin"],
+    action: "viewOwn",
+    requireAll: false,
+  },
+  "/attendance-management/attendance-approvals": {
+    requiredPermissions: "attendance_approvals",
     requiredRoles: ["admin"],
     action: "viewOwn",
     requireAll: false,

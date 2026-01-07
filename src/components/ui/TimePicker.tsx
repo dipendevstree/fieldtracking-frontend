@@ -41,16 +41,23 @@ export function TimePicker({
   className,
   selectedDate,
 }: TimePickerProps) {
+  // Confirmed state (what's actually applied)
   const [hour, setHour] = useState<string>("");
   const [minute, setMinute] = useState<string>("");
   const [period, setPeriod] = useState<"AM" | "PM">("AM");
+
+  // Pending state (temporary selection before Apply)
+  const [pendingHour, setPendingHour] = useState<string>("");
+  const [pendingMinute, setPendingMinute] = useState<string>("");
+  const [pendingPeriod, setPendingPeriod] = useState<"AM" | "PM">("AM");
+
   const [isOpen, setIsOpen] = useState(false);
 
   const hourRef = useRef<HTMLButtonElement>(null);
   const minuteRef = useRef<HTMLButtonElement>(null);
   const periodRef = useRef<HTMLButtonElement>(null);
 
-  // Parse incoming value
+  // Parse incoming value into confirmed state
   useEffect(() => {
     if (value) {
       const [h, m] = value.split(":");
@@ -74,18 +81,28 @@ export function TimePicker({
     }
   }, [value, format]);
 
-  // Emit change
+  // Initialize pending state when popover opens
   useEffect(() => {
-    if (hour && minute) {
-      let hour24 = parseInt(hour, 10);
-      if (format === "12h") {
-        if (period === "PM" && hour24 < 12) hour24 += 12;
-        if (period === "AM" && hour24 === 12) hour24 = 0;
-      }
-      const newValue = `${String(hour24).padStart(2, "0")}:${minute}`;
-      if (newValue !== value) onChange(newValue);
+    if (isOpen) {
+      setPendingHour(hour);
+      setPendingMinute(minute);
+      setPendingPeriod(period);
+
+      // Scroll to active value after state is set
+      setTimeout(
+        () => hourRef.current?.scrollIntoView({ block: "center" }),
+        50
+      );
+      setTimeout(
+        () => minuteRef.current?.scrollIntoView({ block: "center" }),
+        50
+      );
+      setTimeout(
+        () => periodRef.current?.scrollIntoView({ block: "center" }),
+        50
+      );
     }
-  }, [hour, minute, period, format, onChange, value]);
+  }, [isOpen, hour, minute, period]);
 
   // System time (used for disablePast)
   const { currentHour24, currentMinute } = useMemo(() => {
@@ -96,20 +113,33 @@ export function TimePicker({
     };
   }, []);
 
-  // Scroll to active value
-  useEffect(() => {
-    if (isOpen) {
-      setTimeout(() => hourRef.current?.scrollIntoView({ block: "center" }), 0);
-      setTimeout(
-        () => minuteRef.current?.scrollIntoView({ block: "center" }),
-        0
-      );
-      setTimeout(
-        () => periodRef.current?.scrollIntoView({ block: "center" }),
-        0
-      );
+  const handleApply = () => {
+    if (pendingHour && pendingMinute) {
+      let hour24 = parseInt(pendingHour, 10);
+      if (format === "12h") {
+        if (pendingPeriod === "PM" && hour24 < 12) hour24 += 12;
+        if (pendingPeriod === "AM" && hour24 === 12) hour24 = 0;
+      }
+      const newValue = `${String(hour24).padStart(2, "0")}:${pendingMinute}`;
+
+      // Update confirmed state
+      setHour(pendingHour);
+      setMinute(pendingMinute);
+      setPeriod(pendingPeriod);
+
+      // Emit change
+      onChange(newValue);
     }
-  }, [isOpen]);
+    setIsOpen(false);
+  };
+
+  const handleCancel = () => {
+    // Revert to confirmed state
+    setPendingHour(hour);
+    setPendingMinute(minute);
+    setPendingPeriod(period);
+    setIsOpen(false);
+  };
 
   const displayValue =
     value && hour && minute
@@ -144,89 +174,106 @@ export function TimePicker({
       </PopoverTrigger>
 
       <PopoverContent className="w-auto p-0">
-        <div className="flex items-start gap-x-2 p-2">
-          {/* Hour Column */}
-          <div className="flex h-48 flex-col gap-1 overflow-y-auto pr-2">
-            {hourList.map((h) => (
-              <Button
-                key={h}
-                ref={hour === h ? hourRef : null}
-                variant={hour === h ? "default" : "ghost"}
-                onClick={() => setHour(h)}
-                disabled={
-                  disablePast &&
-                  isToday &&
-                  (() => {
-                    const selectedHour24 =
-                      format === "12h"
-                        ? period === "PM"
-                          ? (parseInt(h, 10) % 12) + 12
-                          : parseInt(h, 10) % 12
-                        : parseInt(h, 10);
-                    return selectedHour24 < currentHour24;
-                  })()
-                }
-              >
-                {h}
-              </Button>
-            ))}
-          </div>
-
-          {/* Minute Column */}
-          <div className="flex h-48 flex-col gap-1 overflow-y-auto pr-2">
-            {minutes.map((m) => (
-              <Button
-                key={m}
-                ref={minute === m ? minuteRef : null}
-                variant={minute === m ? "default" : "ghost"}
-                onClick={() => setMinute(m)}
-                disabled={
-                  disablePast &&
-                  isToday &&
-                  (() => {
-                    const selectedHour24 =
-                      format === "12h"
-                        ? period === "PM"
-                          ? (parseInt(hour, 10) % 12) + 12
-                          : parseInt(hour, 10) % 12
-                        : parseInt(hour, 10);
-                    return (
-                      selectedHour24 === currentHour24 &&
-                      parseInt(m, 10) < currentMinute
-                    );
-                  })()
-                }
-              >
-                {m}
-              </Button>
-            ))}
-          </div>
-
-          {/* Period Column (12h only) */}
-          {format === "12h" && (
-            <div className="flex h-48 flex-col gap-1 pr-2">
-              {periods.map((p) => (
+        <div className="flex flex-col">
+          <div className="flex items-start gap-x-2 p-2">
+            {/* Hour Column */}
+            <div className="flex h-48 flex-col gap-1 overflow-y-auto pr-2">
+              {hourList.map((h) => (
                 <Button
-                  key={p}
-                  ref={period === p ? periodRef : null}
-                  variant={period === p ? "default" : "ghost"}
-                  onClick={() => setPeriod(p as "AM" | "PM")}
+                  key={h}
+                  ref={pendingHour === h ? hourRef : null}
+                  variant={pendingHour === h ? "default" : "ghost"}
+                  onClick={() => setPendingHour(h)}
                   disabled={
                     disablePast &&
                     isToday &&
                     (() => {
-                      const now = new Date();
-                      const currentPeriod = now.getHours() >= 12 ? "PM" : "AM";
-                      if (currentPeriod === "PM" && p === "AM") return true;
-                      return false;
+                      const selectedHour24 =
+                        format === "12h"
+                          ? pendingPeriod === "PM"
+                            ? (parseInt(h, 10) % 12) + 12
+                            : parseInt(h, 10) % 12
+                          : parseInt(h, 10);
+                      return selectedHour24 < currentHour24;
                     })()
                   }
                 >
-                  {p}
+                  {h}
                 </Button>
               ))}
             </div>
-          )}
+
+            {/* Minute Column */}
+            <div className="flex h-48 flex-col gap-1 overflow-y-auto pr-2">
+              {minutes.map((m) => (
+                <Button
+                  key={m}
+                  ref={pendingMinute === m ? minuteRef : null}
+                  variant={pendingMinute === m ? "default" : "ghost"}
+                  onClick={() => setPendingMinute(m)}
+                  disabled={
+                    disablePast &&
+                    isToday &&
+                    (() => {
+                      const selectedHour24 =
+                        format === "12h"
+                          ? pendingPeriod === "PM"
+                            ? (parseInt(pendingHour, 10) % 12) + 12
+                            : parseInt(pendingHour, 10) % 12
+                          : parseInt(pendingHour, 10);
+                      return (
+                        selectedHour24 === currentHour24 &&
+                        parseInt(m, 10) < currentMinute
+                      );
+                    })()
+                  }
+                >
+                  {m}
+                </Button>
+              ))}
+            </div>
+
+            {/* Period Column (12h only) */}
+            {format === "12h" && (
+              <div className="flex h-48 flex-col gap-1 pr-2">
+                {periods.map((p) => (
+                  <Button
+                    key={p}
+                    ref={pendingPeriod === p ? periodRef : null}
+                    variant={pendingPeriod === p ? "default" : "ghost"}
+                    onClick={() => setPendingPeriod(p as "AM" | "PM")}
+                    disabled={
+                      disablePast &&
+                      isToday &&
+                      (() => {
+                        const now = new Date();
+                        const currentPeriod =
+                          now.getHours() >= 12 ? "PM" : "AM";
+                        if (currentPeriod === "PM" && p === "AM") return true;
+                        return false;
+                      })()
+                    }
+                  >
+                    {p}
+                  </Button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-end gap-2 border-t p-2">
+            <Button variant="outline" size="sm" onClick={handleCancel}>
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleApply}
+              disabled={!pendingHour || !pendingMinute}
+            >
+              Apply
+            </Button>
+          </div>
         </div>
       </PopoverContent>
     </Popover>
