@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -33,6 +33,9 @@ import { SimpleDatePicker } from "@/components/ui/datepicker";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { HolidaySchema } from "../../../data/schema";
 import { DialogClose } from "@radix-ui/react-dialog";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 interface Props {
   open: boolean;
@@ -47,6 +50,7 @@ export function HolidayActionDialog({
 }: Props) {
   const { data: holidayTypes = [], isLoading: isLoadingTypes } =
     useGetAllHolidayTypes();
+  const [showLocalWarning, setShowLocalWarning] = useState(false);
 
   const { mutate: createHoliday, isPending: isCreating } = useCreateHoliday(
     () => handleSuccess()
@@ -116,8 +120,52 @@ export function HolidayActionDialog({
 
   const isSaving = isCreating || isUpdating;
 
+  const handleDialogChange = (state: boolean) => {
+    if (state) {
+      onOpenChange(true);
+      return;
+    }
+    if (form.formState.isDirty) {
+      setShowLocalWarning(true);
+    } else {
+      actualClose();
+    }
+  };
+
+  const actualClose = () => {
+    form.reset();
+    onOpenChange(false);
+  };
+
+  useDirtyTracker(form.formState.isDirty);
+
+  const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
+    form.formState.isDirty
+  );
+
+  const isWarningOpen = showLocalWarning || showExitPrompt;
+
+  const handleCancelDiscard = (isOpen: boolean) => {
+    if (!isOpen) {
+      setShowLocalWarning(false);
+      if (showExitPrompt) cancelExit();
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    form.reset(form.getValues());
+    setShowLocalWarning(false);
+    actualClose();
+
+    if (showExitPrompt) {
+      setTimeout(() => {
+        confirmExit();
+      }, 0);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleDialogChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader className="mb-3">
           <DialogTitle>
@@ -232,6 +280,17 @@ export function HolidayActionDialog({
           </form>
         </Form>
       </DialogContent>
+
+      <ConfirmDialog
+        open={isWarningOpen}
+        onOpenChange={handleCancelDiscard}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+        handleConfirm={handleConfirmDiscard}
+      />
     </Dialog>
   );
 }

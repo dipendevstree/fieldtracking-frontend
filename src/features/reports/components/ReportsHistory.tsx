@@ -8,6 +8,7 @@ import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import { useGetReportsHistory } from "../services/reports-api";
 import { reportsHistoryColumns } from "./ReportHistoryColumns";
 import { useReportSocketTracker } from "../hooks/useReportSocketTracker";
+import { Main } from "@/components/layout/main";
 
 const ReportsHistory: React.FC = () => {
   // -------------------- State --------------------
@@ -53,7 +54,7 @@ const ReportsHistory: React.FC = () => {
 
   // -------------------- UI --------------------
   return (
-    <div>
+    <Main>
       <Card className="p-4 mt-4 gap-2">
         <ReportsHead
           title="Reports History"
@@ -75,7 +76,7 @@ const ReportsHistory: React.FC = () => {
           />
         )}
       </Card>
-    </div>
+    </Main>
   );
 };
 

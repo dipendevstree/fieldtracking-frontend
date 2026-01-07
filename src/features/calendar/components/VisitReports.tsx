@@ -23,6 +23,7 @@ import { useSelectOptions } from "@/hooks/use-select-option";
 import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
 import { format, subWeeks } from "date-fns";
 import { DateRange } from "react-day-picker";
+import { Main } from "@/components/layout/main";
 
 export interface FormData {
   salesRep: string;
@@ -172,7 +173,7 @@ export default function VisitReports() {
   ];
 
   return (
-    <>
+    <Main className="flex flex-col gap-4">
       <GlobalFilterSection key={"calender-view-filters"} filters={filters} />
       <Card>
         <CardHeader>
@@ -277,6 +278,6 @@ export default function VisitReports() {
           </InfiniteScroll>
         </CardContent>
       </Card>
-    </>
+    </Main>
   );
 }

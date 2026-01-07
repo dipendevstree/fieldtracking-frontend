@@ -25,7 +25,10 @@ export const LeaveRulesSchema = z.object({
   // Carry Forward
   leaveCarryForwardRuleActive: z.boolean(),
   maximumCarryForwardDays: z.coerce.number().min(0),
-  carryForwardExpiryMonths: z.coerce.number().min(0),
+  carryForwardExpiryMonths: z.coerce
+    .number()
+    .min(1, "Carry Forward Leave Expiry Months is greater than or equal to 1")
+    .max(11, "Carry Forward Leave Expiry Months is less than or equal to 11"),
 
   // Encashment
   leaveEncashmentRuleActive: z.boolean(),

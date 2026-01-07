@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { useRouter, useSearch } from "@tanstack/react-router";
+import { useSearch } from "@tanstack/react-router";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import { cn } from "@/lib/utils";
 import { Main } from "@/components/layout/main";
@@ -54,13 +54,6 @@ const AllUsers = () => {
     isLoading,
     error,
   } = useGetAllUsers(queryParams);
-
-  // Debug logging
-  console.log("Users query params:", queryParams);
-  console.log("Users data:", allUsers);
-  console.log("Total count:", totalCount);
-  console.log("Loading:", isLoading);
-  console.log("Error:", error);
 
   // Get filter options
   const { data: territoryList = [] } = useGetAllTerritoriesForDropdown();
@@ -130,8 +123,6 @@ const AllUsers = () => {
     } as SelectFilterConfig,
   ];
 
-  const {} = useRouter();
-
   if (error) {
     const errorResponse = (error as ErrorResponse)?.response?.data;
     return (
@@ -143,7 +134,6 @@ const AllUsers = () => {
   }
 
   const handleAddUser = () => {
-    console.log("Add User button clicked");
     setOpen("add");
   };
 

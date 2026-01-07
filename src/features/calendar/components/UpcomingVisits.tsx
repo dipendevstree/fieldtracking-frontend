@@ -20,6 +20,8 @@ import UpcomingVisitsTable from "./upcoming-visits-table";
 import { formatDropDownLabel } from "@/utils/commonFunction";
 import { DateRange } from "react-day-picker";
 import { addDays, format } from "date-fns";
+import { Main } from "@/components/layout/main";
+import { cn } from "@/lib/utils";
 
 export default function UpcomingVisits() {
   const [pagination, setPagination] = useState({
@@ -198,11 +200,11 @@ export default function UpcomingVisits() {
   ];
 
   return (
-    <>
+    <Main className={cn("flex flex-col gap-2 p-4")}>
       <GlobalFilterSection
         key={"calender-view-filters"}
         filters={filters}
-        className={"mb-0"}
+        className={"mb-4"}
       />
 
       <UpcomingVisitsTable
@@ -212,6 +214,6 @@ export default function UpcomingVisits() {
         currentPage={pagination.page}
         paginationCallbacks={{ onPaginationChange }}
       />
-    </>
+    </Main>
   );
 }

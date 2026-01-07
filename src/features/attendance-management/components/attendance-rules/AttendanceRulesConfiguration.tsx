@@ -42,6 +42,9 @@ import { useGetAllTiers } from "@/features/settings/Approvers/services/approvers
 import MultiSelect from "@/components/ui/MultiSelect";
 import { Main } from "@/components/layout/main";
 import { ATTENDANCE_RULE_FREQUENCY } from "@/data/app.data";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 // import { PermissionGate } from "@/permissions/components/PermissionGate";
 // import { usePermission } from "@/permissions/hooks/use-permission";
 
@@ -151,6 +154,13 @@ export default function AttendanceRulesConfiguration() {
     </Card>
   );
 
+  // Sync with Global Store (Handles Tabs & Navigation blocking)
+  useDirtyTracker(form.formState.isDirty);
+
+  const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
+    form.formState.isDirty
+  );
+
   if (isRulesLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -188,6 +198,19 @@ export default function AttendanceRulesConfiguration() {
           desc="Auto leave reduction"
         />
       </div>
+
+      <ConfirmDialog
+        open={showExitPrompt}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) cancelExit();
+        }}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+        handleConfirm={confirmExit}
+      />
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
