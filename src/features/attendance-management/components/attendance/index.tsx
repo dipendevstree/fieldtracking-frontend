@@ -140,11 +140,35 @@ export default function MyAttendance() {
     setIsCorrectionDialogOpen(true);
   };
 
-  // Calendar click handler
+  // Calendar click handler for events
   const handleCalendarEventSelect = (event: AttendanceEvent) => {
     const s = event.resource.status;
     if (s !== ATTENDANCE_STATUS.WEEK_OFF && s !== ATTENDANCE_STATUS.HOLIDAY) {
       handleRequestCorrection(event.resource.originalData);
+    }
+  };
+
+  // Calendar click handler for empty slots
+  const handleCalendarSlotSelect = (slotInfo: any) => {
+    const selectedDate = slotInfo.start;
+    // Find the attendance record for this date
+    const attendanceRecord = attendanceData.find((record: any) => {
+      const recordDate = new Date(record.date);
+      return (
+        recordDate.getDate() === selectedDate.getDate() &&
+        recordDate.getMonth() === selectedDate.getMonth() &&
+        recordDate.getFullYear() === selectedDate.getFullYear()
+      );
+    });
+
+    if (attendanceRecord) {
+      const s = attendanceRecord.status;
+      if (s !== ATTENDANCE_STATUS.WEEK_OFF && s !== ATTENDANCE_STATUS.HOLIDAY) {
+        handleRequestCorrection(attendanceRecord);
+      }
+    } else {
+      // No attendance record found for this date
+      toast.info("No attendance record found for this date");
     }
   };
 
@@ -213,6 +237,7 @@ export default function MyAttendance() {
               date={viewDate}
               onNavigate={setViewDate}
               onSelectEvent={handleCalendarEventSelect}
+              onSelectSlot={handleCalendarSlotSelect}
               holidays={holidays}
               weekOffDays={weekOffDays}
             />

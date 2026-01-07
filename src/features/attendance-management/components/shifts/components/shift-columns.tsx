@@ -1,6 +1,21 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import { ShiftRowActions } from "./table-action-button";
+import { format } from "date-fns";
+
+// Helper to format time string from "HH:mm" to 12-hour format with AM/PM
+const formatTimeTo12Hour = (timeString: string) => {
+  if (!timeString) return "-";
+  try {
+    // Create a date object with today's date and the given time
+    const [hours, minutes] = timeString.split(":");
+    const date = new Date();
+    date.setHours(parseInt(hours), parseInt(minutes));
+    return format(date, "hh:mm a");
+  } catch (error) {
+    return timeString;
+  }
+};
 
 export const getShiftColumns = (totalCount: number): ColumnDef<any>[] => [
   {
@@ -16,9 +31,11 @@ export const getShiftColumns = (totalCount: number): ColumnDef<any>[] => [
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Start Time" />
     ),
-    cell: ({ row }) => {
-      return <div className="text-sm">{row.original.startTime}</div>;
-    },
+    cell: ({ row }) => (
+      <div className="text-sm">
+        {formatTimeTo12Hour(row.original.startTime)}
+      </div>
+    ),
     enableHiding: false,
     enableSorting: false,
   },
@@ -27,9 +44,9 @@ export const getShiftColumns = (totalCount: number): ColumnDef<any>[] => [
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="End Time" />
     ),
-    cell: ({ row }) => {
-      return <div className="text-sm">{row.original.endTime}</div>;
-    },
+    cell: ({ row }) => (
+      <div className="text-sm">{formatTimeTo12Hour(row.original.endTime)}</div>
+    ),
     enableHiding: false,
     enableSorting: false,
   },

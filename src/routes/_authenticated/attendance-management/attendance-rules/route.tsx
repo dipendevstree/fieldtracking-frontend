@@ -3,7 +3,7 @@ import { ProtectedRoute } from "@/permissions/components/ProtectedRoute";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute(
-  "/_authenticated/attendance-management/rules"
+  "/_authenticated/attendance-management/attendance-rules"
 )({
   component: RouteComponent,
 });

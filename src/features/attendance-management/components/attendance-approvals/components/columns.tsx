@@ -51,8 +51,10 @@ export const createColumns = (): ColumnDef<any>[] => [
     cell: ({ row }) => {
       const checkIn = row.original.attendance?.firstCheckIn;
       const checkOut = row.original.attendance?.lastCheckOut;
-      const checkInTime = checkIn ? format(new Date(checkIn), "HH:mm") : "-";
-      const checkOutTime = checkOut ? format(new Date(checkOut), "HH:mm") : "-";
+      const checkInTime = checkIn ? format(new Date(checkIn), "hh:mm a") : "-";
+      const checkOutTime = checkOut
+        ? format(new Date(checkOut), "hh:mm a")
+        : "-";
       return (
         <div className="text-sm">
           {checkInTime} - {checkOutTime}
@@ -69,8 +71,10 @@ export const createColumns = (): ColumnDef<any>[] => [
     cell: ({ row }) => {
       const checkIn = row.original.requestedCheckIn;
       const checkOut = row.original.requestedCheckOut;
-      const checkInTime = checkIn ? format(new Date(checkIn), "HH:mm ") : "-";
-      const checkOutTime = checkOut ? format(new Date(checkOut), "HH:mm") : "-";
+      const checkInTime = checkIn ? format(new Date(checkIn), "hh:mm a") : "-";
+      const checkOutTime = checkOut
+        ? format(new Date(checkOut), "hh:mm a")
+        : "-";
       return (
         <div className="text-sm">
           {checkInTime} - {checkOutTime}
@@ -116,7 +120,7 @@ export const createColumns = (): ColumnDef<any>[] => [
       const date = row.original.createdDate;
       return (
         <div className="text-sm">
-          {date ? format(new Date(date), "dd/MM/yyyy HH:mm") : "-"}
+          {date ? format(new Date(date), "dd/MM/yyyy hh:mm a") : "-"}
         </div>
       );
     },

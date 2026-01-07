@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ATTENDANCE_STATUS } from "@/data/app.data";
 import { LegendItem } from "@/components/ui/legend-item";
 import { toast } from "sonner";
+import { IconInfoCircle } from "@tabler/icons-react";
 
 const localizer = momentLocalizer(moment);
 
@@ -30,6 +31,7 @@ interface AttendanceCalendarProps {
   date: Date;
   onNavigate: (date: Date) => void;
   onSelectEvent?: (event: AttendanceEvent) => void;
+  onSelectSlot?: (slotInfo: any) => void;
   holidays?: any[];
   weekOffDays?: number[];
 }
@@ -147,8 +149,9 @@ const CustomToolbar = ({ onNavigate, label, date }: any) => {
           <h2 className="text-lg font-bold text-slate-900">
             Attendance Calendar
           </h2>
-          <p className="text-xs text-slate-500">
-            View check-ins and work patterns
+          <p className="text-xs text-blue-500 flex items-center gap-1">
+            <IconInfoCircle size={14} />
+            Click on a date to request an attendance correction.
           </p>
         </div>
       </div>
@@ -190,6 +193,7 @@ export default function AttendanceCalendarView({
   date,
   onNavigate,
   onSelectEvent,
+  onSelectSlot,
   holidays = [],
   weekOffDays = [],
 }: AttendanceCalendarProps) {
@@ -292,6 +296,11 @@ export default function AttendanceCalendarView({
           if (selectedDate > today) {
             toast.warning("Cannot select future dates");
             return;
+          }
+
+          // Call the parent's onSelectSlot handler if provided
+          if (onSelectSlot) {
+            onSelectSlot(slotInfo);
           }
         }}
         components={{

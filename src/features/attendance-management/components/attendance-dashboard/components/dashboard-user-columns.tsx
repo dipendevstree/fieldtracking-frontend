@@ -56,7 +56,7 @@ export const dashboardUserColumns: ColumnDef<any>[] = [
     ),
     cell: ({ row }) => {
       const checkIn = row.original.checkIn;
-      const formattedTime = checkIn ? format(new Date(checkIn), "HH:mm") : "-";
+      const formattedTime = checkIn ? format(new Date(checkIn), "hh:mm a") : "-";
 
       return <div className="text-sm">{formattedTime}</div>;
     },
@@ -70,7 +70,7 @@ export const dashboardUserColumns: ColumnDef<any>[] = [
     cell: ({ row }) => {
       const checkOut = row.original.checkOut;
       const formattedTime = checkOut
-        ? format(new Date(checkOut), "HH:mm")
+        ? format(new Date(checkOut), "hh:mm a")
         : "-";
 
       return <div className="text-sm">{formattedTime}</div>;
