@@ -19,7 +19,10 @@ import { cn } from "@/lib/utils";
 import { ATTENDANCE_STATUS } from "@/data/app.data";
 
 // Hooks & Services
-import { useGetMyAttendance } from "../../services/attendance-action.hook";
+import {
+  useGetMyAttendance,
+  useGetDashboardCalendarData,
+} from "../../services/attendance-action.hook";
 import {
   useAttendanceCorrectionOwnRequestCancel,
   useGetMyAttendanceCorrections,
@@ -89,6 +92,10 @@ export default function MyAttendance() {
     useGetMyAttendance(calendarQueryParams);
   const { data: correctionsResponse } =
     useGetMyAttendanceCorrections(calendarQueryParams);
+
+  // Fetch holiday data for calendar
+  const { holidays = [], weekOffDays = [] } =
+    useGetDashboardCalendarData(calendarQueryParams);
 
   const attendanceCorrectionsData = Array.isArray(correctionsResponse)
     ? correctionsResponse
@@ -206,6 +213,8 @@ export default function MyAttendance() {
               date={viewDate}
               onNavigate={setViewDate}
               onSelectEvent={handleCalendarEventSelect}
+              holidays={holidays}
+              weekOffDays={weekOffDays}
             />
           )}
 

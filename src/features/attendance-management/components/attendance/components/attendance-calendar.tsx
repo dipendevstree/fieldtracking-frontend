@@ -1,13 +1,14 @@
 import { Calendar, momentLocalizer, Views } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { isSameDay } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ATTENDANCE_STATUS } from "@/data/app.data";
 import { LegendItem } from "@/components/ui/legend-item";
+import { toast } from "sonner";
 
 const localizer = momentLocalizer(moment);
 
@@ -29,6 +30,8 @@ interface AttendanceCalendarProps {
   date: Date;
   onNavigate: (date: Date) => void;
   onSelectEvent?: (event: AttendanceEvent) => void;
+  holidays?: any[];
+  weekOffDays?: number[];
 }
 
 // --- HELPER: BE Enum -> Tailwind Styles ---
@@ -119,7 +122,24 @@ const AttendanceEventComponent = ({ event }: { event: AttendanceEvent }) => {
   );
 };
 
-const CustomToolbar = ({ onNavigate, label }: any) => {
+const CustomToolbar = ({ onNavigate, label, date }: any) => {
+  // Check if viewing current or future month
+  const isCurrentOrFutureMonth = () => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    // Get the first day of the NEXT month (where Next button would navigate to)
+    const firstDayOfNextMonth = new Date(
+      date.getFullYear(),
+      date.getMonth() + 1,
+      1
+    );
+    firstDayOfNextMonth.setHours(0, 0, 0, 0);
+
+    // Disable next if navigating to next month would go into the future
+    return firstDayOfNextMonth > today;
+  };
+
   return (
     <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4 px-1">
       <div className="flex items-center gap-2 self-start md:self-auto">
@@ -150,6 +170,7 @@ const CustomToolbar = ({ onNavigate, label }: any) => {
           size="icon"
           className="h-8 w-8"
           onClick={() => onNavigate("NEXT")}
+          disabled={isCurrentOrFutureMonth()}
         >
           <ChevronRight className="h-4 w-4" />
         </Button>
@@ -169,6 +190,8 @@ export default function AttendanceCalendarView({
   date,
   onNavigate,
   onSelectEvent,
+  holidays = [],
+  weekOffDays = [],
 }: AttendanceCalendarProps) {
   const dayPropGetter = useCallback(
     (currentDate: Date) => {
@@ -200,6 +223,46 @@ export default function AttendanceCalendarView({
     []
   );
 
+  const { components } = useMemo(
+    () => ({
+      components: {
+        month: {
+          dateHeader: ({ date: cellDate, label }: any) => {
+            // Check if date is a holiday
+            const holiday = holidays.find((holiday: any) => {
+              const holidayDate = new Date(holiday.date);
+              return (
+                holidayDate.getDate() === cellDate.getDate() &&
+                holidayDate.getMonth() === cellDate.getMonth() &&
+                holidayDate.getFullYear() === cellDate.getFullYear()
+              );
+            });
+
+            // Check if date is a week-off day
+            const isWeekOff = weekOffDays.includes(cellDate.getDay());
+
+            return (
+              <div className="flex flex-col items-center">
+                <span className="rbc-button-link">{label}</span>
+                {holiday && (
+                  <span className="text-[10px] sm:text-xs text-emerald-600 font-bold truncate max-w-[95%] block mt-1 px-1">
+                    {holiday.name}
+                  </span>
+                )}
+                {!holiday && isWeekOff && (
+                  <span className="text-[10px] sm:text-xs text-slate-500 font-semibold block mt-1">
+                    Week Off
+                  </span>
+                )}
+              </div>
+            );
+          },
+        },
+      },
+    }),
+    [holidays, weekOffDays]
+  );
+
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
       <style>{`
@@ -227,7 +290,23 @@ export default function AttendanceCalendarView({
         toolbar={true}
         selectable={true}
         onSelectEvent={onSelectEvent}
-        components={{ toolbar: CustomToolbar, event: AttendanceEventComponent }}
+        onSelectSlot={(slotInfo) => {
+          // Prevent selecting future dates
+          const selectedDate = new Date(slotInfo.start);
+          const today = new Date();
+          selectedDate.setHours(0, 0, 0, 0);
+          today.setHours(0, 0, 0, 0);
+
+          if (selectedDate > today) {
+            toast.warning("Cannot select future dates");
+            return;
+          }
+        }}
+        components={{
+          toolbar: (props) => <CustomToolbar {...props} date={date} />,
+          event: AttendanceEventComponent,
+          ...components,
+        }}
         dayPropGetter={dayPropGetter}
         eventPropGetter={eventPropGetter}
         style={{ height: 750 }}

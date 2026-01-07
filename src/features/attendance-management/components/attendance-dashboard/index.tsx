@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  ATTENDANCE_STATUS,
   AttendanceEvent,
   TeamAttendanceCalendar,
 } from "./components/dashboard-calendar";
@@ -22,10 +21,13 @@ import {
   useGetDashboardStats,
 } from "../../services/attendance-action.hook";
 import { format, startOfMonth, endOfMonth } from "date-fns";
-import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
+import {
+  ATTENDANCE_STATUS,
+  DEFAULT_PAGE_NUMBER,
+  DEFAULT_PAGE_SIZE,
+} from "@/data/app.data";
 import { FilterConfig } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
-import { toast } from "sonner";
 
 export default function AttendanceDashboard() {
   const [currentDate, setCurrentDate] = useState(new Date()); // Today
@@ -65,13 +67,12 @@ export default function AttendanceDashboard() {
     endDate: calendarMonthEnd,
   });
 
-  const handleDateChange = (date: string | Date | undefined) => {
-    // Handle both string (from filter) and Date (from calendar) inputs
-    let dateString: string;
+  const handleDateChange = (date: Date | string | undefined) => {
     let dateObject: Date;
+    let dateString: string;
 
     if (typeof date === "string") {
-      dateString = date || format(new Date(), "yyyy-MM-dd");
+      dateString = date;
       dateObject = new Date(dateString);
     } else if (date instanceof Date) {
       dateObject = date;
@@ -81,16 +82,16 @@ export default function AttendanceDashboard() {
       dateString = format(new Date(), "yyyy-MM-dd");
     }
 
-    // Prevent selection of future dates from calendar clicks
+    // Prevent selecting any future dates
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Reset time to start of day for comparison
+    today.setHours(0, 0, 0, 0);
     const selectedDate = new Date(dateObject);
     selectedDate.setHours(0, 0, 0, 0);
 
+    // If the chosen date is in the future, clamp to today
     if (selectedDate > today) {
-      // Show toast message and don't update if future date is selected from calendar
-      toast.warning("Cannot select future dates");
-      return;
+      dateObject = today;
+      dateString = format(today, "yyyy-MM-dd");
     }
 
     // Update both calendar and filter states
@@ -136,7 +137,7 @@ export default function AttendanceDashboard() {
           case "present":
             return ATTENDANCE_STATUS.PRESENT;
           case "absent":
-            return ATTENDANCE_STATUS.ON_LEAVE; // Using ON_LEAVE for absent
+            return ATTENDANCE_STATUS.LEAVE;
           case "half_day":
             return ATTENDANCE_STATUS.HALF_DAY;
           case "late":
