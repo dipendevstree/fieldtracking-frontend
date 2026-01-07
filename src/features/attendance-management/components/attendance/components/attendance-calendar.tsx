@@ -238,20 +238,12 @@ export default function AttendanceCalendarView({
               );
             });
 
-            // Check if date is a week-off day
-            const isWeekOff = weekOffDays.includes(cellDate.getDay());
-
             return (
               <div className="flex flex-col items-center">
                 <span className="rbc-button-link">{label}</span>
                 {holiday && (
                   <span className="text-[10px] sm:text-xs text-emerald-600 font-bold truncate max-w-[95%] block mt-1 px-1">
                     {holiday.name}
-                  </span>
-                )}
-                {!holiday && isWeekOff && (
-                  <span className="text-[10px] sm:text-xs text-slate-500 font-semibold block mt-1">
-                    Week Off
                   </span>
                 )}
               </div>
