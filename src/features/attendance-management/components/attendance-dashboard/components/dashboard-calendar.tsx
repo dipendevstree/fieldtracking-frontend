@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useState, useMemo } from "react";
 import {
   Calendar,
   momentLocalizer,
@@ -245,6 +245,46 @@ export function TeamAttendanceCalendar({
     [date, holidays, weekOffDays]
   );
 
+  const { components } = useMemo(
+    () => ({
+      components: {
+        month: {
+          dateHeader: ({ date, label }: any) => {
+            // Check if date is a holiday
+            const holiday = holidays.find((holiday: any) => {
+              const holidayDate = new Date(holiday.date);
+              return (
+                holidayDate.getDate() === date.getDate() &&
+                holidayDate.getMonth() === date.getMonth() &&
+                holidayDate.getFullYear() === date.getFullYear()
+              );
+            });
+
+            // Check if date is a week-off day
+            const isWeekOff = weekOffDays.includes(date.getDay());
+
+            return (
+              <div className="flex flex-col">
+                <span>{label}</span>
+                {holiday && (
+                  <span className="text-[10px] sm:text-xs text-emerald-600 font-bold truncate max-w-[95%] block mt-[-2px]">
+                    {holiday.name}
+                  </span>
+                )}
+                {!holiday && isWeekOff && (
+                  <span className="text-[10px] sm:text-xs text-slate-500 font-semibold block mt-[-2px]">
+                    Week Off
+                  </span>
+                )}
+              </div>
+            );
+          },
+        },
+      },
+    }),
+    [holidays, weekOffDays]
+  );
+
   return (
     <div className={cn("w-full bg-white", className)}>
       {/* CSS Injection for exact visual match */}
@@ -283,6 +323,7 @@ export function TeamAttendanceCalendar({
           components={{
             toolbar: CustomToolbar as any,
             event: EventComponent,
+            ...components,
           }}
           eventPropGetter={eventPropGetter}
           dayPropGetter={dayPropGetter}
