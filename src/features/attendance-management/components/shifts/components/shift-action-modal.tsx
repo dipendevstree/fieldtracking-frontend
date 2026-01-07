@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { DeleteModal } from "@/components/shared/common-delete-modal";
 
@@ -14,9 +14,13 @@ import {
 } from "@/features/attendance-management/services/shift.action.hook";
 import { ShiftSchema } from "@/features/attendance-management/data/schema";
 import ShiftActionForm from "./shift-action-form";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 export function ShiftActionModal() {
   const { open, setOpen, currentRow, setCurrentRow } = useShiftStore();
+  const [showLocalWarning, setShowLocalWarning] = useState(false);
 
   const {
     mutate: createShift,
@@ -94,6 +98,50 @@ export function ShiftActionModal() {
     if (currentRow?.id) deleteShift();
   };
 
+  const handleDialogChange = (state: boolean) => {
+    if (state) {
+      setOpen(open === "edit" ? "edit" : "add");
+      return;
+    }
+    if (form.formState.isDirty) {
+      setShowLocalWarning(true);
+    } else {
+      actualClose();
+    }
+  };
+
+  const actualClose = () => {
+    form.reset();
+    setOpen(null);
+  };
+
+  useDirtyTracker(form.formState.isDirty);
+
+  const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
+    form.formState.isDirty
+  );
+
+  const isWarningOpen = showLocalWarning || showExitPrompt;
+
+  const handleCancelDiscard = (isOpen: boolean) => {
+    if (!isOpen) {
+      setShowLocalWarning(false);
+      if (showExitPrompt) cancelExit();
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    form.reset(form.getValues());
+    setShowLocalWarning(false);
+    actualClose();
+
+    if (showExitPrompt) {
+      setTimeout(() => {
+        confirmExit();
+      }, 0);
+    }
+  };
+
   return (
     <>
       <ShiftActionForm
@@ -102,12 +150,20 @@ export function ShiftActionModal() {
         editingId={currentRow ? currentRow.id : null}
         onSubmit={open === "edit" ? handleUpdate : handleCreate}
         open={open === "add" || open === "edit"}
-        onOpenChange={(value: boolean) => {
-          if (!value) closeModal();
-          else setOpen(open === "edit" ? "edit" : "add");
-        }}
+        onOpenChange={handleDialogChange}
         currentRow={currentRow}
         allShifts={[]} // Not needed anymore but keeping for interface
+      />
+
+      <ConfirmDialog
+        open={isWarningOpen}
+        onOpenChange={handleCancelDiscard}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+        handleConfirm={handleConfirmDiscard}
       />
 
       {currentRow && (

@@ -5,6 +5,7 @@ import { TopUsers, VisitEmployeeAnalytics } from '../type/type';
 import { FilterConfig } from '@/components/global-filter-section';
 import GlobalFilterSection from '@/components/global-table-filter-section';
 import { useState } from 'react';
+import { Main } from '@/components/layout/main';
 
 export default function Analytics() {
   const [filterData, setFilterData] = useState<Record<string, string>>({
@@ -42,7 +43,7 @@ export default function Analytics() {
   ];
   
   return (
-    <>
+    <Main className="flex flex-col gap-4">
       <GlobalFilterSection key={"calender-view-filters"} filters={filters} />
       <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
         {Object.keys(analyticsData).length > 0 && (
@@ -137,6 +138,6 @@ export default function Analytics() {
           </>
         )}
       </div>
-    </>
+    </Main>
   )
 }

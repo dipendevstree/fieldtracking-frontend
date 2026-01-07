@@ -37,6 +37,7 @@ import {
   FormItem,
   FormLabel,
   FormDescription,
+  FormMessage,
 } from "@/components/ui/form";
 
 import { useGetAllLeaveTypes } from "../../services/leave-type.action.hook";
@@ -48,6 +49,9 @@ import {
 import { Main } from "@/components/layout/main";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import { usePermission } from "@/permissions/hooks/use-permission";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 export default function LeaveRulesConfiguration() {
   const { data: leaveTypes = [] } = useGetAllLeaveTypes();
@@ -127,6 +131,12 @@ export default function LeaveRulesConfiguration() {
     </Card>
   );
 
+  useDirtyTracker(form.formState.isDirty);
+
+  const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
+    form.formState.isDirty
+  );
+
   if (isRulesLoading) {
     return (
       <div className="flex items-center justify-center h-96">
@@ -160,6 +170,19 @@ export default function LeaveRulesConfiguration() {
           desc="Use alternate leave types"
         />
       </div>
+
+      <ConfirmDialog
+        open={showExitPrompt}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) cancelExit();
+        }}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+        handleConfirm={confirmExit}
+      />
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -453,7 +476,9 @@ export default function LeaveRulesConfiguration() {
                     name="carryForwardExpiryMonths"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Carry Forward Expiry</FormLabel>
+                        <FormLabel>
+                          Carry Forward Leave Expiry Months (1 ≤ Months ≤ 11)
+                        </FormLabel>
                         <div className="flex items-center gap-2">
                           <FormControl>
                             <Input
@@ -469,6 +494,7 @@ export default function LeaveRulesConfiguration() {
                         <FormDescription>
                           Carried forward leaves expire after this period
                         </FormDescription>
+                        <FormMessage />
                       </FormItem>
                     )}
                   />

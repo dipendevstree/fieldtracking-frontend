@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import ExpenseApprovalsPage from "@/features/approvals";
 import { ProtectedRoute } from "@/permissions/components/ProtectedRoute";
+import ReportsAnalytics from "@/features/approvals/components/Reports-&-Analytics/reports-&-analytics";
 
 export const Route = createFileRoute(
-  "/_authenticated/approvals/reports-analytics"
+  "/_authenticated/approvals/reports-analytics/"
 )({
   component: RouteComponent,
 });
@@ -11,7 +11,7 @@ export const Route = createFileRoute(
 function RouteComponent() {
   return (
     <ProtectedRoute requiredPermission="reports_analytics">
-      <ExpenseApprovalsPage />
+      <ReportsAnalytics />
     </ProtectedRoute>
   );
 }

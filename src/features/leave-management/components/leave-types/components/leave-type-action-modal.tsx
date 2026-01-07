@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 import { DeleteModal } from "@/components/shared/common-delete-modal";
 
@@ -14,9 +14,13 @@ import {
 } from "@/features/leave-management/services/leave-type.action.hook";
 import { LeaveTypeSchema } from "@/features/leave-management/data/schema";
 import LeaveTypeActionForm from "./leave-type-action-form";
+import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 export function LeaveTypeActionModal() {
   const { open, setOpen, currentRow, setCurrentRow } = useLeaveTypeStore();
+  const [showLocalWarning, setShowLocalWarning] = useState(false);
 
   const {
     mutate: createLeaveType,
@@ -91,6 +95,52 @@ export function LeaveTypeActionModal() {
     if (currentRow?.id) deleteLeaveType();
   };
 
+  const handleDialogChange = (state: boolean) => {
+    if (state) {
+      setOpen(open === "edit" ? "edit" : "add");
+      return;
+    }
+    if (form.formState.isDirty) {
+      setShowLocalWarning(true);
+    } else {
+      actualClose();
+    }
+  };
+
+  const actualClose = () => {
+    form.reset();
+    setOpen(null);
+    setCurrentRow(null);
+  };
+
+  useDirtyTracker(form.formState.isDirty);
+
+  const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
+    form.formState.isDirty
+  );
+
+  const isWarningOpen = showLocalWarning || showExitPrompt;
+
+  const handleCancelDiscard = (isOpen: boolean) => {
+    if (!isOpen) {
+      setShowLocalWarning(false);
+      if (showExitPrompt) cancelExit();
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    form.reset(form.getValues());
+    setShowLocalWarning(false);
+    setOpen(null);
+    setCurrentRow(null);
+
+    if (showExitPrompt) {
+      setTimeout(() => {
+        confirmExit();
+      }, 0);
+    }
+  };
+
   return (
     <>
       <LeaveTypeActionForm
@@ -99,11 +149,19 @@ export function LeaveTypeActionModal() {
         editingId={currentRow ? currentRow.id : null}
         onSubmit={open === "edit" ? handleUpdate : handleCreate}
         open={open === "add" || open === "edit"}
-        onOpenChange={(value: boolean) => {
-          if (!value) closeModal();
-          else setOpen(open === "edit" ? "edit" : "add");
-        }}
+        onOpenChange={handleDialogChange}
         currentRow={currentRow}
+      />
+
+      <ConfirmDialog
+        open={isWarningOpen}
+        onOpenChange={handleCancelDiscard}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+        handleConfirm={handleConfirmDiscard}
       />
 
       {currentRow && (

@@ -10,6 +10,7 @@ import { useHolidayTypeStore } from "../../store/holiday-type.store";
 import { useGetAllHolidayTypes } from "../../services/holiday-type.action.hook";
 import { Main } from "@/components/layout/main";
 import TablePageLayout from "@/components/layout/table-page-layout";
+import HolidayTypeActionModal from "./components/holiday-type-action-modal";
 // import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 export default function HolidayTypeManagement() {
@@ -66,8 +67,8 @@ export default function HolidayTypeManagement() {
               <Plus className="mr-2 h-4 w-4" /> Add Holiday Type
             </Button>
           </PermissionGate>
-          <HolidayTypeActionModal />
-        </div> */}
+          </div> */}
+        <HolidayTypeActionModal />
 
         <TablePageLayout
           title="Configured Holiday Types"

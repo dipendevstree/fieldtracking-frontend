@@ -26,6 +26,7 @@ import { useMemo, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useGetAllReportsAndAnalyticsQuickStats } from "../../services/reports and-analytics";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { Main } from "@/components/layout/main";
 
 export default function ReportsAnalytics() {
   const [filter, setFilter] = useState<
@@ -63,7 +64,7 @@ export default function ReportsAnalytics() {
   } = data || {};
 
   return (
-    <div className="space-y-4">
+    <Main className="space-y-4">
       {/* Header with filter */}
       <div className="flex flex-col md:flex-row md:items-center justify-between space-y-2 md:space-y-0">
         <h2 className="text-2xl font-bold tracking-tight">Expense Analytics</h2>
@@ -114,13 +115,14 @@ export default function ReportsAnalytics() {
                   Average Daily Expense
                 </span>
                 <span className="font-medium">
-                  {currentUser?.organization?.currency || "₹"} {averageDailyExpense.toLocaleString()}
+                  {currentUser?.organization?.currency || "₹"}{" "}
+                  {averageDailyExpense.toLocaleString()}
                 </span>
               </div>
             </div>
           </CardContent>
         )}
       </Card>
-    </div>
+    </Main>
   );
 }

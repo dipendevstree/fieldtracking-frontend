@@ -37,6 +37,7 @@ import { format } from "date-fns";
 import { ProductivityReportsColumns } from "./productivityReportsColumns";
 import { CustomerReportColumns } from "./CustomerReportColumns";
 import { VisitReportColumns } from "./visitReportColumns";
+import { Main } from "@/components/layout/main";
 
 const normalizeOptions = (options: any[]) =>
   options.map((o) => ({ ...o, value: String(o.value) }));
@@ -345,7 +346,7 @@ const CustomReport: React.FC = () => {
 
   // -------------------- UI --------------------
   return (
-    <div>
+    <Main>
       <Card className="p-4 gap-0">
         <ReportsHead
           title="Custom Report Generator"
@@ -422,7 +423,7 @@ const CustomReport: React.FC = () => {
           />
         )}
       </Card>
-    </div>
+    </Main>
   );
 };
 

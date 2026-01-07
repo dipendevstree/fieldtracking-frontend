@@ -56,8 +56,23 @@ import { HolidayTemplate, HolidayTemplateSchema } from "../../data/schema";
 import { useGetAllUsers } from "@/features/UserManagement/services/AllUsers.hook";
 import { Main } from "@/components/layout/main";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
+import { useGetAllTerritoriesForDropdown } from "@/features/userterritory/services/user-territory.hook";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { Textarea } from "@/components/ui/textarea";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 export default function HolidayCalendarTemplates() {
+  const { user } = useAuthStore();
+  const allowAddUsersBasedOnTerritories =
+    user?.organization?.allowAddUsersBasedOnTerritories;
+  const [selectedTerritoryId, setSelectedTerritoryId] = useState<string | null>(
+    null
+  );
+  const [showLocalWarning, setShowLocalWarning] = useState(false);
+
   // 1. Fetch Data
   const { data: holidayTemplates = [], isLoading: isLoadingTemplates } =
     useGetAllHolidayTemplates();
@@ -79,7 +94,20 @@ export default function HolidayCalendarTemplates() {
   const { data: allUsers = [], isLoading: isLoadingUsers } = useGetAllUsers({
     nullHolidayTemplateId: true,
     holidayTemplateId: modalType === "edit" ? editingTemplateId : undefined,
+    ...(allowAddUsersBasedOnTerritories
+      ? {
+          territoryId: selectedTerritoryId,
+        }
+      : {}),
   });
+
+  const { data: allTerritories = [], isLoading: isLoadingTerritories } =
+    useGetAllTerritoriesForDropdown();
+
+  const territoryOptions = allTerritories.map((territory: any) => ({
+    value: territory.id,
+    label: territory.name,
+  }));
 
   const userOptions = allUsers.map((user: any) => ({
     value: user.id,
@@ -92,7 +120,7 @@ export default function HolidayCalendarTemplates() {
     resolver: zodResolver(HolidayTemplateSchema) as any,
     defaultValues: {
       name: "",
-      region: "",
+      territoryId: "",
       description: "",
       specialHolidayIds: [],
       userIds: [],
@@ -118,7 +146,7 @@ export default function HolidayCalendarTemplates() {
     setEditingTemplateId(null);
     form.reset({
       name: "",
-      region: "",
+      territoryId: "",
       description: "",
       specialHolidayIds: [],
       userIds: [],
@@ -148,7 +176,7 @@ export default function HolidayCalendarTemplates() {
 
       form.reset({
         name: singleTemplateData.name,
-        region: singleTemplateData.region,
+        territoryId: singleTemplateData.territoryId,
         description: singleTemplateData.description || "",
         specialHolidayIds: currentHolidayIds,
         userIds: currentUserIds,
@@ -183,10 +211,7 @@ export default function HolidayCalendarTemplates() {
 
   const holidayOptions = (masterHolidays || [])
     .filter((h: any) => {
-      if (modalType === "add") {
-        return h.isSpecial === true;
-      }
-      return true;
+      return h.isSpecial === true;
     })
     .map((h: any) => ({
       value: h.id,
@@ -195,6 +220,49 @@ export default function HolidayCalendarTemplates() {
     }));
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
+
+  const handleDialogChange = (state: boolean) => {
+    if (state) {
+      return;
+    }
+    if (form.formState.isDirty) {
+      setShowLocalWarning(true);
+    } else {
+      actualClose();
+    }
+  };
+
+  const actualClose = () => {
+    form.reset();
+    handleClose();
+  };
+
+  useDirtyTracker(form.formState.isDirty);
+
+  const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
+    form.formState.isDirty
+  );
+
+  const isWarningOpen = showLocalWarning || showExitPrompt;
+
+  const handleCancelDiscard = (isOpen: boolean) => {
+    if (!isOpen) {
+      setShowLocalWarning(false);
+      if (showExitPrompt) cancelExit();
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    form.reset(form.getValues());
+    setShowLocalWarning(false);
+    actualClose();
+
+    if (showExitPrompt) {
+      setTimeout(() => {
+        confirmExit();
+      }, 0);
+    }
+  };
 
   // 6. Loading State
   if (isLoadingTemplates) {
@@ -269,6 +337,17 @@ export default function HolidayCalendarTemplates() {
         </PermissionGate>
       </div>
 
+      <ConfirmDialog
+        open={isWarningOpen}
+        onOpenChange={handleCancelDiscard}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+        handleConfirm={handleConfirmDiscard}
+      />
+
       {/* Templates Grid/List */}
       <div className="space-y-4">
         {holidayTemplates.map((template: any) => (
@@ -291,9 +370,12 @@ export default function HolidayCalendarTemplates() {
                     {template.description}
                   </p>
                   <div className="flex gap-2 mt-2">
-                    <Badge variant="secondary" className="font-normal">
-                      <MapPin className="h-3 w-3 mr-1" /> {template.region}
-                    </Badge>
+                    {allowAddUsersBasedOnTerritories && (
+                      <Badge variant="secondary" className="font-normal">
+                        <MapPin className="h-3 w-3 mr-1" />{" "}
+                        {template?.territory?.name || "N/A"}
+                      </Badge>
+                    )}
                     <Badge variant="secondary" className="font-normal">
                       <CalendarIcon className="h-3 w-3 mr-1" />{" "}
                       {template.holidays?.length || 0} holidays
@@ -354,9 +436,9 @@ export default function HolidayCalendarTemplates() {
       {/* 1. Add/Edit Dialog */}
       <Dialog
         open={modalType === "add" || modalType === "edit"}
-        onOpenChange={(open) => !open && handleClose()}
+        onOpenChange={handleDialogChange}
       >
-        <DialogContent>
+        <DialogContent className="max-h-[80vh] !max-w-lg overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {modalType === "edit"
@@ -381,7 +463,9 @@ export default function HolidayCalendarTemplates() {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-4"
               >
-                <div className="grid grid-cols-2 gap-4">
+                <div
+                  className={`grid grid-cols-${allowAddUsersBasedOnTerritories ? 2 : 1} gap-4`}
+                >
                   <FormField
                     control={form.control}
                     name="name"
@@ -398,19 +482,37 @@ export default function HolidayCalendarTemplates() {
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="region"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Region *</FormLabel>
-                        <FormControl>
-                          <Input placeholder="e.g., Gujarat" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  {allowAddUsersBasedOnTerritories && (
+                    <FormField
+                      control={form.control}
+                      name="territoryId"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Territory</FormLabel>
+                          <FormControl>
+                            <SearchableSelect
+                              options={territoryOptions}
+                              value={field.value}
+                              onChange={(value) => {
+                                field.onChange(value);
+                                setSelectedTerritoryId(value);
+                              }}
+                              onCancelPress={() => {
+                                field.onChange("");
+                                setSelectedTerritoryId(null);
+                              }}
+                              placeholder={
+                                isLoadingTerritories
+                                  ? "Loading territories..."
+                                  : "Select territory"
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
                 </div>
                 <FormField
                   control={form.control}
@@ -419,7 +521,7 @@ export default function HolidayCalendarTemplates() {
                     <FormItem>
                       <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <Input placeholder="Description..." {...field} />
+                        <Textarea placeholder="Description..." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
