@@ -12,6 +12,7 @@ import { useAttendanceApprovalStoreState } from "../../store/attendance-approval
 import { ActionModal } from "./components/action-modal";
 import { Main } from "@/components/layout/main";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { DateRange } from "react-day-picker";
 
 export default function AttendanceApprovals() {
   const { open, currentRow, closeModal } = useAttendanceApprovalStoreState();
@@ -20,6 +21,11 @@ export default function AttendanceApprovals() {
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
   });
+
+  const [currentDateRange, setCurrentDateRange] = useState<
+    DateRange | undefined
+  >();
+  const [currentStatus, setCurrentStatus] = useState<string | undefined>();
 
   const { mutate: approveRejectCorrection, isPending: isUpdating } =
     useApproveRejectAttendanceCorrection(
@@ -50,25 +56,35 @@ export default function AttendanceApprovals() {
       type: "date-range",
       placeholder: "Filter by date",
       disableFutureDates: true,
+      dateRangeValue: currentDateRange,
       onDateRangeChange: (range) => {
-        const updated: any = { ...pagination, page: 1 };
-        if (range?.from) updated.startDate = format(range.from, "yyyy-MM-dd");
-        else delete updated.startDate;
-        if (range?.to) updated.endDate = format(range.to, "yyyy-MM-dd");
-        else delete updated.endDate;
-        setPagination(updated);
+        setCurrentDateRange(range);
+        setPagination({
+          ...pagination,
+          page: 1,
+          ...(range?.from && { startDate: format(range.from, "yyyy-MM-dd") }),
+          ...(range?.to && { endDate: format(range.to, "yyyy-MM-dd") }),
+        });
       },
       dataRangeClassName: "w-full max-w-xs",
     },
     {
       key: "status",
       type: "select",
+      value: currentStatus,
       onChange: (value) => {
+        setCurrentStatus(value);
+        setPagination((prev) => ({
+          ...prev,
+          page: 1,
+          ...(value && { status: value }),
+        }));
+      },
+      onCancelPress: () => {
+        setCurrentStatus(undefined);
         setPagination((prev) => {
-          const updated: any = { ...prev, page: 1 };
-          if (value) updated.status = value;
-          else delete updated.status;
-          return updated;
+          const { status: _, ...rest } = prev as any;
+          return { ...rest, page: 1 };
         });
       },
       placeholder: "Select Status",
