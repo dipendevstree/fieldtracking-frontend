@@ -218,7 +218,7 @@ export const sidebarData: SidebarData = {
               menuKey: "attendance_rules",
             },
             {
-              title: "Attendance-Approvals",
+              title: "Attendance Approvals",
               url: "/attendance-management/attendance-approvals",
               menuKey: "attendance_approvals",
             },
