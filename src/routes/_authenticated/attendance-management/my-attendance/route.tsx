@@ -10,7 +10,7 @@ export const Route = createFileRoute(
 
 function RouteComponent() {
   return (
-    <ProtectedRoute requiredPermission="my-attendance">
+    <ProtectedRoute requiredPermission="my_attendance">
       <MyAttendance />
     </ProtectedRoute>
   );
