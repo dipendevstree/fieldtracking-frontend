@@ -177,7 +177,12 @@ export function TimePicker({
         <div className="flex flex-col">
           <div className="flex items-start gap-x-2 p-2">
             {/* Hour Column */}
-            <div className="flex h-48 flex-col gap-1 overflow-y-auto pr-2">
+            <div
+              className="flex h-48 flex-col gap-1 overflow-y-auto pr-2"
+              onWheel={(e) => {
+                e.stopPropagation();
+              }}
+            >
               {hourList.map((h) => (
                 <Button
                   key={h}
@@ -204,7 +209,12 @@ export function TimePicker({
             </div>
 
             {/* Minute Column */}
-            <div className="flex h-48 flex-col gap-1 overflow-y-auto pr-2">
+            <div
+              className="flex h-48 flex-col gap-1 overflow-y-auto pr-2"
+              onWheel={(e) => {
+                e.stopPropagation();
+              }}
+            >
               {minutes.map((m) => (
                 <Button
                   key={m}

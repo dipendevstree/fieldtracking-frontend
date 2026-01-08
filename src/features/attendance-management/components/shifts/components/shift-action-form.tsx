@@ -39,7 +39,7 @@ export function ShiftActionForm<T>({
   currentRow,
 }: Props<T>) {
   return (
-    <Dialog open={!!open} onOpenChange={onOpenChange} modal={false}>
+    <Dialog open={!!open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>
