@@ -19,9 +19,12 @@ import {
   IconFile,
 } from "@tabler/icons-react";
 import { useAuthStore } from "@/stores/use-auth-store";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { isImage } from "@/utils/commonFunction";
 import { FileDown, Loader2 } from "lucide-react";
+import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 export function DailyAllowanceDetailsCard({
   dailyAllowances = [],
@@ -37,6 +40,9 @@ export function DailyAllowanceDetailsCard({
 }) {
   const { user: currentUser } = useAuthStore();
   const [comments, setComments] = useState<Record<string, string>>({});
+  const [initialComments, setInitialComments] = useState<
+    Record<string, string>
+  >({});
 
   if (!dailyAllowances.length) return null;
 
@@ -82,12 +88,24 @@ export function DailyAllowanceDetailsCard({
         });
       });
       setComments(initialComments);
+      setInitialComments(initialComments);
     }
   }, [
     dailyExpanse?.expenseReviewAndApproval,
     dailyAllowances,
     currentUser?.id,
   ]);
+
+  const isDirty = useMemo(() => {
+    return Object.entries(comments).some(
+      ([key, value]) => value !== initialComments[key]
+    );
+  }, [comments, initialComments]);
+
+  useDirtyTracker(isDirty);
+
+  const { showExitPrompt, confirmExit, cancelExit } =
+    useUnsavedChanges(isDirty);
 
   const handleChangeComment = (id: string, value: string) => {
     setComments((prev) => ({ ...prev, [id]: value }));
@@ -223,6 +241,17 @@ export function DailyAllowanceDetailsCard({
 
   return (
     <div className="pr-4 space-y-4">
+      <ConfirmDialog
+        open={showExitPrompt}
+        onOpenChange={cancelExit}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+        handleConfirm={confirmExit}
+      />
+
       {dailyAllowances.map((allowance, i) => (
         <Card
           key={allowance.dailyAllowanceId}
@@ -368,7 +397,10 @@ export function DailyAllowanceDetailsCard({
                               onClick={() =>
                                 handleUpdateReview(
                                   myReview.id,
-                                  resultObj?.status as "approved" | "reviewed" | "rejected",
+                                  resultObj?.status as
+                                    | "approved"
+                                    | "reviewed"
+                                    | "rejected",
                                   detail.id
                                 )
                               }
@@ -378,16 +410,20 @@ export function DailyAllowanceDetailsCard({
                                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                                   Processing...
                                 </>
-                              ) : (
-                                  resultObj?.status == "reviewed" ? (
+                              ) : resultObj?.status == "reviewed" ? (
                                 "Review Expense"
                               ) : (
                                 "Approve Expense"
-                              ))}
+                              )}
                             </Button>
                             <Button
                               variant="destructive"
-                              disabled={(resultObj.isDisable || isUpdatingReject) || (dailyExpanse?.status === "approved" || dailyExpanse?.status === "reject")}
+                              disabled={
+                                resultObj.isDisable ||
+                                isUpdatingReject ||
+                                dailyExpanse?.status === "approved" ||
+                                dailyExpanse?.status === "reject"
+                              }
                               onClick={() =>
                                 handleUpdateReview(
                                   myReview.id,
@@ -409,7 +445,12 @@ export function DailyAllowanceDetailsCard({
                         ) : (
                           <Button
                             className="bg-green-600 text-white hover:bg-green-700 w-full"
-                            disabled={(resultObj.isDisable || isUpdatingApprove) || (dailyExpanse?.status === "approved" || dailyExpanse?.status === "reject")}
+                            disabled={
+                              resultObj.isDisable ||
+                              isUpdatingApprove ||
+                              dailyExpanse?.status === "approved" ||
+                              dailyExpanse?.status === "reject"
+                            }
                             onClick={() =>
                               handleUpdateReview(
                                 myReview.id,
@@ -423,11 +464,11 @@ export function DailyAllowanceDetailsCard({
                                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
                                 Updating...
                               </>
-                            ) : (resultObj?.status == "reviewed" ? (
+                            ) : resultObj?.status == "reviewed" ? (
                               "Review Expense"
                             ) : (
                               "Approve Expense"
-                            ))}
+                            )}
                           </Button>
                         )
                       ) : (
@@ -456,16 +497,19 @@ export function DailyAllowanceDetailsCard({
                                   <Loader2 className="h-4 w-4 animate-spin mr-2" />
                                   Processing...
                                 </>
-                              ) : (resultObj?.status == "reviewed" ? (
+                              ) : resultObj?.status == "reviewed" ? (
                                 "Review Expense"
                               ) : (
                                 "Approve Expense"
-                              ))}
+                              )}
                             </Button>
                             <Button
                               variant="destructive"
                               disabled={
-                                (resultObj.isDisable || isProcessingReject) || (dailyExpanse?.status === "approved" || dailyExpanse?.status === "reject")
+                                resultObj.isDisable ||
+                                isProcessingReject ||
+                                dailyExpanse?.status === "approved" ||
+                                dailyExpanse?.status === "reject"
                               }
                               onClick={() =>
                                 handleReviewAction(

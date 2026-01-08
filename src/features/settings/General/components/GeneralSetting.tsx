@@ -31,6 +31,7 @@ import { CircleX } from "lucide-react";
 import { useDirtyTracker } from "../../store/use-unsaved-changes-store";
 import { IconAlertTriangle } from "@tabler/icons-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 interface GeneralApplicationSettingsProps {
   onDataChange?: (data: any) => void;
@@ -381,8 +382,22 @@ export default function GeneralApplicationSettings({
   // ✅ SYNC WITH GLOBAL STORE
   useDirtyTracker(isDirty);
 
+  const { showExitPrompt, confirmExit, cancelExit } =
+    useUnsavedChanges(isDirty);
+
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        open={showExitPrompt}
+        onOpenChange={cancelExit}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+        handleConfirm={confirmExit}
+      />
+
       <Card className="bg-white shadow-sm">
         <CardContent>
           {/* Personal Information Section */}
@@ -1198,13 +1213,19 @@ export default function GeneralApplicationSettings({
                   className="stroke-destructive mr-1 inline-block"
                   size={18}
                 />{" "}
-                <span>Warning: {allowAddUsersBasedOnTerritories ? "Disable": "Enable"} Territory-Based Users?</span>
+                <span>
+                  Warning:{" "}
+                  {allowAddUsersBasedOnTerritories ? "Disable" : "Enable"}{" "}
+                  Territory-Based Users?
+                </span>
               </span>
             }
             desc={
               <div className="space-y-4">
                 <p className="mb-2">
-                  If you will change the settings of Territories wise Users, it may cause issues in the existing Users Settings and its relevant functionalities.
+                  If you will change the settings of Territories wise Users, it
+                  may cause issues in the existing Users Settings and its
+                  relevant functionalities.
                 </p>
                 <Alert variant="destructive">
                   <AlertTitle>Warning!</AlertTitle>

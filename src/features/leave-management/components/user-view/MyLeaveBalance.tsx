@@ -260,20 +260,20 @@ export default function MyLeaveBalance() {
       {/* Top Stats */}
       <div className="grid gap-4 md:grid-cols-3">
         <TopStatsCard
-          title="Total Available"
-          value={`${stats?.totalAvailableLeaves || 0} days`}
-          description="Across all leave types"
+          title="Total Employee"
+          value={`${stats?.totalEmployee || 0}`}
+          description="Total Employee"
           icon={CalendarIcon}
         />
         <TopStatsCard
-          title="Leave Taken"
-          value={`${stats?.leaveTaken || 0} days`}
-          description="Used this year"
+          title="Employee On Leave"
+          value={`${stats?.emplyeeOnLeave || 0}`}
+          description="On Today"
           icon={CalendarIcon}
         />
         <TopStatsCard
           title="Pending Requests"
-          value={`${stats?.pendingRequests || 0} requests`}
+          value={`${stats?.pendingRequests || 0} Requests`}
           description="Awaiting approval"
           icon={CalendarIcon}
         />
