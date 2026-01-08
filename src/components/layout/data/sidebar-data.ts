@@ -146,7 +146,7 @@ export const sidebarData: SidebarData = {
             {
               title: "Expense Reports",
               url: "/reports",
-              menuKey: "reports",
+              menuKey: "expense_reports",
             },
             {
               title: "Custom Reports",

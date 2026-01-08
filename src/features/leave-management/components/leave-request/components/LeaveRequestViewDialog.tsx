@@ -30,6 +30,9 @@ import {
 import { FileDown } from "lucide-react";
 import { toast } from "sonner";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
+import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 
 interface Props {
   open: boolean;
@@ -68,7 +71,7 @@ export default function LeaveRequestViewDialog({
   currentRow,
 }: Props) {
   const [reason, setReason] = useState("");
-
+  const [showLocalWarning, setShowLocalWarning] = useState(false);
   const { mutate: createLeaveApproval, isPending } = useCreateLeaveApproval(
     () => {
       closeDialog();
@@ -104,8 +107,62 @@ export default function LeaveRequestViewDialog({
     setReason("");
   };
 
+  const handleDialogChange = (state: boolean) => {
+    if (state) {
+      return;
+    }
+    if (reason !== "") {
+      setShowLocalWarning(true);
+    } else {
+      actualClose();
+    }
+  };
+
+  const actualClose = () => {
+    setReason("");
+    onClose();
+  };
+
+  useDirtyTracker(reason !== "");
+
+  const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
+    reason !== ""
+  );
+
+  const isWarningOpen = showLocalWarning || showExitPrompt;
+
+  const handleCancelDiscard = (isOpen: boolean) => {
+    if (!isOpen) {
+      setShowLocalWarning(false);
+      if (showExitPrompt) cancelExit();
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    setReason("");
+    setShowLocalWarning(false);
+    actualClose();
+
+    if (showExitPrompt) {
+      setTimeout(() => {
+        confirmExit();
+      }, 0);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={handleDialogChange}>
+      <ConfirmDialog
+        open={isWarningOpen}
+        onOpenChange={handleCancelDiscard}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+        handleConfirm={handleConfirmDiscard}
+      />
+
       <DialogContent
         className="max-h-[80vh] !max-w-xl overflow-y-auto overflow-x-hidden"
         onPointerDownOutside={(e) => e.preventDefault()}

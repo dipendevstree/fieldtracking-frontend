@@ -4,7 +4,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/reports/")({
   component: () => (
-    <ProtectedRoute requiredPermission="reports">
+    <ProtectedRoute requiredPermission="expense_reports">
       <Reports />
     </ProtectedRoute>
   ),

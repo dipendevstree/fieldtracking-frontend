@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Detail } from "@/components/ui/detail";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useAuthStore } from "@/stores/use-auth-store";
 import {
   TravelLumpSum,
@@ -23,6 +23,9 @@ import {
   IconFile,
 } from "@tabler/icons-react";
 import { isImage } from "@/utils/commonFunction";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 export function ExpenseDetailsSideCard(
   props: TravelExpanseDetailsProps & {
@@ -46,6 +49,9 @@ export function ExpenseDetailsSideCard(
   const entries = isLumpSum ? travelLumpSums : travelRoutes;
   const { user: currentUser } = useAuthStore();
   const [comments, setComments] = useState<Record<string, string>>({});
+  const [initialComments, setInitialComments] = useState<
+    Record<string, string>
+  >({});
 
   const getFileIcon = (file: string) => {
     const ext = file.split(".").pop()?.toLowerCase();
@@ -97,6 +103,7 @@ export function ExpenseDetailsSideCard(
       });
 
       setComments(initialComments);
+      setInitialComments(initialComments);
     }
   }, [
     dailyExpanse?.expenseReviewAndApproval,
@@ -104,6 +111,17 @@ export function ExpenseDetailsSideCard(
     isLumpSum,
     currentUser?.id,
   ]);
+
+  const isDirty = useMemo(() => {
+    return Object.entries(comments).some(
+      ([key, value]) => value !== initialComments[key]
+    );
+  }, [comments, initialComments]);
+
+  useDirtyTracker(isDirty);
+
+  const { showExitPrompt, confirmExit, cancelExit } =
+    useUnsavedChanges(isDirty);
 
   const handleChangeComment = (id: string, value: string) => {
     setComments((prev) => ({ ...prev, [id]: value }));
@@ -243,6 +261,17 @@ export function ExpenseDetailsSideCard(
 
   return (
     <div className="space-y-4 pr-4">
+      <ConfirmDialog
+        open={showExitPrompt}
+        onOpenChange={cancelExit}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+        handleConfirm={confirmExit}
+      />
+
       {entries.map((item: any, idx) => {
         const id = isLumpSum
           ? (item as TravelLumpSum).travelLumpSumId
@@ -385,7 +414,14 @@ export function ExpenseDetailsSideCard(
                         className="bg-green-600 text-white hover:bg-green-700"
                         disabled={resultObj?.isDisable || isUpdatingApprove}
                         onClick={() =>
-                          handleUpdateReview(myReview.id, resultObj?.status as "approved" | "reviewed" | "rejected", id)
+                          handleUpdateReview(
+                            myReview.id,
+                            resultObj?.status as
+                              | "approved"
+                              | "reviewed"
+                              | "rejected",
+                            id
+                          )
                         }
                       >
                         {isUpdatingApprove ? (
@@ -393,12 +429,11 @@ export function ExpenseDetailsSideCard(
                             <Loader2 className="h-4 w-4 animate-spin mr-2" />
                             Processing...
                           </>
+                        ) : resultObj?.status == "reviewed" ? (
+                          "Review Expense"
                         ) : (
-                          resultObj?.status == "reviewed" ? (
-                        "Review Expense"
-                      ) : (
-                        "Approve Expense"
-                      ))}
+                          "Approve Expense"
+                        )}
                       </Button>
                       <Button
                         variant="destructive"
@@ -420,7 +455,12 @@ export function ExpenseDetailsSideCard(
                   ) : (
                     <Button
                       className="bg-green-600 text-white hover:bg-green-700 w-full"
-                      disabled={(resultObj?.isDisable || isUpdatingApprove) || (dailyExpanse?.status === "approved" || dailyExpanse?.status === "reject")}
+                      disabled={
+                        resultObj?.isDisable ||
+                        isUpdatingApprove ||
+                        dailyExpanse?.status === "approved" ||
+                        dailyExpanse?.status === "reject"
+                      }
                       onClick={() =>
                         handleUpdateReview(myReview.id, myReview.status, id)
                       }
@@ -430,11 +470,11 @@ export function ExpenseDetailsSideCard(
                           <Loader2 className="h-4 w-4 animate-spin mr-2" />
                           Updating...
                         </>
-                      ) : (resultObj?.status == "reviewed" ? (
+                      ) : resultObj?.status == "reviewed" ? (
                         "Review Expense"
                       ) : (
                         "Approve Expense"
-                      ))}
+                      )}
                     </Button>
                   )
                 ) : (
@@ -445,7 +485,11 @@ export function ExpenseDetailsSideCard(
                     <div className="grid w-full grid-cols-2 gap-2">
                       <Button
                         className="bg-green-600 text-white hover:bg-green-700"
-                        disabled={(resultObj?.isDisable || isProcessingApprove) || (dailyExpanse?.status === "approved")}
+                        disabled={
+                          resultObj?.isDisable ||
+                          isProcessingApprove ||
+                          dailyExpanse?.status === "approved"
+                        }
                         onClick={() =>
                           handleReviewAction(id, resultObj?.status)
                         }
@@ -455,15 +499,20 @@ export function ExpenseDetailsSideCard(
                             <Loader2 className="h-4 w-4 animate-spin mr-2" />
                             Processing...
                           </>
-                        ) : (resultObj?.status == "reviewed" ? (
+                        ) : resultObj?.status == "reviewed" ? (
                           "Review Expense"
                         ) : (
                           "Approve Expense"
-                        ))}
+                        )}
                       </Button>
                       <Button
                         variant="destructive"
-                        disabled={(resultObj?.isDisable || isProcessingReject) || (dailyExpanse?.status === "approved" || dailyExpanse?.status === "reject")}
+                        disabled={
+                          resultObj?.isDisable ||
+                          isProcessingReject ||
+                          dailyExpanse?.status === "approved" ||
+                          dailyExpanse?.status === "reject"
+                        }
                         onClick={() => handleReviewAction(id, "rejected")}
                       >
                         {isProcessingReject ? (
