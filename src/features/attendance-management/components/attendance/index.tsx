@@ -234,7 +234,7 @@ export default function MyAttendance() {
             </div>
           ) : (
             <PermissionGate
-              requiredPermission="my-attendance"
+              requiredPermission="my_attendance"
               action="add"
               fallback={
                 <AttendanceCalendarView
@@ -341,7 +341,7 @@ export default function MyAttendance() {
                         {isPending && (
                           <>
                             <PermissionGate
-                              requiredPermission="my-attendance"
+                              requiredPermission="my_attendance"
                               action="edit"
                             >
                               <CustomTooltip title="Edit Request">
@@ -359,7 +359,7 @@ export default function MyAttendance() {
                             </PermissionGate>
 
                             <PermissionGate
-                              requiredPermission="my-attendance"
+                              requiredPermission="my_attendance"
                               action="delete"
                             >
                               <CustomTooltip title="Cancel Request">
