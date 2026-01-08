@@ -24,6 +24,7 @@ import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
 import { format, subWeeks } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { Main } from "@/components/layout/main";
+import { formatName } from "@/utils/commonFunction";
 
 export interface FormData {
   salesRep: string;
@@ -238,7 +239,9 @@ export default function VisitReports() {
                         </h4>
                         <p className="rounded-md bg-green-50 p-3 text-sm">
                           {report.meetingOutcomes.length > 0
-                            ? (report.meetingOutcomes || []).join(", ")
+                            ? (report.meetingOutcomes || [])
+                                .map(formatName)
+                                .join(", ")
                             : "-"}
                         </p>
                       </div>
