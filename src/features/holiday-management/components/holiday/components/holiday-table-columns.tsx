@@ -29,26 +29,11 @@ export const holidayListColumns: ColumnDef<any>[] = [
   {
     accessorKey: "isSpecial",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title="Is Special" />
+      <CustomDataTableColumnHeader column={column} title="Special Holiday" />
     ),
     cell: ({ row }) => {
       const isSpecial = row.original.isSpecial;
       return isSpecial ? "Yes" : "No";
-    },
-    enableSorting: false,
-  },
-  {
-    accessorKey: "HolidayTemplates",
-    header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title="Holiday Templates" />
-    ),
-    cell: ({ row }) => {
-      const holidayTemplates = row.original.HolidayTemplates;
-      return holidayTemplates?.length > 0
-        ? holidayTemplates
-            ?.map((template: any) => template?.holidayTemplateName)
-            .join(", ")
-        : "No";
     },
     enableSorting: false,
   },

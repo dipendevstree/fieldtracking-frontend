@@ -14,7 +14,7 @@ interface DeleteDataOptions<TData, TVariables = void> {
   onSuccess?: (data: TData) => void;
   onError?: (error: EnhancedError) => void;
   mutationOptions?: UseMutationOptions<TData, Error, TVariables>;
-  skipToast?: boolean
+  skipToast?: boolean;
 }
 
 const useDeleteData = <TData = unknown, TVariables = void>({
@@ -35,7 +35,7 @@ const useDeleteData = <TData = unknown, TVariables = void>({
       });
 
       if (response?.statusCode === 200) {
-        if (!skipToast) 
+        if (!skipToast)
           toast.success(response.message || "Deleted successfully", {
             position: "top-center",
             duration: 2000,
@@ -63,11 +63,12 @@ const useDeleteData = <TData = unknown, TVariables = void>({
     },
     onError: (error: EnhancedError) => {
       const errorInfo = extractErrorInfo(error);
-      toast.error(errorInfo.title, {
-        description: errorInfo.description,
-        duration: errorInfo.duration,
-        position: "top-right",
-      });
+      if (!skipToast)
+        toast.error(errorInfo.title, {
+          description: errorInfo.description,
+          duration: errorInfo.duration,
+          position: "top-right",
+        });
 
       if (onError) {
         onError(error);

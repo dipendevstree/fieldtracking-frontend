@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { format } from "date-fns";
-import { Plus, CalendarIcon, Globe, Users } from "lucide-react";
+import { Plus, CalendarIcon, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeleteModal } from "@/components/shared/common-delete-modal";
@@ -112,7 +112,7 @@ export default function HolidayManagement() {
 
   return (
     <Main className="space-y-6 pb-10">
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3">
         {/* Total Templates Card */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -157,24 +157,6 @@ export default function HolidayManagement() {
               {holidayStats?.currentYearHolidayCount || 0}
             </div>
             <p className="text-xs text-muted-foreground">From total holidays</p>
-          </CardContent>
-        </Card>
-
-        {/* Total Regions Card (New) */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Holiday In Holiday Template
-            </CardTitle>
-            <Globe className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {holidayStats?.holidayInHolidayTemplateCount || 0}
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Distinct regions configured
-            </p>
           </CardContent>
         </Card>
       </div>

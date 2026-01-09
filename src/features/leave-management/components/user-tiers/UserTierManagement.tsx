@@ -315,6 +315,7 @@ export default function UserTierManagement() {
   };
 
   const handleClose = () => {
+    form.reset();
     setModalType(null);
     setEditingTierId(null);
     setTimeout(() => setSelectedRow(null), 300);
@@ -350,7 +351,7 @@ export default function UserTierManagement() {
     form.reset();
     setModalType(null);
   };
-
+  console.log("form.formState.isDirty", form.formState.isDirty);
   useDirtyTracker(form.formState.isDirty);
 
   const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
@@ -397,7 +398,7 @@ export default function UserTierManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats?.totalUserTiers || 0} tiers
+              {stats?.totalUserTiers || 0} Tiers
             </div>
             <p className="text-xs text-muted-foreground">
               Different categories configured

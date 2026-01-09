@@ -17,6 +17,7 @@ import LeaveTypeActionForm from "./leave-type-action-form";
 import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { toast } from "sonner";
 
 export function LeaveTypeActionModal() {
   const { open, setOpen, currentRow, setCurrentRow } = useLeaveTypeStore();
@@ -42,8 +43,24 @@ export function LeaveTypeActionModal() {
 
   const { mutate: deleteLeaveType } = useDeleteLeaveType(
     currentRow?.id || "",
-    () => {
+    (data) => {
+      toast.success(
+        data?.response?.data?.message || "Leave Type deleted successfully",
+        {
+          position: "top-center",
+          duration: 2000,
+        }
+      );
       closeModal();
+    },
+    (error) => {
+      toast.error(
+        error?.response?.data?.data?.message || "Failed to delete Leave Type",
+        {
+          duration: 2000,
+          position: "top-right",
+        }
+      );
     }
   );
   const form = useForm<z.infer<typeof LeaveTypeSchema>>({
