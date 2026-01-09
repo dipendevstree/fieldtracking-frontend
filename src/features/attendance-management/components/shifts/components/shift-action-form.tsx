@@ -108,7 +108,7 @@ export function ShiftActionForm<T>({
                 name="fullDayHours"
                 render={({ field }: any) => (
                   <FormItem>
-                    <FormLabel>Full Day Hours</FormLabel>
+                    <FormLabel> Working Hours</FormLabel>
                     <FormControl>
                       <Input
                         type="number"
