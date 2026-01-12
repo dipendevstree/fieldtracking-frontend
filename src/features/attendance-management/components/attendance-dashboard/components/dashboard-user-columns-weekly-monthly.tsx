@@ -18,12 +18,7 @@ export const dashboardUserColumnsWeeklyMonthly: ColumnDef<any>[] = [
               {fullName?.charAt(0)?.toUpperCase() || "?"}
             </AvatarFallback>
           </Avatar>
-          <div>
-            <div className="font-medium text-sm">{fullName}</div>
-            <div className="text-xs text-muted-foreground">
-              {row.original.email}
-            </div>
-          </div>
+          <div className="font-medium text-sm">{fullName}</div>
         </div>
       );
     },
