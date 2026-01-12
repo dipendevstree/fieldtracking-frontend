@@ -91,12 +91,15 @@ export default function AttendanceDashboard() {
     data: dashboardUsersWeeklyMonthly,
     totalCount: totalCountWeeklyMonthly,
     isLoading: isLoadingWeeklyMonthly,
-  } = useGetDashboardUsersWeeklyMonthly({
-    page: pagination.page,
-    limit: pagination.limit,
-    startDate: apiDateRange.startDate,
-    endDate: apiDateRange.endDate,
-  });
+  } = useGetDashboardUsersWeeklyMonthly(
+    {
+      page: pagination.page,
+      limit: pagination.limit,
+      startDate: apiDateRange.startDate,
+      endDate: apiDateRange.endDate,
+    },
+    { enabled: selectedView === "range" }
+  );
 
   // Get start and end dates of the current calendar month
   const calendarMonthStart = format(startOfMonth(currentDate), "yyyy-MM-dd");
