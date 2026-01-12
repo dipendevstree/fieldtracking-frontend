@@ -18,18 +18,18 @@ import {
   CommandList,
   // CommandSeparator,
 } from "@/components/ui/command";
-import {
-  SUPER_ADMIN_SIDEBAR_DATA,
-} from "./layout/data/sidebar-data";
+import { SUPER_ADMIN_SIDEBAR_DATA } from "./layout/data/sidebar-data";
 import { ScrollArea } from "./ui/scroll-area";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useRoleBasedNavigation } from "@/permissions/hooks/use-role-base-navigation";
+import { useViewType } from "@/context/view-type-context";
 
 export function CommandMenu() {
   const navigate = useNavigate();
   // const { setTheme } = useTheme()
   const { open, setOpen } = useSearch();
   const { user } = useAuthStore();
+  const { viewType } = useViewType();
 
   const runCommand = React.useCallback(
     (command: () => unknown) => {
@@ -41,6 +41,7 @@ export function CommandMenu() {
   const { sidebarData } = useRoleBasedNavigation(user?.role, {
     allowAddUsersBasedOnTerritories:
       user?.organization?.allowAddUsersBasedOnTerritories,
+    viewType,
   });
   const isSuperAdmin = user?.isSuperAdmin;
 

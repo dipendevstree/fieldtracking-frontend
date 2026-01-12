@@ -65,17 +65,17 @@ export function AuthenticatedLayout({
         if (event.data?.type === "navigate" && event.data.url) {
           // Focus the window and navigate internally
           window.focus();
-          navigate({ to: event.data.url});
+          navigate({ to: event.data.url });
         }
-      }
+      };
       navigator.serviceWorker.addEventListener("message", handler);
-      
+
       // Optional cleanup
       return () => {
         navigator.serviceWorker.removeEventListener("message", handler);
       };
     }
-  }, [navigate])
+  }, [navigate]);
 
   if (isLoading) {
     return (

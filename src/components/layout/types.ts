@@ -11,6 +11,7 @@ interface BaseNavItem {
   badge?: string;
   icon?: React.ElementType;
   menuKey?: string;
+  viewType?: ViewType | null;
 }
 
 type NavLink = BaseNavItem & {
@@ -229,6 +230,7 @@ export const AUTH_STORAGE_KEYS = {
   USER_DATA: "user_data",
   REFRESH_TOKEN: "refresh_token",
   TOKEN_EXPIRY: "token_expiry",
+  VIEW_TYPE_STORAGE_KEY: "view_type",
 } as const;
 
 // Permission checking results
@@ -323,3 +325,8 @@ export const defaultAuthState: Omit<AuthState, keyof AuthActions> = {
   getToken: () => null,
   isTokenValid: () => false,
 };
+
+export enum ViewType {
+  Admin = "Admin View",
+  Self = "Self View",
+}

@@ -10,7 +10,6 @@ import {
   CalendarDays,
   Plus,
   Loader2,
-  Globe,
 } from "lucide-react";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 

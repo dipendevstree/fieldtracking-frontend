@@ -351,7 +351,7 @@ export default function UserTierManagement() {
     form.reset();
     setModalType(null);
   };
-  console.log("form.formState.isDirty", form.formState.isDirty);
+
   useDirtyTracker(form.formState.isDirty);
 
   const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(

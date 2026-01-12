@@ -12,8 +12,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { Link } from "@tanstack/react-router";
-import { LoginUser } from "./layout/types";
+import { LoginUser, ViewType } from "./layout/types";
 import { getProfileName } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
+import { useViewType } from "@/context/view-type-context";
 
 interface MenuItem {
   label: string;
@@ -60,6 +62,7 @@ export function ProfileDropdown({
   avatarSize = "md",
 }: Readonly<ProfileDropdownProps>) {
   const { user, logout } = useAuthStore();
+  const { viewType, setViewType } = useViewType();
 
   const handleLogout = () => {
     logout();
@@ -67,6 +70,7 @@ export function ProfileDropdown({
 
   const avatarSizeClass = AVATAR_SIZES[avatarSize];
   const userName = getProfileName(user?.firstName || user?.userName || "");
+  const showViewTypeToggle = true;
 
   return (
     <DropdownMenu modal={false}>
@@ -108,6 +112,22 @@ export function ProfileDropdown({
             </div>
           </div>
         </DropdownMenuLabel>
+
+        {showViewTypeToggle && (
+          <>
+            <DropdownMenuSeparator />
+            {/* View Type Toggle */}
+            <div className="flex items-center justify-between p-2">
+              <div className="text-sm">Admin View</div>
+              <Switch
+                checked={viewType === ViewType.Admin}
+                onCheckedChange={(val) =>
+                  setViewType(val ? ViewType.Admin : ViewType.Self)
+                }
+              />
+            </div>
+          </>
+        )}
 
         {!user?.isSuperAdmin && menuItems.length > 0 && (
           <>
