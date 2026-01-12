@@ -129,25 +129,29 @@ export default function AttendanceDashboard() {
     return names[0].charAt(0).toUpperCase();
   };
 
-  const events: AttendanceEvent[] =
-    calendarData?.map((record: any) => {
-      // Map status from API to ATTENDANCE_STATUS enum
-      const getStatusFromRecord = (status: string) => {
-        switch (status?.toLowerCase()) {
-          case "present":
-            return ATTENDANCE_STATUS.PRESENT;
-          case "absent":
-            return ATTENDANCE_STATUS.LEAVE;
-          case "half_day":
-            return ATTENDANCE_STATUS.HALF_DAY;
-          case "late":
-            return ATTENDANCE_STATUS.LATE;
-          default:
-            return ATTENDANCE_STATUS.PRESENT;
-        }
-      };
+  const EXCEPTION_STATUSES = ["absent", "late", "half_day", "leave"] as const;
 
-      return {
+  const getStatusFromRecord = (status?: string): ATTENDANCE_STATUS => {
+    switch (status?.toLowerCase()) {
+      case "absent":
+        return ATTENDANCE_STATUS.ABSENT;
+      case "half_day":
+        return ATTENDANCE_STATUS.HALF_DAY;
+      case "late":
+        return ATTENDANCE_STATUS.LATE;
+      case "leave":
+        return ATTENDANCE_STATUS.LEAVE;
+      default:
+        return ATTENDANCE_STATUS.PRESENT;
+    }
+  };
+
+  const events: AttendanceEvent[] =
+    calendarData
+      ?.filter((r: any) =>
+        EXCEPTION_STATUSES.includes(r.status?.toLowerCase() as any)
+      )
+      .map((record: any) => ({
         id: record.attendanceId,
         title: generateInitials(record.username),
         start: new Date(record.date),
@@ -156,8 +160,7 @@ export default function AttendanceDashboard() {
           status: getStatusFromRecord(record.status),
           name: record.username,
         },
-      };
-    }) || [];
+      })) || [];
 
   return (
     <Main>
