@@ -65,6 +65,32 @@ export const useGetDashboardUsers = (
   };
 };
 
+export const useGetDashboardUsersWeeklyMonthly = (
+  params?: {
+    page?: number;
+    limit?: number;
+    startDate?: string;
+    endDate?: string;
+    departmentId?: string;
+    territoryId?: string;
+  },
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<any>({
+    url: API.attendance.dashboardUserWeeklyMonthly,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    data: query.data?.list,
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
 export const useGetDashboardCalendarData = (
   params?: any,
   options?: { enabled?: boolean }
