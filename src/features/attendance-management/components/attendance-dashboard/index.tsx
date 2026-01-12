@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AttendanceEvent,
   TeamAttendanceCalendar,
@@ -19,8 +20,15 @@ import {
   useGetDashboardUsers,
   useGetDashboardCalendarData,
   useGetDashboardStats,
+  useGetDashboardUsersWeeklyMonthly,
 } from "../../services/attendance-action.hook";
-import { format, startOfMonth, endOfMonth } from "date-fns";
+import {
+  format,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+} from "date-fns";
 import {
   ATTENDANCE_STATUS,
   DEFAULT_PAGE_NUMBER,
@@ -28,9 +36,13 @@ import {
 } from "@/data/app.data";
 import { FilterConfig } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
+import { DateRange } from "react-day-picker";
+
+type ViewType = "daily" | "range";
 
 export default function AttendanceDashboard() {
   const [currentDate, setCurrentDate] = useState(new Date()); // Today
+  const [selectedView, setSelectedView] = useState<ViewType>("daily");
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
@@ -38,6 +50,27 @@ export default function AttendanceDashboard() {
   const [filters, setFilters] = useState({
     date: format(new Date(), "yyyy-MM-dd"),
   });
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: startOfWeek(new Date(), { weekStartsOn: 1 }), // Monday
+    to: endOfWeek(new Date(), { weekStartsOn: 1 }), // Sunday
+  });
+
+  // Calculate date ranges based on selected view
+  const getApiDateRange = () => {
+    if (selectedView === "range" && dateRange?.from && dateRange?.to) {
+      return {
+        startDate: format(dateRange.from, "yyyy-MM-dd"),
+        endDate: format(dateRange.to, "yyyy-MM-dd"),
+      };
+    } else {
+      return {
+        startDate: filters.date,
+        endDate: filters.date,
+      };
+    }
+  };
+
+  const apiDateRange = getApiDateRange();
 
   const { stats } = useGetDashboardStats({
     startDate: filters.date,
@@ -52,6 +85,17 @@ export default function AttendanceDashboard() {
     page: pagination.page,
     limit: pagination.limit,
     date: filters.date,
+  });
+
+  const {
+    data: dashboardUsersWeeklyMonthly,
+    totalCount: totalCountWeeklyMonthly,
+    isLoading: isLoadingWeeklyMonthly,
+  } = useGetDashboardUsersWeeklyMonthly({
+    page: pagination.page,
+    limit: pagination.limit,
+    startDate: apiDateRange.startDate,
+    endDate: apiDateRange.endDate,
   });
 
   // Get start and end dates of the current calendar month
@@ -103,20 +147,51 @@ export default function AttendanceDashboard() {
     setPagination((prev) => ({ ...prev, page: DEFAULT_PAGE_NUMBER })); // Reset to first page
   };
 
+  const handleViewChange = (view: ViewType) => {
+    setSelectedView(view);
+    setPagination((prev) => ({ ...prev, page: DEFAULT_PAGE_NUMBER })); // Reset to first page
+
+    // Initialize date range for range view with current week
+    if (view === "range") {
+      setDateRange({
+        from: startOfWeek(new Date(), { weekStartsOn: 1 }), // Monday
+        to: endOfWeek(new Date(), { weekStartsOn: 1 }), // Sunday
+      });
+    }
+  };
+
+  const handleDateRangeChange = (newDateRange: DateRange | undefined) => {
+    setDateRange(newDateRange);
+    setPagination((prev) => ({ ...prev, page: DEFAULT_PAGE_NUMBER })); // Reset to first page
+  };
+
   const onPaginationChange = (page: number, pageSize: number) => {
     setPagination({ page, limit: pageSize });
   };
 
   const filtersConfig: FilterConfig[] = [
-    {
-      key: "date",
-      type: "date",
-      placeholder: "Select Date",
-      value: filters.date,
-      onChange: handleDateChange,
-      disableFutureDates: true,
-    },
+    selectedView === "daily"
+      ? {
+          key: "date",
+          type: "date" as const,
+          placeholder: "Select Date",
+          value: filters.date,
+          onChange: handleDateChange,
+          disableFutureDates: true,
+        }
+      : {
+          key: "dateRange",
+          type: "date-range" as const,
+          placeholder: "Select Date Range",
+          dateRangeValue: dateRange,
+          onDateRangeChange: handleDateRangeChange,
+          disableFutureDates: true,
+        },
   ];
+
+  useEffect(() => {
+    setSelectedView("daily");
+  }, [filters]);
 
   // Helper function to generate initials from full name
   const generateInitials = (fullName: string) => {
@@ -243,6 +318,21 @@ export default function AttendanceDashboard() {
         </CardContent>
       </Card>
 
+      {/* View Selector */}
+      <Card className="shadow-sm border-slate-200 bg-white mb-6">
+        <CardContent>
+          <Tabs
+            value={selectedView}
+            onValueChange={(value) => handleViewChange(value as ViewType)}
+          >
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="daily">Daily View</TabsTrigger>
+              <TabsTrigger value="range">Range View</TabsTrigger>
+            </TabsList>
+          </Tabs>
+        </CardContent>
+      </Card>
+
       {/* Dashboard Users Table */}
       <Card className="shadow-sm border-slate-200 bg-white">
         <CardHeader>
@@ -254,16 +344,24 @@ export default function AttendanceDashboard() {
           <GlobalFilterSection
             key="dashboard-users-filters"
             filters={filtersConfig}
-            className="mb-4"
           />
 
           <DashboardUserTable
-            data={dashboardUsers || []}
-            totalCount={totalCount}
-            loading={isLoading}
+            data={
+              selectedView === "daily"
+                ? dashboardUsers || []
+                : dashboardUsersWeeklyMonthly || []
+            }
+            totalCount={
+              selectedView === "daily" ? totalCount : totalCountWeeklyMonthly
+            }
+            loading={
+              selectedView === "daily" ? isLoading : isLoadingWeeklyMonthly
+            }
             currentPage={pagination.page}
             paginationCallbacks={{ onPaginationChange }}
             defaultPageSize={pagination.limit}
+            viewType={selectedView === "range" ? "range" : "daily"}
           />
         </CardContent>
       </Card>

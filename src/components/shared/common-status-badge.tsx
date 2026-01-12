@@ -179,6 +179,21 @@ export const statusColors: Record<
     bg: "bg-slate-100",
     dot: "bg-slate-400",
   },
+  under: {
+    text: "text-red-600",
+    bg: "bg-red-100",
+    dot: "bg-red-500",
+  },
+  over: {
+    text: "text-green-600",
+    bg: "bg-green-100",
+    dot: "bg-green-500",
+  },
+  normal: {
+    text: "text-green-600",
+    bg: "bg-green-100",
+    dot: "bg-green-500",
+  },
 };
 
 function formatStatusTitle(status: string): string {
