@@ -12,7 +12,7 @@ import {
   CalendarDays,
   Users,
 } from "lucide-react";
-import { type SidebarData } from "../types";
+import { ViewType, type SidebarData } from "../types";
 
 export const sidebarData: SidebarData = {
   user: {
@@ -169,6 +169,7 @@ export const sidebarData: SidebarData = {
               title: "Dashboard",
               url: "/leave-management/dashboard",
               menuKey: "leave_management_dashboard",
+              viewType: ViewType.Admin,
             },
             {
               title: "User Tiers",
@@ -206,11 +207,13 @@ export const sidebarData: SidebarData = {
               title: "Attendance Dashboard",
               url: "/attendance-management/attendance-dashboard",
               menuKey: "attendance_dashboard",
+              viewType: ViewType.Admin,
             },
             {
               title: "My Attendance",
               url: "/attendance-management/my-attendance",
               menuKey: "my_attendance",
+              viewType: ViewType.Self,
             },
             {
               title: "Attendace Rules",

@@ -13,7 +13,7 @@ export const HolidaySchema = z.object({
 export const HolidayTemplateSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, "Template name is required"),
-  territoryId: z.string().optional(),
+  territoryId: z.any().optional(),
   description: z.string().optional(),
   specialHolidayIds: z.array(z.string()).default([]),
   userIds: z.array(z.string()).optional(),

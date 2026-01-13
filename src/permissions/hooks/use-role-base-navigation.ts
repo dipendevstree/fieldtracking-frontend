@@ -2,10 +2,11 @@ import { useMemo } from "react";
 import { sidebarData as fullSidebarData } from "@/components/layout/data/sidebar-data";
 import { filterSidebarByPermissions } from "../utils/sidebar-filter";
 import { usePermission } from "./use-permission";
+import { ViewType } from "@/components/layout/types";
 
 export function useRoleBasedNavigation(
   backendPermissions: any,
-  options?: { allowAddUsersBasedOnTerritories?: boolean }
+  options?: { allowAddUsersBasedOnTerritories?: boolean; viewType?: ViewType }
 ) {
   const { hasAccess, canPerformAction, isAuthenticated, user } =
     usePermission();
@@ -19,7 +20,8 @@ export function useRoleBasedNavigation(
       fullSidebarData,
       hasAccess,
       backendPermissions?.permissions,
-      user
+      user,
+      options?.viewType || null
     );
 
     // ✅ Extra filtering based on org settings flags
@@ -43,7 +45,7 @@ export function useRoleBasedNavigation(
     }
 
     return filteredSidebar;
-  }, [hasAccess, isAuthenticated, backendPermissions]);
+  }, [hasAccess, isAuthenticated, backendPermissions, options?.viewType]);
 
   return {
     sidebarData,

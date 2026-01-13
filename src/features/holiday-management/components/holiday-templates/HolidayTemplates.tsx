@@ -10,7 +10,6 @@ import {
   CalendarDays,
   Plus,
   Loader2,
-  Globe,
 } from "lucide-react";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 
@@ -190,6 +189,7 @@ export default function HolidayCalendarTemplates() {
   };
 
   const handleClose = () => {
+    form.reset();
     setModalType(null);
     setEditingTemplateId(null);
     setTimeout(() => setSelectedRow(null), 300);
@@ -223,6 +223,7 @@ export default function HolidayCalendarTemplates() {
 
   const handleDialogChange = (state: boolean) => {
     if (state) {
+      setModalType(modalType === "edit" ? "edit" : "add");
       return;
     }
     if (form.formState.isDirty) {
@@ -275,7 +276,7 @@ export default function HolidayCalendarTemplates() {
 
   return (
     <Main className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-2">
         {/* Total Templates Card */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -306,20 +307,6 @@ export default function HolidayCalendarTemplates() {
             <div className="text-2xl font-bold">{stats?.totalUsers || 0}</div>
             <p className="text-xs text-muted-foreground">
               Using custom calendars
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Total Regions Card (New) */}
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Regions</CardTitle>
-            <Globe className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats?.totalRegions || 0}</div>
-            <p className="text-xs text-muted-foreground">
-              Distinct regions configured
             </p>
           </CardContent>
         </Card>
@@ -586,7 +573,11 @@ export default function HolidayCalendarTemplates() {
                 </div>
 
                 <DialogFooter>
-                  <Button variant="outline" type="button" onClick={handleClose}>
+                  <Button
+                    variant="outline"
+                    type="button"
+                    onClick={() => handleDialogChange(false)}
+                  >
                     Cancel
                   </Button>
                   <Button type="submit" disabled={isSaving}>

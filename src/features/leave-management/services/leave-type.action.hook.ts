@@ -32,13 +32,23 @@ export const useUpdateLeaveType = (id: string, onSuccess?: () => void) => {
   });
 };
 
-export const useDeleteLeaveType = (id: string, onSuccess?: () => void) => {
+export const useDeleteLeaveType = (
+  id: string,
+  onSuccess?: (data: any) => void,
+  onError?: (error: any) => void
+) => {
   return useDeleteData({
     url: `${API.leaveType.delete}/${id}`,
     refetchQueries: [LEAVE_TYPE_QUERY, LEAVE_TYPE_STATS_QUERY],
-    onSuccess: () => {
+    skipToast: true,
+    onSuccess: (data) => {
       if (onSuccess) {
-        onSuccess();
+        onSuccess(data);
+      }
+    },
+    onError: (error) => {
+      if (onError) {
+        onError(error);
       }
     },
   });

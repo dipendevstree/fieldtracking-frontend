@@ -11,13 +11,15 @@ import { NavGroup } from "@/components/layout/nav-group";
 import { NavUser } from "@/components/layout/nav-user";
 import { TeamSwitcher } from "@/components/layout/team-switcher";
 import { SUPER_ADMIN_SIDEBAR_DATA } from "./data/sidebar-data";
+import { useViewType } from "@/context/view-type-context";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuthStore();
-
+  const { viewType } = useViewType();
   const { sidebarData } = useRoleBasedNavigation(user?.role, {
     allowAddUsersBasedOnTerritories:
       user?.organization?.allowAddUsersBasedOnTerritories,
+    viewType,
   });
   const isSuperAdmin = user?.isSuperAdmin;
   const SIDEBAR_DATA = isSuperAdmin ? SUPER_ADMIN_SIDEBAR_DATA : sidebarData;

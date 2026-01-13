@@ -49,8 +49,8 @@ import { UserTierFormValues, UserTierSchema } from "../../data/schema";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 import { useGetAllTiers } from "@/features/settings/Approvers/services/approvers.hook";
-import { useGetAllUsers } from "@/features/UserManagement/services/AllUsers.hook";
-import MultiSelect from "@/components/ui/MultiSelect";
+// import { useGetAllUsers } from "@/features/UserManagement/services/AllUsers.hook";
+// import MultiSelect from "@/components/ui/MultiSelect";
 import { Main } from "@/components/layout/main";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
@@ -235,22 +235,22 @@ export default function UserTierManagement() {
   });
 
   // Fetch users for the currently selected tier in the form
-  const watchedTier = form.watch("tierName");
-  const { data: allUsers = [], isLoading: isLoadingUsers } = useGetAllUsers(
-    {
-      tierkey: watchedTier,
-    },
-    { enabled: !!watchedTier || modalType === "edit" }
-  );
+  // const watchedTier = form.watch("tierName");
+  // const { data: allUsers = [], isLoading: isLoadingUsers } = useGetAllUsers(
+  //   {
+  //     tierkey: watchedTier,
+  //   },
+  //   { enabled: !!watchedTier || modalType === "edit" }
+  // );
 
   // Transform Users for MultiSelect
-  const userOptions = useMemo(() => {
-    if (!allUsers) return [];
-    return allUsers.map((user: any) => ({
-      value: user.id,
-      label: `${user.firstName} ${user.lastName}`,
-    }));
-  }, [allUsers]);
+  // const userOptions = useMemo(() => {
+  //   if (!allUsers) return [];
+  //   return allUsers.map((user: any) => ({
+  //     value: user.id,
+  //     label: `${user.firstName} ${user.lastName}`,
+  //   }));
+  // }, [allUsers]);
 
   // --- NEW: Populate form when Single Tier Data loads ---
   useEffect(() => {
@@ -315,6 +315,7 @@ export default function UserTierManagement() {
   };
 
   const handleClose = () => {
+    form.reset();
     setModalType(null);
     setEditingTierId(null);
     setTimeout(() => setSelectedRow(null), 300);
@@ -397,7 +398,7 @@ export default function UserTierManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {stats?.totalUserTiers || 0} tiers
+              {stats?.totalUserTiers || 0} Tiers
             </div>
             <p className="text-xs text-muted-foreground">
               Different categories configured
@@ -523,7 +524,7 @@ export default function UserTierManagement() {
                   )}
                 />
 
-                <div className="space-y-2">
+                {/* <div className="space-y-2">
                   <FormField
                     control={form.control}
                     name="userIds"
@@ -553,7 +554,7 @@ export default function UserTierManagement() {
                       </FormItem>
                     )}
                   />
-                </div>
+                </div> */}
 
                 <div className="space-y-4">
                   <FormLabel>Leave Allocations</FormLabel>

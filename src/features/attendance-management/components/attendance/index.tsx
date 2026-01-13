@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { endOfMonth, format, parseISO, startOfMonth } from "date-fns";
 import { Loader2, ArrowRight } from "lucide-react";
 import { IconEdit, IconX } from "@tabler/icons-react";
@@ -29,6 +29,9 @@ import {
   useGetMyAttendanceCorrections,
 } from "../../services/attendance-correction-action.hook";
 import { toast } from "sonner";
+import { useNavigate } from "@tanstack/react-router";
+import { useViewType } from "@/context/view-type-context";
+import { ViewType } from "@/components/layout/types";
 
 // --- HELPERS (Keep existing helpers) ---
 const formatStatus = (status: string) => {
@@ -69,6 +72,16 @@ const getRequestStatusStyles = (status: string) => {
 };
 
 export default function MyAttendance() {
+  const navigate = useNavigate();
+  // view type context
+  const { viewType } = useViewType();
+  useEffect(() => {
+    if (viewType === ViewType.Admin) {
+      navigate({ to: "/attendance-management/attendance-dashboard" });
+      return;
+    }
+  }, [viewType]);
+
   const [viewDate, setViewDate] = useState(new Date());
   const [isCorrectionDialogOpen, setIsCorrectionDialogOpen] = useState(false);
   const [selectedAttendance, setSelectedAttendance] = useState<any | null>(
