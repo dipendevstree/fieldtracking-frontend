@@ -55,7 +55,7 @@ export const dashboardUserColumnsWeeklyMonthly: ColumnDef<any>[] = [
       const shiftTotalHours = row.original.shiftTotalHours;
       return (
         <div className="text-sm font-medium">
-          {shiftTotalHours ? `${shiftTotalHours} hrs` : "-"}
+          {shiftTotalHours ? `${shiftTotalHours} hrs` : "0.00 hrs"}
         </div>
       );
     },

@@ -109,6 +109,7 @@ export default function AttendanceDashboard() {
     data: calendarData,
     holidays,
     weekOffDays,
+    leaves,
   } = useGetDashboardCalendarData({
     startDate: calendarMonthStart,
     endDate: calendarMonthEnd,
@@ -224,7 +225,8 @@ export default function AttendanceDashboard() {
     }
   };
 
-  const events: AttendanceEvent[] =
+  // Create attendance events
+  const attendanceEvents: AttendanceEvent[] =
     calendarData
       ?.filter((r: any) =>
         EXCEPTION_STATUSES.includes(r.status?.toLowerCase() as any)
@@ -239,6 +241,23 @@ export default function AttendanceDashboard() {
           name: record.username,
         },
       })) || [];
+
+  // Create leave events
+  const leaveEvents: AttendanceEvent[] =
+    leaves?.map((leave: any) => ({
+      id: leave.leaveId,
+      title: generateInitials(leave.username),
+      start: new Date(leave.date),
+      end: new Date(leave.date),
+      resource: {
+        status: ATTENDANCE_STATUS.LEAVE,
+        name: leave.username,
+        leaveType: leave.leaveType,
+        halfDay: leave.halfDay,
+      },
+    })) || [];
+
+  const events: AttendanceEvent[] = [...attendanceEvents, ...leaveEvents];
 
   return (
     <Main>

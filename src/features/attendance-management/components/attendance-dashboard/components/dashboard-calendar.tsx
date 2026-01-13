@@ -32,6 +32,8 @@ export interface AttendanceEvent {
   resource: {
     status: ATTENDANCE_STATUS;
     name: string;
+    leaveType?: string; // For leave events
+    halfDay?: boolean; // For leave events
   };
 }
 
@@ -64,7 +66,7 @@ const getStatusStyles = (status: ATTENDANCE_STATUS) => {
     // case ATTENDANCE_STATUS.WFH:
     //   return "bg-purple-500 text-white";
     case ATTENDANCE_STATUS.LEAVE:
-      return "bg-red-500 text-white"; // Changed to match legend "absent" color
+      return "bg-orange-500 text-white"; // Match legend "leave" color
     case ATTENDANCE_STATUS.HOLIDAY:
       return "bg-slate-300 text-white"; // Changed to match legend "week off / holiday" color
     case ATTENDANCE_STATUS.WEEK_OFF:
@@ -394,6 +396,12 @@ export function TeamAttendanceCalendar({
                     </div>
                     <div className="text-xs text-gray-600 capitalize font-medium">
                       {event.resource.status.toLowerCase().replace("_", " ")}
+                      {event.resource.leaveType && (
+                        <span className="ml-1 text-gray-500">
+                          - {event.resource.leaveType}
+                          {event.resource.halfDay && " (Half Day)"}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
