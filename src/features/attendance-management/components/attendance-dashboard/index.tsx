@@ -122,6 +122,7 @@ export default function AttendanceDashboard() {
     data: calendarData,
     holidays,
     weekOffDays,
+    leaves,
   } = useGetDashboardCalendarData({
     startDate: calendarMonthStart,
     endDate: calendarMonthEnd,
@@ -237,7 +238,8 @@ export default function AttendanceDashboard() {
     }
   };
 
-  const events: AttendanceEvent[] =
+  // Create attendance events
+  const attendanceEvents: AttendanceEvent[] =
     calendarData
       ?.filter((r: any) =>
         EXCEPTION_STATUSES.includes(r.status?.toLowerCase() as any)
@@ -253,31 +255,51 @@ export default function AttendanceDashboard() {
         },
       })) || [];
 
+  // Create leave events
+  const leaveEvents: AttendanceEvent[] =
+    leaves?.map((leave: any) => ({
+      id: leave.leaveId,
+      title: generateInitials(leave.username),
+      start: new Date(leave.date),
+      end: new Date(leave.date),
+      resource: {
+        status: ATTENDANCE_STATUS.LEAVE,
+        name: leave.username,
+        leaveType: leave.leaveType,
+        halfDay: leave.halfDay,
+      },
+    })) || [];
+
+  const events: AttendanceEvent[] = [...attendanceEvents, ...leaveEvents];
+
   return (
     <Main>
       <div className="grid gap-4 md:grid-cols-4 mb-6">
-        {/* 1. Total Employees */}
+        {/* 1. Total Employees*/}
         <TopStatsCard
           title="Total Users"
           value={stats?.totalUsers || 0}
           description="Registered users"
           icon={Users}
+          themeColor="purple"
         />
 
-        {/* 2. Present */}
+        {/* 2. Present Today */}
         <TopStatsCard
           title="Present Today"
           value={stats?.present || 0}
           description="Checked in successfully"
           icon={UserCheck}
+          themeColor="green"
         />
 
-        {/* 3. Absent */}
+        {/* 3. Absent*/}
         <TopStatsCard
           title="Absent"
           value={stats?.absent || 0}
           description="Not checked in"
           icon={UserX}
+          themeColor="red"
         />
 
         {/* 4. Not Started */}
@@ -286,6 +308,7 @@ export default function AttendanceDashboard() {
           value={stats?.notStarted || 0}
           description="Not checked in"
           icon={UserX}
+          themeColor="purple"
         />
 
         {/* 5. Half Day */}
@@ -294,6 +317,7 @@ export default function AttendanceDashboard() {
           value={stats?.halfDay || 0}
           description="Checked in successfully"
           icon={UserCheck}
+          themeColor="blue"
         />
 
         {/* 6. Late Arrivals */}
@@ -302,22 +326,25 @@ export default function AttendanceDashboard() {
           value={stats?.late || 0}
           description="Checked in after start time"
           icon={Clock}
+          themeColor="yellow"
         />
 
-        {/* 7. Early Exits */}
+        {/* 7. Early Exits  */}
         <TopStatsCard
           title="Early Exits"
           value={stats?.earlyExit || 0}
           description="Left before shift end"
           icon={LogOut}
+          themeColor="orange"
         />
 
-        {/* 8. On Leave */}
+        {/* 8. On Leave  */}
         <TopStatsCard
           title="On Leave"
           value={stats?.onLeave || 0}
           description="Approved leave today"
           icon={CalendarOff}
+          themeColor="orange"
         />
       </div>
 

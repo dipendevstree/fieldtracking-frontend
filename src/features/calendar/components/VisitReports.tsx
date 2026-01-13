@@ -63,10 +63,23 @@ export default function VisitReports() {
       cancelled: "bg-red-100 text-red-800",
       completed: "bg-blue-100 text-blue-800",
       "in-progress": "bg-purple-100 text-purple-800",
+      partial_completed: "bg-orange-100 text-orange-800",
     };
     return (
       variants[status as keyof typeof variants] || "bg-gray-100 text-gray-800"
     );
+  };
+
+  const getStatusDisplayText = (status: string) => {
+    const displayTexts: Record<string, string> = {
+      partial_completed: "Partial Completed",
+      confirmed: "Confirmed",
+      pending: "Pending",
+      cancelled: "Cancelled",
+      completed: "Completed",
+      "in-progress": "In-progress",
+    };
+    return displayTexts[status] || status;
   };
 
   const { data: userList = [] } = useGetUsersForDropdown({
@@ -228,7 +241,7 @@ export default function VisitReports() {
                           ))}
                         </div>
                         <Badge className={getStatusBadge(report.status)}>
-                          {report.status}
+                          {getStatusDisplayText(report.status)}
                         </Badge>
                       </div>
                     </div>

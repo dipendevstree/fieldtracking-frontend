@@ -106,6 +106,7 @@ export const useGetDashboardCalendarData = (
     data: query.data?.attendanceData,
     holidays: query.data?.holidays || [],
     weekOffDays: query.data?.weekOffDays || [],
+    leaves: query.data?.leaves || [],
     isLoading: query.isLoading,
     error: query.error,
   };
