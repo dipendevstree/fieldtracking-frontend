@@ -7,6 +7,7 @@ interface Props {
   pagination: {
     page: number;
     limit: number;
+    selfView?: boolean;
   };
   onPaginationChange: (page: number, pageSize: number) => void;
   dashboardView?: boolean;

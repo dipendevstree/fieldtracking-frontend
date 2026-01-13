@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   format,
   addDays,
@@ -50,9 +50,16 @@ import StatusBadge, {
 import { Main } from "@/components/layout/main";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import LeaveRequest from "../leave-request/LeaveRequest";
+import { useViewType } from "@/context/view-type-context";
+import { ViewType } from "@/components/layout/types";
+import { useNavigate } from "@tanstack/react-router";
 
 // --- LOGIC HELPER ---
-const getEventStatusKey = (isHoliday: boolean, text: string, date: Date) => {
+export const getEventStatusKey = (
+  isHoliday: boolean,
+  text: string,
+  date: Date
+) => {
   const lowerText = text?.toLowerCase() || "";
 
   if (!isHoliday) {
@@ -73,6 +80,16 @@ const getEventStatusKey = (isHoliday: boolean, text: string, date: Date) => {
 
 // --- MAIN COMPONENT ---
 export default function MyLeaveBalance() {
+  const navigate = useNavigate();
+  const { viewType } = useViewType();
+
+  useEffect(() => {
+    if (viewType === ViewType.Self) {
+      navigate({ to: "/leave-management/my-leave" });
+      return;
+    }
+  }, [viewType]);
+
   const [calendarMode, setCalendarMode] = useState<"holiday" | "leave">(
     "holiday"
   );
