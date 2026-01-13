@@ -59,6 +59,8 @@ const getStatusStyles = (status: ATTENDANCE_STATUS) => {
       return "bg-yellow-500 text-white";
     case ATTENDANCE_STATUS.HALF_DAY:
       return "bg-blue-500 text-white";
+    case ATTENDANCE_STATUS.ABSENT:
+      return "bg-red-500 text-white";
     // case ATTENDANCE_STATUS.WFH:
     //   return "bg-purple-500 text-white";
     case ATTENDANCE_STATUS.LEAVE:

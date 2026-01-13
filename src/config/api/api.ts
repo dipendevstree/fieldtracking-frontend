@@ -308,6 +308,7 @@ const API = {
     myAttendance: "attendance/my-calendar",
     dashboardStats: "attendance/dashboard/live",
     dashboardUser: "attendance/dashboard/users",
+    dashboardUserWeeklyMonthly: "attendance/dashboard/users/range",
     dashboardCalendar: "attendance/dashboard/calendar",
   },
   attendanceCorrection: {
