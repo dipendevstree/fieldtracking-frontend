@@ -245,8 +245,21 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
       Cancelled: "bg-red-100 text-red-800",
       Completed: "bg-blue-100 text-blue-800",
       "In-progress": "bg-purple-100 text-purple-800",
+      Partial_completed: "bg-orange-100 text-orange-800",
     };
     return variants[status] || "bg-gray-100 text-gray-800";
+  };
+
+  const getStatusDisplayText = (status: string) => {
+    const displayTexts: Record<string, string> = {
+      Partial_completed: "Partial Completed",
+      Confirmed: "Confirmed",
+      Pending: "Pending",
+      Cancelled: "Cancelled",
+      Completed: "Completed",
+      "In-progress": "In-progress",
+    };
+    return displayTexts[status] || status;
   };
 
   const getPriorityBadge = (priority: string) => {
@@ -1160,7 +1173,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                             {visit.priority}
                           </Badge>
                           <Badge className={getStatusBadge(visit.status)}>
-                            {visit.status}
+                            {getStatusDisplayText(visit.status)}
                           </Badge>
                         </div>
                         <p className="text-muted-foreground text-sm">
