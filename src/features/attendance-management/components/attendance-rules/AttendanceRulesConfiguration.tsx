@@ -101,6 +101,7 @@ export default function AttendanceRulesConfiguration() {
       leaveDeductionCount: 0,
       weekOffDays: [0], // Default to Sunday
       latemarkApplicableTiers: [],
+      enableHoursBasedDeduction: false,
       frequency: undefined,
     },
   });
@@ -118,6 +119,7 @@ export default function AttendanceRulesConfiguration() {
           typeof day === "string" ? parseInt(day, 10) : day
         ),
         latemarkApplicableTiers: rulesData.latemarkApplicableTiers ?? [],
+        enableHoursBasedDeduction: rulesData.enableHoursBasedDeduction ?? false,
         frequency: rulesData.frequency,
       });
     }
@@ -183,11 +185,20 @@ export default function AttendanceRulesConfiguration() {
         <SummaryCard
           title="Late Mark Policy"
           enabled={
-            (form.watch("enableLateMarkRule") ?? true) &&
+            !!form.watch("enableLateMarkRule") &&
             (form.watch("latemarkApplicableTiers")?.length ?? 0) > 0 &&
             !!form.watch("frequency")
           }
           desc="Late attendance tracking"
+        />
+        <SummaryCard
+          title="Hours Based Flow"
+          enabled={
+            !!form.watch("enableHoursBasedDeduction") &&
+            (form.watch("latemarkApplicableTiers")?.length ?? 0) > 0 &&
+            !!form.watch("frequency")
+          }
+          desc="Deduction by work hours"
         />
         <SummaryCard
           title="Leave Deduction"
@@ -370,8 +381,13 @@ export default function AttendanceRulesConfiguration() {
                       )}
                       <FormControl>
                         <Switch
-                          checked={field.value ?? true}
-                          onCheckedChange={field.onChange}
+                          checked={field.value ?? false}
+                          onCheckedChange={(checked) => {
+                            field.onChange(checked);
+                            if (checked) {
+                              form.setValue("enableHoursBasedDeduction", false);
+                            }
+                          }}
                           disabled={!canEdit}
                         />
                       </FormControl>
@@ -381,9 +397,9 @@ export default function AttendanceRulesConfiguration() {
               </div>
             </CardHeader>
 
-            {(form.watch("enableLateMarkRule") ?? true) && (
+            {form.watch("enableLateMarkRule") && (
               <CardContent className="space-y-6 animate-in slide-in-from-top-2 duration-200">
-                {/* Applicable Tiers and Frequency */}
+                {/* Configuration Tiers and Frequency */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <FormField
                     control={form.control}
@@ -433,7 +449,6 @@ export default function AttendanceRulesConfiguration() {
                   )}
                 </div>
 
-                {/* Late Mark Threshold and Leave Deduction - enabled only when applicableTiers and frequency are set */}
                 {(form.watch("latemarkApplicableTiers")?.length ?? 0) > 0 &&
                   !!form.watch("frequency") && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-top-2 duration-200">
@@ -458,11 +473,6 @@ export default function AttendanceRulesConfiguration() {
                             <FormDescription>
                               Number of late marks before leave deduction
                             </FormDescription>
-                            {form.formState.errors.lateMarkLimit && (
-                              <p className="text-sm text-red-600">
-                                {form.formState.errors.lateMarkLimit.message}
-                              </p>
-                            )}
                           </FormItem>
                         )}
                       />
@@ -478,10 +488,7 @@ export default function AttendanceRulesConfiguration() {
                                 <Input
                                   type="number"
                                   {...field}
-                                  disabled={
-                                    Number(form.watch("lateMarkLimit")) < 1 ||
-                                    !canEdit
-                                  }
+                                  disabled={!canEdit}
                                 />
                               </FormControl>
                               <span className="text-sm text-muted-foreground w-12">
@@ -491,32 +498,168 @@ export default function AttendanceRulesConfiguration() {
                             <FormDescription>
                               Days to deduct from leave balance
                             </FormDescription>
-                            {form.formState.errors.leaveDeductionCount && (
-                              <p className="text-sm text-red-600">
-                                {
-                                  form.formState.errors.leaveDeductionCount
-                                    .message
-                                }
-                              </p>
-                            )}
                           </FormItem>
                         )}
                       />
+
+                      {/* Example Box */}
+                      <div className="col-span-full bg-slate-50 border rounded-md p-4 text-sm text-slate-700">
+                        <span className="font-semibold block mb-1">
+                          Example:
+                        </span>
+                        After {form.watch("lateMarkLimit") || "3"} late marks in
+                        a {form.watch("frequency") || "month"}, the system will
+                        automatically deduct{" "}
+                        {form.watch("leaveDeductionCount") || "1"} day(s) from
+                        the user's leave balance.
+                      </div>
                     </div>
                   )}
-
-                {/* Example Box */}
-                <div className="bg-slate-50 border rounded-md p-4 text-sm text-slate-700">
-                  <span className="font-semibold block mb-1">Example:</span>
-                  Configure applicable tiers and frequency to enable late mark
-                  policy. After 3 late marks in a month, the system will
-                  automatically deduct 1 day from the user's leave balance.
-                </div>
               </CardContent>
             )}
           </Card>
 
-          {/* 4. Week Off Days */}
+          {/* 4. Hours Based Flow */}
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <CardTitle className="text-base">
+                      Hours Based Flow
+                    </CardTitle>
+                    <CardDescription>
+                      Enable leave deduction based on total working hours
+                    </CardDescription>
+                  </div>
+                </div>
+                <FormField
+                  control={form.control}
+                  name="enableHoursBasedDeduction"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2 space-y-0">
+                      {field.value && (
+                        <Badge className="bg-green-600 hover:bg-green-700">
+                          Enabled
+                        </Badge>
+                      )}
+                      <FormControl>
+                        <Switch
+                          checked={field.value ?? false}
+                          onCheckedChange={(checked) => {
+                            field.onChange(checked);
+                            if (checked) {
+                              form.setValue("enableLateMarkRule", false);
+                            }
+                          }}
+                          disabled={!canEdit}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardHeader>
+
+            {form.watch("enableHoursBasedDeduction") && (
+              <CardContent className="space-y-6 animate-in slide-in-from-top-2 duration-200">
+                {/* Configuration Tiers and Frequency */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <FormField
+                    control={form.control}
+                    name="latemarkApplicableTiers"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Applicable Tiers</FormLabel>
+                        <FormControl>
+                          <MultiSelect
+                            options={tierOptions}
+                            value={field.value || []}
+                            onChange={field.onChange}
+                            placeholder="Select applicable tiers..."
+                            disabled={isTiersLoading || !canEdit}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          User tiers this rule applies to (leave empty for all
+                          tiers)
+                        </FormDescription>
+                      </FormItem>
+                    )}
+                  />
+
+                  {(form.watch("latemarkApplicableTiers")?.length ?? 0) > 0 && (
+                    <FormField
+                      control={form.control}
+                      name="frequency"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Rule Frequency</FormLabel>
+                          <FormControl>
+                            <SearchableSelect
+                              options={frequencyOptions}
+                              value={field.value}
+                              onChange={field.onChange}
+                              placeholder="Select frequency"
+                              disabled={isTiersLoading || !canEdit}
+                            />
+                          </FormControl>
+                          <FormDescription>
+                            How often this rule should be applied
+                          </FormDescription>
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </div>
+
+                {(form.watch("latemarkApplicableTiers")?.length ?? 0) > 0 &&
+                  !!form.watch("frequency") && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-top-2 duration-200">
+                      <FormField
+                        control={form.control}
+                        name="leaveDeductionCount"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Leave Deduction Count</FormLabel>
+                            <div className="flex items-center gap-2">
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  {...field}
+                                  disabled={!canEdit}
+                                />
+                              </FormControl>
+                              <span className="text-sm text-muted-foreground w-12">
+                                days
+                              </span>
+                            </div>
+                            <FormDescription>
+                              Days to deduct from leave balance
+                            </FormDescription>
+                          </FormItem>
+                        )}
+                      />
+
+                      {/* Example Box */}
+                      <div className="col-span-full bg-slate-50 border rounded-md p-4 text-sm text-slate-700">
+                        <span className="font-semibold block mb-1">
+                          How it works:
+                        </span>
+                        The system will use total working hours per day to
+                        determine deductions. If hours fall below the required
+                        limit for a {form.watch("frequency") || "month"}, a
+                        deduction of {form.watch("leaveDeductionCount") || "1"}{" "}
+                        day(s) will be applied.
+                      </div>
+                    </div>
+                  )}
+              </CardContent>
+            )}
+          </Card>
+
+          {/* 5. Week Off Days */}
           <Card>
             <CardHeader className="pb-4">
               <div className="flex items-center gap-2">
