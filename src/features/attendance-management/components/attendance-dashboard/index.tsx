@@ -37,10 +37,23 @@ import {
 import { FilterConfig } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import { DateRange } from "react-day-picker";
+import { useViewType } from "@/context/view-type-context";
+import { ViewType as ViewTypeContextType } from "@/components/layout/types";
+import { useNavigate } from "@tanstack/react-router";
 
 type ViewType = "daily" | "range";
 
 export default function AttendanceDashboard() {
+  const navigate = useNavigate();
+  // view type context
+  const { viewType } = useViewType();
+  useEffect(() => {
+    if (viewType === ViewTypeContextType.Self) {
+      navigate({ to: "/attendance-management/my-attendance" });
+      return;
+    }
+  }, [viewType]);
+
   const [currentDate, setCurrentDate] = useState(new Date()); // Today
   const [selectedView, setSelectedView] = useState<ViewType>("daily");
   const [pagination, setPagination] = useState({
