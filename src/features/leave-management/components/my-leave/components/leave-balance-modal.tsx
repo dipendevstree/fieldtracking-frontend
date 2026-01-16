@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/dialog";
 import { useGetMyLeaves } from "@/features/leave-management/services/leave-action.hook";
 import { LeaveBalanceCard } from "../../user-view/components/leave-balance-card";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 interface Props {
   open: boolean;
@@ -20,6 +21,8 @@ const cardStyles = [
 ];
 
 export function LeaveBalanceDialog({ open, onOpenChange }: Props) {
+  const { user } = useAuthStore();
+  const allowWorkFromHome = user?.organization?.allowWorkFromHome;
   const { data: myLeavesList } = useGetMyLeaves();
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -34,7 +37,11 @@ export function LeaveBalanceDialog({ open, onOpenChange }: Props) {
         </DialogHeader>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {myLeavesList
-            ?.filter((item: any) => item && item.id)
+            ?.filter((item: any) =>
+              item && item.id && allowWorkFromHome
+                ? true
+                : !item.superAdminCreatedBy
+            )
             ?.map((item: any, index: number) => {
               const bal = item?.leaveBalance || {};
               const totalQuota =

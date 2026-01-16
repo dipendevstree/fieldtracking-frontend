@@ -146,7 +146,7 @@ export function ProfileDropdown({
                   onCheckedChange={(checked) =>
                     setViewType(checked ? ViewType.Self : ViewType.Admin)
                   }
-                  className="data-[state=unchecked]:bg-black"
+                  className="data-[state=unchecked]:bg-black data-[state=checked]:bg-black"
                 />
                 <span
                   className={`text-sm font-medium ${

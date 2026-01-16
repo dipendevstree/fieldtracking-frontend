@@ -70,7 +70,13 @@ export const leaveBalanceHistoryColumns: ColumnDef<any>[] = [
     ),
     cell: ({ row }) => (
       <div>
-        <StatusBadge status={row.original.transactionType} />
+        <StatusBadge
+          status={
+            row.original.transactionType.toLowerCase() === "add"
+              ? "credit"
+              : "debit"
+          }
+        />
       </div>
     ),
     enableHiding: false,

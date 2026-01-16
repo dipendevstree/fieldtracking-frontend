@@ -130,6 +130,10 @@ const GeneralSettingsPage = () => {
         "allowAddUsersBasedOnTerritories",
         currentSettingsData.allowAddUsersBasedOnTerritories ? "true" : ""
       );
+      formData.append(
+        "allowWorkFromHome",
+        currentSettingsData.allowWorkFromHome ? "true" : ""
+      );
       formData.append("currency", currentSettingsData.currency || "");
       formData.append("orgIcon", currentSettingsData.orgIcon || null);
       formData.append("profileImage", currentSettingsData.profileImage || null);

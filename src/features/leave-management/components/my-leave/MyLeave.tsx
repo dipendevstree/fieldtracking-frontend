@@ -23,12 +23,15 @@ import { ViewType } from "@/components/layout/types";
 import { LeaveBalanceDialog } from "./components/leave-balance-modal";
 import MyLeaveRequest from "./components/my-leave-request";
 import { useLeaveRequestStore } from "../../store/leave-request.store";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 export default function MyLeave() {
+  const { user } = useAuthStore();
+  const allowWorkFromHome = user?.organization?.allowWorkFromHome;
   const navigate = useNavigate();
   const { viewType } = useViewType();
   const { open, setOpen, currentRow, setCurrentRow } = useLeaveRequestStore();
-  console.log("open", open, "currentRow", currentRow);
+
   useEffect(() => {
     if (viewType === ViewType.Admin) {
       navigate({ to: "/leave-management/dashboard" });
@@ -43,6 +46,8 @@ export default function MyLeave() {
   const [viewDate, setViewDate] = useState(new Date());
 
   const [isApplyLeaveOpen, setIsApplyLeaveOpen] = useState(false);
+  const [workFromHomeTypeOpen, setWorkFromHomeTypeOpen] =
+    useState<boolean>(false);
 
   // Services
   const { data: leaveTypesList = [] } = useGetAllLeaveTypes();
@@ -62,6 +67,7 @@ export default function MyLeave() {
       : nextSaturday(monthEnd);
 
     return {
+      userId: user?.id,
       startDate: format(calendarStart, "yyyy-MM-dd"),
       endDate: format(calendarEnd, "yyyy-MM-dd"),
     };
@@ -115,7 +121,11 @@ export default function MyLeave() {
           lr.leaveType?.name ||
           leaveTypesList.find((t: any) => t.id === lr.leaveTypeId)?.name ||
           "Leave";
-        const status = lr.status?.toLowerCase() || "pending";
+        let status = lr.status?.toLowerCase() || "pending";
+        if (lr.leaveType?.superAdminCreatedBy) {
+          status =
+            lr.leaveType?.name?.replaceAll(" ", "_").toLowerCase() || "pending";
+        }
         // Calculate status key
         const statusKey = getEventStatusKey(
           false,
@@ -157,6 +167,13 @@ export default function MyLeave() {
           <Button onClick={() => setOpenLeaveBalance(true)} variant="outline">
             <Eye className="mr-2 h-4 w-4" /> My Leave Balance
           </Button>
+          {allowWorkFromHome && (
+            <PermissionGate requiredPermission="my_leave" action="add">
+              <Button onClick={() => setWorkFromHomeTypeOpen(true)}>
+                <Plus className="mr-2 h-4 w-4" /> Apply Work From Home
+              </Button>
+            </PermissionGate>
+          )}
           <PermissionGate requiredPermission="my_leave" action="add">
             <Button onClick={() => setIsApplyLeaveOpen(true)}>
               <Plus className="mr-2 h-4 w-4" /> Apply Leave
@@ -196,17 +213,20 @@ export default function MyLeave() {
 
       {/* --- DIALOG: APPLY / EDIT LEAVE --- */}
       <ApplyLeaveDialog
-        open={isApplyLeaveOpen || open === "edit"}
+        open={isApplyLeaveOpen || workFromHomeTypeOpen || open === "edit"}
         onOpenChange={(value) => {
           if (open === "edit") {
             setOpen(null);
             setCurrentRow(null);
           } else {
+            setCurrentRow(null);
             setIsApplyLeaveOpen(value);
+            setWorkFromHomeTypeOpen(value);
           }
         }}
         leaveToEditId={currentRow && currentRow.id}
         leaveTypesList={leaveTypesList}
+        workFromHomeTypeOpen={workFromHomeTypeOpen}
       />
 
       {open === "cancel" && (
