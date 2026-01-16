@@ -48,7 +48,12 @@ export const useDeleteLeave = (id: string, onSuccess?: () => void) => {
 export const useCancelLeave = (id: string, onSuccess?: () => void) => {
   const mutation = usePatchData({
     url: `${API.leave.update}/${id}`,
-    refetchQueries: [LEAVE_QUERY, MY_LEAVE_QUERY, LEAVE_STATS_QUERY],
+    refetchQueries: [
+      LEAVE_QUERY,
+      MY_LEAVE_QUERY,
+      LEAVE_STATS_QUERY,
+      API.leaveRequest.pendingList,
+    ],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();

@@ -1,7 +1,7 @@
 import { FilterConfig, Option } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DateRange } from "react-day-picker";
 import {
   DEFAULT_PAGE_NUMBER,
@@ -14,10 +14,10 @@ import { useGetAllLeaveTypes } from "@/features/leave-management/services/leave-
 import { formatDropDownLabel } from "@/utils/commonFunction";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PendingRequest from "../../leave-request/components/PendingRequest";
-import LeaveApprovalHistory from "../../leave-request/components/LeaveApprovalHistory";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useViewType } from "@/context/view-type-context";
 import { ViewType } from "@/components/layout/types";
+import LeaveBalanceHistory from "../../leave-request/components/LeaveBalanceHistory";
 
 const tabs = [
   {
@@ -26,17 +26,27 @@ const tabs = [
     component: PendingRequest,
   },
   {
-    value: "approval-history",
-    label: "Approval History",
-    component: LeaveApprovalHistory,
+    value: "leave-balance-history",
+    label: "Leave Balance History",
+    component: LeaveBalanceHistory,
   },
 ];
 
-export default function MyLeaveRequest() {
+interface Props {
+  calendarQueryParams: {
+    startDate: string;
+    endDate: string;
+  };
+}
+
+export default function MyLeaveRequest({ calendarQueryParams }: Props) {
   const { viewType } = useViewType();
   const [activeTab, setActiveTab] = useState("pending-request");
   const { user } = useAuthStore();
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(calendarQueryParams.startDate),
+    to: new Date(calendarQueryParams.endDate),
+  });
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
@@ -113,6 +123,18 @@ export default function MyLeaveRequest() {
       options: leaveTypeOptions,
     },
   ];
+
+  useEffect(() => {
+    setDateRange({
+      from: new Date(calendarQueryParams.startDate),
+      to: new Date(calendarQueryParams.endDate),
+    });
+    setPagination((prev) => ({
+      ...prev,
+      startDate: calendarQueryParams.startDate,
+      endDate: calendarQueryParams.endDate,
+    }));
+  }, [calendarQueryParams]);
 
   return (
     <div className="space-y-6">

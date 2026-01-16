@@ -32,6 +32,7 @@ export default function PendingRequest({
         />
       )}
       <PendingLeaveTable
+        key={"pending-leave-request-table"}
         data={leaveRequestList}
         totalCount={leaveRequestList?.length || 0}
         loading={isLoading}

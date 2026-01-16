@@ -49,6 +49,7 @@ export function AuthenticatedLayout({
           email: user.email,
           fcm_token: token,
           phoneNumber: user.phoneNumber,
+          territoryId: user.territoryId,
         },
         {
           onSuccess: () => {

@@ -8,6 +8,9 @@ import { ViewType } from "@/components/layout/types";
 import { IconEdit, IconX } from "@tabler/icons-react";
 import { LEAVE_STATUS } from "@/data/app.data";
 import { useLocation } from "@tanstack/react-router";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import { parseISO } from "date-fns";
 
 export function PendingLeaveRowActions({ row }: { row: any }) {
   const { setOpen, setCurrentRow } = useLeaveRequestStore();
@@ -20,15 +23,35 @@ export function PendingLeaveRowActions({ row }: { row: any }) {
     setOpen("view");
   };
 
-  const handleEditClick = (data: any) => {
-    setCurrentRow(data);
-    setOpen("edit");
-  };
-
   const showEditAndCancelButton =
     viewType === ViewType.Self &&
     row.original.status === LEAVE_STATUS.PENDING &&
     pathname.includes("my-leave");
+
+  const handleEditClick = (leaveData: any) => {
+    if (leaveData.status?.toLowerCase() === "approved") {
+      toast.error("Cannot edit approved leave requests.");
+      return;
+    }
+    setOpen("edit");
+    setCurrentRow(leaveData);
+  };
+
+  const handleCancelClick = (leaveData: any) => {
+    if (leaveData.status?.toLowerCase() === "approved") {
+      toast.error("Cannot cancel approved leave requests.");
+      return;
+    }
+    const typeName = leaveData.leaveType?.name;
+    const dateStr = format(parseISO(leaveData.startDate), "MMM dd, yyyy");
+    setOpen("cancel");
+    setCurrentRow({
+      ...leaveData,
+      displayLabel: `${typeName} on ${dateStr}`,
+      typeName,
+      dateStr,
+    });
+  };
 
   return (
     <div className="flex items-center space-x-2">
@@ -49,13 +72,13 @@ export function PendingLeaveRowActions({ row }: { row: any }) {
             </CustomTooltip>
           </PermissionGate>
           <PermissionGate requiredPermission="leave_balance" action="delete">
-            <CustomTooltip title="cancel">
+            <CustomTooltip title="Cancel">
               <Button
                 variant="ghost"
                 className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
                 onClick={(e) => {
                   e.stopPropagation();
-                  // handleCancelClick(originalData);
+                  handleCancelClick(row.original);
                 }}
               >
                 <IconX size={18} stroke={3} />
