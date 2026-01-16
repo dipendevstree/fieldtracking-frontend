@@ -171,7 +171,7 @@ export default function AttendanceRulesConfiguration() {
   return (
     <Main className="space-y-6">
       {/* 1. Top Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <SummaryCard
           title="Grace Period"
           enabled={form.watch("enableGracePeriod") ?? true}
@@ -192,7 +192,7 @@ export default function AttendanceRulesConfiguration() {
           desc="Late attendance tracking"
         />
         <SummaryCard
-          title="Hours Based Flow"
+          title="Hours Based Deduction"
           enabled={
             !!form.watch("enableHoursBasedDeduction") &&
             (form.watch("latemarkApplicableTiers")?.length ?? 0) > 0 &&
@@ -519,7 +519,7 @@ export default function AttendanceRulesConfiguration() {
             )}
           </Card>
 
-          {/* 4. Hours Based Flow */}
+          {/* 4. Hours Based Deduction */}
           <Card>
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
@@ -527,7 +527,7 @@ export default function AttendanceRulesConfiguration() {
                   <Clock className="h-5 w-5 text-blue-600" />
                   <div>
                     <CardTitle className="text-base">
-                      Hours Based Flow
+                      Hours Based Deduction
                     </CardTitle>
                     <CardDescription>
                       Enable leave deduction based on total working hours
