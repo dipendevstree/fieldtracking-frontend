@@ -20,6 +20,7 @@ export const AttendanceRulesSchema = z.object({
   enableOvertime: z.boolean().optional(),
   enableGracePeriod: z.boolean().optional(),
   enableLateMarkRule: z.boolean().optional(),
+  enableHoursBasedDeduction: z.boolean().optional(),
   lateMarkLimit: z.coerce
     .number()
     .min(0, "Late mark limit must be 0 or greater"),
