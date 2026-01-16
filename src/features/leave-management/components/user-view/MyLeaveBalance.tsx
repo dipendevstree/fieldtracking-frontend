@@ -1,7 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   format,
-  addDays,
   startOfMonth,
   endOfMonth,
   parseISO,
@@ -50,9 +49,19 @@ import StatusBadge, {
 import { Main } from "@/components/layout/main";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import LeaveRequest from "../leave-request/LeaveRequest";
+import { useViewType } from "@/context/view-type-context";
+import { ViewType } from "@/components/layout/types";
+import { useNavigate } from "@tanstack/react-router";
+import { formatDropDownLabel } from "@/utils/commonFunction";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { LEAVE_STATUS } from "@/data/app.data";
 
 // --- LOGIC HELPER ---
-const getEventStatusKey = (isHoliday: boolean, text: string, date: Date) => {
+export const getEventStatusKey = (
+  isHoliday: boolean,
+  text: string,
+  date: Date
+) => {
   const lowerText = text?.toLowerCase() || "";
 
   if (!isHoliday) {
@@ -73,9 +82,20 @@ const getEventStatusKey = (isHoliday: boolean, text: string, date: Date) => {
 
 // --- MAIN COMPONENT ---
 export default function MyLeaveBalance() {
+  const navigate = useNavigate();
+  const { viewType } = useViewType();
+
+  useEffect(() => {
+    if (viewType === ViewType.Self) {
+      navigate({ to: "/leave-management/my-leave" });
+      return;
+    }
+  }, [viewType]);
+
   const [calendarMode, setCalendarMode] = useState<"holiday" | "leave">(
-    "holiday"
+    "leave"
   );
+  const { user } = useAuthStore();
   const [viewDate, setViewDate] = useState(new Date());
 
   const [isApplyLeaveOpen, setIsApplyLeaveOpen] = useState(false);
@@ -170,7 +190,7 @@ export default function MyLeaveBalance() {
   // Calendar Logic
   const events = useMemo(() => {
     if (calendarMode === "holiday") {
-      return holidays.map((h: any) => {
+      return holidays?.map((h: any) => {
         const statusKey = getEventStatusKey(
           true,
           h.holidayType?.holidayTypeName || h.name,
@@ -190,42 +210,73 @@ export default function MyLeaveBalance() {
           },
         };
       });
-    } else {
-      return allLeavesList.map((lr: any) => {
-        const typeName =
-          lr.leaveType?.name ||
-          leaveTypesList.find((t: any) => t.id === lr.leaveTypeId)?.name ||
-          "Leave";
-        const status = lr.status?.toLowerCase() || "pending";
-        // Calculate status key
-        const statusKey = getEventStatusKey(
-          false,
-          status,
-          new Date(lr.startDate)
-        );
+    } else if (calendarMode === "leave") {
+      return allLeavesList
+        ?.filter(
+          (lr: any) =>
+            ![LEAVE_STATUS.CANCEL, LEAVE_STATUS.REJECTED].includes(lr.status)
+        )
+        .map((lr: any) => {
+          const typeName =
+            lr.leaveType?.name ||
+            leaveTypesList.find((t: any) => t.id === lr.leaveTypeId)?.name ||
+            "Leave";
+          const employeeName = lr.user?.firstName + " " + lr.user?.lastName;
+          const halfDayType = lr.halfDay ? lr.halfDayType : null;
+          const canEdit = lr.userId === user?.id;
+          let status = lr.status?.toLowerCase() || "pending";
+          if (lr.leaveType?.superAdminCreatedBy) {
+            status =
+              lr.leaveType?.name?.replaceAll(" ", "_").toLowerCase() ||
+              "pending";
+          }
+          // Calculate status key
+          const statusKey = getEventStatusKey(
+            false,
+            status,
+            new Date(lr.startDate)
+          );
 
-        const start = new Date(lr.startDate);
-        let end = new Date(lr.endDate);
-        if (!lr.halfDay) end = addDays(end, 1);
+          const start = new Date(lr.startDate);
+          let end = new Date(lr.endDate);
 
-        return {
-          id: lr.id,
-          title: typeName,
-          start,
-          end,
-          allDay: !lr.halfDay,
-          resource: {
-            type: "leave",
-            originalData: lr,
-            statusKey: statusKey,
-          },
-        };
-      });
+          const title = (
+            <div
+              className="flex"
+              title={
+                isSameDay(start, end)
+                  ? format(start, "PPP")
+                  : `${format(start, "PPP")} - ${format(end, "PPP")}`
+              }
+            >
+              <span className="font-xs">
+                {employeeName} ({typeName})
+              </span>
+            </div>
+          );
+
+          return {
+            id: lr.id,
+            title,
+            typeName,
+            employeeName,
+            halfDayType,
+            start,
+            end,
+            allDay: !lr.halfDay,
+            canEdit,
+            resource: {
+              type: "leave",
+              originalData: lr,
+              statusKey: statusKey,
+            },
+          };
+        });
     }
   }, [calendarMode, holidays, allLeavesList, leaveTypesList]);
 
   const currentMonthEvents = events
-    .filter((e: any) => {
+    ?.filter((e: any) => {
       const eDate = new Date(e.start);
       return (
         eDate.getMonth() === viewDate.getMonth() &&
@@ -331,13 +382,13 @@ export default function MyLeaveBalance() {
             <h3 className="text-sm font-bold text-slate-900 mb-4 flex items-center">
               {calendarMode === "holiday" ? "Holidays" : "Leaves"} this month
               <span className="ml-2 bg-slate-200 text-slate-600 text-[10px] px-2 py-0.5 rounded-full">
-                {currentMonthEvents.length}
+                {currentMonthEvents?.length}
               </span>
             </h3>
 
-            {currentMonthEvents.length > 0 ? (
+            {currentMonthEvents?.length > 0 ? (
               <div className="space-y-2">
-                {currentMonthEvents.map((evt: any) => {
+                {currentMonthEvents?.map((evt: any) => {
                   const originalData = evt.resource.originalData;
                   const isHoliday = evt.resource.type !== "leave";
                   const statusText = isHoliday
@@ -364,8 +415,9 @@ export default function MyLeaveBalance() {
 
                         <div>
                           <div className="flex items-center gap-2">
-                            <p className="text-sm font-medium text-slate-800">
-                              {evt.title}
+                            <span className="text-sm">{evt.employeeName}</span>
+                            <p className="text-sm font-medium text-slate-500">
+                              ({evt.typeName})
                             </p>
                             {/* Use StatusBadge Component */}
                             <StatusBadge status={statusKey} />
@@ -374,12 +426,18 @@ export default function MyLeaveBalance() {
                             {isSameDay(evt.start, evt.end)
                               ? format(evt.start, "PPP")
                               : `${format(evt.start, "PPP")} - ${format(evt.end, "PPP")}`}
-                          </span>
+                          </span>{" "}
+                          {evt.halfDayType && (
+                            <span className="text-xs text-slate-500">
+                              ({formatDropDownLabel(evt.halfDayType)})
+                            </span>
+                          )}
                         </div>
                       </div>
 
                       {/* Buttons (Only show for pending leaves) */}
                       {!isHoliday &&
+                        evt.canEdit &&
                         statusText?.toLowerCase() === "pending" && (
                           <div className="flex items-center space-x-2">
                             <PermissionGate

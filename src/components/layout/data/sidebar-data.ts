@@ -172,6 +172,12 @@ export const sidebarData: SidebarData = {
               viewType: ViewType.Admin,
             },
             {
+              title: "My Leave",
+              url: "/leave-management/my-leave",
+              menuKey: "my_leave",
+              viewType: ViewType.Self,
+            },
+            {
               title: "User Tiers",
               url: "/leave-management/user-tiers",
               menuKey: "user_tiers",

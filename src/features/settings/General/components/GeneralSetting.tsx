@@ -51,6 +51,7 @@ export default function GeneralApplicationSettings({
   const [fixedDayExpense, setFixedDayExpense] = useState<boolean>(false);
   const [allowAddUsersBasedOnTerritories, setAllowAddUsersBasedOnTerritories] =
     useState(false);
+  const [allowWorkFromHome, setAllowWorkFromHome] = useState(false);
   const [showTerritoryConfirm, setShowTerritoryConfirm] = useState(false);
   const [pendingToggle, setPendingToggle] = useState(false);
   const [formData, setFormData] = useState({
@@ -161,6 +162,7 @@ export default function GeneralApplicationSettings({
       setAllowAddUsersBasedOnTerritories(
         org.allowAddUsersBasedOnTerritories || false
       );
+      setAllowWorkFromHome(org.allowWorkFromHome || false);
 
       // ✅  Capture the baseline state for dirty checking
       setInitialState({
@@ -169,6 +171,7 @@ export default function GeneralApplicationSettings({
         fixedDayExpense: org.isFixedDayExpense || false,
         allowAddUsersBasedOnTerritories:
           org.allowAddUsersBasedOnTerritories || false,
+        allowWorkFromHome: org.allowWorkFromHome || false,
       });
     }
   }, [user]);
@@ -216,6 +219,7 @@ export default function GeneralApplicationSettings({
         autoExpenseApproval,
         fixedDayExpense,
         allowAddUsersBasedOnTerritories,
+        allowWorkFromHome,
         isFixedExpenseDirty,
       });
     }
@@ -224,6 +228,7 @@ export default function GeneralApplicationSettings({
     autoExpenseApproval,
     fixedDayExpense,
     allowAddUsersBasedOnTerritories,
+    allowWorkFromHome,
     onDataChange,
     isFixedExpenseDirty,
   ]);
@@ -339,6 +344,7 @@ export default function GeneralApplicationSettings({
     // 2. Check Toggles
     if (autoExpenseApproval !== initialState.autoExpenseApproval) return true;
     if (fixedDayExpense !== initialState.fixedDayExpense) return true;
+    if (allowWorkFromHome !== initialState.allowWorkFromHome) return true;
     if (
       allowAddUsersBasedOnTerritories !==
       initialState.allowAddUsersBasedOnTerritories
@@ -1121,6 +1127,23 @@ export default function GeneralApplicationSettings({
                   onCheckedChange={(value) => {
                     setPendingToggle(value);
                     setShowTerritoryConfirm(true);
+                  }}
+                />
+              </div>
+
+              <Separator className="my-6" />
+
+              <div className="flex items-center justify-between">
+                <div className="space-y-3">
+                  <Label className="text-lg font-medium text-gray-900">
+                    Allow Users To Work From Home
+                  </Label>
+                </div>
+                <Switch
+                  id="work-from-home"
+                  checked={allowWorkFromHome}
+                  onCheckedChange={(value) => {
+                    setAllowWorkFromHome(value);
                   }}
                 />
               </div>

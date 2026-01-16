@@ -12,7 +12,12 @@ const LEAVE_STATS_QUERY = API.leave.stats;
 export const useCreateLeave = (onSuccess?: () => void) => {
   return usePostData({
     url: API.leave.create,
-    refetchQueries: [LEAVE_QUERY, MY_LEAVE_QUERY, LEAVE_STATS_QUERY],
+    refetchQueries: [
+      LEAVE_QUERY,
+      MY_LEAVE_QUERY,
+      LEAVE_STATS_QUERY,
+      API.leaveRequest.pendingList,
+    ],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
@@ -24,7 +29,12 @@ export const useCreateLeave = (onSuccess?: () => void) => {
 export const useUpdateLeave = (id: string, onSuccess?: () => void) => {
   return usePatchData({
     url: `${API.leave.update}/${id}`,
-    refetchQueries: [LEAVE_QUERY, MY_LEAVE_QUERY, LEAVE_STATS_QUERY],
+    refetchQueries: [
+      LEAVE_QUERY,
+      MY_LEAVE_QUERY,
+      LEAVE_STATS_QUERY,
+      API.leaveRequest.pendingList,
+    ],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
@@ -36,7 +46,12 @@ export const useUpdateLeave = (id: string, onSuccess?: () => void) => {
 export const useDeleteLeave = (id: string, onSuccess?: () => void) => {
   return useDeleteData({
     url: `${API.leave.delete}/${id}`,
-    refetchQueries: [LEAVE_QUERY, MY_LEAVE_QUERY, LEAVE_STATS_QUERY],
+    refetchQueries: [
+      LEAVE_QUERY,
+      MY_LEAVE_QUERY,
+      LEAVE_STATS_QUERY,
+      API.leaveRequest.pendingList,
+    ],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
@@ -48,7 +63,12 @@ export const useDeleteLeave = (id: string, onSuccess?: () => void) => {
 export const useCancelLeave = (id: string, onSuccess?: () => void) => {
   const mutation = usePatchData({
     url: `${API.leave.update}/${id}`,
-    refetchQueries: [LEAVE_QUERY, MY_LEAVE_QUERY, LEAVE_STATS_QUERY],
+    refetchQueries: [
+      LEAVE_QUERY,
+      MY_LEAVE_QUERY,
+      LEAVE_STATS_QUERY,
+      API.leaveRequest.pendingList,
+    ],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();

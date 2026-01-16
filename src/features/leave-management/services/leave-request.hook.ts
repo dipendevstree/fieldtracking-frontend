@@ -60,3 +60,19 @@ export const useCreateLeaveApproval = (onSuccess?: () => void) => {
     },
   });
 };
+
+export const useGetAllLeaveBalanceHistory = (params: any, options?: any) => {
+  const query = useFetchData<any>({
+    url: API.leaveTransaction.list,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    data: query.data?.list,
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};

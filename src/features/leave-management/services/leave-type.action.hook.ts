@@ -40,7 +40,7 @@ export const useDeleteLeaveType = (
   return useDeleteData({
     url: `${API.leaveType.delete}/${id}`,
     refetchQueries: [LEAVE_TYPE_QUERY, LEAVE_TYPE_STATS_QUERY],
-    skipToast: true,
+    skipToast: false,
     onSuccess: (data) => {
       if (onSuccess) {
         onSuccess(data);

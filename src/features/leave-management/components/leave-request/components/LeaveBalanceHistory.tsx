@@ -1,6 +1,6 @@
-import { useGetAllLeaveApprovalHistory } from "@/features/leave-management/services/leave-request.hook";
-import LeaveApprovalTable from "./leave-approval-table";
+import { useGetAllLeaveBalanceHistory } from "@/features/leave-management/services/leave-request.hook";
 import { useAuthStore } from "@/stores/use-auth-store";
+import LeaveBalanceHistoryTable from "./leave-balance-history-table";
 
 interface Props {
   pagination: {
@@ -12,23 +12,23 @@ interface Props {
   dashboardView?: boolean;
 }
 
-export default function LeaveApprovalHistory({
+export default function LeaveBalanceHistory({
   pagination,
   onPaginationChange,
   dashboardView,
 }: Props) {
   const { user } = useAuthStore();
   const {
-    data: leaveApprovalHistoryList,
+    data: leaveBalanceHistoryList,
     isLoading,
     totalCount,
-  } = useGetAllLeaveApprovalHistory({ ...pagination, actionBy: user?.id });
+  } = useGetAllLeaveBalanceHistory({ ...pagination, userId: user?.id });
 
   return (
     <>
-      <LeaveApprovalTable
-        key={"leave-approval-table"}
-        data={leaveApprovalHistoryList}
+      <LeaveBalanceHistoryTable
+        key={"leave-balance-history-table"}
+        data={leaveBalanceHistoryList}
         totalCount={totalCount}
         loading={isLoading}
         currentPage={pagination.page}

@@ -14,8 +14,9 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import { Link } from "@tanstack/react-router";
 import { LoginUser, ViewType } from "./layout/types";
 import { getProfileName } from "@/lib/utils";
-import { Switch } from "@/components/ui/switch";
 import { useViewType } from "@/context/view-type-context";
+import { Switch } from "@/components/ui/switch";
+import { usePermission } from "@/permissions/hooks/use-permission";
 
 interface MenuItem {
   label: string;
@@ -54,6 +55,17 @@ const DEFAULT_MENU_ITEMS: MenuItem[] = [
   },
 ];
 
+const permissionForViewTypeToggle: { admin: string; self: string }[] = [
+  {
+    admin: "leave_management_dashboard",
+    self: "my_leave",
+  },
+  {
+    admin: "attendance_dashboard",
+    self: "my_attendance",
+  },
+];
+
 export function ProfileDropdown({
   menuItems = DEFAULT_MENU_ITEMS,
   showLogout = true,
@@ -62,6 +74,7 @@ export function ProfileDropdown({
   avatarSize = "md",
 }: Readonly<ProfileDropdownProps>) {
   const { user, logout } = useAuthStore();
+  const { hasAccess } = usePermission();
   const { viewType, setViewType } = useViewType();
 
   const handleLogout = () => {
@@ -70,7 +83,9 @@ export function ProfileDropdown({
 
   const avatarSizeClass = AVATAR_SIZES[avatarSize];
   const userName = getProfileName(user?.firstName || user?.userName || "");
-  const showViewTypeToggle = true;
+  const showViewTypeToggle = permissionForViewTypeToggle.some((item) => {
+    return hasAccess(item.admin) && hasAccess(item.self);
+  });
 
   return (
     <DropdownMenu modal={false}>
@@ -88,7 +103,7 @@ export function ProfileDropdown({
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
+      <DropdownMenuContent className="w-60" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-row space-x-2">
             <div>
@@ -106,7 +121,7 @@ export function ProfileDropdown({
                   ? user?.name?.replace(/^./, (c) => c.toUpperCase())
                   : user?.firstName + " " + user?.lastName}
               </p>
-              <p className="text-muted-foreground text-xs leading-none break-all truncate max-w-[150px]">
+              <p className="text-muted-foreground text-xs leading-none break-all truncate max-w-[180px]">
                 {user?.email}
               </p>
             </div>
@@ -117,14 +132,30 @@ export function ProfileDropdown({
           <>
             <DropdownMenuSeparator />
             {/* View Type Toggle */}
-            <div className="flex items-center justify-between p-2">
-              <div className="text-sm">Admin View</div>
-              <Switch
-                checked={viewType === ViewType.Admin}
-                onCheckedChange={(val) =>
-                  setViewType(val ? ViewType.Admin : ViewType.Self)
-                }
-              />
+            <div className="p-2">
+              <div className="flex items-center justify-between gap-3">
+                <span
+                  className={`text-sm font-medium ${
+                    viewType === ViewType.Admin ? "text-black" : "text-gray-400"
+                  }`}
+                >
+                  Admin View
+                </span>
+                <Switch
+                  checked={viewType === ViewType.Self}
+                  onCheckedChange={(checked) =>
+                    setViewType(checked ? ViewType.Self : ViewType.Admin)
+                  }
+                  className="data-[state=unchecked]:bg-black data-[state=checked]:bg-black"
+                />
+                <span
+                  className={`text-sm font-medium ${
+                    viewType === ViewType.Self ? "text-black" : "text-gray-400"
+                  }`}
+                >
+                  Self View
+                </span>
+              </div>
             </div>
           </>
         )}

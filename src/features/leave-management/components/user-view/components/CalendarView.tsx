@@ -1,7 +1,7 @@
 import { Calendar, momentLocalizer, View, Views } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ChevronLeft,
   ChevronRight,
@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useAuthStore } from "@/stores/use-auth-store";
 
 const localizer = momentLocalizer(moment);
 
@@ -56,6 +57,11 @@ const EVENT_STYLES: Record<string, React.CSSProperties> = {
     borderLeftColor: "#ef4444",
     backgroundColor: "#fef2f2",
     color: "#b91c1c",
+  },
+  work_from_home: {
+    borderLeftColor: "#ffd900",
+    backgroundColor: "#fff9daff",
+    color: "#7f6c00",
   },
 
   // Holidays
@@ -116,8 +122,9 @@ export default function CalendarView({
   onNavigate,
   weekOffDays = [],
 }: CalendarViewProps) {
+  const { user } = useAuthStore();
+  const allowWorkFromHome = user?.organization?.allowWorkFromHome;
   const [view, setView] = useState<View>(defaultView);
-
   const onView = useCallback((newView: View) => setView(newView), []);
 
   // Optimized Event Prop Getter
@@ -152,6 +159,46 @@ export default function CalendarView({
     [weekOffDays]
   );
 
+  // Calculate max events per day to determine dynamic row height
+  const {
+    maxEventsPerDay: _,
+    rowHeight,
+    calendarHeight,
+  } = useMemo(() => {
+    const eventCountByDay: Record<string, number> = {};
+
+    events.forEach((event) => {
+      const start = new Date(event.start);
+      const end = new Date(event.end);
+
+      // For multi-day events, count each day
+      const currentDate = new Date(start);
+      while (currentDate <= end) {
+        const dateKey = currentDate.toISOString().split("T")[0];
+        eventCountByDay[dateKey] = (eventCountByDay[dateKey] || 0) + 1;
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+    });
+
+    const maxEvents = Math.max(1, ...Object.values(eventCountByDay));
+    // Each event needs ~24px height, plus ~30px for date header, plus some padding
+    const eventHeight = 24;
+    const dateHeaderHeight = 30;
+    const padding = 10;
+    const calculatedRowHeight = Math.max(
+      120,
+      dateHeaderHeight + maxEvents * eventHeight + padding
+    );
+    // Calendar has 6 rows typically, plus header
+    const calculatedCalendarHeight = calculatedRowHeight * 6 + 50;
+
+    return {
+      maxEventsPerDay: maxEvents,
+      rowHeight: calculatedRowHeight,
+      calendarHeight: calculatedCalendarHeight,
+    };
+  }, [events]);
+
   return (
     <div className="space-y-4">
       <style>{`
@@ -175,18 +222,24 @@ export default function CalendarView({
             border-radius: 0;
         }
         .rbc-event:focus { outline: none; }
+        
+        /* Dynamic row height based on max events */
+        .rbc-month-row {
+          min-height: ${rowHeight}px;
+        }
       `}</style>
       <Calendar
         localizer={localizer}
         events={events}
         startAccessor="start"
         endAccessor="end"
-        style={{ height: 800 }}
+        style={{ minHeight: calendarHeight }}
         view={view}
         date={date}
         onNavigate={onNavigate}
         onView={onView}
-        popup
+        popup={false}
+        showAllEvents
         onSelectEvent={onSelectEvent}
         onSelectSlot={onSelectSlot}
         selectable
@@ -227,6 +280,9 @@ export default function CalendarView({
             <LegendItem color="bg-orange-500" label="Pending" />
             <LegendItem color="bg-red-500" label="Rejected/Cancel" />
             <LegendItem color="bg-slate-300" label="Weekend" />
+            {allowWorkFromHome && (
+              <LegendItem color="bg-yellow-300" label="Work From Home" />
+            )}
           </>
         )}
       </div>
@@ -317,17 +373,6 @@ const CustomToolbar = ({
       <div>
         <div className="bg-slate-100 p-1 rounded-lg inline-flex items-center">
           <button
-            onClick={() => onModeChange("holiday")}
-            className={cn(
-              "px-6 py-2 text-sm font-semibold rounded-md transition-all",
-              currentMode === "holiday"
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-900"
-            )}
-          >
-            Holiday Calendar
-          </button>
-          <button
             onClick={() => onModeChange("leave")}
             className={cn(
               "px-6 py-2 text-sm font-semibold rounded-md transition-all",
@@ -337,6 +382,17 @@ const CustomToolbar = ({
             )}
           >
             Leave Calendar
+          </button>
+          <button
+            onClick={() => onModeChange("holiday")}
+            className={cn(
+              "px-6 py-2 text-sm font-semibold rounded-md transition-all",
+              currentMode === "holiday"
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-500 hover:text-slate-900"
+            )}
+          >
+            Holiday Calendar
           </button>
         </div>
       </div>

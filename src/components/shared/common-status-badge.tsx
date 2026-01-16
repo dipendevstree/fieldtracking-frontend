@@ -194,6 +194,21 @@ export const statusColors: Record<
     bg: "bg-green-100",
     dot: "bg-green-500",
   },
+  credit: {
+    text: "text-green-600",
+    bg: "bg-green-100",
+    dot: "bg-green-500",
+  },
+  debit: {
+    text: "text-red-600",
+    bg: "bg-red-100",
+    dot: "bg-red-500",
+  },
+  work_from_home: {
+    text: "text-yellow-600",
+    bg: "bg-yellow-100",
+    dot: "bg-yellow-500",
+  },
 };
 
 function formatStatusTitle(status: string): string {

@@ -47,6 +47,7 @@ interface ApplyLeaveDialogProps {
   leaveToEditId?: string | null;
   defaultLeaveTypeId?: string;
   leaveTypesList: any[];
+  workFromHomeTypeOpen?: boolean;
 }
 
 export function ApplyLeaveDialog({
@@ -55,6 +56,7 @@ export function ApplyLeaveDialog({
   leaveToEditId,
   defaultLeaveTypeId,
   leaveTypesList,
+  workFromHomeTypeOpen,
 }: ApplyLeaveDialogProps) {
   const [dateRange, setDateRange] = useState<{
     from: Date | undefined;
@@ -70,6 +72,17 @@ export function ApplyLeaveDialog({
   const updateLeaveMutation = useUpdateLeave(leaveToEditId || "", () =>
     onOpenChange(false)
   );
+
+  const leaveTypeOptions = leaveTypesList
+    .filter((type: any) =>
+      workFromHomeTypeOpen
+        ? type.superAdminCreatedBy
+        : !type.superAdminCreatedBy
+    )
+    .map((type: any) => ({
+      value: type.id,
+      label: type.name,
+    }));
 
   const requiredAttachmentIds = useMemo(() => {
     return leaveTypesList
@@ -149,6 +162,15 @@ export function ApplyLeaveDialog({
         setValue("leaveTypeId", defaultLeaveTypeId);
       } else if (leaveTypesList.length > 0 && !watchLeaveTypeId) {
         setValue("leaveTypeId", leaveTypesList[0].id);
+      }
+
+      if (workFromHomeTypeOpen) {
+        const workFromHomeType = leaveTypesList.find(
+          (lt: any) => lt.superAdminCreatedBy
+        );
+        if (workFromHomeType) {
+          setValue("leaveTypeId", workFromHomeType.id);
+        }
       }
 
       if (!dateRange.from) {
@@ -253,7 +275,9 @@ export function ApplyLeaveDialog({
       >
         <DialogHeader>
           <DialogTitle>
-            {leaveToEditId ? "Edit Leave Request" : "Apply for Leave"}
+            {leaveToEditId
+              ? "Edit Leave Request"
+              : `Apply for ${workFromHomeTypeOpen ? `Work From Home` : `Leave`}`}
           </DialogTitle>
         </DialogHeader>
 
@@ -273,13 +297,11 @@ export function ApplyLeaveDialog({
                     <FormLabel>Leave Type *</FormLabel>
                     <FormControl>
                       <SearchableSelect
-                        options={leaveTypesList.map((type: any) => ({
-                          value: type.id,
-                          label: type.name,
-                        }))}
+                        options={leaveTypeOptions}
                         value={field.value}
                         onChange={field.onChange}
                         placeholder="Select leave type"
+                        disabled={workFromHomeTypeOpen}
                       />
                     </FormControl>
                     <FormMessage />

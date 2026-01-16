@@ -304,6 +304,9 @@ const API = {
     stats: "leaveApprovals/stats",
     pendingList: "leaveApprovals/pending",
   },
+  leaveTransaction: {
+    list: "leaveTransaction/list",
+  },
   attendance: {
     myAttendance: "attendance/my-calendar",
     dashboardStats: "attendance/dashboard/live",
