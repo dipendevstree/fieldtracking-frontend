@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Popover,
@@ -36,6 +36,13 @@ export const DateRangeFilter: React.FC<DateRangeFilterProps> = ({
 }) => {
   const [open, setOpen] = useState(false);
   const [tempRange, setTempRange] = useState<DateRange | undefined>(dateRange);
+
+  // Sync tempRange with dateRange prop when the popover opens or dateRange changes
+  useEffect(() => {
+    if (open) {
+      setTempRange(dateRange);
+    }
+  }, [dateRange, open]);
 
   const sizeClasses = {
     sm: "h-8 text-sm",

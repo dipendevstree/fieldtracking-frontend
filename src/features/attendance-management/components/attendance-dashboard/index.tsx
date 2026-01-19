@@ -15,6 +15,8 @@ import {
   Clock,
   LogOut,
   CalendarOff,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   useGetDashboardUsers,
@@ -28,18 +30,28 @@ import {
   endOfMonth,
   startOfWeek,
   endOfWeek,
+  addDays,
+  subDays,
+  isSameDay,
+  isAfter,
+  isSameWeek,
+  addWeeks,
+  subWeeks,
 } from "date-fns";
 import {
   ATTENDANCE_STATUS,
   DEFAULT_PAGE_NUMBER,
   DEFAULT_PAGE_SIZE,
 } from "@/data/app.data";
-import { FilterConfig } from "@/components/global-filter-section";
-import GlobalFilterSection from "@/components/global-table-filter-section";
+import {
+  FilterConfig,
+  DataTableToolbarCompact,
+} from "@/components/global-filter-section";
 import { DateRange } from "react-day-picker";
 import { useViewType } from "@/context/view-type-context";
 import { ViewType as ViewTypeContextType } from "@/components/layout/types";
 import { useNavigate } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
 
 type ViewType = "daily" | "range";
 
@@ -86,8 +98,8 @@ export default function AttendanceDashboard() {
   const apiDateRange = getApiDateRange();
 
   const { stats } = useGetDashboardStats({
-    startDate: filters.date,
-    endDate: filters.date,
+    startDate: apiDateRange.startDate,
+    endDate: apiDateRange.endDate,
   });
 
   const {
@@ -179,7 +191,47 @@ export default function AttendanceDashboard() {
 
   const handleDateRangeChange = (newDateRange: DateRange | undefined) => {
     setDateRange(newDateRange);
+    if (newDateRange?.from) {
+      setCurrentDate(newDateRange.from);
+    }
     setPagination((prev) => ({ ...prev, page: DEFAULT_PAGE_NUMBER })); // Reset to first page
+  };
+
+  const isToday = isSameDay(currentDate, new Date());
+
+  const isCurrentWeek =
+    dateRange?.from &&
+    isSameWeek(dateRange.from, new Date(), { weekStartsOn: 1 });
+
+  const handlePrevDay = () => {
+    const prev = subDays(currentDate, 1);
+    handleDateChange(prev);
+  };
+
+  const handleNextDay = () => {
+    const next = addDays(currentDate, 1);
+    if (isAfter(next, new Date())) return;
+    handleDateChange(next);
+  };
+
+  const handlePrevWeek = () => {
+    if (dateRange?.from && dateRange?.to) {
+      const newFrom = subWeeks(dateRange.from, 1);
+      const newTo = subWeeks(dateRange.to, 1);
+      setDateRange({ from: newFrom, to: newTo });
+      setCurrentDate(newFrom);
+    }
+  };
+
+  const handleNextWeek = () => {
+    if (dateRange?.from && dateRange?.to) {
+      const newFrom = addWeeks(dateRange.from, 1);
+      const newTo = addWeeks(dateRange.to, 1);
+      if (isAfter(newFrom, startOfWeek(new Date(), { weekStartsOn: 1 })))
+        return;
+      setDateRange({ from: newFrom, to: newTo });
+      setCurrentDate(newFrom);
+    }
   };
 
   const onPaginationChange = (page: number, pageSize: number) => {
@@ -203,6 +255,7 @@ export default function AttendanceDashboard() {
           dateRangeValue: dateRange,
           onDateRangeChange: handleDateRangeChange,
           disableFutureDates: true,
+          allowClear: false,
         },
   ];
 
@@ -384,10 +437,47 @@ export default function AttendanceDashboard() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <GlobalFilterSection
-            key="dashboard-users-filters"
-            filters={filtersConfig}
-          />
+          <div className="flex flex-col items-center justify-center">
+            <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-1.5 shadow-sm">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={
+                  selectedView === "daily" ? handlePrevDay : handlePrevWeek
+                }
+                className="h-9 w-9 text-slate-500 hover:text-slate-900 hover:bg-slate-100"
+                title={
+                  selectedView === "daily" ? "Previous Day" : "Previous Week"
+                }
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </Button>
+
+              <div className="h-6 w-[1px] bg-slate-200 mx-1" />
+
+              <div className="flex-1 min-w-[300px] md:min-w-[420px]">
+                <DataTableToolbarCompact
+                  filters={filtersConfig}
+                  className="justify-center"
+                />
+              </div>
+
+              <div className="h-6 w-[1px] bg-slate-200 mx-1" />
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={
+                  selectedView === "daily" ? handleNextDay : handleNextWeek
+                }
+                disabled={selectedView === "daily" ? isToday : isCurrentWeek}
+                className="h-9 w-9 text-slate-500 hover:text-slate-900 hover:bg-slate-100 disabled:opacity-30"
+                title={selectedView === "daily" ? "Next Day" : "Next Week"}
+              >
+                <ChevronRight className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
 
           <DashboardUserTable
             data={
