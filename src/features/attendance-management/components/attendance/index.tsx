@@ -177,7 +177,11 @@ export default function MyAttendance() {
 
     if (attendanceRecord) {
       const s = attendanceRecord.status;
-      if (s !== ATTENDANCE_STATUS.WEEK_OFF && s !== ATTENDANCE_STATUS.HOLIDAY) {
+      if (
+        s !== ATTENDANCE_STATUS.WEEK_OFF &&
+        s !== ATTENDANCE_STATUS.HOLIDAY &&
+        s !== ATTENDANCE_STATUS.LEAVE
+      ) {
         handleRequestCorrection(attendanceRecord);
       }
     } else {
