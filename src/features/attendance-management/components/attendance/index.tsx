@@ -32,6 +32,7 @@ import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
 import { useViewType } from "@/context/view-type-context";
 import { ViewType } from "@/components/layout/types";
+import WorkSession from "./components/WorkDaySession";
 
 // --- HELPERS (Keep existing helpers) ---
 const formatStatus = (status: string) => {
@@ -85,12 +86,12 @@ export default function MyAttendance() {
   const [viewDate, setViewDate] = useState(new Date());
   const [isCorrectionDialogOpen, setIsCorrectionDialogOpen] = useState(false);
   const [selectedAttendance, setSelectedAttendance] = useState<any | null>(
-    null
+    null,
   );
   const [correctionToEdit, setCorrectionToEdit] = useState<any | null>(null);
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [correctionToCancel, setCorrectionToCancel] = useState<any | null>(
-    null
+    null,
   );
 
   const calendarQueryParams = useMemo(
@@ -98,7 +99,7 @@ export default function MyAttendance() {
       startDate: format(startOfMonth(viewDate), "yyyy-MM-dd"),
       endDate: format(endOfMonth(viewDate), "yyyy-MM-dd"),
     }),
-    [viewDate]
+    [viewDate],
   );
 
   // Queries
@@ -121,7 +122,7 @@ export default function MyAttendance() {
       handleCorrectionActionSuccess("Cancel");
       setIsCancelDialogOpen(false);
       setCorrectionToCancel(null);
-    }
+    },
   );
 
   // Calendar Events
@@ -239,6 +240,10 @@ export default function MyAttendance() {
         </p>
       </div>
 
+      <div className="flex justify-start">
+        <WorkSession />
+      </div>
+
       <Card className="border-slate-200 shadow-sm overflow-hidden p-0">
         <CardContent className="p-0">
           {isLoading ? (
@@ -303,7 +308,7 @@ export default function MyAttendance() {
                         <div
                           className={cn(
                             "w-1 h-12 rounded-full",
-                            getStatusDot(status)
+                            getStatusDot(status),
                           )}
                         />
                         <div className="flex flex-col">
@@ -315,7 +320,7 @@ export default function MyAttendance() {
                           <span
                             className={cn(
                               "text-[10px] w-fit px-2 py-0.5 rounded-md font-semibold mt-1 uppercase tracking-wide",
-                              getRequestStatusStyles(status)
+                              getRequestStatusStyles(status),
                             )}
                           >
                             {formatStatus(status)}
@@ -425,7 +430,7 @@ export default function MyAttendance() {
                 {correctionToCancel?.attendance?.date
                   ? format(
                       parseISO(correctionToCancel.attendance.date),
-                      "MMM dd, yyyy"
+                      "MMM dd, yyyy",
                     )
                   : "this date"}
               </strong>
