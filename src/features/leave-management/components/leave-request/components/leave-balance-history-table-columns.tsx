@@ -51,6 +51,17 @@ export const leaveBalanceHistoryColumns: ColumnDef<any>[] = [
     enableSorting: false,
   },
   {
+    accessorKey: "year",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader
+        column={column}
+        title="Leave Balance for Year"
+      />
+    ),
+    enableHiding: false,
+    enableSorting: false,
+  },
+  {
     id: "actionDate",
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Action Date & Time" />

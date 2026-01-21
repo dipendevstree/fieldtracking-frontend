@@ -156,7 +156,7 @@ export default function CalendarView({
       }
       return {};
     },
-    [weekOffDays]
+    [weekOffDays],
   );
 
   // Calculate max events per day to determine dynamic row height
@@ -187,10 +187,10 @@ export default function CalendarView({
     const padding = 10;
     const calculatedRowHeight = Math.max(
       120,
-      dateHeaderHeight + maxEvents * eventHeight + padding
+      dateHeaderHeight + maxEvents * eventHeight + padding,
     );
-    // Calendar has 6 rows typically, plus header
-    const calculatedCalendarHeight = calculatedRowHeight * 6 + 50;
+    // Calendar has 6 rows typically, plus header (day names row ~50px)
+    const calculatedCalendarHeight = calculatedRowHeight * 6 + 100;
 
     return {
       maxEventsPerDay: maxEvents,
@@ -226,6 +226,14 @@ export default function CalendarView({
         /* Dynamic row height based on max events */
         .rbc-month-row {
           min-height: ${rowHeight}px;
+          flex-basis: ${rowHeight}px;
+          overflow: visible !important;
+        }
+        .rbc-month-view {
+          overflow: visible !important;
+        }
+        .rbc-row-content {
+          overflow: visible !important;
         }
       `}</style>
       <Calendar
@@ -378,7 +386,7 @@ const CustomToolbar = ({
               "px-6 py-2 text-sm font-semibold rounded-md transition-all",
               currentMode === "leave"
                 ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-900"
+                : "text-slate-500 hover:text-slate-900",
             )}
           >
             Leave Calendar
@@ -389,7 +397,7 @@ const CustomToolbar = ({
               "px-6 py-2 text-sm font-semibold rounded-md transition-all",
               currentMode === "holiday"
                 ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-900"
+                : "text-slate-500 hover:text-slate-900",
             )}
           >
             Holiday Calendar

@@ -39,7 +39,7 @@ export default function LeaveApprovals() {
 
   // Track selected territory for API calls
   const [selectedTerritoryId, setSelectedTerritoryId] = useState<string>(
-    allowAddUsersBasedOnTerritories ? user?.territoryId || "" : ""
+    allowAddUsersBasedOnTerritories ? user?.territoryId || "" : "",
   );
 
   const {
@@ -111,7 +111,7 @@ export default function LeaveApprovals() {
   useDirtyTracker(form.formState.isDirty);
 
   const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
-    form.formState.isDirty
+    form.formState.isDirty,
   );
 
   const selectedTerritory = form.watch("territoryId");
@@ -136,12 +136,12 @@ export default function LeaveApprovals() {
 
   useEffect(() => {
     if (!selectedTerritoryId) {
-      if (territories.length > 0) {
+      if (allowAddUsersBasedOnTerritories && territories.length > 0) {
         setSelectedTerritoryId(territories[0].id);
         form.setValue("territoryId", territories[0].id);
       }
     }
-  }, [selectedTerritoryId, territories]);
+  }, [selectedTerritoryId, territories, allowAddUsersBasedOnTerritories]);
 
   useEffect(() => {
     if (!isLeaveApprovalsLoading) {
@@ -162,7 +162,7 @@ export default function LeaveApprovals() {
         const leaveApprovalsLevels: any = [];
         defaultLeaveApprovalsLevels.forEach((tier: any) => {
           const tierExists = leaveApprovalsConfig.leaveApprovalsLevels?.find(
-            (level: any) => level.tierkey === tier.tierkey
+            (level: any) => level.tierkey === tier.tierkey,
           );
           const userExists = tierWiseUserCache[tier.tierkey] || [];
           if (!userExists.length) {
@@ -235,7 +235,7 @@ export default function LeaveApprovals() {
     };
     createLeaveApprovals(payload);
   };
-
+  console.log("selectedTerritoryId", selectedTerritoryId);
   if (!isDataReady) {
     return (
       <div className="p-8 text-center text-muted-foreground">
@@ -452,7 +452,7 @@ export default function LeaveApprovals() {
 
                               {/* User */}
                               {form.watch(
-                                `leaveApprovalsLevels.${index}.approvalRole`
+                                `leaveApprovalsLevels.${index}.approvalRole`,
                               ) !== ApprovalRole.reporting_to && (
                                 <FormField
                                   control={form.control}
