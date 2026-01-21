@@ -41,7 +41,7 @@ export function toUrl(row: any) {
     case NOTIFICATION_TYPE.LEAVE_APPROVED:
     case NOTIFICATION_TYPE.LEAVE_REJECTED:
       return {
-        to: "/leave-management/leave-balance",
+        to: "/leave-management/my-leave",
       };
   }
 }

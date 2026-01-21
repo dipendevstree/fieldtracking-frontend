@@ -548,7 +548,7 @@ export default function HolidayCalendarTemplates() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Choose Holidays</Label>
+                  <Label>Choose Special Holidays</Label>
                   <FormField
                     control={form.control}
                     name="specialHolidayIds"

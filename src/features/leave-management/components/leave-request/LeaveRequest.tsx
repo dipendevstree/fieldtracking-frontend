@@ -16,7 +16,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PendingRequest from "./components/PendingRequest";
 import LeaveApprovalHistory from "./components/LeaveApprovalHistory";
 import { useGetLeaveRequestStats } from "../../services/leave-request.hook";
-import { useAuthStore } from "@/stores/use-auth-store";
 import { Main } from "@/components/layout/main";
 
 const tabs = [
@@ -38,7 +37,6 @@ interface Props {
 
 export default function LeaveRequest({ dashboardView = false }: Props) {
   const [activeTab, setActiveTab] = useState("pending-request");
-  const { user } = useAuthStore();
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
@@ -52,9 +50,7 @@ export default function LeaveRequest({ dashboardView = false }: Props) {
   });
 
   const { data: usersList = [] } = useGetAllUsers({ onlyTeamMembers: true });
-  const { data: leaveRequestStats } = useGetLeaveRequestStats({
-    userId: user?.id,
-  });
+  const { data: leaveRequestStats } = useGetLeaveRequestStats({});
 
   const usersOptions = useSelectOptions<any>({
     listData: usersList?.map((user: any) => ({

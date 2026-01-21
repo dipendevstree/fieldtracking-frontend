@@ -2,8 +2,10 @@ import { AUTH_STORAGE_KEYS, ViewType } from "@/components/layout/types";
 import React from "react";
 
 interface ViewTypeContextType {
-  viewType: ViewType;
-  setViewType: React.Dispatch<React.SetStateAction<ViewType>>;
+  viewType: ViewType | null;
+  setViewType: React.Dispatch<React.SetStateAction<ViewType | null>>;
+  viewTypeToggle: boolean;
+  setViewTypeToggle: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const ViewTypeContext = React.createContext<ViewTypeContextType | null>(null);
@@ -13,15 +15,36 @@ interface Props {
 }
 
 export function ViewTypeProvider({ children }: Props) {
-  const [viewType, setViewType] = React.useState<ViewType>(() => {
+  const [viewType, setViewType] = React.useState<ViewType | null>(() => {
     const stored = localStorage.getItem(
       AUTH_STORAGE_KEYS.VIEW_TYPE_STORAGE_KEY
     );
     return stored === ViewType.Self ? ViewType.Self : ViewType.Admin;
   });
 
+  const [viewTypeToggle, setViewTypeToggle] = React.useState<boolean>(() => {
+    const stored = localStorage.getItem(
+      AUTH_STORAGE_KEYS.VIEW_TYPE_STORAGE_KEY
+    );
+    return stored === ViewType.Self ? true : false;
+  });
+
+  React.useEffect(() => {
+    if (viewTypeToggle) {
+      setViewType(viewType);
+      setViewTypeToggle(true);
+      viewType &&
+        localStorage.setItem(AUTH_STORAGE_KEYS.VIEW_TYPE_STORAGE_KEY, viewType);
+    } else {
+      setViewType(null);
+      setViewTypeToggle(false);
+      localStorage.removeItem(AUTH_STORAGE_KEYS.VIEW_TYPE_STORAGE_KEY);
+    }
+  }, [viewTypeToggle]);
+
   React.useEffect(() => {
     if (
+      viewType &&
       localStorage.getItem(AUTH_STORAGE_KEYS.VIEW_TYPE_STORAGE_KEY) !== viewType
     ) {
       localStorage.setItem(AUTH_STORAGE_KEYS.VIEW_TYPE_STORAGE_KEY, viewType);
@@ -30,7 +53,9 @@ export function ViewTypeProvider({ children }: Props) {
   }, [viewType]);
 
   return (
-    <ViewTypeContext.Provider value={{ viewType, setViewType }}>
+    <ViewTypeContext.Provider
+      value={{ viewType, setViewType, viewTypeToggle, setViewTypeToggle }}
+    >
       {children}
     </ViewTypeContext.Provider>
   );

@@ -10,7 +10,7 @@ export const Route = createFileRoute(
 
 function RouteComponent() {
   return (
-    <ProtectedRoute requiredPermission="dashboard">
+    <ProtectedRoute requiredPermission="leave_management_dashboard">
       <MyLeaveBalance />
     </ProtectedRoute>
   );

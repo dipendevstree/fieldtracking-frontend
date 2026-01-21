@@ -32,7 +32,7 @@ function redirectToUrl(messageType, notification) {
 
     case "LEAVE_APPROVED":
     case "LEAVE_REJECTED":
-      return "/leave-management/leave-balance";
+      return "/leave-management/my-leave";
   }
 }
 

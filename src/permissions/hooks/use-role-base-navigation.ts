@@ -6,7 +6,11 @@ import { ViewType } from "@/components/layout/types";
 
 export function useRoleBasedNavigation(
   backendPermissions: any,
-  options?: { allowAddUsersBasedOnTerritories?: boolean; viewType?: ViewType }
+  options?: {
+    allowAddUsersBasedOnTerritories?: boolean;
+    viewType?: ViewType | null;
+    viewTypeToggle?: boolean;
+  }
 ) {
   const { hasAccess, canPerformAction, isAuthenticated, user } =
     usePermission();
@@ -21,7 +25,8 @@ export function useRoleBasedNavigation(
       hasAccess,
       backendPermissions?.permissions,
       user,
-      options?.viewType || null
+      options?.viewType || null,
+      options?.viewTypeToggle || false
     );
 
     // ✅ Extra filtering based on org settings flags
