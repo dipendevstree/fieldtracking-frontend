@@ -83,14 +83,14 @@ export const getEventStatusKey = (
 // --- MAIN COMPONENT ---
 export default function MyLeaveBalance() {
   const navigate = useNavigate();
-  const { viewType } = useViewType();
+  const { viewType, viewTypeToggle } = useViewType();
 
   useEffect(() => {
-    if (viewType === ViewType.Self) {
+    if (viewType === ViewType.Self && viewTypeToggle) {
       navigate({ to: "/leave-management/my-leave" });
       return;
     }
-  }, [viewType]);
+  }, [viewType, viewTypeToggle]);
 
   const [calendarMode, setCalendarMode] = useState<"holiday" | "leave">(
     "leave"

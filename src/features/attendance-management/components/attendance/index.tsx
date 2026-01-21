@@ -75,13 +75,13 @@ const getRequestStatusStyles = (status: string) => {
 export default function MyAttendance() {
   const navigate = useNavigate();
   // view type context
-  const { viewType } = useViewType();
+  const { viewType, viewTypeToggle } = useViewType();
   useEffect(() => {
-    if (viewType === ViewType.Admin) {
+    if (viewType === ViewType.Admin && viewTypeToggle) {
       navigate({ to: "/attendance-management/attendance-dashboard" });
       return;
     }
-  }, [viewType]);
+  }, [viewType, viewTypeToggle]);
 
   const [viewDate, setViewDate] = useState(new Date());
   const [isCorrectionDialogOpen, setIsCorrectionDialogOpen] = useState(false);

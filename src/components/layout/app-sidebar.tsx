@@ -15,11 +15,12 @@ import { useViewType } from "@/context/view-type-context";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useAuthStore();
-  const { viewType } = useViewType();
+  const { viewType, viewTypeToggle } = useViewType();
   const { sidebarData } = useRoleBasedNavigation(user?.role, {
     allowAddUsersBasedOnTerritories:
       user?.organization?.allowAddUsersBasedOnTerritories,
     viewType,
+    viewTypeToggle,
   });
   const isSuperAdmin = user?.isSuperAdmin;
   const SIDEBAR_DATA = isSuperAdmin ? SUPER_ADMIN_SIDEBAR_DATA : sidebarData;

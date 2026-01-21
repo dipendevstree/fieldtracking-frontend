@@ -6,7 +6,8 @@ export function filterSidebarByPermissions(
   hasAccess: (menuKey: string) => boolean,
   backendPermissions: { menuName: string; menuKey: string; children: any[] }[],
   user: any,
-  viewType: ViewType | null
+  viewType: ViewType | null,
+  viewTypeToggle: boolean
 ): SidebarData {
   // Create a map of menuKey to menuName for quick lookup
   const menuNameMap = new Map<string, string>();
@@ -25,7 +26,8 @@ export function filterSidebarByPermissions(
         hasAccess,
         menuNameMap,
         user,
-        viewType
+        viewType,
+        viewTypeToggle
       ),
     }))
     .filter((group) => group?.items?.length > 0); // Remove empty groups
@@ -41,18 +43,20 @@ function filterSidebarItems(
   hasAccess: (menuKey: string) => boolean,
   menuNameMap: Map<string, string>,
   user: any,
-  viewType: ViewType | null
+  viewType: ViewType | null,
+  viewTypeToggle: boolean
 ): SidebarItem[] {
   return items
     .filter((item) => {
       // If item has menuKey, check permission
       // Note: Never Change MenuKey In The Backend. Only Change Title
       // if (item?.menuKey === "settings" && user?.superAdminCreatedBy === null) return false; // Hide settings menu entirely
-      if (item?.viewType) {
-        return viewType === item?.viewType;
-      }
       if (item.menuKey) {
-        return hasAccess(item?.menuKey);
+        let hasPermission = hasAccess(item?.menuKey);
+        if (hasPermission && viewTypeToggle && item?.viewType) {
+          hasPermission = viewType === item?.viewType;
+        }
+        return hasPermission;
       }
       // If no menuKey, include by default
       return true;
@@ -70,7 +74,8 @@ function filterSidebarItems(
             hasAccess,
             menuNameMap,
             user,
-            viewType
+            viewType,
+            viewTypeToggle
           )
         : undefined,
     }))

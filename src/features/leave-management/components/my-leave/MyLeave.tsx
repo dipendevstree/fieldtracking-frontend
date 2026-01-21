@@ -29,15 +29,15 @@ export default function MyLeave() {
   const { user } = useAuthStore();
   const allowWorkFromHome = user?.organization?.allowWorkFromHome;
   const navigate = useNavigate();
-  const { viewType } = useViewType();
+  const { viewType, viewTypeToggle } = useViewType();
   const { open, setOpen, currentRow, setCurrentRow } = useLeaveRequestStore();
 
   useEffect(() => {
-    if (viewType === ViewType.Admin) {
+    if (viewType === ViewType.Admin && viewTypeToggle) {
       navigate({ to: "/leave-management/dashboard" });
       return;
     }
-  }, [viewType]);
+  }, [viewType, viewTypeToggle]);
 
   const [openLeaveBalance, setOpenLeaveBalance] = useState<boolean>(false);
   const [calendarMode, setCalendarMode] = useState<"holiday" | "leave">(

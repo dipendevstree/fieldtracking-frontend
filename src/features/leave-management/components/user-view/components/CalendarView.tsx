@@ -181,8 +181,8 @@ export default function CalendarView({
     });
 
     const maxEvents = Math.max(1, ...Object.values(eventCountByDay));
-    // Each event needs ~24px height, plus ~30px for date header, plus some padding
-    const eventHeight = 24;
+    // Each event needs ~25px height, plus ~30px for date header, plus some padding
+    const eventHeight = 25;
     const dateHeaderHeight = 30;
     const padding = 10;
     const calculatedRowHeight = Math.max(

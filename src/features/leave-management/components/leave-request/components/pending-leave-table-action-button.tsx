@@ -28,6 +28,8 @@ export function PendingLeaveRowActions({ row }: { row: any }) {
     row.original.status === LEAVE_STATUS.PENDING &&
     pathname.includes("my-leave");
 
+  const showActionButton = !pathname.includes("my-leave");
+
   const handleEditClick = (leaveData: any) => {
     if (leaveData.status?.toLowerCase() === "approved") {
       toast.error("Cannot edit approved leave requests.");
@@ -57,7 +59,7 @@ export function PendingLeaveRowActions({ row }: { row: any }) {
     <div className="flex items-center space-x-2">
       {showEditAndCancelButton ? (
         <div className="flex items-center space-x-2">
-          <PermissionGate requiredPermission="leave_balance" action="edit">
+          <PermissionGate requiredPermission="my_leave" action="edit">
             <CustomTooltip title="Edit">
               <Button
                 variant="ghost"
@@ -71,7 +73,7 @@ export function PendingLeaveRowActions({ row }: { row: any }) {
               </Button>
             </CustomTooltip>
           </PermissionGate>
-          <PermissionGate requiredPermission="leave_balance" action="delete">
+          <PermissionGate requiredPermission="my_leave" action="delete">
             <CustomTooltip title="Cancel">
               <Button
                 variant="ghost"
@@ -86,7 +88,7 @@ export function PendingLeaveRowActions({ row }: { row: any }) {
             </CustomTooltip>
           </PermissionGate>
         </div>
-      ) : (
+      ) : showActionButton ? (
         <PermissionGate requiredPermission="leave_request" action="viewOwn">
           <CustomTooltip title="View">
             <Button
@@ -98,6 +100,8 @@ export function PendingLeaveRowActions({ row }: { row: any }) {
             </Button>
           </CustomTooltip>
         </PermissionGate>
+      ) : (
+        <></>
       )}
     </div>
   );
