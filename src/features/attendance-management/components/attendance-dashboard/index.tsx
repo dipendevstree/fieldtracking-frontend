@@ -58,13 +58,13 @@ type ViewType = "daily" | "range";
 export default function AttendanceDashboard() {
   const navigate = useNavigate();
   // view type context
-  const { viewType } = useViewType();
+  const { viewType, viewTypeToggle } = useViewType();
   useEffect(() => {
-    if (viewType === ViewTypeContextType.Self) {
+    if (viewType === ViewTypeContextType.Self && viewTypeToggle) {
       navigate({ to: "/attendance-management/my-attendance" });
       return;
     }
-  }, [viewType]);
+  }, [viewType, viewTypeToggle]);
 
   const [currentDate, setCurrentDate] = useState(new Date()); // Today
   const [selectedView, setSelectedView] = useState<ViewType>("daily");

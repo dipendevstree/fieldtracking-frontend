@@ -17,6 +17,7 @@ import { getProfileName } from "@/lib/utils";
 import { useViewType } from "@/context/view-type-context";
 import { Switch } from "@/components/ui/switch";
 import { usePermission } from "@/permissions/hooks/use-permission";
+import { useEffect } from "react";
 
 interface MenuItem {
   label: string;
@@ -75,7 +76,8 @@ export function ProfileDropdown({
 }: Readonly<ProfileDropdownProps>) {
   const { user, logout } = useAuthStore();
   const { hasAccess } = usePermission();
-  const { viewType, setViewType } = useViewType();
+  const { viewType, setViewType, viewTypeToggle, setViewTypeToggle } =
+    useViewType();
 
   const handleLogout = () => {
     logout();
@@ -83,9 +85,13 @@ export function ProfileDropdown({
 
   const avatarSizeClass = AVATAR_SIZES[avatarSize];
   const userName = getProfileName(user?.firstName || user?.userName || "");
-  const showViewTypeToggle = permissionForViewTypeToggle.some((item) => {
-    return hasAccess(item.admin) && hasAccess(item.self);
-  });
+
+  useEffect(() => {
+    const showViewTypeToggle = permissionForViewTypeToggle.some((item) => {
+      return hasAccess(item.admin) && hasAccess(item.self);
+    });
+    setViewTypeToggle(showViewTypeToggle);
+  }, [user?.role?.permissions]);
 
   return (
     <DropdownMenu modal={false}>
@@ -128,7 +134,7 @@ export function ProfileDropdown({
           </div>
         </DropdownMenuLabel>
 
-        {showViewTypeToggle && (
+        {viewTypeToggle && (
           <>
             <DropdownMenuSeparator />
             {/* View Type Toggle */}
