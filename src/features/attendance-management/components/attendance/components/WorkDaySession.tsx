@@ -11,7 +11,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, LogIn, LogOut, Loader2 } from "lucide-react";
+import { LogIn, LogOut, Loader2 } from "lucide-react";
 
 const WorkDaySession = () => {
   /* ---------------- Fetch today's session ---------------- */
@@ -123,12 +123,6 @@ const WorkDaySession = () => {
 
       <CardContent>
         <div className="flex flex-col gap-4">
-          {/* Current Time */}
-          <div className="flex items-center gap-2 text-2xl font-bold">
-            <Clock className="h-5 w-5 text-slate-400" />
-            {moment().format("hh:mm A")}
-          </div>
-
           {/* Totals */}
           <div className="flex justify-between text-sm">
             <div>

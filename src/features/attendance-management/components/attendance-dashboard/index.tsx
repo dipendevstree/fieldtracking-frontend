@@ -423,7 +423,7 @@ export default function AttendanceDashboard() {
           >
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="daily">Daily View</TabsTrigger>
-              <TabsTrigger value="range">Range View</TabsTrigger>
+              <TabsTrigger value="range">Weekly View</TabsTrigger>
             </TabsList>
           </Tabs>
         </CardContent>
