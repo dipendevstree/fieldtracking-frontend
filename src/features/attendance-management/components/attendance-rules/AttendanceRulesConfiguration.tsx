@@ -116,7 +116,7 @@ export default function AttendanceRulesConfiguration() {
         lateMarkLimit: rulesData.lateMarkLimit ?? 1,
         leaveDeductionCount: rulesData.leaveDeductionCount ?? 0,
         weekOffDays: (rulesData.weekOffDays ?? [0]).map((day: any) =>
-          typeof day === "string" ? parseInt(day, 10) : day
+          typeof day === "string" ? parseInt(day, 10) : day,
         ),
         latemarkApplicableTiers: rulesData.latemarkApplicableTiers ?? [],
         enableHoursBasedDeduction: rulesData.enableHoursBasedDeduction ?? false,
@@ -157,7 +157,7 @@ export default function AttendanceRulesConfiguration() {
   useDirtyTracker(form.formState.isDirty);
 
   const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
-    form.formState.isDirty
+    form.formState.isDirty,
   );
 
   if (isRulesLoading) {
@@ -298,62 +298,7 @@ export default function AttendanceRulesConfiguration() {
             )}
           </Card>
 
-          {/* 2. Overtime Calculation */}
-          <Card>
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-blue-600" />
-                  <div>
-                    <CardTitle className="text-base">
-                      Overtime Calculation
-                    </CardTitle>
-                    <CardDescription>
-                      Automatically calculate and track overtime hours for
-                      employees
-                    </CardDescription>
-                  </div>
-                </div>
-                <FormField
-                  control={form.control}
-                  name="enableOvertime"
-                  render={({ field }) => (
-                    <FormItem className="flex items-center space-x-2 space-y-0">
-                      {field.value && (
-                        <Badge className="bg-green-600 hover:bg-green-700">
-                          Enabled
-                        </Badge>
-                      )}
-                      <FormControl>
-                        <Switch
-                          checked={field.value ?? true}
-                          onCheckedChange={field.onChange}
-                          disabled={!canEdit}
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-              </div>
-            </CardHeader>
-
-            {(form.watch("enableOvertime") ?? true) && (
-              <CardContent className="space-y-6 animate-in slide-in-from-top-2 duration-200">
-                {/* Example Box */}
-                <div className="bg-slate-50 border rounded-md p-4 text-sm text-slate-700">
-                  <span className="font-semibold block mb-1">
-                    How it works:
-                  </span>
-                  When enabled, the system will automatically calculate overtime
-                  hours when employees work beyond their scheduled hours.
-                  {/* Overtime rates and policies can be configured separately in
-                  payroll settings. */}
-                </div>
-              </CardContent>
-            )}
-          </Card>
-
-          {/* 3. Late Mark Policy */}
+          {/* 2. Late Mark Policy */}
           <Card>
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
@@ -519,7 +464,7 @@ export default function AttendanceRulesConfiguration() {
             )}
           </Card>
 
-          {/* 4. Hours Based Deduction */}
+          {/* 3. Hours Based Deduction */}
           <Card>
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
@@ -659,6 +604,59 @@ export default function AttendanceRulesConfiguration() {
             )}
           </Card>
 
+          {/* 4. Overtime Calculation */}
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-blue-600" />
+                  <div>
+                    <CardTitle className="text-base">
+                      Overtime Calculation
+                    </CardTitle>
+                    <CardDescription>
+                      Automatically calculate and track overtime hours for
+                      employees
+                    </CardDescription>
+                  </div>
+                </div>
+                <FormField
+                  control={form.control}
+                  name="enableOvertime"
+                  render={({ field }) => (
+                    <FormItem className="flex items-center space-x-2 space-y-0">
+                      {field.value && (
+                        <Badge className="bg-green-600 hover:bg-green-700">
+                          Enabled
+                        </Badge>
+                      )}
+                      <FormControl>
+                        <Switch
+                          checked={field.value ?? true}
+                          onCheckedChange={field.onChange}
+                          disabled={!canEdit}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </CardHeader>
+
+            {(form.watch("enableOvertime") ?? true) && (
+              <CardContent className="space-y-6 animate-in slide-in-from-top-2 duration-200">
+                {/* Example Box */}
+                <div className="bg-slate-50 border rounded-md p-4 text-sm text-slate-700">
+                  <span className="font-semibold block mb-1">
+                    How it works:
+                  </span>
+                  When enabled, Automatically calculates overtime hours for work
+                  beyond scheduled hours. Calculations are processed monthly. .
+                </div>
+              </CardContent>
+            )}
+          </Card>
+
           {/* 5. Week Off Days */}
           <Card>
             <CardHeader className="pb-4">
@@ -705,8 +703,8 @@ export default function AttendanceRulesConfiguration() {
                                           ])
                                         : field.onChange(
                                             field.value?.filter(
-                                              (value) => value !== day.value
-                                            )
+                                              (value) => value !== day.value,
+                                            ),
                                           );
                                     }}
                                     disabled={!canEdit}
@@ -733,14 +731,6 @@ export default function AttendanceRulesConfiguration() {
                   </FormItem>
                 )}
               />
-
-              {/* Example Box */}
-              <div className="bg-slate-50 border rounded-md p-4 text-sm text-slate-700">
-                <span className="font-semibold block mb-1">Example:</span>
-                If Sunday is selected as week off, employees won't be required
-                to check-in on Sundays, and it won't affect their attendance
-                percentage.
-              </div>
             </CardContent>
           </Card>
 
