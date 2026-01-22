@@ -131,14 +131,25 @@ export default function CalendarView({
   const eventPropGetter = useCallback((event: any) => {
     // Look up based on passed status key
     const statusKey = event.resource?.statusKey?.toLowerCase();
+    const isHalfDay = event.resource?.halfDay;
+    const halfDayType = event.resource?.halfDayType;
 
     // Find style or fallback
     const specificStyle = EVENT_STYLES[statusKey] || EVENT_STYLES.default;
+
+    // Half day positioning styles
+    const halfDayStyle: React.CSSProperties = isHalfDay
+      ? {
+          width: "50%",
+          marginLeft: halfDayType === "second_half" ? "50%" : "0",
+        }
+      : {};
 
     return {
       style: {
         ...BASE_EVENT_STYLE,
         ...specificStyle,
+        ...halfDayStyle,
       },
     };
   }, []);

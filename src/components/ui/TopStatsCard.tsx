@@ -1,6 +1,7 @@
 import { LucideIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { NavigateOptions, useNavigate } from "@tanstack/react-router";
 
 // Define the color themes matching the screenshot style (Light BG, Dark Text)
 const colorMap = {
@@ -57,6 +58,7 @@ interface StatsCardProps {
   icon: LucideIcon;
   className?: string;
   themeColor?: StatCardTheme;
+  href?: NavigateOptions;
 }
 
 export function TopStatsCard({
@@ -66,18 +68,24 @@ export function TopStatsCard({
   icon: Icon,
   className,
   themeColor = "default",
+  href,
 }: StatsCardProps) {
   const styles = colorMap[themeColor];
-
+  const navigate = useNavigate();
   return (
     <Card
-      className={cn("shadow-sm border-slate-200 overflow-hidden", className)}
+      className={cn(
+        "shadow-sm border-slate-200 overflow-hidden",
+        className,
+        href ? "cursor-pointer" : "",
+      )}
+      {...(href ? { onClick: () => navigate(href) } : {})}
     >
       <CardHeader
         className={cn(
           "flex flex-row items-center justify-between py-3",
           styles.bg,
-          styles.border
+          styles.border,
         )}
       >
         <CardTitle className={cn("text-sm font-semibold", styles.text)}>

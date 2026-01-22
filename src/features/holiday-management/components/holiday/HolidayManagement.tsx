@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { format } from "date-fns";
+import { endOfYear, format, startOfYear } from "date-fns";
 import { Plus, CalendarIcon, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +35,11 @@ export default function HolidayManagement() {
   });
   const { data: holidayStats } = useGetHolidayStats();
   const { data: holidayTypeList = [] } = useGetAllHolidayTypes();
-  const { data: holidayList = [], isLoading } = useGetAllHolidays(pagination);
+  const {
+    data: holidayList = [],
+    isLoading,
+    totalCount = 0,
+  } = useGetAllHolidays(pagination);
   const isSpecialList = [
     { value: "true", label: "Special" },
     { value: "false", label: "Not Special" },
@@ -74,7 +78,7 @@ export default function HolidayManagement() {
     () => {
       setOpen(null);
       setCurrentRow(null);
-    }
+    },
   );
 
   // Handlers
@@ -110,6 +114,36 @@ export default function HolidayManagement() {
     },
   ];
 
+  const handleClickSpecialHoliday = () => {
+    setDateRange({
+      from: undefined,
+      to: undefined,
+    });
+    setPagination((prev) => ({
+      ...prev,
+      startDate: "",
+      endDate: "",
+      page: 1,
+      isSpecial: "true",
+    }));
+  };
+  const handleClickCurrentYearHoliday = () => {
+    const now = new Date();
+    const startDate = startOfYear(now);
+    const endDate = endOfYear(now);
+    setDateRange({
+      from: startDate,
+      to: endDate,
+    });
+    setPagination((prev) => ({
+      ...prev,
+      startDate: format(startDate, "yyyy-MM-dd"), // first date of the current year
+      endDate: format(endDate, "yyyy-MM-dd"), // last date of the current year
+      page: 1,
+      isSpecial: "",
+    }));
+  };
+
   return (
     <Main className="space-y-6 pb-10">
       <div className="grid gap-4 md:grid-cols-3">
@@ -125,12 +159,12 @@ export default function HolidayManagement() {
             <div className="text-2xl font-bold">
               {holidayStats?.totalHolidayCount || 0}
             </div>
-            <p className="text-xs text-muted-foreground">Active holidays</p>
+            <p className="text-xs text-muted-foreground">Total holidays</p>
           </CardContent>
         </Card>
 
         {/* Assigned Employees Card */}
-        <Card>
+        <Card className="cursor-pointer" onClick={handleClickSpecialHoliday}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Special Holidays
@@ -145,7 +179,10 @@ export default function HolidayManagement() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card
+          className="cursor-pointer"
+          onClick={handleClickCurrentYearHoliday}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Holidays of {new Date().getFullYear()}
@@ -176,11 +213,11 @@ export default function HolidayManagement() {
 
       <HolidayListTable
         data={holidayList}
-        totalCount={holidayList?.length || 0}
+        totalCount={totalCount || 0}
         loading={isLoading}
         paginationCallbacks={{ onPaginationChange }}
         currentPage={pagination.page}
-        defaultPageSize={DEFAULT_PAGE_SIZE}
+        defaultPageSize={pagination.limit}
       />
 
       <HolidayActionDialog
