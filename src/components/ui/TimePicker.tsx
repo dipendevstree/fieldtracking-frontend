@@ -178,7 +178,7 @@ export function TimePicker({
           <div className="flex items-start gap-x-2 p-2">
             {/* Hour Column */}
             <div
-              className="flex h-48 flex-col gap-1 overflow-y-auto pr-2"
+              className="flex h-48 flex-col gap-1 overflow-y-auto pr-2 overscroll-contain"
               onWheel={(e) => {
                 e.stopPropagation();
               }}
@@ -210,7 +210,7 @@ export function TimePicker({
 
             {/* Minute Column */}
             <div
-              className="flex h-48 flex-col gap-1 overflow-y-auto pr-2"
+              className="flex h-48 flex-col gap-1 overflow-y-auto pr-2 overscroll-contain"
               onWheel={(e) => {
                 e.stopPropagation();
               }}

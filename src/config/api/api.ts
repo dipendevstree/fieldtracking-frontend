@@ -35,6 +35,13 @@ const API = {
     userTracking: "user-tracking/user",
     userList: "users/list",
   },
+  WorkSession: {
+    getWorkDaySession: "workDaySession/getSession",
+    startWorkDaySession: "workDaySession/start",
+    endWorkDaySession: "workDaySession/end",
+    startBreakSession: "workBreakSession/start",
+    endBreakSession: "workBreakSession/end",
+  },
   customerType: {
     list: "customerType/list",
     create: "customerType/create",

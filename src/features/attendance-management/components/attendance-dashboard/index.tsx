@@ -123,7 +123,7 @@ export default function AttendanceDashboard() {
       startDate: apiDateRange.startDate,
       endDate: apiDateRange.endDate,
     },
-    { enabled: selectedView === "range" }
+    { enabled: selectedView === "range" },
   );
 
   // Get start and end dates of the current calendar month
@@ -295,7 +295,7 @@ export default function AttendanceDashboard() {
   const attendanceEvents: AttendanceEvent[] =
     calendarData
       ?.filter((r: any) =>
-        EXCEPTION_STATUSES.includes(r.status?.toLowerCase() as any)
+        EXCEPTION_STATUSES.includes(r.status?.toLowerCase() as any),
       )
       .map((record: any) => ({
         id: record.attendanceId,
@@ -347,22 +347,26 @@ export default function AttendanceDashboard() {
         />
 
         {/* 3. Absent*/}
-        <TopStatsCard
-          title="Absent"
-          value={stats?.absent || 0}
-          description="Not checked in"
-          icon={UserX}
-          themeColor="red"
-        />
+        {!isToday && (
+          <TopStatsCard
+            title="Absent"
+            value={stats?.absent || 0}
+            description="Not checked in"
+            icon={UserX}
+            themeColor="red"
+          />
+        )}
 
         {/* 4. Not Started */}
-        <TopStatsCard
-          title="Not Started"
-          value={stats?.notStarted || 0}
-          description="Not checked in"
-          icon={UserX}
-          themeColor="purple"
-        />
+        {isToday && (
+          <TopStatsCard
+            title="Not Started"
+            value={stats?.notStarted || 0}
+            description="Not checked in"
+            icon={UserX}
+            themeColor="purple"
+          />
+        )}
 
         {/* 5. Half Day */}
         <TopStatsCard
@@ -423,7 +427,7 @@ export default function AttendanceDashboard() {
           >
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="daily">Daily View</TabsTrigger>
-              <TabsTrigger value="range">Range View</TabsTrigger>
+              <TabsTrigger value="range">Weekly View</TabsTrigger>
             </TabsList>
           </Tabs>
         </CardContent>
