@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import moment from "moment";
 import { toast } from "sonner";
 import {
@@ -11,13 +12,53 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogIn, LogOut, Loader2 } from "lucide-react";
+import { LogIn, LogOut } from "lucide-react";
+import { useAuthStore } from "@/stores/use-auth-store";
+import { socketForVisit } from "@/socket/socket";
 
 const WorkDaySession = () => {
+  const { user } = useAuthStore();
+
   /* ---------------- Fetch today's session ---------------- */
-  const { data: sessionData, isLoading: isFetching } = useGetWorkDaySession({
+  const {
+    data: sessionData,
+    isLoading: isFetching,
+    refetch,
+  } = useGetWorkDaySession({
     date: moment().format("YYYY-MM-DD"),
   });
+
+  /* ---------------- Socket Integration (New) ---------------- */
+  useEffect(() => {
+    const socket = socketForVisit(user?.access_token);
+    if (!socket || !user?.id) return;
+
+    const handleConnect = () => {
+      socket.emit("track_user", { userId: user.id });
+    };
+
+    // When an event comes in, we simply ask React Query to refetch the data
+    const handleRefresh = (event: any) => {
+      if (event.userId === user.id) {
+        refetch();
+      }
+    };
+
+    if (socket.connected) {
+      handleConnect();
+    } else {
+      socket.on("connect", handleConnect);
+    }
+
+    socket.on("work_session", handleRefresh);
+    socket.on("break_session", handleRefresh);
+
+    return () => {
+      socket.off("connect", handleConnect);
+      socket.off("work_session", handleRefresh);
+      socket.off("break_session", handleRefresh);
+    };
+  }, [socketForVisit, user, refetch]);
 
   /* ---------------- Mutations ---------------- */
   const { mutate: startWorkDay, isPending: startingDay } =
@@ -105,7 +146,7 @@ const WorkDaySession = () => {
   /* ---------------- UI ---------------- */
   return (
     <Card className="w-full max-w-sm mb-6 shadow-sm">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
+      <CardHeader className="flex flex-row items-center justify-between pb-0">
         <CardTitle className="text-sm font-bold">Work Day Session</CardTitle>
 
         <Badge
@@ -132,7 +173,7 @@ const WorkDaySession = () => {
 
             <div>
               <p className="text-slate-500">Break Time</p>
-              <p className="font-semibold">{totalBreakTime}</p>
+              <p className="font-semibold text-right">{totalBreakTime}</p>
             </div>
           </div>
 
@@ -144,7 +185,6 @@ const WorkDaySession = () => {
                 onClick={handleCheckIn}
                 disabled={isLoading}
               >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 <LogIn className="mr-2 h-4 w-4" />
                 Check In
               </Button>
@@ -157,7 +197,6 @@ const WorkDaySession = () => {
                 disabled={isLoading}
                 variant="secondary"
               >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Start Break
               </Button>
             )}
@@ -169,7 +208,6 @@ const WorkDaySession = () => {
                 disabled={isLoading}
                 variant="destructive"
               >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 <LogOut className="mr-2 h-4 w-4" />
                 Check Out
               </Button>
@@ -182,7 +220,6 @@ const WorkDaySession = () => {
                 disabled={isLoading}
                 variant="secondary"
               >
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 End Break
               </Button>
             )}
