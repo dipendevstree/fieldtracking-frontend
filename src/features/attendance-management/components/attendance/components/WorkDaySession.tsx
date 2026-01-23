@@ -198,50 +198,26 @@ const WorkDaySession = () => {
     });
   };
 
-  /* ---------------- UI Helpers ---------------- */
-  const getStatusColor = () => {
-    if (isOnBreak) return "bg-amber-500";
-    if (isDayStarted) return "bg-emerald-500";
-    return "hidden";
-  };
-
+  /* ---------------- UI  ---------------- */
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <Button
-          variant="ghost"
           className={cn(
-            "relative flex items-center gap-2 px-3 text-slate-500 hover:text-slate-900 hover:bg-slate-100",
-            isDayStarted ? "w-auto" : "w-10 px-0",
+            "h-8",
+            isDayStarted &&
+              (isOnBreak
+                ? "bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200"
+                : "bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200"),
           )}
         >
-          <ClockIcon
-            className={cn(
-              "size-5",
-              isOnBreak
-                ? "text-amber-700"
-                : isDayStarted
-                  ? "text-emerald-700"
-                  : "text-slate-600",
-            )}
-          />
-          {isDayStarted && (
-            <span
-              className={cn(
-                "text-xs font-mono font-bold pt-0.5",
-                isOnBreak ? "text-amber-600" : "text-emerald-600",
-              )}
-            >
+          <ClockIcon className="size-4" />
+          {isDayStarted ? (
+            <span className="text-sm font-mono font-bold">
               {isOnBreak ? liveBreakTime : liveWorkTime}
             </span>
-          )}
-          {!isDayStarted && (
-            <span
-              className={cn(
-                "absolute top-2 right-2 h-2.5 w-2.5 rounded-full border-2 border-white",
-                getStatusColor(),
-              )}
-            />
+          ) : (
+            "Start Day"
           )}
         </Button>
       </PopoverTrigger>
