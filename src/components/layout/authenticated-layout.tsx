@@ -13,7 +13,7 @@ import SkipToMain from "@/components/skip-to-main";
 import { cn } from "@/lib/utils";
 import { useFcm } from "@/hooks/use-fcm";
 import { useUpdateUser } from "@/features/UserManagement/services/AllUsers.hook";
-import WorkDaySession from "@/features/attendance-management/components/attendance/components/WorkDaySession";
+// import WorkDaySession from "@/features/attendance-management/components/attendance/components/WorkDaySession";
 
 export function AuthenticatedLayout({
   children,
@@ -110,7 +110,7 @@ export function AuthenticatedLayout({
         >
           <Header fixed className="shadow">
             <div className="ml-auto flex items-center space-x-2">
-              <WorkDaySession />
+              {/* <WorkDaySession /> */}
               <Search />
               {!user?.isSuperAdmin && <NotificationList />}
               {/* <ThemeSelector /> */}
