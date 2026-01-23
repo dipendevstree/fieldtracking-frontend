@@ -32,7 +32,6 @@ import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
 import { useViewType } from "@/context/view-type-context";
 import { ViewType } from "@/components/layout/types";
-import WorkSession from "./components/WorkDaySession";
 
 // --- HELPERS (Keep existing helpers) ---
 const formatStatus = (status: string) => {
@@ -238,10 +237,6 @@ export default function MyAttendance() {
         <p className="text-slate-500">
           Track your attendance, check-in times, and work patterns
         </p>
-      </div>
-
-      <div className="flex justify-start">
-        <WorkSession />
       </div>
 
       <Card className="border-slate-200 shadow-sm overflow-hidden p-0">

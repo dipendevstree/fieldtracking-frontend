@@ -46,6 +46,12 @@ const colorMap = {
     icon: "text-purple-600",
     border: "border-purple-100",
   },
+  amber:{
+    bg: "bg-amber-50",
+    text: "text-amber-700",
+    icon: "text-amber-600",
+    border: "border-amber-100",
+  }
 };
 
 export type StatCardTheme = keyof typeof colorMap;

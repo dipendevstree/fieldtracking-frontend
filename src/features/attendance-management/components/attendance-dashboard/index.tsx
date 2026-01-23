@@ -139,7 +139,7 @@ export default function AttendanceDashboard() {
     startDate: calendarMonthStart,
     endDate: calendarMonthEnd,
   });
-
+  
   const handleDateChange = (date: Date | string | undefined) => {
     let dateObject: Date;
     let dateString: string;
@@ -392,7 +392,7 @@ export default function AttendanceDashboard() {
           value={stats?.earlyExit || 0}
           description="Left before shift end"
           icon={LogOut}
-          themeColor="orange"
+          themeColor="amber"
         />
 
         {/* 8. On Leave  */}

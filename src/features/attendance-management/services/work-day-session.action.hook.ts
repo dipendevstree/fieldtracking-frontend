@@ -4,7 +4,10 @@ import usePostData from "@/hooks/use-post-data";
 
 const GET_WORK_DAY_SESSION_QUERY = API.WorkSession.getWorkDaySession;
 
-export const useGetWorkDaySession = (params?: { date?: string }) => {
+export const useGetWorkDaySession = (params?: {
+  date?: string;
+  enabled?: boolean;
+}) => {
   return useFetchData<any>({
     url: API.WorkSession.getWorkDaySession,
     params,

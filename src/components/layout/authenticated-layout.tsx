@@ -13,6 +13,7 @@ import SkipToMain from "@/components/skip-to-main";
 import { cn } from "@/lib/utils";
 import { useFcm } from "@/hooks/use-fcm";
 import { useUpdateUser } from "@/features/UserManagement/services/AllUsers.hook";
+import WorkDaySession from "@/features/attendance-management/components/attendance/components/WorkDaySession";
 
 export function AuthenticatedLayout({
   children,
@@ -24,7 +25,7 @@ export function AuthenticatedLayout({
   const { mutate: updateUserToken } = useUpdateUser(
     user?.id || "",
     () => {},
-    true
+    true,
   );
   const { token, requestPermission, permissionGranted } = useFcm();
   const navigate = useNavigate();
@@ -55,7 +56,7 @@ export function AuthenticatedLayout({
           onSuccess: () => {
             updateUser({ ...user, fcm_token: token });
           },
-        }
+        },
       );
     }
   }, [token, user?.id]);
@@ -104,11 +105,12 @@ export function AuthenticatedLayout({
             "sm:transition-[width] sm:duration-200 sm:ease-linear",
             "flex h-svh flex-col",
             "group-data-[scroll-locked=1]/body:h-full",
-            "has-[main.fixed-main]:group-data-[scroll-locked=1]/body:h-svh"
+            "has-[main.fixed-main]:group-data-[scroll-locked=1]/body:h-svh",
           )}
         >
           <Header fixed className="shadow">
             <div className="ml-auto flex items-center space-x-2">
+              <WorkDaySession />
               <Search />
               {!user?.isSuperAdmin && <NotificationList />}
               {/* <ThemeSelector /> */}
