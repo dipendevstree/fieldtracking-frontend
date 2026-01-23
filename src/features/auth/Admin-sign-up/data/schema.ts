@@ -11,7 +11,7 @@ export const passwordSchema = z
   .regex(/[0-9]/, "Password must contain at least one number")
   .regex(
     /[!@#$%^&*(),.?":{}|<>]/,
-    "Password must contain at least one special character"
+    "Password must contain at least one special character",
   );
 
 // Base schemas without refinements for merging
@@ -53,7 +53,7 @@ export const step1Schema = step1BaseSchema.refine(
   {
     message: "Passwords don't match",
     path: ["confirmPassword"],
-  }
+  },
 );
 
 export const step2Schema = z.object({
@@ -82,7 +82,7 @@ export const step3Schema = z.object({
 export const step4Schema = z.object({
   terms_of_service: z.boolean().optional(),
   privacy_policy: z.boolean().optional(),
-  data_processing_agreement: z.boolean().optional(),
+  // data_processing_agreement: z.boolean().optional(),
 });
 
 // Combined form schema with all validations

@@ -66,7 +66,7 @@ const RegistrationForm = () => {
   const [showContent, setShowContent] = useState(false);
 
   const { data: policyContent, isPending: isTermPending } = useGetTerms(
-    activeDialog ?? ""
+    activeDialog ?? "",
   );
 
   useEffect(() => {
@@ -92,7 +92,7 @@ const RegistrationForm = () => {
           {
             description:
               "You can now log in and start using your organization account.",
-          }
+          },
         );
         navigate({ to: "/sign-in" });
         return;
@@ -103,7 +103,7 @@ const RegistrationForm = () => {
             ? {
                 description: "Reason: " + data?.organization?.reason,
               }
-            : {}
+            : {},
         );
         navigate({ to: "/sign-in" });
         return;
@@ -170,7 +170,7 @@ const RegistrationForm = () => {
   // <-- ADD: Effect to load all countries on component mount
   useEffect(() => {
     const india = Country.getAllCountries().find(
-      (country) => country.name.toLowerCase() === "india"
+      (country) => country.name.toLowerCase() === "india",
     );
     if (india) {
       setCountries([india]);
@@ -196,10 +196,10 @@ const RegistrationForm = () => {
     if (watchedCountry && watchedState) {
       const stateData = State.getStateByCodeAndCountry(
         watchedState,
-        watchedCountry
+        watchedCountry,
       );
       setCities(
-        City.getCitiesOfState(watchedCountry, stateData?.isoCode ?? "")
+        City.getCitiesOfState(watchedCountry, stateData?.isoCode ?? ""),
       );
       // Reset city when state changes
       setValue("city", "");
@@ -264,7 +264,7 @@ const RegistrationForm = () => {
     const fullPhone = values.phoneNumber || values.adminPhone || "";
     const nationalNumber = fullPhone.replace(
       values.PhoneCountryCode || values.adminPhoneCountryCode || "",
-      ""
+      "",
     );
 
     const payload = {
@@ -311,13 +311,13 @@ const RegistrationForm = () => {
       hasError = true;
     }
 
-    if (!value.data_processing_agreement) {
-      setError("data_processing_agreement", {
-        type: "manual",
-        message: "You must consent to data processing",
-      });
-      hasError = true;
-    }
+    // if (!value.data_processing_agreement) {
+    //   setError("data_processing_agreement", {
+    //     type: "manual",
+    //     message: "You must consent to data processing",
+    //   });
+    //   hasError = true;
+    // }
 
     if (hasError) return;
 
@@ -463,7 +463,7 @@ const RegistrationForm = () => {
                             onChange={(value) => {
                               field.onChange(value || "");
                               const phoneNumber = parsePhoneNumberFromString(
-                                value || ""
+                                value || "",
                               );
                               if (phoneNumber) {
                                 setValue(
@@ -472,7 +472,7 @@ const RegistrationForm = () => {
                                   {
                                     shouldValidate: true,
                                     shouldDirty: true,
-                                  }
+                                  },
                                 );
                               } else {
                                 setValue("PhoneCountryCode", "", {
@@ -1016,7 +1016,7 @@ const RegistrationForm = () => {
                       control={control}
                       render={({ field }) => {
                         const selectedOption = TimeZoneList.find(
-                          (option) => option.value === field.value
+                          (option) => option.value === field.value,
                         );
                         return (
                           <Select
@@ -1330,7 +1330,7 @@ const RegistrationForm = () => {
                       <div>
                         <strong>Type:</strong>{" "}
                         {organizationTypes.find(
-                          (t) => t.value === watch("organizationTypes")
+                          (t) => t.value === watch("organizationTypes"),
                         )?.label || "-"}
                       </div>
                       <div>
@@ -1375,7 +1375,7 @@ const RegistrationForm = () => {
                         <strong>State/Province:</strong>{" "}
                         {State.getStateByCodeAndCountry(
                           watch("state"),
-                          watch("country")
+                          watch("country"),
                         )?.name || watch("state")}
                       </div>
                       <div>
@@ -1406,8 +1406,13 @@ const RegistrationForm = () => {
                               I agree to the{" "}
                               <button
                                 type="button"
-                                onClick={() =>
-                                  setActiveDialog("terms_of_service")
+                                onClick={
+                                  () =>
+                                    window.open(
+                                      "https://www.fieldtrack360.com/terms-and-conditions.html",
+                                      "_blank",
+                                    )
+                                  // setActiveDialog("terms_of_service")
                                 }
                                 className="text-blue-600 underline"
                               >
@@ -1441,8 +1446,13 @@ const RegistrationForm = () => {
                               I agree to the{" "}
                               <button
                                 type="button"
-                                onClick={() =>
-                                  setActiveDialog("privacy_policy")
+                                onClick={
+                                  () =>
+                                    window.open(
+                                      "https://www.fieldtrack360.com/privacy-policy.html",
+                                      "_blank",
+                                    )
+                                  // setActiveDialog("privacy_policy")
                                 }
                                 className="text-blue-600 underline"
                               >
@@ -1460,7 +1470,7 @@ const RegistrationForm = () => {
                         )}
                     </div>
 
-                    <div className="space-y-2">
+                    {/* <div className="space-y-2">
                       <Controller
                         name="data_processing_agreement"
                         control={control}
@@ -1493,7 +1503,7 @@ const RegistrationForm = () => {
                             {getFieldError("data_processing_agreement")}
                           </p>
                         )}
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               )}
