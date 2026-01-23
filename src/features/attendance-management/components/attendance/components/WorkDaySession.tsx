@@ -15,10 +15,43 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { LogIn, LogOut, ClockIcon, Loader2, Coffee } from "lucide-react";
+import {
+  LogIn,
+  LogOut,
+  ClockIcon,
+  Loader2,
+  Coffee,
+  LucideIcon,
+  Play,
+} from "lucide-react";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { socketForVisit } from "@/socket/socket";
 import { cn } from "@/lib/utils";
+
+// --- 1. REUSABLE BUTTON COMPONENT ---
+interface ActionButtonProps extends React.ComponentProps<typeof Button> {
+  isLoading: boolean;
+  isGlobalLoading: boolean;
+  icon: LucideIcon;
+}
+
+const ActionButton = ({
+  isLoading,
+  isGlobalLoading,
+  icon: Icon,
+  children,
+  disabled,
+  ...props
+}: ActionButtonProps) => (
+  <Button disabled={isGlobalLoading || disabled} {...props}>
+    {isLoading ? (
+      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+    ) : (
+      <Icon className="h-4 w-4 mr-2" />
+    )}
+    {children}
+  </Button>
+);
 
 // Convert "HH:mm:ss" → seconds
 const parseDurationToSeconds = (time = "00:00:00") => {
@@ -39,13 +72,11 @@ const WorkDaySession = () => {
   const [liveWorkTime, setLiveWorkTime] = useState("00:00:00");
   const [liveBreakTime, setLiveBreakTime] = useState("00:00:00");
 
-  //These refs prevent timer drift and re-render loops
   const baseWorkSecondsRef = useRef(0);
   const baseBreakSecondsRef = useRef(0);
   const lastSyncTimeRef = useRef(Date.now());
 
   /* ---------------- Fetch Session ---------------- */
-
   const {
     data: sessionData,
     isLoading: isFetching,
@@ -57,21 +88,14 @@ const WorkDaySession = () => {
   });
 
   /* ---------------- Socket Sync ---------------- */
-  
   useEffect(() => {
     if (!user?.id || !user?.access_token) return;
-
     const socket = socketForVisit(user.access_token);
     if (!socket) return;
 
-    const onConnect = () => {
-      socket.emit("track_user", { userId: user.id });
-    };
-
+    const onConnect = () => socket.emit("track_user", { userId: user.id });
     const onRefresh = (payload: any) => {
-      if (payload?.userId === user.id) {
-        refetch();
-      }
+      if (payload?.userId === user.id) refetch();
     };
 
     socket.connected ? onConnect() : socket.on("connect", onConnect);
@@ -86,54 +110,43 @@ const WorkDaySession = () => {
   }, [user, refetch]);
 
   /* ---------------- Mutations ---------------- */
-
   const { mutate: startWorkDay, isPending: startingDay } =
     useStartWorkDaySession();
-
   const { mutate: endWorkDay, isPending: endingDay } = useEndWorkDaySession();
-
   const { mutate: startBreak, isPending: startingBreak } =
     useStartBreakSession();
-
   const { mutate: endBreak, isPending: endingBreak } = useEndBreakSession();
 
   /* ---------------- Derived State ---------------- */
-
   const activeWorkSession = sessionData?.sessions?.find(
     (s: any) => s.status === "in_progress",
   );
-
   const isDayStarted = !!activeWorkSession;
   const isOnBreak = !!activeWorkSession?.isOnBreak;
-
   const activeBreak = activeWorkSession?.breaks?.find(
     (b: any) => b.status === "in_progress",
   );
 
-  const isLoading =
+  const isGlobalLoading =
     isFetching || startingDay || endingDay || startingBreak || endingBreak;
 
   // SYNC SERVER TOTALS → LOCAL BASE
   useEffect(() => {
     if (!sessionData) return;
-
     const work = sessionData?.workingHours?.totalWorking ?? "00:00:00";
     const brk = sessionData?.workingHours?.totalBreak ?? "00:00:00";
 
     baseWorkSecondsRef.current = parseDurationToSeconds(work);
     baseBreakSecondsRef.current = parseDurationToSeconds(brk);
-
     lastSyncTimeRef.current = dataUpdatedAt || Date.now();
 
     setLiveWorkTime(work);
     setLiveBreakTime(brk);
   }, [sessionData, dataUpdatedAt]);
 
-  /* LIVE TIMER (NO DRIFT, NO DOUBLE COUNTING) */
-
+  /* LIVE TIMER */
   useEffect(() => {
     if (!isDayStarted) return;
-
     const interval = setInterval(() => {
       const now = Date.now();
       const elapsedSeconds = Math.floor((now - lastSyncTimeRef.current) / 1000);
@@ -150,25 +163,18 @@ const WorkDaySession = () => {
         setLiveBreakTime(formatSecondsToDuration(baseBreakSecondsRef.current));
       }
     }, 1000);
-
     return () => clearInterval(interval);
   }, [isDayStarted, isOnBreak]);
 
   /* ---------------- Handlers ---------------- */
-
-  const handleCheckIn = () => {
+  const handleCheckIn = () =>
     startWorkDay({
       date: moment().format("DD-MM-YYYY"),
       dayStartAddress: "web",
     });
-  };
 
   const handleCheckOut = () => {
-    if (!activeWorkSession) {
-      toast.error("No active session");
-      return;
-    }
-
+    if (!activeWorkSession) return toast.error("No active session");
     endWorkDay({
       workDaySessionId: activeWorkSession.workDaySessionId,
       dayEndAddress: "web",
@@ -176,11 +182,7 @@ const WorkDaySession = () => {
   };
 
   const handleStartBreak = () => {
-    if (!activeWorkSession) {
-      toast.error("Work day not started");
-      return;
-    }
-
+    if (!activeWorkSession) return toast.error("Work day not started");
     startBreak({
       workDaySessionId: activeWorkSession.workDaySessionId,
       breakType: "Web Break",
@@ -189,11 +191,7 @@ const WorkDaySession = () => {
   };
 
   const handleEndBreak = () => {
-    if (!activeBreak) {
-      toast.error("No active break");
-      return;
-    }
-
+    if (!activeBreak) return toast.error("No active break");
     endBreak({
       workBreakSessionId: activeBreak.workBreakSessionId,
       breakEndAddress: "Web",
@@ -201,7 +199,6 @@ const WorkDaySession = () => {
   };
 
   /* ---------------- UI Helpers ---------------- */
-
   const getStatusColor = () => {
     if (isOnBreak) return "bg-amber-500";
     if (isDayStarted) return "bg-emerald-500";
@@ -228,7 +225,6 @@ const WorkDaySession = () => {
                   : "text-slate-600",
             )}
           />
-
           {isDayStarted && (
             <span
               className={cn(
@@ -239,7 +235,6 @@ const WorkDaySession = () => {
               {isOnBreak ? liveBreakTime : liveWorkTime}
             </span>
           )}
-
           {!isDayStarted && (
             <span
               className={cn(
@@ -290,7 +285,6 @@ const WorkDaySession = () => {
                 {liveWorkTime}
               </span>
             </div>
-
             <div
               className={cn(
                 "rounded-lg p-3 border flex flex-col items-center justify-center",
@@ -310,47 +304,52 @@ const WorkDaySession = () => {
 
           <div className="space-y-2">
             {!isDayStarted && (
-              <Button
+              <ActionButton
+                isLoading={startingDay}
+                isGlobalLoading={isGlobalLoading}
+                icon={LogIn}
                 onClick={handleCheckIn}
-                disabled={isLoading}
                 className="w-full bg-slate-900"
               >
-                <LogIn className="h-4 w-4 mr-2" />
                 Check In
-              </Button>
+              </ActionButton>
             )}
 
             {isDayStarted && !isOnBreak && (
               <div className="grid grid-cols-2 gap-2">
-                <Button
+                <ActionButton
+                  isLoading={startingBreak}
+                  isGlobalLoading={isGlobalLoading}
+                  icon={Coffee}
                   onClick={handleStartBreak}
                   variant="outline"
-                  disabled={isLoading}
                 >
-                  <Coffee className="h-4 w-4 mr-2" />
                   Break
-                </Button>
-                <Button
+                </ActionButton>
+
+                <ActionButton
+                  isLoading={endingDay}
+                  isGlobalLoading={isGlobalLoading}
+                  icon={LogOut}
                   onClick={handleCheckOut}
                   variant="destructive"
-                  disabled={isLoading}
                 >
-                  <LogOut className="h-4 w-4 mr-2" />
                   Check Out
-                </Button>
+                </ActionButton>
               </div>
             )}
 
             {isDayStarted && isOnBreak && (
-              <Button
+              <ActionButton
+                isLoading={endingBreak}
+                isGlobalLoading={isGlobalLoading}
+                icon={Play}
                 onClick={handleEndBreak}
-                disabled={isLoading}
                 variant="secondary"
                 className="w-full bg-amber-100"
               >
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 End Break
-              </Button>
+              </ActionButton>
             )}
           </div>
         </div>
