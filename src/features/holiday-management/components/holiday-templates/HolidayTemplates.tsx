@@ -10,6 +10,7 @@ import {
   CalendarDays,
   Plus,
   Loader2,
+  Info,
 } from "lucide-react";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 
@@ -54,13 +55,13 @@ import {
   useGetHolidayTemplateStats,
   useUpdateHolidayTemplate,
   useGetHolidayTemplateById,
+  useGetHolidayTemplateTerritories,
 } from "../../services/holiday-template.action.hook";
 import { useGetAllHolidays } from "../../services/holiday.action.hook";
 import { HolidayTemplate, HolidayTemplateSchema } from "../../data/schema";
 import { useGetAllUsers } from "@/features/UserManagement/services/AllUsers.hook";
 import { Main } from "@/components/layout/main";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
-import { useGetAllTerritoriesForDropdown } from "@/features/userterritory/services/user-territory.hook";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { Textarea } from "@/components/ui/textarea";
@@ -105,19 +106,22 @@ export default function HolidayCalendarTemplates() {
       : {}),
   });
 
-  const { data: allTerritories = [], isLoading: isLoadingTerritories } =
-    useGetAllTerritoriesForDropdown();
-
-  const territoryOptions = allTerritories.map((territory: any) => ({
-    value: territory.id,
-    label: territory.name,
-  }));
-
   const userOptions = allUsers.map((user: any) => ({
     value: user.id,
     label: `${user.firstName} ${user.lastName}`,
   }));
   const [selectedRow, setSelectedRow] = useState<HolidayTemplate | null>(null);
+
+  const {
+    data: allTerritories = [],
+    isLoading: isLoadingTerritories,
+    refetch: refetchTerritories,
+  } = useGetHolidayTemplateTerritories(selectedRow?.id || "");
+
+  const territoryOptions = allTerritories.map((territory: any) => ({
+    value: territory.id,
+    label: territory.name,
+  }));
 
   // 3. Form Setup
   const form = useForm<z.infer<typeof HolidayTemplateSchema>>({
@@ -132,10 +136,10 @@ export default function HolidayCalendarTemplates() {
   });
 
   useEffect(() => {
-    if (selectedTerritoryId) {
+    if (allowAddUsersBasedOnTerritories && selectedTerritoryId) {
       form.setValue("userIds", allUsers?.map((user: any) => user.id) || []);
     }
-  }, [selectedTerritoryId, allUsers]);
+  }, [allowAddUsersBasedOnTerritories, selectedTerritoryId, allUsers]);
 
   // 4. Mutation Hooks
   const createMutation = useCreateHolidayTemplate(() => {
@@ -162,12 +166,14 @@ export default function HolidayCalendarTemplates() {
       userIds: [],
     });
     setModalType("add");
+    refetchTerritories();
   };
 
   const handleOpenEdit = (template: any) => {
     setSelectedRow(template);
     setEditingTemplateId(template.id);
     setModalType("edit");
+    refetchTerritories();
   };
 
   useEffect(() => {
@@ -561,6 +567,14 @@ export default function HolidayCalendarTemplates() {
                       <hr className="w-1/2" />
                     </div>
                     {assignUsersField}
+                    <div className="bg-slate-50 border rounded-md p-2 text-sm text-slate-700">
+                      <span className="block mb-1">
+                        <Info className="inline mr-1" size={16} /> Either
+                        Territory or Users can be selected. If you select
+                        Territory then all users of that territory will be
+                        selected automatically.
+                      </span>
+                    </div>
                   </div>
                 ) : (
                   assignUsersField

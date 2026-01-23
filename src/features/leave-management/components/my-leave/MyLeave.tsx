@@ -25,6 +25,7 @@ import MyLeaveRequest from "./components/my-leave-request";
 import { useLeaveRequestStore } from "../../store/leave-request.store";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { LEAVE_STATUS } from "@/data/app.data";
+import LeaveRuleList from "../leave-rules/components/LeaveRuleList";
 
 export default function MyLeave() {
   const { user } = useAuthStore();
@@ -261,6 +262,8 @@ export default function MyLeave() {
           destructive
         />
       )}
+
+      <LeaveRuleList />
     </Main>
   );
 }

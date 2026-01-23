@@ -7,11 +7,16 @@ import { IListParams } from "../types";
 
 const HOLIDAY_TEMPLATE_QUERY = API.holidayTemplate.list;
 const HOLIDAY_TEMPLATE_STATS_QUERY = API.holidayTemplate.stats;
+const HOLIDAY_TEMPLATE_TERRITORIES_QUERY = API.holidayTemplate.territories;
 
 export const useCreateHolidayTemplate = (onSuccess?: () => void) => {
   return usePostData({
     url: API.holidayTemplate.create,
-    refetchQueries: [HOLIDAY_TEMPLATE_QUERY, HOLIDAY_TEMPLATE_STATS_QUERY],
+    refetchQueries: [
+      HOLIDAY_TEMPLATE_QUERY,
+      HOLIDAY_TEMPLATE_STATS_QUERY,
+      HOLIDAY_TEMPLATE_TERRITORIES_QUERY,
+    ],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
@@ -22,11 +27,15 @@ export const useCreateHolidayTemplate = (onSuccess?: () => void) => {
 
 export const useUpdateHolidayTemplate = (
   id: string,
-  onSuccess?: () => void
+  onSuccess?: () => void,
 ) => {
   return usePatchData({
     url: `${API.holidayTemplate.update}/${id}`,
-    refetchQueries: [HOLIDAY_TEMPLATE_QUERY, HOLIDAY_TEMPLATE_STATS_QUERY],
+    refetchQueries: [
+      HOLIDAY_TEMPLATE_QUERY,
+      HOLIDAY_TEMPLATE_STATS_QUERY,
+      HOLIDAY_TEMPLATE_TERRITORIES_QUERY,
+    ],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
@@ -37,11 +46,15 @@ export const useUpdateHolidayTemplate = (
 
 export const useDeleteHolidayTemplate = (
   id: string,
-  onSuccess?: () => void
+  onSuccess?: () => void,
 ) => {
   return useDeleteData({
     url: `${API.holidayTemplate.delete}/${id}`,
-    refetchQueries: [HOLIDAY_TEMPLATE_QUERY, HOLIDAY_TEMPLATE_STATS_QUERY],
+    refetchQueries: [
+      HOLIDAY_TEMPLATE_QUERY,
+      HOLIDAY_TEMPLATE_STATS_QUERY,
+      HOLIDAY_TEMPLATE_TERRITORIES_QUERY,
+    ],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
@@ -52,7 +65,7 @@ export const useDeleteHolidayTemplate = (
 
 export const useGetAllHolidayTemplates = (
   params?: IListParams,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) => {
   const query = useFetchData<any>({
     url: HOLIDAY_TEMPLATE_QUERY,
@@ -85,10 +98,29 @@ export const useGetHolidayTemplateStats = (options?: { enabled?: boolean }) => {
 
 export const useGetHolidayTemplateById = (
   id: string,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) => {
   const query = useFetchData<any>({
     url: `${API.holidayTemplate.byId}/${id}`,
+    enabled: !!id && (options?.enabled ?? true),
+  });
+
+  return {
+    ...query,
+    data: query.data,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
+export const useGetHolidayTemplateTerritories = (
+  id: string,
+  options?: {
+    enabled?: boolean;
+  },
+) => {
+  const query = useFetchData<any>({
+    url: `${HOLIDAY_TEMPLATE_TERRITORIES_QUERY}/${id}`,
     enabled: !!id && (options?.enabled ?? true),
   });
 

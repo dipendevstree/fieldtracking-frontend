@@ -269,6 +269,7 @@ const API = {
     delete: "holiday-template/delete",
     stats: "holiday-template/stats",
     byId: "holiday-template",
+    territories: "holiday-template/territories",
   },
   holiday: {
     byId: "holiday",
