@@ -34,7 +34,7 @@ import { TopStatsCard } from "../../../../components/ui/TopStatsCard";
 
 // Services & Hooks
 import { useGetAllLeaveTypes } from "@/features/leave-management/services/leave-type.action.hook";
-import { useGetMyHolidays } from "@/features/holiday-management/services/holiday.action.hook";
+import { useGetAllHolidays } from "@/features/holiday-management/services/holiday.action.hook";
 import {
   useCancelLeave,
   useGetAllLeaves,
@@ -60,7 +60,7 @@ import { LEAVE_STATUS } from "@/data/app.data";
 export const getEventStatusKey = (
   isHoliday: boolean,
   text: string,
-  date: Date
+  date: Date,
 ) => {
   const lowerText = text?.toLowerCase() || "";
 
@@ -93,7 +93,7 @@ export default function MyLeaveBalance() {
   }, [viewType, viewTypeToggle]);
 
   const [calendarMode, setCalendarMode] = useState<"holiday" | "leave">(
-    "leave"
+    "leave",
   );
   const { user } = useAuthStore();
   const [viewDate, setViewDate] = useState(new Date());
@@ -131,7 +131,7 @@ export default function MyLeaveBalance() {
     };
   }, [viewDate]);
 
-  const { data: holidays = [] } = useGetMyHolidays(calendarQueryParams);
+  const { data: holidays = [] } = useGetAllHolidays(calendarQueryParams);
   const {
     data: allLeavesList,
     isLoading: isLoadingLeaves,
@@ -193,13 +193,13 @@ export default function MyLeaveBalance() {
       return holidays?.map((h: any) => {
         const statusKey = getEventStatusKey(
           true,
-          h.holidayType?.holidayTypeName || h.name,
-          new Date(h.date)
+          h.name || h.holidayType?.holidayTypeName,
+          new Date(h.date),
         );
 
         return {
           id: h.id,
-          title: h.name,
+          title: h.name + " (" + h.holidayType?.holidayTypeName + ")",
           start: new Date(h.date),
           end: new Date(h.date),
           allDay: true,
@@ -214,7 +214,7 @@ export default function MyLeaveBalance() {
       return allLeavesList
         ?.filter(
           (lr: any) =>
-            ![LEAVE_STATUS.CANCEL, LEAVE_STATUS.REJECTED].includes(lr.status)
+            ![LEAVE_STATUS.CANCEL, LEAVE_STATUS.REJECTED].includes(lr.status),
         )
         .map((lr: any) => {
           const typeName =
@@ -225,7 +225,9 @@ export default function MyLeaveBalance() {
           const halfDayType = lr.halfDay ? lr.halfDayType : null;
           const canEdit = lr.userId === user?.id;
           let status = lr.status?.toLowerCase() || "pending";
+          let isWorkFromHome = false;
           if (lr.leaveType?.superAdminCreatedBy) {
+            isWorkFromHome = true;
             status =
               lr.leaveType?.name?.replaceAll(" ", "_").toLowerCase() ||
               "pending";
@@ -234,7 +236,7 @@ export default function MyLeaveBalance() {
           const statusKey = getEventStatusKey(
             false,
             status,
-            new Date(lr.startDate)
+            new Date(lr.startDate),
           );
 
           const start = new Date(lr.startDate);
@@ -243,14 +245,16 @@ export default function MyLeaveBalance() {
           const title = (
             <div
               className="flex"
-              title={
-                isSameDay(start, end)
-                  ? format(start, "PPP")
-                  : `${format(start, "PPP")} - ${format(end, "PPP")}`
-              }
+              title={`
+                ${employeeName} (${typeName}) - ${
+                  isSameDay(start, end)
+                    ? format(start, "PPP")
+                    : `${format(start, "PPP")} - ${format(end, "PPP")}`
+                }
+              `}
             >
               <span className="font-xs">
-                {employeeName} ({typeName})
+                {(lr.user?.firstName)[0] + (lr.user?.lastName)[0]} ({typeName})
               </span>
             </div>
           );
@@ -265,10 +269,13 @@ export default function MyLeaveBalance() {
             end,
             allDay: !lr.halfDay,
             canEdit,
+            isWorkFromHome,
             resource: {
               type: "leave",
               originalData: lr,
               statusKey: statusKey,
+              halfDay: lr.halfDay,
+              halfDayType: lr.halfDayType,
             },
           };
         });
@@ -315,6 +322,7 @@ export default function MyLeaveBalance() {
           value={`${stats?.totalEmployee || 0}`}
           description="Total Employee"
           icon={CalendarIcon}
+          href={{ to: "/user-management" }}
         />
         <TopStatsCard
           title="Employee On Leave"
@@ -327,6 +335,7 @@ export default function MyLeaveBalance() {
           value={`${stats?.pendingRequests || 0} Requests`}
           description="Awaiting approval"
           icon={CalendarIcon}
+          href={{ to: "/leave-management/leave-request" }}
         />
       </div>
 
@@ -415,11 +424,17 @@ export default function MyLeaveBalance() {
 
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-sm">{evt.employeeName}</span>
-                            <p className="text-sm font-medium text-slate-500">
-                              ({evt.typeName})
-                            </p>
-                            {/* Use StatusBadge Component */}
+                            <span className="text-sm">
+                              {calendarMode === "holiday"
+                                ? evt.title
+                                : evt.employeeName}
+                            </span>
+                            {calendarMode === "leave" &&
+                              !evt.isWorkFromHome && (
+                                <p className="text-sm font-medium text-slate-500">
+                                  ({evt.typeName})
+                                </p>
+                              )}
                             <StatusBadge status={statusKey} />
                           </div>
                           <span className="text-xs text-slate-500">

@@ -41,7 +41,7 @@ import {
 } from "@/components/ui/form";
 
 import { useGetAllLeaveTypes } from "../../services/leave-type.action.hook";
-import { LeaveRulesSchema } from "../../data/schema";
+import { LeaveRulesSchema, LeaveType } from "../../data/schema";
 import {
   useGetLeaveRulesConfig,
   useUpdateLeaveRulesConfig,
@@ -104,7 +104,13 @@ export default function LeaveRulesConfiguration() {
   }, [rulesData, form]);
 
   const onSubmit = (data: z.infer<typeof LeaveRulesSchema>) => {
-    updateRules(data);
+    let payload = {
+      ...data,
+      secondaryLeaveTypes: leaveTypes
+        .filter((lt: LeaveType) => data.secondaryLeaveTypes?.includes(lt.id))
+        .map((lt: LeaveType) => lt.id),
+    };
+    updateRules(payload);
   };
 
   // Helper to render Top Summary Cards
@@ -134,7 +140,7 @@ export default function LeaveRulesConfiguration() {
   useDirtyTracker(form.formState.isDirty);
 
   const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
-    form.formState.isDirty
+    form.formState.isDirty,
   );
 
   if (isRulesLoading) {
@@ -366,8 +372,8 @@ export default function LeaveRulesConfiguration() {
                                             ])
                                           : field.onChange(
                                               field.value?.filter(
-                                                (value) => value !== item.id
-                                              )
+                                                (value) => value !== item.id,
+                                              ),
                                             );
                                       }}
                                       disabled={

@@ -3,6 +3,7 @@ import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-he
 import StatusBadge from "@/components/shared/common-status-badge";
 import moment from "moment";
 import { formatDropDownLabel } from "@/utils/commonFunction";
+import CustomTooltip from "@/components/shared/custom-tooltip";
 
 export const leaveApprovalColumns: ColumnDef<any>[] = [
   {
@@ -76,7 +77,13 @@ export const leaveApprovalColumns: ColumnDef<any>[] = [
       <CustomDataTableColumnHeader column={column} title="Comment" />
     ),
     cell: ({ row }) => {
-      return <div className="text-sm truncate">{row.original.comment}</div>;
+      return (
+        <CustomTooltip title={row.original.comment}>
+          <div className="text-sm truncate max-w-[200px]">
+            {row.original.comment}
+          </div>
+        </CustomTooltip>
+      );
     },
     enableHiding: false,
     enableSorting: false,
