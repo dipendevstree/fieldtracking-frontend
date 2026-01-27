@@ -139,7 +139,7 @@ export default function AttendanceDashboard() {
     startDate: calendarMonthStart,
     endDate: calendarMonthEnd,
   });
-  
+
   const handleDateChange = (date: Date | string | undefined) => {
     let dateObject: Date;
     let dateString: string;
@@ -291,12 +291,28 @@ export default function AttendanceDashboard() {
     }
   };
 
+  // Build leave lookup map (userId + date)
+  const leaveDateMap = new Set<string>();
+
+  leaves?.forEach((leave: any) => {
+    const key = `${leave.userId}-${format(new Date(leave.date), "yyyy-MM-dd")}`;
+    leaveDateMap.add(key);
+  });
+
   // Create attendance events
   const attendanceEvents: AttendanceEvent[] =
     calendarData
-      ?.filter((r: any) =>
-        EXCEPTION_STATUSES.includes(r.status?.toLowerCase() as any),
-      )
+      ?.filter((record: any) => {
+        const dateKey = `${record.userId}-${format(
+          new Date(record.date),
+          "yyyy-MM-dd",
+        )}`;
+
+        // 🚫 If leave exists → ignore attendance
+        if (leaveDateMap.has(dateKey)) return false;
+
+        return EXCEPTION_STATUSES.includes(record.status?.toLowerCase() as any);
+      })
       .map((record: any) => ({
         id: record.attendanceId,
         title: generateInitials(record.username),
@@ -320,6 +336,7 @@ export default function AttendanceDashboard() {
         name: leave.username,
         leaveType: leave.leaveType,
         halfDay: leave.halfDay,
+        halfDayType: leave.halfDayType,
       },
     })) || [];
 

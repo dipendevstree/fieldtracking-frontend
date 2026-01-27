@@ -19,6 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { formatDropDownLabel } from "@/utils/commonFunction";
 
 // --- 1. CONFIG & TYPES ---
 
@@ -34,6 +35,7 @@ export interface AttendanceEvent {
     name: string;
     leaveType?: string; // For leave events
     halfDay?: boolean; // For leave events
+    halfDayType?: string; // For leave events
   };
 }
 
@@ -83,7 +85,7 @@ const EventComponent = ({ event }: { event: AttendanceEvent }) => (
     title={`${event.resource.name} - ${event.resource.status}`}
     className={cn(
       "w-6 h-6 md:w-7 md:h-7 text-[10px] md:text-xs font-semibold rounded-sm flex items-center justify-center cursor-pointer shadow-sm hover:opacity-80 transition-opacity",
-      getStatusStyles(event.resource.status)
+      getStatusStyles(event.resource.status),
     )}
   >
     {event.title}
@@ -106,7 +108,7 @@ const CustomToolbar = (toolbar: ToolbarProps & { date?: Date }) => {
     const firstDayOfNextMonth = new Date(
       toolbar.date.getFullYear(),
       toolbar.date.getMonth() + 1,
-      1
+      1,
     );
     firstDayOfNextMonth.setHours(0, 0, 0, 0);
 
@@ -181,7 +183,7 @@ export function TeamAttendanceCalendar({
       setModalDate(date);
       setShowModal(true);
     },
-    []
+    [],
   );
 
   // Handle individual event click
@@ -207,7 +209,7 @@ export function TeamAttendanceCalendar({
 
       onNavigate(slotInfo.start);
     },
-    [onNavigate]
+    [onNavigate],
   );
 
   // Style overrides logic
@@ -224,7 +226,7 @@ export function TeamAttendanceCalendar({
         marginBottom: "2px",
       },
     }),
-    []
+    [],
   );
 
   // Custom day styling to highlight selected date, holidays, and week-off days
@@ -268,7 +270,7 @@ export function TeamAttendanceCalendar({
         title: title,
       };
     },
-    [date, holidays, weekOffDays]
+    [date, holidays, weekOffDays],
   );
 
   const { components } = useMemo(
@@ -310,7 +312,7 @@ export function TeamAttendanceCalendar({
         },
       },
     }),
-    [holidays, weekOffDays]
+    [holidays, weekOffDays],
   );
 
   return (
@@ -383,7 +385,7 @@ export function TeamAttendanceCalendar({
                 <div
                   className={cn(
                     "w-5 h-5 rounded-md shrink-0 ring-2 ring-white shadow-sm",
-                    getStatusStyles(event.resource.status).split(" ")[0]
+                    getStatusStyles(event.resource.status).split(" ")[0],
                   )}
                 />
                 <div className="flex items-center space-x-3 flex-1 min-w-0">
@@ -399,7 +401,8 @@ export function TeamAttendanceCalendar({
                       {event.resource.leaveType && (
                         <span className="ml-1 text-gray-500">
                           - {event.resource.leaveType}
-                          {event.resource.halfDay && " (Half Day)"}
+                          {event.resource.halfDay &&
+                            ` (${formatDropDownLabel(event.resource.halfDayType || "Half Day")})`}
                         </span>
                       )}
                     </div>
