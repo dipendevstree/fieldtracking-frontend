@@ -10,12 +10,18 @@ import {
   CalendarDays,
   Plus,
   Loader2,
+  Info,
 } from "lucide-react";
 import { IconEdit, IconTrash } from "@tabler/icons-react";
 
 // UI Components
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  //  CardHeader,
+  // CardTitle
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -49,13 +55,13 @@ import {
   useGetHolidayTemplateStats,
   useUpdateHolidayTemplate,
   useGetHolidayTemplateById,
+  useGetHolidayTemplateTerritories,
 } from "../../services/holiday-template.action.hook";
 import { useGetAllHolidays } from "../../services/holiday.action.hook";
 import { HolidayTemplate, HolidayTemplateSchema } from "../../data/schema";
 import { useGetAllUsers } from "@/features/UserManagement/services/AllUsers.hook";
 import { Main } from "@/components/layout/main";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
-import { useGetAllTerritoriesForDropdown } from "@/features/userterritory/services/user-territory.hook";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { Textarea } from "@/components/ui/textarea";
@@ -68,7 +74,7 @@ export default function HolidayCalendarTemplates() {
   const allowAddUsersBasedOnTerritories =
     user?.organization?.allowAddUsersBasedOnTerritories;
   const [selectedTerritoryId, setSelectedTerritoryId] = useState<string | null>(
-    null
+    null,
   );
   const [showLocalWarning, setShowLocalWarning] = useState(false);
 
@@ -79,7 +85,7 @@ export default function HolidayCalendarTemplates() {
   const { data: stats } = useGetHolidayTemplateStats();
 
   const [editingTemplateId, setEditingTemplateId] = useState<string | null>(
-    null
+    null,
   );
 
   const { data: singleTemplateData, isLoading: isLoadingSingleTemplate } =
@@ -87,7 +93,7 @@ export default function HolidayCalendarTemplates() {
 
   // 2. Local State
   const [modalType, setModalType] = useState<"add" | "edit" | "delete" | null>(
-    null
+    null,
   );
 
   const { data: allUsers = [], isLoading: isLoadingUsers } = useGetAllUsers({
@@ -100,19 +106,22 @@ export default function HolidayCalendarTemplates() {
       : {}),
   });
 
-  const { data: allTerritories = [], isLoading: isLoadingTerritories } =
-    useGetAllTerritoriesForDropdown();
-
-  const territoryOptions = allTerritories.map((territory: any) => ({
-    value: territory.id,
-    label: territory.name,
-  }));
-
   const userOptions = allUsers.map((user: any) => ({
     value: user.id,
     label: `${user.firstName} ${user.lastName}`,
   }));
   const [selectedRow, setSelectedRow] = useState<HolidayTemplate | null>(null);
+
+  const {
+    data: allTerritories = [],
+    isLoading: isLoadingTerritories,
+    refetch: refetchTerritories,
+  } = useGetHolidayTemplateTerritories(selectedRow?.id || "");
+
+  const territoryOptions = allTerritories.map((territory: any) => ({
+    value: territory.id,
+    label: territory.name,
+  }));
 
   // 3. Form Setup
   const form = useForm<z.infer<typeof HolidayTemplateSchema>>({
@@ -125,6 +134,12 @@ export default function HolidayCalendarTemplates() {
       userIds: [],
     },
   });
+
+  useEffect(() => {
+    if (allowAddUsersBasedOnTerritories && selectedTerritoryId) {
+      form.setValue("userIds", allUsers?.map((user: any) => user.id) || []);
+    }
+  }, [allowAddUsersBasedOnTerritories, selectedTerritoryId, allUsers]);
 
   // 4. Mutation Hooks
   const createMutation = useCreateHolidayTemplate(() => {
@@ -151,12 +166,14 @@ export default function HolidayCalendarTemplates() {
       userIds: [],
     });
     setModalType("add");
+    refetchTerritories();
   };
 
   const handleOpenEdit = (template: any) => {
     setSelectedRow(template);
     setEditingTemplateId(template.id);
     setModalType("edit");
+    refetchTerritories();
   };
 
   useEffect(() => {
@@ -166,7 +183,9 @@ export default function HolidayCalendarTemplates() {
       !isLoadingSingleTemplate
     ) {
       const currentHolidayIds = singleTemplateData.holidays
-        ? singleTemplateData.holidays.map((h: any) => h.id)
+        ? singleTemplateData.holidays
+            .filter((h: any) => h.isSpecial)
+            .map((h: any) => h.id)
         : [];
 
       const currentUserIds = singleTemplateData.users
@@ -180,6 +199,7 @@ export default function HolidayCalendarTemplates() {
         specialHolidayIds: currentHolidayIds,
         userIds: currentUserIds,
       });
+      setSelectedTerritoryId(singleTemplateData.territoryId);
     }
   }, [singleTemplateData, modalType, isLoadingSingleTemplate, form]);
 
@@ -192,6 +212,7 @@ export default function HolidayCalendarTemplates() {
     form.reset();
     setModalType(null);
     setEditingTemplateId(null);
+    setSelectedTerritoryId(null);
     setTimeout(() => setSelectedRow(null), 300);
   };
 
@@ -241,7 +262,7 @@ export default function HolidayCalendarTemplates() {
   useDirtyTracker(form.formState.isDirty);
 
   const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
-    form.formState.isDirty
+    form.formState.isDirty,
   );
 
   const isWarningOpen = showLocalWarning || showExitPrompt;
@@ -273,11 +294,51 @@ export default function HolidayCalendarTemplates() {
       </div>
     );
   }
+  const assignUsersField = (
+    <FormField
+      control={form.control}
+      name="userIds"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Assign Employees</FormLabel>
+          <FormControl>
+            {isLoadingUsers ? (
+              <div className="flex items-center text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                Loading users...
+              </div>
+            ) : (
+              <MultiSelect
+                options={userOptions}
+                value={field.value || []}
+                onChange={(value) => {
+                  field.onChange(value);
+                  const allUsersSelected = allUsers
+                    ?.map((user: any) => user.id)
+                    .every((id: any) => value.includes(id));
+                  if (!allUsersSelected) {
+                    form.setValue("territoryId", "");
+                    setSelectedTerritoryId(null);
+                  }
+                }}
+                placeholder="Select employees..."
+                disabled={isLoadingUsers}
+              />
+            )}
+          </FormControl>
+          <div className="text-xs text-muted-foreground mt-1">
+            {(field.value || []).length} user
+            {(field.value || []).length !== 1 ? "s" : ""} selected
+          </div>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
 
   return (
     <Main className="space-y-6">
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Total Templates Card */}
+      {/* <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -295,7 +356,6 @@ export default function HolidayCalendarTemplates() {
           </CardContent>
         </Card>
 
-        {/* Assigned Employees Card */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
@@ -310,12 +370,12 @@ export default function HolidayCalendarTemplates() {
             </p>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       {/* Action Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-          Holiday Templates
+          Holiday Templates ({stats?.totalHolidayTemplates || 0})
         </h2>
         <PermissionGate requiredPermission="holiday_templates" action="add">
           <Button onClick={handleOpenAdd}>
@@ -450,9 +510,7 @@ export default function HolidayCalendarTemplates() {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-4"
               >
-                <div
-                  className={`grid grid-cols-${allowAddUsersBasedOnTerritories ? 2 : 1} gap-4`}
-                >
+                <div className={`grid grid-cols-1 gap-4`}>
                   <FormField
                     control={form.control}
                     name="name"
@@ -469,38 +527,59 @@ export default function HolidayCalendarTemplates() {
                       </FormItem>
                     )}
                   />
-                  {allowAddUsersBasedOnTerritories && (
-                    <FormField
-                      control={form.control}
-                      name="territoryId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Territory</FormLabel>
-                          <FormControl>
-                            <SearchableSelect
-                              options={territoryOptions}
-                              value={field.value}
-                              onChange={(value) => {
-                                field.onChange(value);
-                                setSelectedTerritoryId(value);
-                              }}
-                              onCancelPress={() => {
-                                field.onChange("");
-                                setSelectedTerritoryId(null);
-                              }}
-                              placeholder={
-                                isLoadingTerritories
-                                  ? "Loading territories..."
-                                  : "Select territory"
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
                 </div>
+                {allowAddUsersBasedOnTerritories ? (
+                  <div className="space-y-2 border border-black/20 border-dashed p-4 rounded-md">
+                    {allowAddUsersBasedOnTerritories && (
+                      <FormField
+                        control={form.control}
+                        name="territoryId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Territory</FormLabel>
+                            <FormControl>
+                              <SearchableSelect
+                                options={territoryOptions}
+                                value={field.value}
+                                onChange={(value) => {
+                                  field.onChange(value);
+                                  setSelectedTerritoryId(value);
+                                }}
+                                onCancelPress={() => {
+                                  field.onChange("");
+                                  setSelectedTerritoryId(null);
+                                }}
+                                placeholder={
+                                  isLoadingTerritories
+                                    ? "Loading territories..."
+                                    : "Select territory"
+                                }
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+                    <div className="flex items-center justify-center">
+                      <hr className="w-1/2" />
+                      <span className="mx-2 font-semibold">OR</span>
+                      <hr className="w-1/2" />
+                    </div>
+                    {assignUsersField}
+                    <div className="bg-slate-50 border rounded-md p-2 text-sm text-slate-700">
+                      <span className="block mb-1">
+                        <Info className="inline mr-1" size={16} /> Either
+                        Territory or Users can be selected. If you select
+                        Territory then all users of that territory will be
+                        selected automatically.
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  assignUsersField
+                )}
+
                 <FormField
                   control={form.control}
                   name="description"
@@ -514,38 +593,6 @@ export default function HolidayCalendarTemplates() {
                     </FormItem>
                   )}
                 />
-
-                <div className="space-y-2">
-                  <FormField
-                    control={form.control}
-                    name="userIds"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Assign Employees</FormLabel>
-                        <FormControl>
-                          {isLoadingUsers ? (
-                            <div className="flex items-center text-muted-foreground">
-                              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                              Loading users...
-                            </div>
-                          ) : (
-                            <MultiSelect
-                              options={userOptions}
-                              value={field.value || []}
-                              onChange={field.onChange}
-                              placeholder="Select employees..."
-                            />
-                          )}
-                        </FormControl>
-                        <div className="text-xs text-muted-foreground mt-1">
-                          {(field.value || []).length} user
-                          {(field.value || []).length !== 1 ? "s" : ""} selected
-                        </div>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
 
                 <div className="space-y-2">
                   <Label>Choose Special Holidays</Label>

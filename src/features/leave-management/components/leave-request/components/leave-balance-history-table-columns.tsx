@@ -2,6 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import StatusBadge from "@/components/shared/common-status-badge";
 import moment from "moment";
+import CustomTooltip from "@/components/shared/custom-tooltip";
 
 export function LeaveBalanceDiv({
   row,
@@ -53,10 +54,7 @@ export const leaveBalanceHistoryColumns: ColumnDef<any>[] = [
   {
     accessorKey: "year",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader
-        column={column}
-        title="Leave Balance for Year"
-      />
+      <CustomDataTableColumnHeader column={column} title="Year" />
     ),
     enableHiding: false,
     enableSorting: false,
@@ -107,7 +105,13 @@ export const leaveBalanceHistoryColumns: ColumnDef<any>[] = [
       <CustomDataTableColumnHeader column={column} title="Comment" />
     ),
     cell: ({ row }) => {
-      return <div className="text-sm truncate">{row.original.reason}</div>;
+      return (
+        <CustomTooltip title={row.original.reason}>
+          <div className="text-sm truncate max-w-[200px]">
+            {row.original.reason}
+          </div>
+        </CustomTooltip>
+      );
     },
     enableHiding: false,
     enableSorting: false,

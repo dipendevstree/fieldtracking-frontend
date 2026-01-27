@@ -4,6 +4,7 @@ import { PendingLeaveRowActions } from "./pending-leave-table-action-button";
 import moment from "moment";
 import { formatDropDownLabel } from "@/utils/commonFunction";
 import StatusBadge from "@/components/shared/common-status-badge";
+import CustomTooltip from "@/components/shared/custom-tooltip";
 
 export const pendingLeaveColumns: ColumnDef<any>[] = [
   {
@@ -52,7 +53,13 @@ export const pendingLeaveColumns: ColumnDef<any>[] = [
       <CustomDataTableColumnHeader column={column} title="Reason" />
     ),
     cell: ({ row }) => {
-      return <div className="text-sm truncate">{row.original.reason}</div>;
+      return (
+        <CustomTooltip title={row.original.reason}>
+          <div className="text-sm truncate max-w-[200px]">
+            {row.original.reason}
+          </div>
+        </CustomTooltip>
+      );
     },
     enableHiding: false,
     enableSorting: false,

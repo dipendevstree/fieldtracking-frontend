@@ -1,9 +1,13 @@
 import { FilterConfig, Option } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
-import { format } from "date-fns";
+import { format, subDays } from "date-fns";
 import { useState } from "react";
 import { DateRange } from "react-day-picker";
-import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
+import {
+  DEFAULT_PAGE_NUMBER,
+  DEFAULT_PAGE_SIZE,
+  LEAVE_STATUS,
+} from "@/data/app.data";
 import { LeaveRequestStatus } from "../../data/schema";
 import { useGetAllUsers } from "@/features/UserManagement/services/AllUsers.hook";
 import { useSelectOptions } from "@/hooks/use-select-option";
@@ -25,8 +29,8 @@ const tabs = [
     component: PendingRequest,
   },
   {
-    value: "approval-history",
     label: "Approval History",
+    value: "approval-history",
     component: LeaveApprovalHistory,
   },
 ];
@@ -37,7 +41,12 @@ interface Props {
 
 export default function LeaveRequest({ dashboardView = false }: Props) {
   const [activeTab, setActiveTab] = useState("pending-request");
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => {
+    return {
+      from: subDays(new Date(), 7),
+      to: new Date(),
+    };
+  });
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: dashboardView ? 5 : DEFAULT_PAGE_SIZE,
@@ -50,7 +59,12 @@ export default function LeaveRequest({ dashboardView = false }: Props) {
   });
 
   const { data: usersList = [] } = useGetAllUsers({ onlyTeamMembers: true });
-  const { data: leaveRequestStats } = useGetLeaveRequestStats({});
+  const { data: leaveRequestStats } = useGetLeaveRequestStats({
+    startDate: pagination.startDate,
+    endDate: pagination.endDate,
+    userId: pagination.userId,
+    leaveTypeId: pagination.leaveTypeId,
+  });
 
   const usersOptions = useSelectOptions<any>({
     listData: usersList?.map((user: any) => ({
@@ -137,6 +151,17 @@ export default function LeaveRequest({ dashboardView = false }: Props) {
     },
   ];
 
+  const handleCardClick = (status: LEAVE_STATUS) => {
+    if (activeTab !== "approval-history") {
+      setActiveTab("approval-history");
+    }
+    setPagination((prev) => ({
+      ...prev,
+      page: 1,
+      status,
+    }));
+  };
+
   const leaveRequestView = (
     <>
       {!dashboardView && (
@@ -144,7 +169,7 @@ export default function LeaveRequest({ dashboardView = false }: Props) {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                Total Leave Request
+                Total Leave Requests
               </CardTitle>
               <Settings className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -152,11 +177,16 @@ export default function LeaveRequest({ dashboardView = false }: Props) {
               <div className="text-2xl font-bold">
                 {leaveRequestStats?.totalLeaveRequest || 0}
               </div>
-              <p className="text-xs text-muted-foreground">Currently</p>
+              <p className="text-xs text-muted-foreground">
+                Currently Awaiting Approval
+              </p>
             </CardContent>
           </Card>
 
-          <Card>
+          <Card
+            className="cursor-pointer"
+            onClick={() => handleCardClick(LEAVE_STATUS.APPROVED)}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Approved Leave
@@ -171,7 +201,10 @@ export default function LeaveRequest({ dashboardView = false }: Props) {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card
+            className="cursor-pointer"
+            onClick={() => handleCardClick(LEAVE_STATUS.REJECTED)}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 Rejected Leave

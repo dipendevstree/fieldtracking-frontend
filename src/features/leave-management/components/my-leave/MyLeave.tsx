@@ -24,6 +24,8 @@ import { LeaveBalanceDialog } from "./components/leave-balance-modal";
 import MyLeaveRequest from "./components/my-leave-request";
 import { useLeaveRequestStore } from "../../store/leave-request.store";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { LEAVE_STATUS } from "@/data/app.data";
+import LeaveRuleList from "../leave-rules/components/LeaveRuleList";
 
 export default function MyLeave() {
   const { user } = useAuthStore();
@@ -41,7 +43,7 @@ export default function MyLeave() {
 
   const [openLeaveBalance, setOpenLeaveBalance] = useState<boolean>(false);
   const [calendarMode, setCalendarMode] = useState<"holiday" | "leave">(
-    "leave"
+    "leave",
   );
   const [viewDate, setViewDate] = useState(new Date());
 
@@ -99,7 +101,7 @@ export default function MyLeave() {
         const statusKey = getEventStatusKey(
           true,
           h.holidayType?.holidayTypeName || h.name,
-          new Date(h.date)
+          new Date(h.date),
         );
 
         return {
@@ -116,39 +118,47 @@ export default function MyLeave() {
         };
       });
     } else if (calendarMode === "leave") {
-      return allLeavesList?.map((lr: any) => {
-        const typeName =
-          lr.leaveType?.name ||
-          leaveTypesList.find((t: any) => t.id === lr.leaveTypeId)?.name ||
-          "Leave";
-        let status = lr.status?.toLowerCase() || "pending";
-        if (lr.leaveType?.superAdminCreatedBy) {
-          status =
-            lr.leaveType?.name?.replaceAll(" ", "_").toLowerCase() || "pending";
-        }
-        // Calculate status key
-        const statusKey = getEventStatusKey(
-          false,
-          status,
-          new Date(lr.startDate)
-        );
+      return allLeavesList
+        ?.filter(
+          (lr: any) =>
+            ![LEAVE_STATUS.CANCEL, LEAVE_STATUS.REJECTED].includes(lr.status),
+        )
+        .map((lr: any) => {
+          const typeName =
+            lr.leaveType?.name ||
+            leaveTypesList.find((t: any) => t.id === lr.leaveTypeId)?.name ||
+            "Leave";
+          let status = lr.status?.toLowerCase() || "pending";
+          if (lr.leaveType?.superAdminCreatedBy) {
+            status =
+              lr.leaveType?.name?.replaceAll(" ", "_").toLowerCase() ||
+              "pending";
+          }
+          // Calculate status key
+          const statusKey = getEventStatusKey(
+            false,
+            status,
+            new Date(lr.startDate),
+          );
 
-        const start = new Date(lr.startDate);
-        let end = new Date(lr.endDate);
+          const start = new Date(lr.startDate);
+          let end = new Date(lr.endDate);
 
-        return {
-          id: lr.id,
-          title: typeName,
-          start,
-          end,
-          allDay: !lr.halfDay,
-          resource: {
-            type: "leave",
-            originalData: lr,
-            statusKey: statusKey,
-          },
-        };
-      });
+          return {
+            id: lr.id,
+            title: typeName,
+            start,
+            end,
+            allDay: !lr.halfDay,
+            resource: {
+              type: "leave",
+              originalData: lr,
+              statusKey: statusKey,
+              halfDay: lr.halfDay,
+              halfDayType: lr.halfDayType,
+            },
+          };
+        });
     }
   }, [calendarMode, holidays, allLeavesList, leaveTypesList]);
 
@@ -252,6 +262,8 @@ export default function MyLeave() {
           destructive
         />
       )}
+
+      <LeaveRuleList />
     </Main>
   );
 }
