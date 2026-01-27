@@ -75,7 +75,7 @@ export default function LeaveRequestViewDialog({
   const { mutate: createLeaveApproval, isPending } = useCreateLeaveApproval(
     () => {
       closeDialog();
-    }
+    },
   );
 
   const handleApprove = () => {
@@ -126,7 +126,7 @@ export default function LeaveRequestViewDialog({
   useDirtyTracker(reason !== "");
 
   const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
-    reason !== ""
+    reason !== "",
   );
 
   const isWarningOpen = showLocalWarning || showExitPrompt;
@@ -199,8 +199,9 @@ export default function LeaveRequestViewDialog({
               className="text-gray-700 border p-2 rounded"
               value={
                 moment(currentRow.startDate).format("DD/MM/YYYY") +
-                " - " +
-                moment(currentRow.endDate).format("DD/MM/YYYY") +
+                (!currentRow.halfDay
+                  ? " - " + moment(currentRow.endDate).format("DD/MM/YYYY")
+                  : "") +
                 (currentRow.halfDay
                   ? " (" + formatDropDownLabel(currentRow.halfDayType) + ")"
                   : "") +

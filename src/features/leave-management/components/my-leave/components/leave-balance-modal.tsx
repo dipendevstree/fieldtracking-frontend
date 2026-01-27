@@ -24,6 +24,11 @@ export function LeaveBalanceDialog({ open, onOpenChange }: Props) {
   const { user } = useAuthStore();
   const allowWorkFromHome = user?.organization?.allowWorkFromHome;
   const { data: myLeavesList } = useGetMyLeaves();
+  const leaveList = myLeavesList?.length
+    ? myLeavesList?.filter((item: any) =>
+        item && item.id && allowWorkFromHome ? true : !item.superAdminCreatedBy,
+      )
+    : [];
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -35,14 +40,9 @@ export function LeaveBalanceDialog({ open, onOpenChange }: Props) {
             Leave Balance for {new Date().getFullYear()}
           </DialogTitle>
         </DialogHeader>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {myLeavesList
-            ?.filter((item: any) =>
-              item && item.id && allowWorkFromHome
-                ? true
-                : !item.superAdminCreatedBy
-            )
-            ?.map((item: any, index: number) => {
+        {leaveList?.length > 0 ? (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {leaveList?.map((item: any, index: number) => {
               const bal = item?.leaveBalance || {};
               const totalQuota =
                 parseFloat(bal.earned || "0") +
@@ -61,11 +61,17 @@ export function LeaveBalanceDialog({ open, onOpenChange }: Props) {
                   percentage={percentage}
                   headerBg={cardStyles[index % cardStyles.length].headerBg}
                   titleColor={cardStyles[index % cardStyles.length].titleColor}
-                  //   onApply={() => openApplyLeaveDialog(item.id)}
                 />
               );
             })}
-        </div>
+          </div>
+        ) : (
+          <p className="text-center text-base text-slate-500">
+            Leave balance for the {new Date().getFullYear()} year has not been
+            generated. Please apply for leave or wait for the next accrual
+            cycle.
+          </p>
+        )}
       </DialogContent>
     </Dialog>
   );

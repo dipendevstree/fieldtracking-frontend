@@ -65,14 +65,12 @@ export function UsersActionModal() {
           ? [values.reportingToIds]
           : [],
       shiftId: values.shiftId || null,
-      // territoryId: values.territoryId,
     };
 
     if (allowTerritoryFilter) {
       payload.territoryId = values.territoryId;
     }
 
-    console.log("Create user payload:", payload); // Debug log
     createUser(payload);
   };
 
@@ -97,13 +95,11 @@ export function UsersActionModal() {
           ? [values.reportingToIds]
           : [],
       shiftId: values.shiftId || null,
-      // territoryId: values.territoryId,
     };
     if (allowTerritoryFilter) {
       payload.territoryId = values.territoryId;
     }
 
-    console.log("Update user payload:", payload); // Debug log
     updateUser(payload);
   };
 

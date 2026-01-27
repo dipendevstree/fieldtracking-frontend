@@ -40,6 +40,7 @@ import {
 } from "@/features/leave-management/services/leave-action.hook";
 
 import { AttachmentItem } from "./attachment-item";
+import moment from "moment";
 
 interface ApplyLeaveDialogProps {
   open: boolean;
@@ -70,14 +71,14 @@ export function ApplyLeaveDialog({
   // Mutations
   const createLeaveMutation = useCreateLeave(() => onOpenChange(false));
   const updateLeaveMutation = useUpdateLeave(leaveToEditId || "", () =>
-    onOpenChange(false)
+    onOpenChange(false),
   );
 
   const leaveTypeOptions = leaveTypesList
     .filter((type: any) =>
       workFromHomeTypeOpen
         ? type.superAdminCreatedBy
-        : !type.superAdminCreatedBy
+        : !type.superAdminCreatedBy,
     )
     .map((type: any) => ({
       value: type.id,
@@ -92,7 +93,7 @@ export function ApplyLeaveDialog({
 
   const formSchema = useMemo(
     () => getApplyLeaveSchema(requiredAttachmentIds),
-    [requiredAttachmentIds]
+    [requiredAttachmentIds],
   );
 
   const form = useForm<ApplyLeaveFormValues>({
@@ -119,7 +120,10 @@ export function ApplyLeaveDialog({
   const watchHalfDay = watch("halfDay");
   const watchLeaveTypeId = watch("leaveTypeId");
   const watchAttachments = watch("attachments") || [];
-
+  const singleDay =
+    watchStartDate &&
+    watchEndDate &&
+    moment(watchStartDate).isSame(watchEndDate, "day");
   const requiresAttachment = requiredAttachmentIds.includes(watchLeaveTypeId);
 
   // Initial Reset / Population
@@ -166,7 +170,7 @@ export function ApplyLeaveDialog({
 
       if (workFromHomeTypeOpen) {
         const workFromHomeType = leaveTypesList.find(
-          (lt: any) => lt.superAdminCreatedBy
+          (lt: any) => lt.superAdminCreatedBy,
         );
         if (workFromHomeType) {
           setValue("leaveTypeId", workFromHomeType.id);
@@ -213,10 +217,10 @@ export function ApplyLeaveDialog({
     // Filter attachments: separate actual new Files and existing string paths
     const currentAttachments = data.attachments || [];
     const newFiles = currentAttachments.filter(
-      (a): a is File => a instanceof File
+      (a): a is File => a instanceof File,
     );
     const remainingExisting = currentAttachments.filter(
-      (a): a is string => typeof a === "string"
+      (a): a is string => typeof a === "string",
     );
 
     // Append actual files
@@ -226,7 +230,7 @@ export function ApplyLeaveDialog({
     if (leaveToEditId && singleLeaveData?.attachments) {
       const originalAttachments: string[] = singleLeaveData.attachments;
       const deleteFileKeys = originalAttachments.filter(
-        (path) => !remainingExisting.includes(path)
+        (path) => !remainingExisting.includes(path),
       );
       deleteFileKeys.forEach((key) => formData.append("deleteFileKeys", key));
     }
@@ -248,7 +252,7 @@ export function ApplyLeaveDialog({
         });
       }
     },
-    [getValues, setValue]
+    [getValues, setValue],
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -341,65 +345,67 @@ export function ApplyLeaveDialog({
                 )}
               </div>
 
-              <div className="flex flex-row items-center space-x-4 border p-3 rounded-md bg-slate-50">
-                <FormField
-                  control={form.control}
-                  name="halfDay"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center space-y-0 gap-2">
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={(checked) => {
-                            field.onChange(checked);
-                            // Auto-select First Half if enabling half day
-                            if (checked) {
-                              setValue(
-                                "halfDayType",
-                                LEAVE_HALF_DAY_TYPE.FIRST_HALF,
-                                { shouldValidate: true }
-                              );
-                            } else {
-                              setValue("halfDayType", undefined);
-                            }
-                          }}
-                        />
-                      </FormControl>
-                      <FormLabel className="cursor-pointer font-medium mt-0">
-                        Half Day?
-                      </FormLabel>
-                    </FormItem>
-                  )}
-                />
-                {watchHalfDay && (
+              {singleDay && (
+                <div className="flex flex-row items-center space-x-4 border p-3 rounded-md bg-slate-50">
                   <FormField
                     control={form.control}
-                    name="halfDayType"
+                    name="halfDay"
                     render={({ field }) => (
-                      <FormItem className="flex-1">
+                      <FormItem className="flex flex-row items-center space-y-0 gap-2">
                         <FormControl>
-                          <SearchableSelect
-                            options={[
-                              {
-                                value: LEAVE_HALF_DAY_TYPE.FIRST_HALF,
-                                label: "First Half",
-                              },
-                              {
-                                value: LEAVE_HALF_DAY_TYPE.SECOND_HALF,
-                                label: "Second Half",
-                              },
-                            ]}
-                            value={field.value}
-                            onChange={field.onChange}
-                            placeholder="Select half"
+                          <Switch
+                            checked={field.value}
+                            onCheckedChange={(checked) => {
+                              field.onChange(checked);
+                              // Auto-select First Half if enabling half day
+                              if (checked) {
+                                setValue(
+                                  "halfDayType",
+                                  LEAVE_HALF_DAY_TYPE.FIRST_HALF,
+                                  { shouldValidate: true },
+                                );
+                              } else {
+                                setValue("halfDayType", undefined);
+                              }
+                            }}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormLabel className="cursor-pointer font-medium mt-0">
+                          Half Day?
+                        </FormLabel>
                       </FormItem>
                     )}
                   />
-                )}
-              </div>
+                  {watchHalfDay && (
+                    <FormField
+                      control={form.control}
+                      name="halfDayType"
+                      render={({ field }) => (
+                        <FormItem className="flex-1">
+                          <FormControl>
+                            <SearchableSelect
+                              options={[
+                                {
+                                  value: LEAVE_HALF_DAY_TYPE.FIRST_HALF,
+                                  label: "First Half",
+                                },
+                                {
+                                  value: LEAVE_HALF_DAY_TYPE.SECOND_HALF,
+                                  label: "Second Half",
+                                },
+                              ]}
+                              value={field.value}
+                              onChange={field.onChange}
+                              placeholder="Select half"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  )}
+                </div>
+              )}
 
               <FormField
                 control={form.control}
@@ -429,7 +435,7 @@ export function ApplyLeaveDialog({
                       "mt-2 flex items-center justify-center w-full h-32 px-4 transition bg-white border-2 border-dashed rounded-md appearance-none cursor-pointer focus:outline-none",
                       isDragActive
                         ? "border-blue-500 bg-blue-50/50"
-                        : "border-slate-300 hover:border-slate-400"
+                        : "border-slate-300 hover:border-slate-400",
                     )}
                   >
                     <input {...getInputProps()} />
@@ -476,7 +482,7 @@ export function ApplyLeaveDialog({
                                 setValue(
                                   "attachments",
                                   current.filter((_, i) => i !== idx),
-                                  { shouldValidate: true, shouldDirty: true }
+                                  { shouldValidate: true, shouldDirty: true },
                                 );
                               }}
                             />
@@ -497,7 +503,9 @@ export function ApplyLeaveDialog({
               <DialogFooter className="gap-2 pt-2">
                 <Button
                   type="submit"
-                  disabled={isSaving || !!errors.attachments}
+                  disabled={
+                    isSaving || (requiresAttachment && !!errors.attachments)
+                  }
                 >
                   {isSaving ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
