@@ -274,7 +274,13 @@ export default function AttendanceDashboard() {
     return names[0].charAt(0).toUpperCase();
   };
 
-  const EXCEPTION_STATUSES = ["absent", "late", "half_day", "leave"] as const;
+  const EXCEPTION_STATUSES = [
+    "absent",
+    "late",
+    "half_day",
+    "leave",
+    "early_exit",
+  ] as const;
 
   const getStatusFromRecord = (status?: string): ATTENDANCE_STATUS => {
     switch (status?.toLowerCase()) {
@@ -286,6 +292,8 @@ export default function AttendanceDashboard() {
         return ATTENDANCE_STATUS.LATE;
       case "leave":
         return ATTENDANCE_STATUS.LEAVE;
+      case "early_exit":
+        return ATTENDANCE_STATUS.EARLY_EXIT;
       default:
         return ATTENDANCE_STATUS.PRESENT;
     }

@@ -65,8 +65,8 @@ const getStatusStyles = (status: ATTENDANCE_STATUS) => {
       return "bg-blue-500 text-white";
     case ATTENDANCE_STATUS.ABSENT:
       return "bg-red-500 text-white";
-    // case ATTENDANCE_STATUS.WFH:
-    //   return "bg-purple-500 text-white";
+    case ATTENDANCE_STATUS.EARLY_EXIT:
+      return "bg-amber-500 text-white";
     case ATTENDANCE_STATUS.LEAVE:
       return "bg-orange-500 text-white"; // Match legend "leave" color
     case ATTENDANCE_STATUS.HOLIDAY:
