@@ -1,4 +1,3 @@
-import { EncashmentFrequency } from "@/data/app.data";
 import { z } from "zod";
 
 // --- 1. Leave Type ---
@@ -35,8 +34,6 @@ export const LeaveRulesSchema = z.object({
   leaveEncashmentRuleActive: z.boolean(),
   maximumEncashmentDays: z.coerce.number().min(0),
   minimumEncashmentDaysRequired: z.coerce.number().min(0),
-  encashmentFrequency: z.nativeEnum(EncashmentFrequency).optional(),
-  encashmentLeaveTypes: z.array(z.string()).optional(),
 });
 
 export type LeaveRules = z.infer<typeof LeaveRulesSchema>;

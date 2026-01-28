@@ -52,8 +52,6 @@ import { usePermission } from "@/permissions/hooks/use-permission";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
-import { SearchableSelect } from "@/components/ui/SearchableSelect";
-import { EncashmentFrequency } from "@/data/app.data";
 
 export default function LeaveRulesConfiguration() {
   const { data: leaveTypes = [] } = useGetAllLeaveTypes();
@@ -83,8 +81,6 @@ export default function LeaveRulesConfiguration() {
       leaveEncashmentRuleActive: false,
       maximumEncashmentDays: 0,
       minimumEncashmentDaysRequired: 0,
-      encashmentFrequency: undefined,
-      encashmentLeaveTypes: [],
     },
   });
 
@@ -105,8 +101,6 @@ export default function LeaveRulesConfiguration() {
         maximumEncashmentDays: rulesData.maximumEncashmentDays ?? 0,
         minimumEncashmentDaysRequired:
           rulesData.minimumEncashmentDaysRequired ?? 0,
-        encashmentFrequency: rulesData.encashmentFrequency ?? undefined,
-        encashmentLeaveTypes: rulesData.encashmentLeaveTypes ?? [],
       });
     }
   }, [rulesData, form]);
@@ -158,11 +152,6 @@ export default function LeaveRulesConfiguration() {
       </div>
     );
   }
-
-  const frequencyOptions = Object.values(EncashmentFrequency).map((value) => ({
-    label: value,
-    value: value,
-  }));
 
   return (
     <Main className="space-y-6">
@@ -569,7 +558,7 @@ export default function LeaveRulesConfiguration() {
 
             {form.watch("leaveEncashmentRuleActive") && (
               <CardContent className="space-y-6 animate-in slide-in-from-top-2 duration-200">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <FormField
                     control={form.control}
                     name="maximumEncashmentDays"
@@ -618,83 +607,8 @@ export default function LeaveRulesConfiguration() {
                       </FormItem>
                     )}
                   />
-                  <FormField
-                    control={form.control}
-                    name="encashmentFrequency"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Encashment Frequency</FormLabel>
-                        <FormControl>
-                          <SearchableSelect
-                            options={frequencyOptions}
-                            value={field.value}
-                            onChange={field.onChange}
-                            placeholder="Select frequency"
-                            disabled={!canEdit}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          How often this user can encash their leaves
-                        </FormDescription>
-                      </FormItem>
-                    )}
-                  />
                 </div>
 
-                {/* Secondary Types Checkboxes */}
-                <FormField
-                  control={form.control}
-                  name="encashmentLeaveTypes"
-                  render={() => (
-                    <FormItem>
-                      <div className="mb-4">
-                        <FormLabel>Encashable Leave Types</FormLabel>
-                      </div>
-                      <div className="border rounded-md p-4 space-y-3">
-                        {showLeaveTypes.map((item: any) => (
-                          <FormField
-                            key={item.id}
-                            control={form.control}
-                            name="encashmentLeaveTypes"
-                            render={({ field }) => {
-                              return (
-                                <FormItem
-                                  key={item.id}
-                                  className="flex flex-row items-start space-x-3 space-y-0"
-                                >
-                                  <FormControl>
-                                    <Checkbox
-                                      checked={field.value?.includes(item.id)}
-                                      onCheckedChange={(checked) => {
-                                        return checked
-                                          ? field.onChange([
-                                              ...(field.value || []),
-                                              item.id,
-                                            ])
-                                          : field.onChange(
-                                              field.value?.filter(
-                                                (value) => value !== item.id,
-                                              ),
-                                            );
-                                      }}
-                                      disabled={!canEdit}
-                                    />
-                                  </FormControl>
-                                  <FormLabel className="font-normal cursor-pointer">
-                                    {item.name}
-                                  </FormLabel>
-                                </FormItem>
-                              );
-                            }}
-                          />
-                        ))}
-                      </div>
-                      <FormDescription>
-                        Select which leave types can be encashed
-                      </FormDescription>
-                    </FormItem>
-                  )}
-                />
                 {/* Example Box */}
                 <div className="bg-slate-50 border rounded-md p-4 text-sm text-slate-700">
                   <span className="font-semibold block mb-1">Example:</span>
