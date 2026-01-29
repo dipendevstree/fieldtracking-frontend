@@ -55,7 +55,9 @@ import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 export default function LeaveRulesConfiguration() {
   const { data: leaveTypes = [] } = useGetAllLeaveTypes();
-
+  const showLeaveTypes = leaveTypes.filter(
+    (item: any) => !item.superAdminCreatedBy,
+  );
   const { data: rulesData, isLoading: isRulesLoading } =
     useGetLeaveRulesConfig();
 
@@ -106,7 +108,7 @@ export default function LeaveRulesConfiguration() {
   const onSubmit = (data: z.infer<typeof LeaveRulesSchema>) => {
     let payload = {
       ...data,
-      secondaryLeaveTypes: leaveTypes
+      secondaryLeaveTypes: showLeaveTypes
         .filter((lt: LeaveType) => data.secondaryLeaveTypes?.includes(lt.id))
         .map((lt: LeaveType) => lt.id),
     };
@@ -325,7 +327,7 @@ export default function LeaveRulesConfiguration() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {leaveTypes.map((type: any) => (
+                          {showLeaveTypes.map((type: any) => (
                             <SelectItem key={type.id} value={type.id}>
                               {type.name}
                             </SelectItem>
@@ -350,7 +352,7 @@ export default function LeaveRulesConfiguration() {
                         <FormLabel>Allowed Backup Leave Types</FormLabel>
                       </div>
                       <div className="border rounded-md p-4 space-y-3">
-                        {leaveTypes.map((item: any) => (
+                        {showLeaveTypes.map((item: any) => (
                           <FormField
                             key={item.id}
                             control={form.control}
@@ -606,6 +608,7 @@ export default function LeaveRulesConfiguration() {
                     )}
                   />
                 </div>
+
                 {/* Example Box */}
                 <div className="bg-slate-50 border rounded-md p-4 text-sm text-slate-700">
                   <span className="font-semibold block mb-1">Example:</span>

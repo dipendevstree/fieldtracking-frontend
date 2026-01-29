@@ -119,3 +119,8 @@ export enum ATTENDANCE_RULE_FREQUENCY {
   WEEKLY = "weekly",
   MONTHLY = "monthly",
 }
+
+export enum EncashmentFrequency {
+  Quarterly = "Quarterly",
+  Yearly = "Yearly",
+}

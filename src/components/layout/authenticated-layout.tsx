@@ -15,6 +15,7 @@ import { useFcm } from "@/hooks/use-fcm";
 import { useUpdateUser } from "@/features/UserManagement/services/AllUsers.hook";
 import WorkDaySession from "@/features/attendance-management/components/attendance/components/WorkDaySession";
 import { usePermission } from "@/permissions/hooks/use-permission";
+import { usePermissionData } from "@/hooks/use-permission-data";
 
 export function AuthenticatedLayout({
   children,
@@ -30,6 +31,23 @@ export function AuthenticatedLayout({
   );
   const { token, requestPermission, permissionGranted } = useFcm();
   const navigate = useNavigate();
+  const { mutate: updatePermission } = usePermissionData({
+    onSuccess(data) {
+      updateUser({
+        ...user,
+        ...data,
+        role: {
+          ...user?.role,
+          ...data?.role,
+        },
+        organization: {
+          ...user?.organization,
+          ...data.organization,
+        },
+      });
+    },
+  });
+
   // ✅ Ask for permission once after login
   useEffect(() => {
     if (user && !user.isSuperAdmin && !permissionGranted) {
@@ -61,6 +79,10 @@ export function AuthenticatedLayout({
       );
     }
   }, [token, user?.id]);
+
+  useEffect(() => {
+    updatePermission();
+  }, []);
 
   useEffect(() => {
     if ("serviceWorker" in navigator) {

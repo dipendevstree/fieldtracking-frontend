@@ -376,8 +376,8 @@ const CustomToolbar = ({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {Array.from({ length: 5 }).map((_, i) => {
-                const year = moment().year() - 2 + i;
+              {Array.from({ length: 10 }).map((_, i) => {
+                const year = moment().year() - 9 + i;
                 return (
                   <SelectItem key={year} value={year.toString()}>
                     {year}

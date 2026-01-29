@@ -11,6 +11,7 @@ export function LeaveBalanceDiv({
   row: any;
   columnName: string;
 }) {
+  return row.original[columnName].remaining;
   return (
     <div className="text-sm">
       <div>
@@ -26,23 +27,6 @@ export function LeaveBalanceDiv({
 }
 
 export const leaveBalanceHistoryColumns: ColumnDef<any>[] = [
-  {
-    accessorKey: "userName",
-    header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title="User Name" />
-    ),
-    cell: ({ row }) => {
-      return (
-        <div className="text-sm ">
-          {row.original.userData?.firstName +
-            " " +
-            row.original.userData?.lastName}{" "}
-        </div>
-      );
-    },
-    enableHiding: false,
-    enableSorting: false,
-  },
   {
     accessorKey: "leaveTypeData.name",
     header: ({ column }) => (
@@ -94,7 +78,7 @@ export const leaveBalanceHistoryColumns: ColumnDef<any>[] = [
   {
     accessorKey: "quantity",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title="Amount" />
+      <CustomDataTableColumnHeader column={column} title="No. of Day(s)" />
     ),
     enableHiding: false,
     enableSorting: false,

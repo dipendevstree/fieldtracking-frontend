@@ -20,61 +20,81 @@ export default function LeaveRuleList() {
           rulesData?.leaveCarryForwardRuleActive,
           rulesData?.leaveEncashmentRuleActive,
         ].includes(true) ? (
-          <ul className="list-disc pl-5 mt-2 space-y-1">
+          <ul className="list-disc pl-5 mt-2 space-y-2">
             {rulesData?.sandwichLeaveRuleActive && (
               <li>
-                <span className="font-semibold">Sandwich Leave Rule:</span>{" "}
-                Maximum{" "}
+                <span className="font-semibold">Sandwich Leave Rule:</span> If
+                leave is taken in a sandwich pattern (i.e., holidays or weekly
+                offs falling between applied leave days), a maximum of{" "}
                 <span className="font-semibold">
                   {rulesData?.maximumSandwichLeaveDays}
                 </span>{" "}
-                days of sandwich leave can be deducted if you take sandwich
-                leave.
+                days may be deducted as sandwich leave.
               </li>
             )}
+
             {rulesData?.crossLeaveDeductionRuleActive && (
               <li>
                 <span className="font-semibold">
                   Cross Leave Deduction Rule:
-                </span>{" "}
-                If Your requested leave type balance is insufficient then System
-                will use{" "}
-                <span className="font-semibold">
-                  {rulesData?.primaryLeaveTypeData?.name}
-                </span>{" "}
-                leave type and after backup leave type{" "}
-                <span className="font-semibold">
-                  (
-                  {rulesData?.secondaryLeaveTypesData
-                    .map((item: any) => item.name)
-                    .join(", ")}
-                  )
-                </span>{" "}
-                balance will be deducted from your leave balance.
+                </span>
+                <ul className="list-disc pl-5 mt-2 space-y-1">
+                  <li>
+                    If the balance of the requested leave type is insufficient,
+                    the system will automatically deduct leave from the{" "}
+                    <span className="font-semibold">
+                      {rulesData?.primaryLeaveTypeData?.name}
+                    </span>{" "}
+                    balance.
+                  </li>
+
+                  <li>
+                    If the{" "}
+                    <span className="font-semibold">
+                      {rulesData?.primaryLeaveTypeData?.name}
+                    </span>{" "}
+                    balance is also insufficient, the remaining leave will be
+                    deducted from the backup leave types{" "}
+                    <span className="font-semibold">
+                      (
+                      {rulesData?.secondaryLeaveTypesData
+                        ?.map((item: any) => item.name)
+                        .join(", ")}
+                      )
+                    </span>
+                    .
+                  </li>
+                  <li>
+                    If all available leave balances are insufficient, the
+                    requested leave type may result in a negative balance.
+                  </li>
+                </ul>
               </li>
             )}
+
             {rulesData?.leaveCarryForwardRuleActive && (
               <li>
                 <span className="font-semibold">Leave Carry Forward Rule:</span>{" "}
-                Maximum{" "}
+                A maximum of{" "}
                 <span className="font-semibold">
                   {rulesData?.maximumCarryForwardDays}
                 </span>{" "}
-                days of leave can be carried forward to the next year.
+                days of unused leave can be carried forward to the next year.
               </li>
             )}
+
             {rulesData?.leaveEncashmentRuleActive && (
               <li>
-                <span className="font-semibold">Leave Encashment Rule:</span>{" "}
-                Maximum{" "}
+                <span className="font-semibold">Leave Encashment Rule:</span> A
+                maximum of{" "}
                 <span className="font-semibold">
                   {rulesData?.maximumEncashmentDays}
                 </span>{" "}
-                days of leave can be encashed. But you need to have at least{" "}
+                days of leave can be encashed, provided that at least{" "}
                 <span className="font-semibold">
                   {rulesData?.minimumEncashmentDaysRequired}
                 </span>{" "}
-                days of leave balance.
+                days remain in the leave balance after encashment.
               </li>
             )}
           </ul>
