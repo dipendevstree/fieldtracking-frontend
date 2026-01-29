@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-type DialogType = "view" | "edit" | "cancel" | null;
+type DialogType = "view" | "edit" | "cancel" | "leave-encashment" | null;
 
 interface LeaveRequestStoreState {
   open: DialogType;

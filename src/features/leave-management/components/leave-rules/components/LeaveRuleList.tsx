@@ -1,13 +1,16 @@
 import { PermissionGate } from "@/permissions/components/PermissionGate";
-import { useGetLeaveRulesConfig } from "../../../services/leave-rules-config.action.hook";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "@tanstack/react-router";
 import { Loader2 } from "lucide-react";
 
-export default function LeaveRuleList() {
+export default function LeaveRuleList({
+  rulesData,
+  isRulesLoading,
+}: {
+  rulesData: any;
+  isRulesLoading: boolean;
+}) {
   const navigate = useNavigate();
-  const { data: rulesData, isLoading: isRulesLoading } =
-    useGetLeaveRulesConfig();
   return (
     <div className="bg-slate-50 border rounded-md p-6 text-sm text-slate-700">
       <p className="font-bold mb-2">Leave Rules:</p>
