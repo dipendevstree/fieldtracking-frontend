@@ -13,6 +13,12 @@ export type AttendanceCorrectionRequest = z.infer<
 >;
 
 // --- Attendance Rules ---
+export const HoursDeductionRuleSchema = z.object({
+  shortageMin: z.coerce.number().min(1, "Min 1"),
+  shortageMax: z.coerce.number().min(1, "Min 1"),
+  deductionCount: z.coerce.number().min(0, "Min 0"),
+});
+
 export const AttendanceRulesSchema = z.object({
   gracePeriodMinutes: z.coerce
     .number()
@@ -32,6 +38,40 @@ export const AttendanceRulesSchema = z.object({
     .min(1, "At least one week off day is required"),
   latemarkApplicableTiers: z.array(z.string()).optional(),
   frequency: z.nativeEnum(ATTENDANCE_RULE_FREQUENCY).optional(),
+  // --- Enhanced Validation for Hours Based Rules ---
+  hoursDeductionRules: z
+    .array(HoursDeductionRuleSchema)
+    .optional()
+    .superRefine((rules, ctx) => {
+      if (!rules || rules.length === 0) return;
+
+      rules.forEach((rule, index) => {
+        const min = Number(rule.shortageMin);
+        const max = Number(rule.shortageMax);
+
+        // 1. Validate Row: Max > Min
+        if (max <= min && max !== 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Must be greater than Min",
+            path: [index, "shortageMax"],
+          });
+        }
+
+        // 2. Validate Sequence: Current Min > Previous Max
+        if (index > 0) {
+          const prevRule = rules[index - 1];
+          const prevMax = Number(prevRule.shortageMax);
+          if (prevMax > 0 && min <= prevMax) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: `Must start after ${prevMax}`,
+              path: [index, "shortageMin"],
+            });
+          }
+        }
+      });
+    }),
 });
 
 export type AttendanceRules = z.infer<typeof AttendanceRulesSchema>;
