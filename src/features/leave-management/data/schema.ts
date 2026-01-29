@@ -45,7 +45,7 @@ export const UserTierSchema = z.object({
     z.object({
       leaveTypeId: z.string(),
       allowedDays: z.coerce.number().min(0),
-    })
+    }),
   ),
   userIds: z.array(z.string()).default([]),
 });
