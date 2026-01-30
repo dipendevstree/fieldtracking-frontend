@@ -52,6 +52,8 @@ export const Header = ({
   }, []);
 
   React.useEffect(() => {
+    if (user && user.isSuperAdmin) return;
+
     const server = socket(getToken());
     if (!server) return;
 
@@ -88,7 +90,7 @@ export const Header = ({
         "bg-background flex h-16 items-center gap-3 p-4 sm:gap-4",
         fixed && "header-fixed peer/header fixed z-50 w-[inherit] rounded-md",
         offset > 10 && fixed ? "shadow-sm" : "shadow-none",
-        className
+        className,
       )}
       {...props}
     >
