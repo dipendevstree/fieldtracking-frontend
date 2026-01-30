@@ -14,9 +14,9 @@ export type AttendanceCorrectionRequest = z.infer<
 
 // --- Attendance Rules ---
 export const HoursDeductionRuleSchema = z.object({
-  shortageMin: z.coerce.number().min(1, "Min 1"),
-  shortageMax: z.coerce.number().min(1, "Min 1"),
-  deductionCount: z.coerce.number().min(0, "Min 0"),
+  shortageMin: z.coerce.number().min(1, "Min hours must be at least 1"),
+  shortageMax: z.coerce.number().min(1, "Max hours must be at least 1"),
+  deductionCount: z.coerce.number().min(0, "Deduction count required"),
 });
 
 export const AttendanceRulesSchema = z.object({
