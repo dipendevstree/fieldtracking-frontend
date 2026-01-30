@@ -62,7 +62,7 @@ export default function Livetracking() {
 
   const { data, isLoading, totalCount } = useGetUsers(pagination);
   const [userStatusMap, setUserStatusMap] = useState<Record<string, boolean>>(
-    {}
+    {},
   );
 
   const [selectedUserId, setSelectedUserId] = useState(userId);
@@ -111,7 +111,7 @@ export default function Livetracking() {
   const enhancedUserList = (data?.list ?? [])
     .map(enhanceUser)
     .sort((a: any, b: any) =>
-      a.isOnline === b.isOnline ? 0 : a.isOnline ? -1 : 1
+      a.isOnline === b.isOnline ? 0 : a.isOnline ? -1 : 1,
     );
 
   const { data: territoriesList } = useGetAllTerritoriesForDropdown();
@@ -156,7 +156,7 @@ export default function Livetracking() {
           typeof coord.lat === "number" &&
           typeof coord.lng === "number" &&
           !isNaN(coord.lat) &&
-          !isNaN(coord.lng)
+          !isNaN(coord.lng),
       );
 
     const firstValidCoord = validCoords[0] || AHMEDABAD_CENTER;
@@ -204,7 +204,7 @@ export default function Livetracking() {
     if (!userIdFromUrl) {
       // If userId was removed (i.e. back to list view)
       if (socket) {
-        socket.emit("untrack_user", { userId });
+        socket().emit("untrack_user", { userId });
       }
       setSelectedUserId("");
       setPath([]);
@@ -264,8 +264,8 @@ export default function Livetracking() {
           ...prev,
           status: "",
         }));
-      }
-    }
+      },
+    },
   ];
 
   useEffect(() => {
@@ -333,18 +333,22 @@ export default function Livetracking() {
       isOnline: userStatusMap[user.id] ?? user.isOnline,
     }))
     .sort((a: any, b: any) =>
-      a.isOnline === b.isOnline ? 0 : a.isOnline ? -1 : 1
+      a.isOnline === b.isOnline ? 0 : a.isOnline ? -1 : 1,
     );
 
   const selectedUser = enhancedUserListWithStatus.find(
-    (u: any) => u.id === selectedUserId
+    (u: any) => u.id === selectedUserId,
   );
 
   return (
     <Main className={cn("flex flex-col p-4")}>
       <GlobalFilterSection
         key="calendar-view-filters"
-        filters={userAuth?.organization?.allowAddUsersBasedOnTerritories ? [userterritoryFilter, ...filters] : filters}
+        filters={
+          userAuth?.organization?.allowAddUsersBasedOnTerritories
+            ? [userterritoryFilter, ...filters]
+            : filters
+        }
         onCancelPress={() => {
           setSelectedUserId("");
           setPagination({
@@ -399,7 +403,7 @@ export default function Livetracking() {
                             src={
                               user.profileUrl ||
                               `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                user.fullName
+                                user.fullName,
                               )}`
                             }
                             alt={user.fullName}
