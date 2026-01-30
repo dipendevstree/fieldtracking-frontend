@@ -18,6 +18,8 @@ import { useViewType } from "@/context/view-type-context";
 import { Switch } from "@/components/ui/switch";
 import { usePermission } from "@/permissions/hooks/use-permission";
 import { useEffect } from "react";
+import moment from "moment";
+import StatusBadge from "./shared/common-status-badge";
 
 interface MenuItem {
   label: string;
@@ -215,6 +217,34 @@ export function ProfileDropdown({
               Log out
               <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
             </DropdownMenuItem>
+          </>
+        )}
+
+        {user?.organization && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <div className="flex flex-col p-2 gap-2">
+                <p className="flex justify-between text-[14px]">
+                  Plan Status{" "}
+                  <StatusBadge
+                    status={
+                      user?.organization?.isActive ? "Active" : "Inactive"
+                    }
+                  />
+                </p>
+                <p className="flex justify-between text-[14px]">
+                  Expiry Date
+                  <span className="text-red-500 font-medium">
+                    {user?.organization?.planEndDate
+                      ? moment(user?.organization?.planEndDate).format(
+                          "DD MMM YYYY",
+                        )
+                      : "N/A"}
+                  </span>
+                </p>
+              </div>
+            </DropdownMenuGroup>
           </>
         )}
       </DropdownMenuContent>
