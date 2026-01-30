@@ -26,9 +26,13 @@ import { useLeaveRequestStore } from "../../store/leave-request.store";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { LEAVE_STATUS } from "@/data/app.data";
 import LeaveRuleList from "../leave-rules/components/LeaveRuleList";
+import LeaveEncashmentModal from "./components/leave-encashment-modal";
+import { useGetLeaveRulesConfig } from "../../services/leave-rules-config.action.hook";
 
 export default function MyLeave() {
   const { user } = useAuthStore();
+  const { data: rulesData, isLoading: isRulesLoading } =
+    useGetLeaveRulesConfig();
   const allowWorkFromHome = user?.organization?.allowWorkFromHome;
   const navigate = useNavigate();
   const { viewType, viewTypeToggle } = useViewType();
@@ -216,8 +220,17 @@ export default function MyLeave() {
 
       <LeaveBalanceDialog
         open={openLeaveBalance}
+        rulesData={rulesData}
         onOpenChange={(value: boolean) => {
           setOpenLeaveBalance(value);
+        }}
+      />
+
+      <LeaveEncashmentModal
+        open={open === "leave-encashment"}
+        rulesData={rulesData}
+        onOpenChange={(value: boolean) => {
+          setOpen(value ? "leave-encashment" : null);
         }}
       />
 
@@ -263,7 +276,7 @@ export default function MyLeave() {
         />
       )}
 
-      <LeaveRuleList />
+      <LeaveRuleList rulesData={rulesData} isRulesLoading={isRulesLoading} />
     </Main>
   );
 }

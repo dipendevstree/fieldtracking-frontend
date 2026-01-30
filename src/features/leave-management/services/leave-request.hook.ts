@@ -76,3 +76,15 @@ export const useGetAllLeaveBalanceHistory = (params: any, options?: any) => {
     error: query.error,
   };
 };
+
+export const useCreateLeaveEncashment = (onSuccess?: () => void) => {
+  return usePostData({
+    url: API.leaveEncashment.create,
+    refetchQueries: [],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};

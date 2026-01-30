@@ -7,10 +7,13 @@ import {
 import { useGetMyLeaves } from "@/features/leave-management/services/leave-action.hook";
 import { LeaveBalanceCard } from "../../user-view/components/leave-balance-card";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { useLeaveRequestStore } from "@/features/leave-management/store/leave-request.store";
+import { toast } from "sonner";
 
 interface Props {
   open: boolean;
   onOpenChange: (value: boolean) => void;
+  rulesData: any;
 }
 
 const cardStyles = [
@@ -20,7 +23,7 @@ const cardStyles = [
   { headerBg: "bg-orange-50", titleColor: "text-orange-700" },
 ];
 
-export function LeaveBalanceDialog({ open, onOpenChange }: Props) {
+export function LeaveBalanceDialog({ open, onOpenChange, rulesData }: Props) {
   const { user } = useAuthStore();
   const allowWorkFromHome = user?.organization?.allowWorkFromHome;
   const { data: myLeavesList } = useGetMyLeaves();
@@ -29,10 +32,45 @@ export function LeaveBalanceDialog({ open, onOpenChange }: Props) {
         item && item.id && allowWorkFromHome ? true : !item.superAdminCreatedBy,
       )
     : [];
+  let errorMessage =
+    "Leave encashment requests can be submitted only between 1st December and 15th December each year.";
+  const { setOpen, setCurrentRow } = useLeaveRequestStore();
+  const handleClick = (data: any) => {
+    const hasRequiredBalance =
+      parseFloat(rulesData?.minimumEncashmentDaysRequired || "0") <=
+      parseFloat(data?.leaveBalance?.remaining || "0");
+    const hasBalance = parseFloat(data?.leaveBalance?.remaining || "0") > 0;
+    const condition =
+      data.showLeaveEncashmentButton && hasBalance && hasRequiredBalance;
+    if (condition) {
+      setOpen("leave-encashment");
+      setCurrentRow(data);
+    } else {
+      if (!hasBalance) {
+        toast.error("Invalid Action", {
+          description: "You do not have any available leave balance.",
+          position: "top-right",
+          duration: 5000,
+        });
+      } else if (!hasRequiredBalance) {
+        toast.error("Invalid Action", {
+          description: `A minimum leave balance of ${rulesData?.minimumEncashmentDaysRequired} days is required to proceed with encashment.`,
+          position: "top-right",
+          duration: 5000,
+        });
+      } else {
+        toast.error("Invalid Action", {
+          description: errorMessage,
+          position: "top-right",
+          duration: 5000,
+        });
+      }
+    }
+  };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-h-[80vh] !max-w-4xl overflow-y-auto"
+        className="max-h-[80vh] !max-w-5xl overflow-y-auto"
         onCloseAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader className="mb-2">
@@ -61,6 +99,9 @@ export function LeaveBalanceDialog({ open, onOpenChange }: Props) {
                   percentage={percentage}
                   headerBg={cardStyles[index % cardStyles.length].headerBg}
                   titleColor={cardStyles[index % cardStyles.length].titleColor}
+                  showLeaveEncashmentButton={item.showLeaveEncashmentButton}
+                  handleClick={() => handleClick(item)}
+                  errorMessage={errorMessage}
                 />
               );
             })}

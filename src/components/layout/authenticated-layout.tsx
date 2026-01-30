@@ -81,8 +81,10 @@ export function AuthenticatedLayout({
   }, [token, user?.id]);
 
   useEffect(() => {
-    updatePermission();
-  }, []);
+    if (user && !user.isSuperAdmin) {
+      updatePermission();
+    }
+  }, [user]);
 
   useEffect(() => {
     if ("serviceWorker" in navigator) {

@@ -1,6 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { BanknoteArrowDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface LeaveBalanceCardProps {
   title: string;
@@ -10,6 +12,9 @@ interface LeaveBalanceCardProps {
   percentage: number;
   headerBg: string;
   titleColor: string;
+  showLeaveEncashmentButton: boolean;
+  errorMessage: string;
+  handleClick: (data: any) => void;
 }
 
 export function LeaveBalanceCard({
@@ -20,6 +25,9 @@ export function LeaveBalanceCard({
   percentage,
   headerBg,
   titleColor,
+  showLeaveEncashmentButton,
+  errorMessage,
+  handleClick,
 }: LeaveBalanceCardProps) {
   const indicatorColorClass = `[&>*]:${titleColor.replace("text-", "bg-")}`;
   return (
@@ -27,7 +35,7 @@ export function LeaveBalanceCard({
       <CardHeader
         className={cn(
           "flex flex-row items-center justify-between space-y-0 py-3",
-          headerBg
+          headerBg,
         )}
       >
         <div className="space-y-0.5">
@@ -37,6 +45,19 @@ export function LeaveBalanceCard({
           <p className="text-[10px] text-slate-600 font-medium">
             Balance for {new Date().getFullYear()}
           </p>
+        </div>
+        <div>
+          <Button
+            variant="outline"
+            size="icon"
+            title={
+              showLeaveEncashmentButton ? `Leave Encashment` : errorMessage
+            }
+            className="rounded-full size-8"
+            onClick={handleClick}
+          >
+            <BanknoteArrowDown size={18} />
+          </Button>
         </div>
       </CardHeader>
       <CardContent className="pt-4">
