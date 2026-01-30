@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -9,6 +9,8 @@ import {
   Calendar,
   CheckCircle2,
   Loader2,
+  Plus,
+  Trash2,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -31,6 +33,7 @@ import {
   FormItem,
   FormLabel,
   FormDescription,
+  FormMessage,
 } from "@/components/ui/form";
 
 import { AttendanceRulesSchema } from "../../data/schema";
@@ -102,8 +105,12 @@ export default function AttendanceRulesConfiguration() {
       weekOffDays: [0], // Default to Sunday
       latemarkApplicableTiers: [],
       enableHoursBasedDeduction: false,
-      frequency: undefined,
+      frequency: ATTENDANCE_RULE_FREQUENCY.WEEKLY,
+      hoursDeductionRules: [
+        { shortageMin: 1, shortageMax: 5, deductionCount: 0.5 },
+      ],
     },
+    mode: "onChange", // Live validation for the grid
   });
 
   useEffect(() => {
@@ -120,10 +127,22 @@ export default function AttendanceRulesConfiguration() {
         ),
         latemarkApplicableTiers: rulesData.latemarkApplicableTiers ?? [],
         enableHoursBasedDeduction: rulesData.enableHoursBasedDeduction ?? false,
-        frequency: rulesData.frequency,
+        frequency: rulesData.frequency || ATTENDANCE_RULE_FREQUENCY.WEEKLY,
+        hoursDeductionRules: rulesData.hoursDeductionRules || [
+          { shortageMin: 1, shortageMax: 5, deductionCount: 0.5 },
+        ],
       });
     }
   }, [rulesData, form]);
+
+  const {
+    fields: hourlyFields,
+    append: appendHourlyRule,
+    remove: removeHourlyRule,
+  } = useFieldArray({
+    control: form.control,
+    name: "hoursDeductionRules",
+  });
 
   const onSubmit = (data: z.infer<typeof AttendanceRulesSchema>) => {
     updateRules(data);
@@ -195,8 +214,7 @@ export default function AttendanceRulesConfiguration() {
           title="Hours Based Deduction"
           enabled={
             !!form.watch("enableHoursBasedDeduction") &&
-            (form.watch("latemarkApplicableTiers")?.length ?? 0) > 0 &&
-            !!form.watch("frequency")
+            (form.watch("latemarkApplicableTiers")?.length ?? 0) > 0
           }
           desc="Deduction by work hours"
         />
@@ -275,9 +293,7 @@ export default function AttendanceRulesConfiguration() {
                           minutes
                         </span>
                       </div>
-                      <FormDescription>
-                        Number of minutes allowed after scheduled check-in time
-                      </FormDescription>
+
                       {form.formState.errors.gracePeriodMinutes && (
                         <p className="text-sm text-red-600">
                           {form.formState.errors.gracePeriodMinutes.message}
@@ -287,7 +303,6 @@ export default function AttendanceRulesConfiguration() {
                   )}
                 />
 
-                {/* Example Box */}
                 <div className="bg-slate-50 border rounded-md p-4 text-sm text-slate-700">
                   <span className="font-semibold block mb-1">Example:</span>
                   If scheduled check-in is 9:00 AM and grace period is 15
@@ -361,10 +376,6 @@ export default function AttendanceRulesConfiguration() {
                             disabled={isTiersLoading || !canEdit}
                           />
                         </FormControl>
-                        <FormDescription>
-                          User tiers this rule applies to (leave empty for all
-                          tiers)
-                        </FormDescription>
                       </FormItem>
                     )}
                   />
@@ -385,9 +396,6 @@ export default function AttendanceRulesConfiguration() {
                               disabled={isTiersLoading || !canEdit}
                             />
                           </FormControl>
-                          <FormDescription>
-                            How often this rule should be applied
-                          </FormDescription>
                         </FormItem>
                       )}
                     />
@@ -415,9 +423,6 @@ export default function AttendanceRulesConfiguration() {
                                 times
                               </span>
                             </div>
-                            <FormDescription>
-                              Number of late marks before leave deduction
-                            </FormDescription>
                           </FormItem>
                         )}
                       />
@@ -440,14 +445,10 @@ export default function AttendanceRulesConfiguration() {
                                 days
                               </span>
                             </div>
-                            <FormDescription>
-                              Days to deduct from leave balance
-                            </FormDescription>
                           </FormItem>
                         )}
                       />
 
-                      {/* Example Box */}
                       <div className="col-span-full bg-slate-50 border rounded-md p-4 text-sm text-slate-700">
                         <span className="font-semibold block mb-1">
                           Example:
@@ -495,7 +496,13 @@ export default function AttendanceRulesConfiguration() {
                           onCheckedChange={(checked) => {
                             field.onChange(checked);
                             if (checked) {
+                              // Disable Late Mark Rule
                               form.setValue("enableLateMarkRule", false);
+                              // FORCE FREQUENCY TO WEEKLY
+                              form.setValue(
+                                "frequency",
+                                ATTENDANCE_RULE_FREQUENCY.WEEKLY,
+                              );
                             }
                           }}
                           disabled={!canEdit}
@@ -509,7 +516,6 @@ export default function AttendanceRulesConfiguration() {
 
             {form.watch("enableHoursBasedDeduction") && (
               <CardContent className="space-y-6 animate-in slide-in-from-top-2 duration-200">
-                {/* Configuration Tiers and Frequency */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <FormField
                     control={form.control}
@@ -526,80 +532,183 @@ export default function AttendanceRulesConfiguration() {
                             disabled={isTiersLoading || !canEdit}
                           />
                         </FormControl>
-                        <FormDescription>
-                          User tiers this rule applies to (leave empty for all
-                          tiers)
-                        </FormDescription>
                       </FormItem>
                     )}
                   />
-
-                  {(form.watch("latemarkApplicableTiers")?.length ?? 0) > 0 && (
-                    <FormField
-                      control={form.control}
-                      name="frequency"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Rule Frequency</FormLabel>
-                          <FormControl>
-                            <SearchableSelect
-                              options={frequencyOptions}
-                              value={field.value}
-                              onChange={field.onChange}
-                              placeholder="Select frequency"
-                              disabled={isTiersLoading || !canEdit}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            How often this rule should be applied
-                          </FormDescription>
-                        </FormItem>
-                      )}
-                    />
-                  )}
                 </div>
 
-                {(form.watch("latemarkApplicableTiers")?.length ?? 0) > 0 &&
-                  !!form.watch("frequency") && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in slide-in-from-top-2 duration-200">
-                      <FormField
-                        control={form.control}
-                        name="leaveDeductionCount"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Leave Deduction Count</FormLabel>
-                            <div className="flex items-center gap-2">
-                              <FormControl>
-                                <Input
-                                  type="number"
-                                  {...field}
-                                  disabled={!canEdit}
-                                />
-                              </FormControl>
-                              <span className="text-sm text-muted-foreground w-12">
-                                days
-                              </span>
-                            </div>
-                            <FormDescription>
-                              Days to deduct from leave balance
-                            </FormDescription>
-                          </FormItem>
+                {(form.watch("latemarkApplicableTiers")?.length ?? 0) > 0 && (
+                  <div className="space-y-4 animate-in slide-in-from-top-2 duration-200">
+                    {hourlyFields.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-slate-200 rounded-lg bg-slate-50/50">
+                        <Clock className="h-10 w-10 text-slate-300 mb-3" />
+                        <p className="text-sm font-medium text-slate-900">
+                          No deduction rules configured
+                        </p>
+                        <p className="text-sm text-slate-500 mb-4 text-center max-w-lg">
+                          Add ranges to automatically deduct leave based on
+                          working hour shortages.
+                        </p>
+                        {canEdit && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() =>
+                              appendHourlyRule({
+                                shortageMin: 1,
+                                shortageMax: 5,
+                                deductionCount: 0.5,
+                              })
+                            }
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add First Rule
+                          </Button>
                         )}
-                      />
-
-                      {/* Example Box */}
-                      <div className="col-span-full bg-slate-50 border rounded-md p-4 text-sm text-slate-700">
-                        <span className="font-semibold block mb-1">
-                          How it works:
-                        </span>
-                        The system will use total working hours per day to
-                        determine deductions. If hours fall below the required
-                        limit for a {form.watch("frequency") || "month"}, a
-                        deduction of {form.watch("leaveDeductionCount") || "1"}{" "}
-                        day(s) will be applied.
                       </div>
+                    ) : (
+                      <>
+                        {/* Header Row */}
+                        <div className="grid grid-cols-10 gap-4 px-4 font-medium text-sm text-slate-500 mb-2">
+                          <div className="col-span-3">Min Hours</div>
+                          <div className="col-span-3">Max Hours</div>
+                          <div className="col-span-3">Deduct Leave</div>
+                          <div className="col-span-1"></div>
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                          {hourlyFields.map((field, index) => (
+                            <div
+                              key={field.id}
+                              className="grid grid-cols-10 gap-4 items-start bg-slate-50/50 p-3 rounded-lg border border-slate-100"
+                            >
+                              <div className="col-span-3">
+                                <FormField
+                                  control={form.control}
+                                  name={`hoursDeductionRules.${index}.shortageMin`}
+                                  render={({ field }) => (
+                                    <FormItem className="space-y-0">
+                                      <FormControl>
+                                        <Input
+                                          type="number"
+                                          className="h-10 bg-white"
+                                          placeholder="Start"
+                                          {...field}
+                                          disabled={!canEdit}
+                                        />
+                                      </FormControl>
+                                      <FormMessage className="text-[11px] mt-1" />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                              <div className="col-span-3">
+                                <FormField
+                                  control={form.control}
+                                  name={`hoursDeductionRules.${index}.shortageMax`}
+                                  render={({ field }) => (
+                                    <FormItem className="space-y-0">
+                                      <FormControl>
+                                        <Input
+                                          type="number"
+                                          className="h-10 bg-white"
+                                          placeholder="End"
+                                          {...field}
+                                          disabled={!canEdit}
+                                        />
+                                      </FormControl>
+                                      <FormMessage className="text-[11px] mt-1" />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                              <div className="col-span-3">
+                                <FormField
+                                  control={form.control}
+                                  name={`hoursDeductionRules.${index}.deductionCount`}
+                                  render={({ field }) => (
+                                    <FormItem className="space-y-0">
+                                      <FormControl>
+                                        <div className="relative">
+                                          <Input
+                                            type="number"
+                                            step="0.5"
+                                            className="h-10 bg-white pr-8"
+                                            {...field}
+                                            disabled={!canEdit}
+                                          />
+                                          <span className="absolute right-2 top-2.5 text-xs text-muted-foreground pointer-events-none">
+                                            days
+                                          </span>
+                                        </div>
+                                      </FormControl>
+                                      <FormMessage className="text-[11px] mt-1" />
+                                    </FormItem>
+                                  )}
+                                />
+                              </div>
+                              <div className="col-span-1 flex justify-center pt-1">
+                                {canEdit && (
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="hover:text-red-500 hover:bg-red-50 h-9 w-9 p-0"
+                                    onClick={() => removeHourlyRule(index)}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {canEdit && (
+                          <div className="flex justify-end">
+                            <Button
+                              type="button"
+                              size="sm"
+                              className="flex items-center gap-2"
+                              onClick={() => {
+                                const currentRules = form.getValues(
+                                  "hoursDeductionRules",
+                                );
+                                const lastRule =
+                                  currentRules?.[currentRules.length - 1];
+
+                                const nextMin = lastRule
+                                  ? Number(lastRule.shortageMax) + 1
+                                  : 1;
+
+                                const nextDeduction = lastRule
+                                  ? Number(lastRule.deductionCount) + 0.5
+                                  : 0.5;
+
+                                appendHourlyRule({
+                                  shortageMin: nextMin,
+                                  shortageMax: nextMin + 4,
+                                  deductionCount: nextDeduction,
+                                });
+                              }}
+                            >
+                              <Plus className="h-4 w-4" /> Add Another Range
+                            </Button>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    <div className="bg-slate-50 border rounded-md p-4 text-sm text-slate-700 mt-4">
+                      <span className="font-semibold block mb-1">
+                        How it works:
+                      </span>
+                      Define ranges of total weekly working hours. If an
+                      employee's hours fall within a range (e.g., 1 to 5 hours),
+                      the corresponding leave deduction is applied.
                     </div>
-                  )}
+                  </div>
+                )}
               </CardContent>
             )}
           </Card>
@@ -645,13 +754,12 @@ export default function AttendanceRulesConfiguration() {
 
             {(form.watch("enableOvertime") ?? true) && (
               <CardContent className="space-y-6 animate-in slide-in-from-top-2 duration-200">
-                {/* Example Box */}
                 <div className="bg-slate-50 border rounded-md p-4 text-sm text-slate-700">
                   <span className="font-semibold block mb-1">
                     How it works:
                   </span>
                   When enabled, Automatically calculates overtime hours for work
-                  beyond scheduled hours. Calculations are processed monthly. .
+                  beyond scheduled hours. Calculations are processed monthly.
                 </div>
               </CardContent>
             )}

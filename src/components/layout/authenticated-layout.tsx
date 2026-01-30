@@ -13,8 +13,9 @@ import SkipToMain from "@/components/skip-to-main";
 import { cn } from "@/lib/utils";
 import { useFcm } from "@/hooks/use-fcm";
 import { useUpdateUser } from "@/features/UserManagement/services/AllUsers.hook";
+import WorkDaySession from "@/features/attendance-management/components/attendance/components/WorkDaySession";
+import { usePermission } from "@/permissions/hooks/use-permission";
 import { usePermissionData } from "@/hooks/use-permission-data";
-// import WorkDaySession from "@/features/attendance-management/components/attendance/components/WorkDaySession";
 
 export function AuthenticatedLayout({
   children,
@@ -113,6 +114,9 @@ export function AuthenticatedLayout({
     return <Navigate to="/sign-in" />;
   }
 
+  const { canPerformAction } = usePermission();
+  const canView = canPerformAction("attendance_management", "viewOwn");
+
   return (
     <SearchProvider>
       <SidebarProvider defaultOpen={sidebarOpen}>
@@ -132,7 +136,7 @@ export function AuthenticatedLayout({
         >
           <Header fixed className="shadow">
             <div className="ml-auto flex items-center space-x-2">
-              {/* <WorkDaySession /> */}
+              {canView && <WorkDaySession />}
               <Search />
               {!user?.isSuperAdmin && <NotificationList />}
               {/* <ThemeSelector /> */}
