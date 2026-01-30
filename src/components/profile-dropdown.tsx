@@ -236,9 +236,11 @@ export function ProfileDropdown({
                 <p className="flex justify-between text-[14px]">
                   Expiry Date
                   <span className="text-red-500 font-medium">
-                    {moment(user?.organization?.planEndDate).format(
-                      "DD MMM YYYY",
-                    )}
+                    {user?.organization?.planEndDate
+                      ? moment(user?.organization?.planEndDate).format(
+                          "DD MMM YYYY",
+                        )
+                      : "N/A"}
                   </span>
                 </p>
               </div>
