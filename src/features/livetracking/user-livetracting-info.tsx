@@ -36,11 +36,11 @@ const UserTrackingTimeline = ({
   // onBack,
 }: UserTrackingTimelineProps) => {
   const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
   const [totalDistance, setTotalDistance] = useState(0);
   const [nearestAddress, setNearestAddress] = useState<string | null>(
-    "No location info available"
+    "No location info available",
   );
 
   // Destructure isLoading state from custom hooks
@@ -56,7 +56,7 @@ const UserTrackingTimeline = ({
 
   const { userSession, isLoading: isSessionLoading } = getWorkDaySession(
     userId ?? "",
-    selectedDate
+    selectedDate,
   );
 
   const [liveUserSession, setLiveUserSession] = useState(userSession);
@@ -65,13 +65,13 @@ const UserTrackingTimeline = ({
   const { analytics, isLoading: isAnalyticsLoading } = useVisitAnalytics(
     userId,
     selectedDate,
-    selectedDate
+    selectedDate,
   );
 
   const { data: trackingData, isFetched } = useFetchLiveTrackingData(
     userId,
     selectedDate,
-    selectedDate
+    selectedDate,
   );
 
   // Combine loading states
@@ -132,7 +132,7 @@ const UserTrackingTimeline = ({
               prevPoint.lat,
               prevPoint.lng,
               currentPoint.lat,
-              currentPoint.lng
+              currentPoint.lng,
             );
           }
         }
@@ -181,7 +181,7 @@ const UserTrackingTimeline = ({
     if (!socket || !userId) return;
 
     const handleConnect = () => {
-      socket.emit("track_user", { userId });
+      socket().emit("track_user", { userId });
     };
 
     const handleLiveLocation = (event: any) => {
@@ -203,7 +203,7 @@ const UserTrackingTimeline = ({
               lastPoint.lat,
               lastPoint.lng,
               newPoint.lat,
-              newPoint.lng
+              newPoint.lng,
             );
             setTotalDistance((prev) => prev + increment);
           }
@@ -215,16 +215,17 @@ const UserTrackingTimeline = ({
       }
     };
 
-    if (socket.connected) {
+    const userTrackingSocket = socket();
+    if (userTrackingSocket.connected) {
       handleConnect();
     } else {
-      socket.on("connect", handleConnect);
+      userTrackingSocket.on("connect", handleConnect);
     }
-    socket.on("live_location", handleLiveLocation);
+    userTrackingSocket.on("live_location", handleLiveLocation);
 
     return () => {
-      socket.off("connect", handleConnect);
-      socket.off("live_location", handleLiveLocation);
+      userTrackingSocket.off("connect", handleConnect);
+      userTrackingSocket.off("live_location", handleLiveLocation);
     };
   }, [socket, userId, selectedDate]); // Added props to dependency array
 
@@ -245,7 +246,7 @@ const UserTrackingTimeline = ({
         // Deep clone to ensure immutability
         const updatedSessions = JSON.parse(JSON.stringify(prev.sessions));
         const sessionIndex = updatedSessions.findIndex(
-          (s: any) => s.workDaySessionId === event.workDaySessionId
+          (s: any) => s.workDaySessionId === event.workDaySessionId,
         );
 
         if (sessionIndex > -1) {
@@ -260,7 +261,7 @@ const UserTrackingTimeline = ({
         }
 
         const isDayNowStarted = updatedSessions.some(
-          (s: any) => s.status === "in_progress"
+          (s: any) => s.status === "in_progress",
         );
         return {
           ...prev,
@@ -278,13 +279,13 @@ const UserTrackingTimeline = ({
         if (!prev) return null;
         const updatedSessions = JSON.parse(JSON.stringify(prev.sessions));
         const parentSession = updatedSessions.find(
-          (s: any) => s.workDaySessionId === event.workDaySessionId
+          (s: any) => s.workDaySessionId === event.workDaySessionId,
         );
 
         if (parentSession) {
           if (!parentSession.breaks) parentSession.breaks = []; // Ensure breaks array exists
           const breakIndex = parentSession.breaks.findIndex(
-            (b: any) => b.workBreakSessionId === event.workBreakSessionId
+            (b: any) => b.workBreakSessionId === event.workBreakSessionId,
           );
 
           if (breakIndex > -1) {
@@ -298,7 +299,7 @@ const UserTrackingTimeline = ({
             parentSession.breaks.push(event);
           }
           parentSession.isOnBreak = parentSession.breaks.some(
-            (b: any) => b.status !== "completed"
+            (b: any) => b.status !== "completed",
           );
         }
 
@@ -313,7 +314,7 @@ const UserTrackingTimeline = ({
 
       setLiveVisits((prevVisits) => {
         const visitIndex = prevVisits.findIndex(
-          (v: any) => v.visitId === event.visitId
+          (v: any) => v.visitId === event.visitId,
         );
 
         if (visitIndex > -1) {
@@ -440,7 +441,7 @@ const UserTrackingTimeline = ({
   const timelineData = useMemo(
     () =>
       formatTimelineData((liveUserSession?.sessions ?? []).slice().reverse()),
-    [liveUserSession?.sessions, liveVisits]
+    [liveUserSession?.sessions, liveVisits],
   );
 
   // Loading state UI
@@ -505,7 +506,7 @@ const UserTrackingTimeline = ({
                 src={
                   user.profileUrl ||
                   `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                    user.fullName
+                    user.fullName,
                   )}`
                 }
                 alt={user.fullName}
