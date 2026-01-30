@@ -141,7 +141,8 @@ const AllUsers = () => {
   const handleAddUser = () => {
     if (Number(totalCount) >= maxEmployeeCount) {
       toast.error("Invalid action", {
-        description: "Max User Count Exceeded. Please contact to admin.",
+        description:
+          "You have exceeded the maximum number of limits to add the new users. Please contact FieldTrack360 Support Team to add new users.",
         duration: 5000,
         position: "top-right",
       });
