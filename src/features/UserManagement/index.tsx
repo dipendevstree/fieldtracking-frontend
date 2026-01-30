@@ -17,6 +17,7 @@ import GlobalFilterSection from "@/components/global-table-filter-section";
 import debounce from "lodash.debounce";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { SearchFilterConfig, SelectFilterConfig } from "./types";
+import { toast } from "sonner";
 
 const AllUsers = () => {
   const [pagination, setPagination] = useState({
@@ -25,6 +26,10 @@ const AllUsers = () => {
   });
 
   const { user } = useAuthStore();
+  const maxEmployeeCountString =
+    user?.organization?.employeeRang?.employeeRange;
+  const match = maxEmployeeCountString?.toString().match(/\d+\s*-\s*(\d+)/);
+  const maxEmployeeCount = match ? parseInt(match[1]) : 0;
   const allowTerritoryFilter =
     user?.organization?.allowAddUsersBasedOnTerritories;
 
@@ -81,7 +86,7 @@ const AllUsers = () => {
     debounce((value: string) => {
       setFilters({ search: value });
     }, 800),
-    []
+    [],
   );
 
   const handleGlobalSearchChange = (value: string | undefined) => {
@@ -134,6 +139,14 @@ const AllUsers = () => {
   }
 
   const handleAddUser = () => {
+    if (Number(totalCount) >= maxEmployeeCount) {
+      toast.error("Invalid action", {
+        description: "Max User Count Exceeded. Please contact to admin.",
+        duration: 5000,
+        position: "top-right",
+      });
+      return;
+    }
     setOpen("add");
   };
 
