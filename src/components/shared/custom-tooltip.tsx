@@ -6,7 +6,7 @@ const CustomTooltip = ({ children, title }: { children: React.ReactNode, title: 
     return (
         <TooltipProvider>
             <Tooltip>
-                <TooltipTrigger>{children}</TooltipTrigger>
+                <TooltipTrigger asChild>{children}</TooltipTrigger>
                 <TooltipContent>
                     {title}
                 </TooltipContent>
