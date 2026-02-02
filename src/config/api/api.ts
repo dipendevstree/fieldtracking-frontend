@@ -12,6 +12,7 @@ const API = {
     forgotPassword: "auth/forgot-password",
     resetPassword: "auth/reset-password",
     getPermissions: "auth/getPermissions",
+    logout: "auth/logout",
   },
   category: {
     list: "expensesCategory/list",
@@ -107,6 +108,9 @@ const API = {
     update: "users/patch",
     delete: "users/delete",
     stats: "users/stats",
+  },
+  userDevice: {
+    upsert: "userDevice/upsert",
   },
   roles: {
     list: "role/list",

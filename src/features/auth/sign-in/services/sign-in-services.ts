@@ -36,3 +36,12 @@ export const useSetPassword = (onSuccess: (data: any) => void) => {
     },
   });
 };
+
+export const useLogout = (onSuccess: (data: any) => void) => {
+  return usePostData({
+    url: API.auth.logout,
+    onSuccess: (data: any) => {
+      onSuccess(data);
+    },
+  });
+};
