@@ -55,6 +55,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { formatDropDownLabel } from "@/utils/commonFunction";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { LEAVE_STATUS } from "@/data/app.data";
+import { usePermission } from "@/permissions/hooks/use-permission";
 
 // --- LOGIC HELPER ---
 export const getEventStatusKey = (
@@ -96,6 +97,7 @@ export default function MyLeaveBalance() {
     "leave",
   );
   const { user } = useAuthStore();
+  const { hasAccess } = usePermission();
   const [viewDate, setViewDate] = useState(new Date());
 
   const [isApplyLeaveOpen, setIsApplyLeaveOpen] = useState(false);
@@ -298,6 +300,8 @@ export default function MyLeaveBalance() {
   //   { headerBg: "bg-purple-50", titleColor: "text-purple-700" },
   //   { headerBg: "bg-orange-50", titleColor: "text-orange-700" },
   // ];
+
+  const canViewLeaveRequest = hasAccess("leave_request");
 
   return (
     <Main className="space-y-6 pb-10">
@@ -539,7 +543,7 @@ export default function MyLeaveBalance() {
         />
       )}
 
-      <LeaveRequest dashboardView />
+      {canViewLeaveRequest && <LeaveRequest dashboardView />}
     </Main>
   );
 }
