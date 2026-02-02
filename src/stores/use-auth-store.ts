@@ -8,6 +8,7 @@ import { LoginUser } from "@/features/auth/sign-in/types";
 const AUTH_STORAGE_KEYS = {
   ACCESS_TOKEN: "access_token",
   USER_DATA: "user_data",
+  FCM_TOKEN: "fcm_token",
 } as const;
 
 export const useAuthStore = create<AuthState>()(
@@ -74,6 +75,7 @@ export const useAuthStore = create<AuthState>()(
         if (typeof window !== "undefined") {
           localStorage.removeItem(AUTH_STORAGE_KEYS.ACCESS_TOKEN);
           localStorage.removeItem(AUTH_STORAGE_KEYS.USER_DATA);
+          localStorage.removeItem(AUTH_STORAGE_KEYS.FCM_TOKEN);
         }
 
         set({

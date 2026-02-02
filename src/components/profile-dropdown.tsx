@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import moment from "moment";
 import StatusBadge from "./shared/common-status-badge";
+import { useLogout } from "@/features/auth/sign-in/services/sign-in-services";
 
 interface MenuItem {
   label: string;
@@ -83,12 +84,23 @@ export function ProfileDropdown({
   avatarSize = "md",
 }: Readonly<ProfileDropdownProps>) {
   const { user, logout } = useAuthStore();
+  const { mutate: logoutRequest } = useLogout(() => {
+    logout();
+  });
   const { hasAccess } = usePermission();
   const { viewType, setViewType, viewTypeToggle, setViewTypeToggle } =
     useViewType();
 
   const handleLogout = () => {
-    logout();
+    if (user && user.isSuperAdmin) {
+      logout();
+      return;
+    }
+    let deviceId = localStorage.getItem("deviceId");
+    logoutRequest({
+      deviceId,
+      isWeb: true,
+    });
   };
 
   const avatarSizeClass = AVATAR_SIZES[avatarSize];

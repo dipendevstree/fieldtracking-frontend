@@ -24,11 +24,9 @@ export function AuthenticatedLayout({
 }) {
   const { user, isLoading, isPasswordChanged, updateUser } = useAuthStore();
   const { sidebarOpen } = useAppStore();
-  const { mutate: updateUserToken } = useUpdateUser(
-    user?.id || "",
-    () => {},
-    true,
-  );
+  const { mutate: updateUserToken } = useUpdateUser((data) => {
+    updateUser({ fcm_token: data?.fcmToken });
+  }, true);
   const { token, requestPermission, permissionGranted } = useFcm();
   const navigate = useNavigate();
   const { mutate: updatePermission } = usePermissionData({
@@ -57,28 +55,31 @@ export function AuthenticatedLayout({
 
   // ✅ Save FCM token to backend
   useEffect(() => {
+    const cachedFcmToken = localStorage.getItem("fcm_token");
+
     if (
       user &&
       !user.isSuperAdmin &&
       token &&
       user?.id &&
-      (!user.fcm_token || user.fcm_token !== token)
+      cachedFcmToken !== token // Only call API if token actually changed
     ) {
-      updateUserToken(
-        {
-          email: user.email,
-          fcm_token: token,
-          phoneNumber: user.phoneNumber,
-          territoryId: user.territoryId,
-        },
-        {
-          onSuccess: () => {
-            updateUser({ ...user, fcm_token: token });
-          },
-        },
-      );
+      let deviceId = localStorage.getItem("deviceId");
+      if (!deviceId) {
+        deviceId = `web_${crypto.randomUUID()}`;
+        localStorage.setItem("deviceId", deviceId);
+      }
+
+      // Cache the token to prevent repeated API calls
+      localStorage.setItem("fcm_token", token);
+
+      updateUserToken({
+        fcmToken: token,
+        isWeb: true,
+        deviceId: deviceId,
+      });
     }
-  }, [token, user?.id]);
+  }, [token, user]);
 
   useEffect(() => {
     if (user && !user.isSuperAdmin) {
@@ -104,6 +105,9 @@ export function AuthenticatedLayout({
     }
   }, [navigate]);
 
+  const { canPerformAction } = usePermission();
+  const canView = canPerformAction("attendance_management", "viewOwn");
+
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -115,9 +119,6 @@ export function AuthenticatedLayout({
   if (!user || !isPasswordChanged) {
     return <Navigate to="/sign-in" />;
   }
-
-  const { canPerformAction } = usePermission();
-  const canView = canPerformAction("attendance_management", "viewOwn");
 
   return (
     <SearchProvider>
