@@ -7,7 +7,6 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/stores/use-auth-store";
@@ -18,6 +17,12 @@ import { useViewType } from "@/context/view-type-context";
 import { Switch } from "@/components/ui/switch";
 import { usePermission } from "@/permissions/hooks/use-permission";
 import { useEffect } from "react";
+import {
+  User,
+  Settings,
+  LogOut,
+  LucideIcon,
+} from "lucide-react";
 import moment from "moment";
 import StatusBadge from "./shared/common-status-badge";
 import { useLogout } from "@/features/auth/sign-in/services/sign-in-services";
@@ -25,6 +30,7 @@ import { useLogout } from "@/features/auth/sign-in/services/sign-in-services";
 interface MenuItem {
   label: string;
   href?: string;
+  icon?: LucideIcon;
   shortcut?: string;
   onClick?: () => void;
   disabled?: boolean;
@@ -50,12 +56,12 @@ const DEFAULT_MENU_ITEMS: MenuItem[] = [
   {
     label: "Profile",
     href: "/settings/general-settings",
-    shortcut: "⇧⌘P",
+    icon: User,
   },
   {
     label: "Settings",
     href: "/settings/general-settings",
-    shortcut: "⌘S",
+    icon: Settings,
   },
 ];
 
@@ -141,7 +147,7 @@ export function ProfileDropdown({
                   ? user?.name?.replace(/^./, (c) => c.toUpperCase())
                   : user?.firstName + " " + user?.lastName}
               </p>
-              <p className="text-muted-foreground text-xs leading-none break-all truncate max-w-[180px]">
+              <p className="text-muted-foreground text-xs leading-none break-all max-w-[180px]">
                 {user?.email}
               </p>
             </div>
@@ -188,6 +194,7 @@ export function ProfileDropdown({
                 if (item.label === "Settings" && !user?.superAdminCreatedBy) {
                   return;
                 }
+                const Icon = item.icon;
                 return (
                   <DropdownMenuItem
                     key={index}
@@ -197,22 +204,14 @@ export function ProfileDropdown({
                     className={item.onClick ? "cursor-pointer" : ""}
                   >
                     {item.href ? (
-                      <Link to={item.href}>
-                        {item.label}
-                        {item.shortcut && (
-                          <DropdownMenuShortcut>
-                            {item.shortcut}
-                          </DropdownMenuShortcut>
-                        )}
+                      <Link to={item.href} className="flex items-center">
+                        {Icon && <Icon className="mr-2 h-4 w-4" />}
+                        <span>{item.label}</span>
                       </Link>
                     ) : (
                       <>
-                        {item.label}
-                        {item.shortcut && (
-                          <DropdownMenuShortcut>
-                            {item.shortcut}
-                          </DropdownMenuShortcut>
-                        )}
+                        {Icon && <Icon className="mr-2 h-4 w-4" />}
+                        <span>{item.label}</span>
                       </>
                     )}
                   </DropdownMenuItem>
@@ -226,8 +225,8 @@ export function ProfileDropdown({
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
-              Log out
-              <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Log out</span>
             </DropdownMenuItem>
           </>
         )}
