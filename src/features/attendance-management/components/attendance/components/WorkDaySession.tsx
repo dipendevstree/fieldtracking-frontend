@@ -23,9 +23,12 @@ import {
   Coffee,
   LucideIcon,
   Play,
+  AlertTriangle,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { socketForVisit } from "@/socket/socket";
+import { useNavigate } from "@tanstack/react-router";
+import { ConfirmDialog } from "@/components/confirm-dialog";
 import { cn } from "@/lib/utils";
 
 // --- 1. REUSABLE BUTTON COMPONENT ---
@@ -66,7 +69,10 @@ const formatSecondsToDuration = (seconds = 0) => {
 
 const WorkDaySession = () => {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [showRedirectModal, setShowRedirectModal] = useState(false);
+  const [dynamicErrorMsg, setDynamicErrorMsg] = useState("");
 
   /* ---------------- Live Timer State ---------------- */
   const [liveWorkTime, setLiveWorkTime] = useState("00:00:00");
@@ -109,23 +115,41 @@ const WorkDaySession = () => {
     };
   }, [user, refetch]);
 
-  /* ---------------- Mutations ---------------- */
-  const { mutate: startWorkDay, isPending: startingDay } =
-    useStartWorkDaySession();
-  const { mutate: endWorkDay, isPending: endingDay } = useEndWorkDaySession();
-  const { mutate: startBreak, isPending: startingBreak } =
-    useStartBreakSession();
-  const { mutate: endBreak, isPending: endingBreak } = useEndBreakSession();
-
   /* ---------------- Derived State ---------------- */
-  const activeWorkSession = sessionData?.sessions?.find(
-    (s: any) => s.status === "in_progress",
-  );
+  const activeWorkSession = sessionData?.activeSession;
+  const isPreviousDay =
+    activeWorkSession?.date &&
+    moment(activeWorkSession.date).format("YYYY-MM-DD") !==
+      moment().format("YYYY-MM-DD");
   const isDayStarted = !!activeWorkSession;
   const isOnBreak = !!activeWorkSession?.isOnBreak;
   const activeBreak = activeWorkSession?.breaks?.find(
     (b: any) => b.status === "in_progress",
   );
+
+  /* ---------------- Mutations ---------------- */
+  const { mutate: startWorkDay, isPending: startingDay } =
+    useStartWorkDaySession({
+      onError: (err: any) => {
+        toast.error(err.response?.data?.message || "Failed to start day");
+      },
+    });
+  const { mutate: endWorkDay, isPending: endingDay } = useEndWorkDaySession({
+    skipToast: isPreviousDay,
+    onError: (err: any) => {
+      const msg =
+        err.response?.data?.message || err.message || "Failed to end day";
+      if (isPreviousDay) {
+        setDynamicErrorMsg(msg);
+        setShowRedirectModal(true);
+      } else {
+        toast.error(msg);
+      }
+    },
+  });
+  const { mutate: startBreak, isPending: startingBreak } =
+    useStartBreakSession();
+  const { mutate: endBreak, isPending: endingBreak } = useEndBreakSession();
 
   const isGlobalLoading =
     isFetching || startingDay || endingDay || startingBreak || endingBreak;
@@ -226,20 +250,28 @@ const WorkDaySession = () => {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/50">
           <span className="font-semibold text-sm text-slate-900">
-            Today's Session
+            {isPreviousDay ? "Ongoing Session" : "Today's Session"}
           </span>
           <Badge
             variant="outline"
             className={cn(
               "border-0",
-              isOnBreak
-                ? "bg-amber-100 text-amber-700"
-                : isDayStarted
-                  ? "bg-emerald-100 text-emerald-700"
-                  : "bg-slate-200 text-slate-600",
+              isPreviousDay
+                ? "bg-rose-100 text-rose-700 animate-pulse"
+                : isOnBreak
+                  ? "bg-amber-100 text-amber-700"
+                  : isDayStarted
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-slate-200 text-slate-600",
             )}
           >
-            {isOnBreak ? "On Break" : isDayStarted ? "Working" : "Not Started"}
+            {isPreviousDay
+              ? "Previous Day"
+              : isOnBreak
+                ? "On Break"
+                : isDayStarted
+                  ? "Working"
+                  : "Not Started"}
           </Badge>
         </div>
 
@@ -330,6 +362,27 @@ const WorkDaySession = () => {
           </div>
         </div>
       </PopoverContent>
+
+      <ConfirmDialog
+        open={showRedirectModal}
+        onOpenChange={setShowRedirectModal}
+        title={
+          <div className="flex items-center gap-2 text-amber-600">
+            <AlertTriangle className="h-5 w-5" />
+            <span>Ongoing Session from Previous Day</span>
+          </div>
+        }
+        desc={
+          dynamicErrorMsg ||
+          "This work session has expired. Please raise an attendance correction request before ending this session."
+        }
+        confirmText="Go to Corrections"
+        cancelBtnText="Close"
+        handleConfirm={() => {
+          navigate({ to: "/attendance-management/my-attendance" });
+          setShowRedirectModal(false);
+        }}
+      />
     </Popover>
   );
 };

@@ -14,25 +14,45 @@ export const useGetWorkDaySession = (params?: {
   });
 };
 
-export const useStartWorkDaySession = (onSuccess?: () => void) => {
+export const useStartWorkDaySession = (options?: {
+  onSuccess?: () => void;
+  onError?: (error: any) => void;
+  skipToast?: boolean;
+}) => {
   return usePostData({
     url: API.WorkSession.startWorkDaySession,
     refetchQueries: [GET_WORK_DAY_SESSION_QUERY],
+    skipToast: options?.skipToast,
     onSuccess: () => {
-      if (onSuccess) {
-        onSuccess();
+      if (options?.onSuccess) {
+        options.onSuccess();
+      }
+    },
+    onError: (error: any) => {
+      if (options?.onError) {
+        options.onError(error);
       }
     },
   });
 };
 
-export const useEndWorkDaySession = (onSuccess?: () => void) => {
+export const useEndWorkDaySession = (options?: {
+  onSuccess?: () => void;
+  onError?: (error: any) => void;
+  skipToast?: boolean;
+}) => {
   return usePostData({
     url: API.WorkSession.endWorkDaySession,
     refetchQueries: [GET_WORK_DAY_SESSION_QUERY],
+    skipToast: options?.skipToast,
     onSuccess: () => {
-      if (onSuccess) {
-        onSuccess();
+      if (options?.onSuccess) {
+        options.onSuccess();
+      }
+    },
+    onError: (error: any) => {
+      if (options?.onError) {
+        options.onError(error);
       }
     },
   });
