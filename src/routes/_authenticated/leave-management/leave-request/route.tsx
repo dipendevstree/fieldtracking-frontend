@@ -3,7 +3,7 @@ import { ProtectedRoute } from "@/permissions/components/ProtectedRoute";
 import LeaveRequest from "@/features/leave-management/components/leave-request/LeaveRequest";
 
 export const Route = createFileRoute(
-  "/_authenticated/leave-management/leave-request"
+  "/_authenticated/leave-management/leave-request",
 )({
   component: RouteComponent,
 });

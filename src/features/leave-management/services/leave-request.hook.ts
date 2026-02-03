@@ -88,3 +88,74 @@ export const useCreateLeaveEncashment = (onSuccess?: () => void) => {
     },
   });
 };
+
+export const useGetAllPendingLeaveEncashmentRequest = (
+  params: any,
+  options?: any,
+) => {
+  const query = useFetchData<any>({
+    url: API.leaveEncashmentApprovals.pendingList,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    data: query.data?.list,
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
+export const useGetAllLeaveEncashmentApprovalHistory = (
+  params: any,
+  options?: any,
+) => {
+  const query = useFetchData<any>({
+    url: API.leaveEncashmentApprovals.list,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    data: query.data?.list,
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
+export const useGetLeaveEncashmentApprovalStats = (
+  params: any,
+  options?: any,
+) => {
+  const query = useFetchData<any>({
+    url: API.leaveEncashmentApprovals.stats,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    data: query.data,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
+export const useCreateLeaveEncashmentApproval = (onSuccess?: () => void) => {
+  return usePostData({
+    url: API.leaveEncashmentApprovals.create,
+    refetchQueries: [
+      API.leaveEncashmentApprovals.pendingList,
+      API.leaveEncashmentApprovals.list,
+    ],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};

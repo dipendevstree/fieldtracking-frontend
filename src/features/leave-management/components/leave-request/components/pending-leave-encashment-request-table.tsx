@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { CustomDataTable } from "@/components/shared/custom-data-table";
 import { PaginationCallbacks } from "@/components/shared/custom-table-pagination";
-import { pendingLeaveColumns } from "./pending-leave-table-columns";
+import { pendingLeaveEncashmentColumns } from "./pending-leave-encashment-table-columns";
 import { Button } from "@/components/ui/button";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,7 +16,7 @@ interface Props {
   dashboardView?: boolean;
 }
 
-const PendingLeaveTable = ({
+const PendingLeaveEncashmentTable = ({
   data,
   totalCount,
   loading,
@@ -35,9 +35,11 @@ const PendingLeaveTable = ({
       loading={loading}
       data={data}
       currentPage={currentPage}
-      columns={pendingLeaveColumns(hideUserColumn) as ColumnDef<unknown>[]}
+      columns={
+        pendingLeaveEncashmentColumns(hideUserColumn) as ColumnDef<unknown>[]
+      }
       totalCount={totalCount}
-      key={"pending-leave"}
+      key={"pending-leave-encashment"}
       defaultPageSize={defaultPageSize}
     />
   );
@@ -48,7 +50,7 @@ const PendingLeaveTable = ({
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Pending Leave Request</CardTitle>
+              <CardTitle>Pending Leave Encashment Request</CardTitle>
             </div>
             <Button
               onClick={() =>
@@ -71,4 +73,4 @@ const PendingLeaveTable = ({
   );
 };
 
-export default PendingLeaveTable;
+export default PendingLeaveEncashmentTable;

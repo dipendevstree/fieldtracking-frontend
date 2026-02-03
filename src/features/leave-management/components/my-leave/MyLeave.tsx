@@ -252,7 +252,7 @@ export default function MyLeave() {
         workFromHomeTypeOpen={workFromHomeTypeOpen}
       />
 
-      {open === "cancel" && (
+      {open === "cancel" && currentRow && (
         <ConfirmDialog
           open={open === "cancel"}
           onOpenChange={() => {

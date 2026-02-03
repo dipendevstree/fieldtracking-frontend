@@ -1,12 +1,10 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
-import { PendingLeaveRowActions } from "./pending-leave-table-action-button";
+import { PendingLeaveEncashmentRowActions } from "./pending-leave-encashment-table-action-button";
 import moment from "moment";
-import { formatDropDownLabel } from "@/utils/commonFunction";
 import StatusBadge from "@/components/shared/common-status-badge";
-import CustomTooltip from "@/components/shared/custom-tooltip";
 
-export const pendingLeaveColumns = (
+export const pendingLeaveEncashmentColumns = (
   hideUserColumn = false,
 ): ColumnDef<any>[] => [
   {
@@ -39,58 +37,25 @@ export const pendingLeaveColumns = (
       ]
     : []),
   {
-    accessorKey: "dateRange",
+    accessorKey: "createdDate",
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Date" />
     ),
     cell: ({ row }) => (
       <div className="text-sm capitalize">
-        {moment(row.original.startDate).format("DD/MM/YYYY") +
-          " - " +
-          moment(row.original.endDate).format("DD/MM/YYYY")}
+        {moment(row.original.createdDate).format("DD/MM/YYYY")}
       </div>
     ),
     enableHiding: false,
     enableSorting: false,
   },
   {
-    accessorKey: "reason",
-    header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title="Reason" />
-    ),
-    cell: ({ row }) => {
-      return (
-        <CustomTooltip title={row.original.reason}>
-          <div className="text-sm truncate max-w-[200px]">
-            {row.original.reason}
-          </div>
-        </CustomTooltip>
-      );
-    },
-    enableHiding: false,
-    enableSorting: false,
-  },
-  {
     accessorKey: "duration",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title="Duration" />
+      <CustomDataTableColumnHeader column={column} title="No of Days" />
     ),
     cell: ({ row }) => {
-      if (row.original?.halfDay) {
-        return (
-          <div className="text-sm">
-            {formatDropDownLabel(row.original.halfDayType)}
-          </div>
-        );
-      }
-      const startDate = moment(row.original.startDate);
-      const endDate = moment(row.original.endDate);
-      const duration = endDate.diff(startDate, "days") + 1;
-      return (
-        <div className="text-sm">
-          {duration} {duration > 1 ? "Days" : "Day"}
-        </div>
-      );
+      return <div className="text-sm">{row.original.daysEncashed}</div>;
     },
     enableHiding: false,
     enableSorting: false,
@@ -110,13 +75,19 @@ export const pendingLeaveColumns = (
     enableHiding: false,
     enableSorting: false,
   },
-  {
-    id: "actions",
-    header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title="Action" />
-    ),
-    cell: ({ row }) => <PendingLeaveRowActions row={row} />,
-  },
+  ...(!hideUserColumn
+    ? [
+        {
+          id: "actions",
+          header: ({ column }: { column: any }) => (
+            <CustomDataTableColumnHeader column={column} title="Action" />
+          ),
+          cell: ({ row }: { row: any }) => (
+            <PendingLeaveEncashmentRowActions row={row} />
+          ),
+        },
+      ]
+    : []),
 ];
 
-export default pendingLeaveColumns;
+export default pendingLeaveEncashmentColumns;

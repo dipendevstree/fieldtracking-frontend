@@ -60,7 +60,7 @@ export function UserActionForm({
 
   // Initialize selectedRoleId with current row's reportingToRoleId for edit mode
   const [selectedRoleId, setSelectedRoleId] = useState<string>(
-    currentRow?.reportingToRoleId || ""
+    currentRow?.reportingToRoleId || "",
   );
 
   const { data: userList = [] } = useGetUsersForDropdown({
@@ -68,15 +68,27 @@ export function UserActionForm({
     enabled: !!selectedRoleId,
   });
 
+  const { data: leaveEncashmentUserList = [] } = useGetUsersForDropdown({
+    roleId: "",
+    enabled: true,
+  });
+
   // Filter out current user from the user list to prevent self-reporting
   const filteredUserList = userList.filter((user: any) =>
-    currentRow?.id ? String(user.id) !== String(currentRow.id) : true
+    currentRow?.id ? String(user.id) !== String(currentRow.id) : true,
   );
 
   const enhancedUserList = filteredUserList.map((user: any) => ({
     ...user,
     fullName: `${user.firstName} ${user.lastName}`,
   }));
+
+  const enhancedLeaveEncashmentUserList = leaveEncashmentUserList.map(
+    (user: any) => ({
+      ...user,
+      fullName: `${user.firstName} ${user.lastName}`,
+    }),
+  );
 
   const roles = useSelectOptions<any>({
     listData: rolesList ?? [],
@@ -86,6 +98,12 @@ export function UserActionForm({
 
   const users = useSelectOptions<any>({
     listData: enhancedUserList,
+    labelKey: "fullName",
+    valueKey: "id",
+  });
+
+  const leaveEncashmentUsers = useSelectOptions<any>({
+    listData: enhancedLeaveEncashmentUserList,
     labelKey: "fullName",
     valueKey: "id",
   });
@@ -138,7 +156,7 @@ export function UserActionForm({
       email: currentRow?.email ?? "",
       phoneNumber: formatPhoneToE164(
         currentRow?.phoneNumber || "",
-        currentRow?.countryCode || "+91"
+        currentRow?.countryCode || "+91",
       ),
       territoryId: currentRow?.territoryId ?? "",
       roleId: currentRow?.roleId ?? "",
@@ -151,6 +169,8 @@ export function UserActionForm({
       shiftId: currentRow?.shiftId ?? "",
       // include the hide flag so the resolver can see it and validate conditionally
       hideReportingToField: hideReportingToField,
+      leaveEncashmentReportingUserId:
+        currentRow?.leaveEncashmentReportingUserId,
     },
   });
 
@@ -181,6 +201,7 @@ export function UserActionForm({
         setValue("hideReportingToField", true, { shouldValidate: true });
         setValue("reportingToRoleId", "");
         setValue("reportingToIds", []);
+        setValue("leaveEncashmentReportingUserId", "");
       } else {
         setHideReportingToField(false);
         setValue("hideReportingToField", false, { shouldValidate: true });
@@ -188,7 +209,7 @@ export function UserActionForm({
 
       const formattedPhone = formatPhoneToE164(
         currentRow.phoneNumber || "",
-        currentRow.countryCode || "+91"
+        currentRow.countryCode || "+91",
       );
 
       // Process reportingToIds properly for the form
@@ -202,7 +223,7 @@ export function UserActionForm({
         ) {
           // Extract IDs from user objects
           processedReportingToIds = currentRow.reportingToIds.map((user: any) =>
-            String(user.id || user.userId || user.userID)
+            String(user.id || user.userId || user.userID),
           );
         } else {
           // It's already an array of IDs
@@ -214,7 +235,7 @@ export function UserActionForm({
       } else if (Array.isArray(currentRow.reportingTo)) {
         // If we have reportingTo objects, extract IDs
         processedReportingToIds = currentRow.reportingTo.map((user: any) =>
-          String(user.id || user.userId || user.userID)
+          String(user.id || user.userId || user.userID),
         );
       } else if (
         currentRow.reportingTo &&
@@ -225,7 +246,7 @@ export function UserActionForm({
           String(
             currentRow.reportingTo.id ||
               currentRow.reportingTo.userId ||
-              currentRow.reportingTo.userID
+              currentRow.reportingTo.userID,
           ),
         ];
       }
@@ -246,6 +267,8 @@ export function UserActionForm({
         reportingToIds: processedReportingToIds,
         shiftId: currentRow.shiftId ?? "",
         hideReportingToField: hideField,
+        leaveEncashmentReportingUserId:
+          currentRow.leaveEncashmentReportingUserId,
       });
     }
   }, [currentRow, open, reset]);
@@ -255,7 +278,7 @@ export function UserActionForm({
     console.log(
       "reportingToIds type:",
       typeof values.reportingToIds,
-      values.reportingToIds
+      values.reportingToIds,
     ); // Debug log
     onSubmitValues(values);
   };
@@ -451,7 +474,7 @@ export function UserActionForm({
                         onChange={(value) => {
                           field.onChange(value || "");
                           const phoneNumber = parsePhoneNumberFromString(
-                            value || ""
+                            value || "",
                           );
                           if (phoneNumber) {
                             setValue(
@@ -460,7 +483,7 @@ export function UserActionForm({
                               {
                                 shouldValidate: true,
                                 shouldDirty: true,
-                              }
+                              },
                             );
                           } else {
                             setValue("countryCode", "+91", {
@@ -845,6 +868,61 @@ export function UserActionForm({
                 </div>
               </div>
             )}
+
+            {!hideReportingToField && (
+              <div className="space-y-4">
+                {/* Row 5: Reporting To Role & Reporting To Users */}
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="leaveEncashmentReportingUserId">
+                      Leave Encashment Reporting To User
+                    </Label>
+                    <Controller
+                      name="leaveEncashmentReportingUserId"
+                      control={control}
+                      render={({ field }) => {
+                        const currentValue = Array.isArray(field.value)
+                          ? field.value[0]
+                          : field.value;
+                        const displayValue = currentValue
+                          ? String(currentValue)
+                          : "";
+
+                        return (
+                          <Select
+                            value={displayValue}
+                            onValueChange={(value) => {
+                              field.onChange(value);
+                            }}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select User..." />
+                            </SelectTrigger>
+                            <SelectContent className="!w-full">
+                              {leaveEncashmentUsers.map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={String(option.value)}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        );
+                      }}
+                    />
+                    {errors.leaveEncashmentReportingUserId && (
+                      <p className="flex items-center gap-1 text-xs text-red-500">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.leaveEncashmentReportingUserId.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Settings Section */}
             <div className="space-y-4">
               {/* Row 6: Active Role Checkbox (takes full width or can be paired with another field) */}

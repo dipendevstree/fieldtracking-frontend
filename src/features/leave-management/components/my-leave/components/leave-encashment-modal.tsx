@@ -34,7 +34,7 @@ export default function LeaveEncashmentModal({
     setLeaveEncashmentDays("");
     onOpenChange(false);
   };
-  const totalBalance = parseFloat(currentRow?.leaveBalance.remaining || "0");
+  const totalBalance = parseFloat(currentRow?.leaveBalance?.remaining || "0");
   const handleSubmit = () => {
     if (!leaveEncashmentDays) {
       toast.error("Invalid Action", {
