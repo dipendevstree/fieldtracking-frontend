@@ -319,6 +319,12 @@ const API = {
   leaveEncashment: {
     create: "leaveEncashment/create",
   },
+  leaveEncashmentApprovals: {
+    list: "leaveEncashmentApprovals/list",
+    stats: "leaveEncashmentApprovals/stats",
+    create: "leaveEncashmentApprovals/create",
+    pendingList: "leaveEncashmentApprovals/pending",
+  },
   leaveTransaction: {
     list: "leaveTransaction/list",
   },

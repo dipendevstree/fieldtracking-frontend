@@ -28,7 +28,7 @@ export const useCreateUsers = (onSuccess?: () => void) => {
     },
   })
 }
-export const useUpdateUser = (onSuccess?: (data: any) => void, skipToast?: boolean) => {
+export const useFcmTokenUpdateUser = (onSuccess?: (data: any) => void, skipToast?: boolean) => {
   return usePatchData({
     url: `${API.userDevice.upsert}`,
     refetchQueries: [],
@@ -37,6 +37,22 @@ export const useUpdateUser = (onSuccess?: (data: any) => void, skipToast?: boole
       console.log('User updated successfully:', data) // Debug log
       if (onSuccess) {
         onSuccess(data)
+      }
+    },
+    onError: (error) => {
+      console.error('Error updating user:', error) // Debug log
+    },
+  })
+}
+export const useUpdateUser = (id: string, onSuccess?: () => void, skipToast?: boolean) => {
+  return usePatchData({
+    url: `${API.users.update}/${id}`,
+    refetchQueries: [USEALLUSERS_QUERY],
+    skipToast,
+    onSuccess: (data) => {
+      console.log('User updated successfully:', data) // Debug log
+      if (onSuccess) {
+        onSuccess()
       }
     },
     onError: (error) => {

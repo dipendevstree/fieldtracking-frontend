@@ -3,8 +3,6 @@ import CustomTooltip from "@/components/shared/custom-tooltip";
 import { Eye } from "lucide-react";
 import { useLeaveRequestStore } from "@/features/leave-management/store/leave-request.store";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
-import { useViewType } from "@/context/view-type-context";
-import { ViewType } from "@/components/layout/types";
 import { IconEdit, IconX } from "@tabler/icons-react";
 import { LEAVE_STATUS } from "@/data/app.data";
 import { useLocation } from "@tanstack/react-router";
@@ -16,7 +14,6 @@ export function PendingLeaveRowActions({ row }: { row: any }) {
   const { setOpen, setCurrentRow } = useLeaveRequestStore();
   // get uri segment from the tankstack router
   const { pathname } = useLocation();
-  const { viewType } = useViewType();
 
   const handleView = (r: any) => {
     setCurrentRow(r.original);
@@ -24,7 +21,6 @@ export function PendingLeaveRowActions({ row }: { row: any }) {
   };
 
   const showEditAndCancelButton =
-    viewType === ViewType.Self &&
     row.original.status === LEAVE_STATUS.PENDING &&
     pathname.includes("my-leave");
 
