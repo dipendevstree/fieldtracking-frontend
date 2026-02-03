@@ -1,7 +1,7 @@
-import { useGetAllLeaveRequest } from "@/features/leave-management/services/leave-request.hook";
-import PendingLeaveTable from "./pending-leave-table";
+import { useGetAllPendingLeaveEncashmentRequest } from "@/features/leave-management/services/leave-request.hook";
+import PendingLeaveEncashmentTable from "./pending-leave-encashment-request-table";
+import LeaveEncashmentRequestViewDialog from "./LeaveEncashmentRequestViewDialog";
 import { useLeaveRequestStore } from "@/features/leave-management/store/leave-request.store";
-import LeaveRequestViewDialog from "./LeaveRequestViewDialog";
 
 interface Props {
   pagination: {
@@ -13,30 +13,30 @@ interface Props {
   dashboardView?: boolean;
 }
 
-export default function PendingRequest({
+export default function PendingLeaveEncashmentRequest({
   pagination,
   onPaginationChange,
   dashboardView,
 }: Props) {
   const { open, setOpen, currentRow } = useLeaveRequestStore();
   const {
-    data: leaveRequestList,
+    data: leaveEncashmentRequestList,
     isLoading,
     totalCount,
-  } = useGetAllLeaveRequest(pagination);
+  } = useGetAllPendingLeaveEncashmentRequest(pagination);
 
   return (
     <>
-      {open === "view" && (
-        <LeaveRequestViewDialog
-          open={open === "view"}
+      {open === "view-leave-encashment" && currentRow && (
+        <LeaveEncashmentRequestViewDialog
+          open={open === "view-leave-encashment"}
           onClose={() => setOpen(null)}
           currentRow={currentRow}
         />
       )}
-      <PendingLeaveTable
-        key={"pending-leave-request-table"}
-        data={leaveRequestList}
+      <PendingLeaveEncashmentTable
+        key={"pending-leave-encashment-request-table"}
+        data={leaveEncashmentRequestList}
         totalCount={totalCount || 0}
         loading={isLoading}
         currentPage={pagination.page}

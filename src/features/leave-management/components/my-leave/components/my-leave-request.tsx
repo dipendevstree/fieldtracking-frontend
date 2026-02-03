@@ -15,15 +15,20 @@ import { formatDropDownLabel } from "@/utils/commonFunction";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PendingRequest from "../../leave-request/components/PendingRequest";
 import { useAuthStore } from "@/stores/use-auth-store";
-import { useViewType } from "@/context/view-type-context";
-import { ViewType } from "@/components/layout/types";
 import LeaveBalanceHistory from "../../leave-request/components/LeaveBalanceHistory";
+import PendingLeaveEncashmentRequest from "../../leave-request/components/PendingLeaveEncashmentRequest";
+import { useLocation } from "@tanstack/react-router";
 
 const tabs = [
   {
-    value: "pending-request",
-    label: "Pending Request",
+    value: "pending-leave-request",
+    label: "Pending Leave Request",
     component: PendingRequest,
+  },
+  {
+    value: "leave-encashment-request",
+    label: "Leave Encashment Request",
+    component: PendingLeaveEncashmentRequest,
   },
   {
     value: "leave-balance-history",
@@ -40,8 +45,9 @@ interface Props {
 }
 
 export default function MyLeaveRequest({ calendarQueryParams }: Props) {
-  const { viewType } = useViewType();
-  const [activeTab, setActiveTab] = useState("pending-request");
+  const { pathname } = useLocation();
+  const selfView = pathname.includes("my-leave");
+  const [activeTab, setActiveTab] = useState("pending-leave-request");
   const { user } = useAuthStore();
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
     from: new Date(calendarQueryParams.startDate),
@@ -171,7 +177,7 @@ export default function MyLeaveRequest({ calendarQueryParams }: Props) {
               {tab.component({
                 pagination: {
                   ...pagination,
-                  selfView: viewType === ViewType.Self,
+                  selfView,
                 },
                 onPaginationChange,
                 dashboardView: true,

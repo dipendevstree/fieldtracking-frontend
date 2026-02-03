@@ -12,7 +12,7 @@ import { SearchProvider } from "@/context/search-context";
 import SkipToMain from "@/components/skip-to-main";
 import { cn } from "@/lib/utils";
 import { useFcm } from "@/hooks/use-fcm";
-import { useUpdateUser } from "@/features/UserManagement/services/AllUsers.hook";
+import { useFcmTokenUpdateUser } from "@/features/UserManagement/services/AllUsers.hook";
 import WorkDaySession from "@/features/attendance-management/components/attendance/components/WorkDaySession";
 import { usePermission } from "@/permissions/hooks/use-permission";
 import { usePermissionData } from "@/hooks/use-permission-data";
@@ -24,7 +24,7 @@ export function AuthenticatedLayout({
 }) {
   const { user, isLoading, isPasswordChanged, updateUser } = useAuthStore();
   const { sidebarOpen } = useAppStore();
-  const { mutate: updateUserToken } = useUpdateUser((data) => {
+  const { mutate: updateUserToken } = useFcmTokenUpdateUser((data) => {
     updateUser({ fcm_token: data?.fcmToken });
   }, true);
   const { token, requestPermission, permissionGranted } = useFcm();
