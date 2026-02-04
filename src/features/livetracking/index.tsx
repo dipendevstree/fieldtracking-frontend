@@ -492,22 +492,22 @@ export default function Livetracking() {
           </CardContent>
         </Card>
       )}
-      {hasFiltersSelected &&
-        !isLoading &&
-        enhancedUserListWithStatus.length === 0 && (
-          <Card>
-            <CardContent className="flex items-center justify-center p-8">
-              <div className="text-center">
-                <div className="text-muted-foreground mb-2 text-lg font-medium">
-                  No users found
-                </div>
-                <p className="text-muted-foreground text-sm">
-                  Try adjusting your filters to find users
-                </p>
+      {!isLoading && enhancedUserListWithStatus.length === 0 && (
+        <Card>
+          <CardContent className="flex items-center justify-center p-8">
+            <div className="text-center">
+              <div className="text-muted-foreground mb-2 text-lg font-medium">
+                {hasFiltersSelected ? "No users found" : "No users assigned"}
               </div>
-            </CardContent>
-          </Card>
-        )}
+              <p className="text-muted-foreground text-sm">
+                {hasFiltersSelected
+                  ? "Try adjusting your filters to find users"
+                  : "You don't have any users assigned for live tracking yet."}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </Main>
   );
 }
