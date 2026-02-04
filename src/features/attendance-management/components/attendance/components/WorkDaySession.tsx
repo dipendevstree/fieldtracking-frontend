@@ -23,9 +23,14 @@ import {
   Coffee,
   LucideIcon,
   Play,
+  AlertTriangle,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { socketForVisit } from "@/socket/socket";
+import { useNavigate } from "@tanstack/react-router";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useViewType } from "@/context/view-type-context";
+import { ViewType } from "@/components/layout/types";
 import { cn } from "@/lib/utils";
 
 // --- 1. REUSABLE BUTTON COMPONENT ---
@@ -53,20 +58,38 @@ const ActionButton = ({
   </Button>
 );
 
-// Convert "HH:mm:ss" → seconds
+// 1. PARSE (String "26:30:00" -> Seconds)
 const parseDurationToSeconds = (time = "00:00:00") => {
-  const [h = 0, m = 0, s = 0] = time.split(":").map(Number);
+  if (!time) return 0;
+  const parts = time.split(":").map(Number);
+
+  const h = parts[0] || 0;
+  const m = parts[1] || 0;
+  const s = parts[2] || 0;
+
   return h * 3600 + m * 60 + s;
 };
 
-// Convert seconds → "HH:mm:ss"
-const formatSecondsToDuration = (seconds = 0) => {
-  return moment.utc(seconds * 1000).format("HH:mm:ss");
+// 2. FORMAT (Seconds -> String "26:30:00")
+const formatSecondsToDuration = (totalSeconds = 0) => {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = Math.floor(totalSeconds % 60);
+
+  const hDisplay = h.toString().padStart(2, "0");
+  const mDisplay = m.toString().padStart(2, "0");
+  const sDisplay = s.toString().padStart(2, "0");
+
+  return `${hDisplay}:${mDisplay}:${sDisplay}`;
 };
 
 const WorkDaySession = () => {
   const { user } = useAuthStore();
+  const navigate = useNavigate();
+  const { viewType, setViewType, setViewTypeToggle } = useViewType();
   const [isOpen, setIsOpen] = useState(false);
+  const [showRedirectModal, setShowRedirectModal] = useState(false);
+  const [dynamicErrorMsg, setDynamicErrorMsg] = useState("");
 
   /* ---------------- Live Timer State ---------------- */
   const [liveWorkTime, setLiveWorkTime] = useState("00:00:00");
@@ -109,23 +132,47 @@ const WorkDaySession = () => {
     };
   }, [user, refetch]);
 
-  /* ---------------- Mutations ---------------- */
-  const { mutate: startWorkDay, isPending: startingDay } =
-    useStartWorkDaySession();
-  const { mutate: endWorkDay, isPending: endingDay } = useEndWorkDaySession();
-  const { mutate: startBreak, isPending: startingBreak } =
-    useStartBreakSession();
-  const { mutate: endBreak, isPending: endingBreak } = useEndBreakSession();
-
   /* ---------------- Derived State ---------------- */
-  const activeWorkSession = sessionData?.sessions?.find(
-    (s: any) => s.status === "in_progress",
-  );
+  const activeWorkSession = sessionData?.activeSession;
+  const isPreviousDay =
+    activeWorkSession?.date &&
+    moment(activeWorkSession.date).format("YYYY-MM-DD") !==
+      moment().format("YYYY-MM-DD");
   const isDayStarted = !!activeWorkSession;
   const isOnBreak = !!activeWorkSession?.isOnBreak;
   const activeBreak = activeWorkSession?.breaks?.find(
     (b: any) => b.status === "in_progress",
   );
+
+  /* ---------------- Mutations ---------------- */
+  const { mutate: startWorkDay, isPending: startingDay } =
+    useStartWorkDaySession();
+
+  const { mutate: endWorkDay, isPending: endingDay } = useEndWorkDaySession({
+    skipToast: true,
+    onError: (err: any) => {
+      const msg =
+        err.response?.data?.message || err.message || "Failed to end day";
+      const statusCode = err.statusCode || err.response?.status;
+      const messageCode = err.response?.data?.messageCode;
+
+      // Only show redirect modal for 403 (Forbidden) related to expired/correction sessions
+      if (
+        isPreviousDay &&
+        messageCode === "SESSION_CORRECTION_REQUIRED" &&
+        statusCode === 403
+      ) {
+        setDynamicErrorMsg(msg);
+        setShowRedirectModal(true);
+      } else {
+        // Show default toast for any other errors
+        toast.error(msg);
+      }
+    },
+  });
+  const { mutate: startBreak, isPending: startingBreak } =
+    useStartBreakSession();
+  const { mutate: endBreak, isPending: endingBreak } = useEndBreakSession();
 
   const isGlobalLoading =
     isFetching || startingDay || endingDay || startingBreak || endingBreak;
@@ -226,20 +273,28 @@ const WorkDaySession = () => {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-100 bg-slate-50/50">
           <span className="font-semibold text-sm text-slate-900">
-            Today's Session
+            {isPreviousDay ? "Ongoing Session" : "Today's Session"}
           </span>
           <Badge
             variant="outline"
             className={cn(
               "border-0",
-              isOnBreak
-                ? "bg-amber-100 text-amber-700"
-                : isDayStarted
-                  ? "bg-emerald-100 text-emerald-700"
-                  : "bg-slate-200 text-slate-600",
+              isPreviousDay
+                ? "bg-rose-100 text-rose-700 animate-pulse"
+                : isOnBreak
+                  ? "bg-amber-100 text-amber-700"
+                  : isDayStarted
+                    ? "bg-emerald-100 text-emerald-700"
+                    : "bg-slate-200 text-slate-600",
             )}
           >
-            {isOnBreak ? "On Break" : isDayStarted ? "Working" : "Not Started"}
+            {isPreviousDay
+              ? "Previous Day"
+              : isOnBreak
+                ? "On Break"
+                : isDayStarted
+                  ? "Working"
+                  : "Not Started"}
           </Badge>
         </div>
 
@@ -330,6 +385,31 @@ const WorkDaySession = () => {
           </div>
         </div>
       </PopoverContent>
+
+      <ConfirmDialog
+        open={showRedirectModal}
+        onOpenChange={setShowRedirectModal}
+        title={
+          <div className="flex items-center gap-2 text-amber-600">
+            <AlertTriangle className="h-5 w-5" />
+            <span>Ongoing Session from Previous Day</span>
+          </div>
+        }
+        desc={
+          dynamicErrorMsg ||
+          "This work session has expired. Please raise an attendance correction request before ending this session."
+        }
+        confirmText="Go to Corrections"
+        cancelBtnText="Close"
+        handleConfirm={() => {
+          if (viewType === ViewType.Admin) {
+            setViewType(ViewType.Self);
+            setViewTypeToggle(true);
+          }
+          navigate({ to: "/attendance-management/my-attendance" });
+          setShowRedirectModal(false);
+        }}
+      />
     </Popover>
   );
 };
