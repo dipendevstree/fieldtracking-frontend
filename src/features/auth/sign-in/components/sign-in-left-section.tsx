@@ -1,9 +1,10 @@
+import appIcon from "../../../../assets/app.png";
 const SignInLeftSection = () => {
   return (
     <div className="bg-muted relative hidden h-full flex-col p-10 text-white lg:flex dark:border-r">
       <div className="absolute inset-0 bg-zinc-900" />
       <div className="relative z-20 flex items-center text-lg font-medium">
-        <svg
+        {/* <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="none"
@@ -14,7 +15,16 @@ const SignInLeftSection = () => {
           className="mr-2 h-6 w-6"
         >
           <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />
-        </svg>
+        </svg> */}
+        <div>
+          <img
+            src={appIcon}
+            className="relative m-auto"
+            height={60}
+            width={60}
+            alt="Vite"
+          />
+        </div>
         FieldTrack360
       </div>
 
@@ -29,8 +39,7 @@ const SignInLeftSection = () => {
         FieldTrack360
       </h1>
 
-      <div className="relative z-20 mt-auto">
-      </div>
+      <div className="relative z-20 mt-auto"></div>
     </div>
   );
 };
