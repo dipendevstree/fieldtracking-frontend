@@ -21,6 +21,7 @@ import NotificationAction, { toUrl } from "./notification-action";
 import { useFcm } from "@/hooks/use-fcm";
 import { toast } from "sonner";
 import { BellRing } from "lucide-react";
+import { NOTIFICATION_TYPE } from "../data/notification.types";
 
 export function NotificationList() {
   const [open, setOpen] = useState(false);
@@ -36,6 +37,14 @@ export function NotificationList() {
   const notificationData = notifications.allData ?? [];
   const { newNotification: _newNotification } = useFcm((notification) => {
     if (notification && window.document.visibilityState === "visible") {
+      if (
+        notification?.extraData?.messageType &&
+        ["", NOTIFICATION_TYPE.CHAT_MESSAGE].includes(
+          notification?.extraData?.messageType,
+        )
+      ) {
+        return;
+      }
       const url = toUrl({
         original: {
           ...notification,
@@ -68,7 +77,7 @@ export function NotificationList() {
           ),
           duration: 8000,
           position: "top-center",
-        }
+        },
       );
       notifications.refetch();
     }

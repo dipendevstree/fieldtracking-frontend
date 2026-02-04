@@ -54,7 +54,7 @@ export const CustomerDirectoryPage = () => {
       industryId: filters.industryId || "",
       customerTypeId: filters.customerTypeId || "",
     }),
-    [pagination, filters]
+    [pagination, filters],
   );
 
   const exportQueryParams = useMemo(
@@ -64,7 +64,7 @@ export const CustomerDirectoryPage = () => {
       customerTypeId: filters.customerTypeId || "",
       sort: "desc",
     }),
-    [filters]
+    [filters],
   );
 
   // Get customer data
@@ -101,7 +101,7 @@ export const CustomerDirectoryPage = () => {
     debounce((value: string) => {
       setFilters({ search: value });
     }, 800),
-    []
+    [],
   );
 
   const handleGlobalSearchChange = (value: string | undefined) => {
@@ -169,7 +169,7 @@ export const CustomerDirectoryPage = () => {
     navigate({ to: `/customers/edit-customer/${customerId}` });
     // Find the customer data
     const customerToEdit = customers.find(
-      (customer) => customer.customerId === customerId
+      (customer) => customer.customerId === customerId,
     );
     if (customerToEdit) {
       // Set the current row in store for the modal
@@ -196,7 +196,10 @@ export const CustomerDirectoryPage = () => {
           <div className="flex items-center space-x-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline">
+                <Button
+                  variant="outline"
+                  disabled={isExportLoading || isLoading || totalCount === 0}
+                >
                   <Download className="h-4 w-4 mr-2" />
                   Export Report
                 </Button>
@@ -211,7 +214,7 @@ export const CustomerDirectoryPage = () => {
                       filename: "customers",
                     })
                   }
-                  disabled={isExportLoading}
+                  disabled={isExportLoading || isLoading || totalCount === 0}
                 >
                   Export Csv
                 </DropdownMenuItem>
@@ -224,7 +227,7 @@ export const CustomerDirectoryPage = () => {
                       filename: "customers",
                     })
                   }
-                  disabled={isLoading}
+                  disabled={isExportLoading || isLoading || totalCount === 0}
                 >
                   Export Excel
                 </DropdownMenuItem>

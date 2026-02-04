@@ -114,7 +114,6 @@ export default function LeaveApprovals() {
     form.formState.isDirty,
   );
 
-  const selectedTerritory = form.watch("territoryId");
   const selectedApprovalRole = form.watch("approvalRole");
 
   const { fields } = useFieldArray({
@@ -207,8 +206,9 @@ export default function LeaveApprovals() {
     !isLeaveApprovalsLoading &&
     !isTiersLoading &&
     !isTerritoriesLoading &&
-    !isUsersLoading &&
-    (!allowAddUsersBasedOnTerritories || !!selectedTerritory);
+    !isUsersLoading;
+  // &&
+  // (!allowAddUsersBasedOnTerritories || !!selectedTerritory);
 
   const onSubmit = (data: LeaveApprovalsFormSchema) => {
     if (!isDataReady) {
@@ -235,7 +235,7 @@ export default function LeaveApprovals() {
     };
     createLeaveApprovals(payload);
   };
-  console.log("selectedTerritoryId", selectedTerritoryId);
+
   if (!isDataReady) {
     return (
       <div className="p-8 text-center text-muted-foreground">

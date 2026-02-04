@@ -48,7 +48,6 @@ export const formSchemaHidden = formSchema.extend({
   // keep reporting fields optional/null when hidden
   reportingToRoleId: z.string().nullable().optional(),
   reportingToIds: z.array(z.string()).nullable().optional(),
-  leaveEncashmentReportingUserId: z.string().nullable().optional(),
 });
 
 // Schema variant when reporting fields should be present
@@ -67,7 +66,6 @@ export const formSchemaShown = formSchema.extend({
     (v) => (v === null ? undefined : v),
     z.array(z.string()).min(1, "Reporting to is required"),
   ),
-  leaveEncashmentReportingUserId: z.string().nullable().optional(),
 });
 
 // Union of the two variants; this avoids using superRefine

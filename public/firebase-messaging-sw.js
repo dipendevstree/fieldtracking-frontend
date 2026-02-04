@@ -1,8 +1,8 @@
 importScripts(
-  "https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"
+  "https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js",
 );
 importScripts(
-  "https://www.gstatic.com/firebasejs/10.0.0/firebase-messaging-compat.js"
+  "https://www.gstatic.com/firebasejs/10.0.0/firebase-messaging-compat.js",
 );
 
 // message redirect function logic
@@ -77,7 +77,7 @@ self.addEventListener("notificationclick", (event) => {
         if (clients.openWindow) {
           return clients.openWindow(url);
         }
-      })
+      }),
   );
 });
 
@@ -97,6 +97,11 @@ messaging.onBackgroundMessage(function (payload) {
     icon: notification.icon || "/favicon.ico",
     data: payload?.data || {},
   };
+  if (
+    notification.extraData?.messageType &&
+    ["", "CHAT_MESSAGE"].includes(notification.extraData?.messageType)
+  )
+    return;
   const url = redirectToUrl(notification.extraData?.messageType, notification);
   if (url) {
     options.data.url = url;
