@@ -29,6 +29,8 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import { socketForVisit } from "@/socket/socket";
 import { useNavigate } from "@tanstack/react-router";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useViewType } from "@/context/view-type-context";
+import { ViewType } from "@/components/layout/types";
 import { cn } from "@/lib/utils";
 
 // --- 1. REUSABLE BUTTON COMPONENT ---
@@ -56,20 +58,35 @@ const ActionButton = ({
   </Button>
 );
 
-// Convert "HH:mm:ss" → seconds
+// 1. PARSE (String "26:30:00" -> Seconds)
 const parseDurationToSeconds = (time = "00:00:00") => {
-  const [h = 0, m = 0, s = 0] = time.split(":").map(Number);
+  if (!time) return 0;
+  const parts = time.split(":").map(Number);
+
+  const h = parts[0] || 0;
+  const m = parts[1] || 0;
+  const s = parts[2] || 0;
+
   return h * 3600 + m * 60 + s;
 };
 
-// Convert seconds → "HH:mm:ss"
-const formatSecondsToDuration = (seconds = 0) => {
-  return moment.utc(seconds * 1000).format("HH:mm:ss");
+// 2. FORMAT (Seconds -> String "26:30:00")
+const formatSecondsToDuration = (totalSeconds = 0) => {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = Math.floor(totalSeconds % 60);
+
+  const hDisplay = h.toString().padStart(2, "0");
+  const mDisplay = m.toString().padStart(2, "0");
+  const sDisplay = s.toString().padStart(2, "0");
+
+  return `${hDisplay}:${mDisplay}:${sDisplay}`;
 };
 
 const WorkDaySession = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
+  const { viewType, setViewType, setViewTypeToggle } = useViewType();
   const [isOpen, setIsOpen] = useState(false);
   const [showRedirectModal, setShowRedirectModal] = useState(false);
   const [dynamicErrorMsg, setDynamicErrorMsg] = useState("");
@@ -129,20 +146,26 @@ const WorkDaySession = () => {
 
   /* ---------------- Mutations ---------------- */
   const { mutate: startWorkDay, isPending: startingDay } =
-    useStartWorkDaySession({
-      onError: (err: any) => {
-        toast.error(err.response?.data?.message || "Failed to start day");
-      },
-    });
+    useStartWorkDaySession();
+
   const { mutate: endWorkDay, isPending: endingDay } = useEndWorkDaySession({
-    skipToast: isPreviousDay,
+    skipToast: true,
     onError: (err: any) => {
       const msg =
         err.response?.data?.message || err.message || "Failed to end day";
-      if (isPreviousDay) {
+      const statusCode = err.statusCode || err.response?.status;
+      const messageCode = err.response?.data?.messageCode;
+
+      // Only show redirect modal for 403 (Forbidden) related to expired/correction sessions
+      if (
+        isPreviousDay &&
+        messageCode === "SESSION_CORRECTION_REQUIRED" &&
+        statusCode === 403
+      ) {
         setDynamicErrorMsg(msg);
         setShowRedirectModal(true);
       } else {
+        // Show default toast for any other errors
         toast.error(msg);
       }
     },
@@ -379,6 +402,10 @@ const WorkDaySession = () => {
         confirmText="Go to Corrections"
         cancelBtnText="Close"
         handleConfirm={() => {
+          if (viewType === ViewType.Admin) {
+            setViewType(ViewType.Self);
+            setViewTypeToggle(true);
+          }
           navigate({ to: "/attendance-management/my-attendance" });
           setShowRedirectModal(false);
         }}
