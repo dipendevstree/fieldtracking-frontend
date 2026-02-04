@@ -44,6 +44,7 @@ export default function Livetracking() {
     includeLatLong: true,
     sortField: "isOnline",
     status: "",
+    onlyTeamMembers: true,
   });
 
   const { user: userAuth } = useAuthStore();
@@ -73,7 +74,10 @@ export default function Livetracking() {
     valueKey: "roleId",
   });
 
-  const { listData: userListDropDownData = [] } = useGetUsers();
+  const { listData: userListDropDownData = [] } = useGetUsers({
+    onlyTeamMembers: true,
+    roleId: pagination.roleId,
+  });
 
   const userListDropDownList = userListDropDownData?.map((user: any) => ({
     ...user,
@@ -96,7 +100,10 @@ export default function Livetracking() {
   }).map((option) => ({ ...option, value: String(option.value) }));
 
   const hasFiltersSelected =
-    pagination.roleId || pagination.territoryId || pagination.searchFor;
+    pagination.roleId ||
+    pagination.territoryId ||
+    pagination.searchFor ||
+    pagination.status;
   const { user } = userDetailsById(userId);
 
   const enhanceUser = (user: any) => ({
@@ -362,6 +369,7 @@ export default function Livetracking() {
             includeLatLong: true,
             status: "",
             sortField: "isOnline",
+            onlyTeamMembers: true,
           });
         }}
       />
@@ -391,7 +399,7 @@ export default function Livetracking() {
                 />
               ) : (
                 <>
-                  <div style={{ maxHeight: "60vh", overflow: "auto" }}>
+                  <div className="max-h-[60vh] min-h-[50vh] overflow-auto">
                     {enhancedUserListWithStatus.map((user: any) => (
                       <Card
                         key={user.id}
