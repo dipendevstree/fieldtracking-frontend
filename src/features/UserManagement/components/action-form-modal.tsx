@@ -65,7 +65,6 @@ export function UsersActionModal() {
           ? [values.reportingToIds]
           : [],
       shiftId: values.shiftId || null,
-      leaveEncashmentReportingUserId: values.leaveEncashmentReportingUserId,
     };
 
     if (allowTerritoryFilter) {
@@ -96,7 +95,6 @@ export function UsersActionModal() {
           ? [values.reportingToIds]
           : [],
       shiftId: values.shiftId || null,
-      leaveEncashmentReportingUserId: values.leaveEncashmentReportingUserId,
     };
     if (allowTerritoryFilter) {
       payload.territoryId = values.territoryId;

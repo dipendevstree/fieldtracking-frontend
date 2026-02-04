@@ -68,11 +68,6 @@ export function UserActionForm({
     enabled: !!selectedRoleId,
   });
 
-  const { data: leaveEncashmentUserList = [] } = useGetUsersForDropdown({
-    roleId: "",
-    enabled: true,
-  });
-
   // Filter out current user from the user list to prevent self-reporting
   const filteredUserList = userList.filter((user: any) =>
     currentRow?.id ? String(user.id) !== String(currentRow.id) : true,
@@ -83,13 +78,6 @@ export function UserActionForm({
     fullName: `${user.firstName} ${user.lastName}`,
   }));
 
-  const enhancedLeaveEncashmentUserList = leaveEncashmentUserList.map(
-    (user: any) => ({
-      ...user,
-      fullName: `${user.firstName} ${user.lastName}`,
-    }),
-  );
-
   const roles = useSelectOptions<any>({
     listData: rolesList ?? [],
     labelKey: "roleName",
@@ -98,12 +86,6 @@ export function UserActionForm({
 
   const users = useSelectOptions<any>({
     listData: enhancedUserList,
-    labelKey: "fullName",
-    valueKey: "id",
-  });
-
-  const leaveEncashmentUsers = useSelectOptions<any>({
-    listData: enhancedLeaveEncashmentUserList,
     labelKey: "fullName",
     valueKey: "id",
   });
@@ -169,8 +151,6 @@ export function UserActionForm({
       shiftId: currentRow?.shiftId ?? "",
       // include the hide flag so the resolver can see it and validate conditionally
       hideReportingToField: hideReportingToField,
-      leaveEncashmentReportingUserId:
-        currentRow?.leaveEncashmentReportingUserId,
     },
   });
 
@@ -201,7 +181,6 @@ export function UserActionForm({
         setValue("hideReportingToField", true, { shouldValidate: true });
         setValue("reportingToRoleId", "");
         setValue("reportingToIds", []);
-        setValue("leaveEncashmentReportingUserId", "");
       } else {
         setHideReportingToField(false);
         setValue("hideReportingToField", false, { shouldValidate: true });
@@ -267,8 +246,6 @@ export function UserActionForm({
         reportingToIds: processedReportingToIds,
         shiftId: currentRow.shiftId ?? "",
         hideReportingToField: hideField,
-        leaveEncashmentReportingUserId:
-          currentRow.leaveEncashmentReportingUserId,
       });
     }
   }, [currentRow, open, reset]);
@@ -865,60 +842,6 @@ export function UserActionForm({
                     </p>
                   )}
                 </div> */}
-                </div>
-              </div>
-            )}
-
-            {!hideReportingToField && (
-              <div className="space-y-4">
-                {/* Row 5: Reporting To Role & Reporting To Users */}
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="leaveEncashmentReportingUserId">
-                      Leave Encashment Reporting To User
-                    </Label>
-                    <Controller
-                      name="leaveEncashmentReportingUserId"
-                      control={control}
-                      render={({ field }) => {
-                        const currentValue = Array.isArray(field.value)
-                          ? field.value[0]
-                          : field.value;
-                        const displayValue = currentValue
-                          ? String(currentValue)
-                          : "";
-
-                        return (
-                          <Select
-                            value={displayValue}
-                            onValueChange={(value) => {
-                              field.onChange(value);
-                            }}
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Select User..." />
-                            </SelectTrigger>
-                            <SelectContent className="!w-full">
-                              {leaveEncashmentUsers.map((option) => (
-                                <SelectItem
-                                  key={option.value}
-                                  value={String(option.value)}
-                                >
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        );
-                      }}
-                    />
-                    {errors.leaveEncashmentReportingUserId && (
-                      <p className="flex items-center gap-1 text-xs text-red-500">
-                        <AlertCircle className="h-3 w-3" />
-                        {errors.leaveEncashmentReportingUserId.message}
-                      </p>
-                    )}
-                  </div>
                 </div>
               </div>
             )}
