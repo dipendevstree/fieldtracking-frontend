@@ -16,6 +16,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   LogIn,
   LogOut,
   ClockIcon,
@@ -24,6 +30,8 @@ import {
   LucideIcon,
   Play,
   AlertTriangle,
+  Smartphone,
+  Info,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { socketForVisit } from "@/socket/socket";
@@ -58,19 +66,53 @@ const ActionButton = ({
   </Button>
 );
 
-// 1. PARSE (String "26:30:00" -> Seconds)
+// --- 2. MOBILE GUARD WRAPPER ---
+// This wraps buttons to show a tooltip if mobile tracking is active
+const MobileGuard = ({
+  children,
+  isMobileActive,
+}: {
+  children: React.ReactNode;
+  isMobileActive: boolean;
+}) => {
+  if (!isMobileActive) return <>{children}</>;
+
+  return (
+    <TooltipProvider>
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>
+          {/* We need a span here because disabled buttons don't fire mouse events */}
+          <span className="w-full block cursor-not-allowed opacity-80">
+            {children}
+          </span>
+        </TooltipTrigger>
+        <TooltipContent className="max-w-[250px] bg-slate-900 text-white border-slate-800 p-3">
+          <div className="flex items-start gap-3">
+            <Smartphone className="h-5 w-5 text-blue-400 mt-0.5" />
+            <div className="space-y-1">
+              <p className="font-semibold text-sm">Mobile Tracking Active</p>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                You started this session on mobile with live tracking. Please
+                manage this session via the mobile app.
+              </p>
+            </div>
+          </div>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
+
+// --- 3. UTILITIES ---
 const parseDurationToSeconds = (time = "00:00:00") => {
   if (!time) return 0;
   const parts = time.split(":").map(Number);
-
   const h = parts[0] || 0;
   const m = parts[1] || 0;
   const s = parts[2] || 0;
-
   return h * 3600 + m * 60 + s;
 };
 
-// 2. FORMAT (Seconds -> String "26:30:00")
 const formatSecondsToDuration = (totalSeconds = 0) => {
   const h = Math.floor(totalSeconds / 3600);
   const m = Math.floor((totalSeconds % 3600) / 60);
@@ -83,6 +125,7 @@ const formatSecondsToDuration = (totalSeconds = 0) => {
   return `${hDisplay}:${mDisplay}:${sDisplay}`;
 };
 
+// --- 4. MAIN COMPONENT ---
 const WorkDaySession = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
@@ -134,6 +177,8 @@ const WorkDaySession = () => {
 
   /* ---------------- Derived State ---------------- */
   const activeWorkSession = sessionData?.activeSession;
+  const isMobileActive = !!sessionData?.isMobileActive;
+
   const isPreviousDay =
     activeWorkSession?.date &&
     moment(activeWorkSession.date).format("YYYY-MM-DD") !==
@@ -156,7 +201,6 @@ const WorkDaySession = () => {
       const statusCode = err.statusCode || err.response?.status;
       const messageCode = err.response?.data?.messageCode;
 
-      // Only show redirect modal for 403 (Forbidden) related to expired/correction sessions
       if (
         isPreviousDay &&
         messageCode === "SESSION_CORRECTION_REQUIRED" &&
@@ -165,7 +209,6 @@ const WorkDaySession = () => {
         setDynamicErrorMsg(msg);
         setShowRedirectModal(true);
       } else {
-        // Show default toast for any other errors
         toast.error(msg);
       }
     },
@@ -221,6 +264,7 @@ const WorkDaySession = () => {
     });
 
   const handleCheckOut = () => {
+    if (isMobileActive) return;
     if (!activeWorkSession) return toast.error("No active session");
     endWorkDay({
       workDaySessionId: activeWorkSession.workDaySessionId,
@@ -229,6 +273,7 @@ const WorkDaySession = () => {
   };
 
   const handleStartBreak = () => {
+    if (isMobileActive) return;
     if (!activeWorkSession) return toast.error("Work day not started");
     startBreak({
       workDaySessionId: activeWorkSession.workDaySessionId,
@@ -238,6 +283,7 @@ const WorkDaySession = () => {
   };
 
   const handleEndBreak = () => {
+    if (isMobileActive) return;
     if (!activeBreak) return toast.error("No active break");
     endBreak({
       workBreakSessionId: activeBreak.workBreakSessionId,
@@ -265,6 +311,9 @@ const WorkDaySession = () => {
             </span>
           ) : (
             "Start Day"
+          )}
+          {isMobileActive && (
+            <Smartphone className="ml-2 h-3 w-3 animate-pulse" />
           )}
         </Button>
       </PopoverTrigger>
@@ -341,6 +390,7 @@ const WorkDaySession = () => {
                 icon={LogIn}
                 onClick={handleCheckIn}
                 className="w-full bg-slate-900"
+                disabled={isMobileActive}
               >
                 Check In
               </ActionButton>
@@ -348,41 +398,60 @@ const WorkDaySession = () => {
 
             {isDayStarted && !isOnBreak && (
               <div className="grid grid-cols-2 gap-2">
-                <ActionButton
-                  isLoading={startingBreak}
-                  isGlobalLoading={isGlobalLoading}
-                  icon={Coffee}
-                  onClick={handleStartBreak}
-                  variant="outline"
-                >
-                  Break
-                </ActionButton>
+                <MobileGuard isMobileActive={isMobileActive}>
+                  <ActionButton
+                    isLoading={startingBreak}
+                    isGlobalLoading={isGlobalLoading}
+                    icon={Coffee}
+                    onClick={handleStartBreak}
+                    variant="outline"
+                    className="w-full"
+                    disabled={isMobileActive}
+                  >
+                    Break
+                  </ActionButton>
+                </MobileGuard>
 
-                <ActionButton
-                  isLoading={endingDay}
-                  isGlobalLoading={isGlobalLoading}
-                  icon={LogOut}
-                  onClick={handleCheckOut}
-                  variant="destructive"
-                >
-                  Check Out
-                </ActionButton>
+                <MobileGuard isMobileActive={isMobileActive}>
+                  <ActionButton
+                    isLoading={endingDay}
+                    isGlobalLoading={isGlobalLoading}
+                    icon={LogOut}
+                    onClick={handleCheckOut}
+                    variant="destructive"
+                    className="w-full"
+                    disabled={isMobileActive}
+                  >
+                    Check Out
+                  </ActionButton>
+                </MobileGuard>
               </div>
             )}
 
             {isDayStarted && isOnBreak && (
-              <ActionButton
-                isLoading={endingBreak}
-                isGlobalLoading={isGlobalLoading}
-                icon={Play}
-                onClick={handleEndBreak}
-                variant="secondary"
-                className="w-full bg-amber-100"
-              >
-                End Break
-              </ActionButton>
+              <MobileGuard isMobileActive={isMobileActive}>
+                <ActionButton
+                  isLoading={endingBreak}
+                  isGlobalLoading={isGlobalLoading}
+                  icon={Play}
+                  onClick={handleEndBreak}
+                  variant="secondary"
+                  className="w-full bg-amber-100"
+                  disabled={isMobileActive}
+                >
+                  End Break
+                </ActionButton>
+              </MobileGuard>
             )}
           </div>
+          {!isMobileActive && (
+            <p className="text-xs text-amber-700 bg-amber-50 rounded-md px-2 py-1.5 flex items-center justify-center gap-1.5 mt-2 border border-amber-100">
+              <Info size={14} className="shrink-0 text-amber-500" />
+              <span>
+                For live tracking, please start your day from the mobile app.
+              </span>
+            </p>
+          )}
         </div>
       </PopoverContent>
 
