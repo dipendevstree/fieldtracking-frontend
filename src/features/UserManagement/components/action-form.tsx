@@ -151,6 +151,8 @@ export function UserActionForm({
       shiftId: currentRow?.shiftId ?? "",
       // include the hide flag so the resolver can see it and validate conditionally
       hideReportingToField: hideReportingToField,
+      // include the territory filter flag for conditional validation
+      allowTerritoryFilter: allowTerritoryFilter,
     },
   });
 
@@ -185,6 +187,11 @@ export function UserActionForm({
         setHideReportingToField(false);
         setValue("hideReportingToField", false, { shouldValidate: true });
       }
+
+      // Set the territory filter flag for validation
+      setValue("allowTerritoryFilter", allowTerritoryFilter, {
+        shouldValidate: true,
+      });
 
       const formattedPhone = formatPhoneToE164(
         currentRow.phoneNumber || "",
@@ -246,6 +253,7 @@ export function UserActionForm({
         reportingToIds: processedReportingToIds,
         shiftId: currentRow.shiftId ?? "",
         hideReportingToField: hideField,
+        allowTerritoryFilter: allowTerritoryFilter,
       });
     }
   }, [currentRow, open, reset]);
@@ -564,7 +572,12 @@ export function UserActionForm({
               {allowTerritoryFilter && (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="territoryId">Territory</Label>
+                    <Label htmlFor="territoryId">
+                      Territory
+                      {allowTerritoryFilter && (
+                        <span className="text-red-500">*</span>
+                      )}
+                    </Label>
                     <Controller
                       name="territoryId"
                       control={control}
@@ -597,7 +610,9 @@ export function UserActionForm({
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="shiftId">Shift</Label>
+                    <Label htmlFor="shiftId">
+                      Shift <span className="text-red-500">*</span>
+                    </Label>
                     <Controller
                       name="shiftId"
                       control={control}
@@ -634,7 +649,9 @@ export function UserActionForm({
               {!allowTerritoryFilter && (
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="shiftId">Shift</Label>
+                    <Label htmlFor="shiftId">
+                      Shift <span className="text-red-500">*</span>
+                    </Label>
                     <Controller
                       name="shiftId"
                       control={control}
