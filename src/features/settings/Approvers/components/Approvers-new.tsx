@@ -221,8 +221,8 @@ export function ApproverFormNew() {
     !isTerritoriesLoading &&
     categories.length > 0 &&
     dynamicTiers.length > 0 &&
-    // If territory logic is enabled, we need territories loaded. Territory selection happens via useEffect
-    (!allowAddUsersBasedOnTerritories || allTerritories.length > 0);
+    // If territory logic is enabled, we MUST have a selected territory before populating
+    (!allowAddUsersBasedOnTerritories || !!selectedTerritory);
 
   // Sync Default Territory Effect
   // This fixes the issue where data loads late and the form stays on empty territory
@@ -236,10 +236,6 @@ export function ApproverFormNew() {
         // Reset population flag so the main effect runs again with the correct territory
         hasPopulatedForm.current = false;
       }
-    } else if (!allowAddUsersBasedOnTerritories) {
-      // If territory mode is disabled, ensure form is ready to render even with empty data
-      form.setValue("territory", "");
-      hasPopulatedForm.current = false;
     }
   }, [allTerritories, allowAddUsersBasedOnTerritories, form]);
 
