@@ -6,14 +6,6 @@ import CustomTooltip from "@/components/shared/custom-tooltip";
 
 export const leaveEncashmentApprovalHistoryColumns: ColumnDef<any>[] = [
   {
-    accessorKey: "leaveEncashment.leaveType.name",
-    header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title="Leave Type" />
-    ),
-    enableHiding: false,
-    enableSorting: false,
-  },
-  {
     accessorKey: "userName",
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="User Name" />

@@ -6,6 +6,8 @@ type DialogType =
   | "cancel"
   | "leave-encashment"
   | "view-leave-encashment"
+  | "edit-leave-encashment"
+  | "cancel-leave-encashment"
   | null;
 
 interface LeaveRequestStoreState {

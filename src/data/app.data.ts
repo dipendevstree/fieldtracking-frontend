@@ -124,3 +124,11 @@ export enum EncashmentFrequency {
   Quarterly = "Quarterly",
   Yearly = "Yearly",
 }
+
+export enum LEAVE_ENCASHMENT_STATUS {
+  PENDING = "pending",
+  APPROVED = "approved",
+  REJECTED = "rejected",
+  CANCEL = "cancel",
+  PAID = "paid",
+}
