@@ -10,7 +10,7 @@ import {
 import { Link, useNavigate } from "@tanstack/react-router";
 import {
   useGetNotifications,
-  useGetUnreadCount,
+  // useGetUnreadCount,
 } from "../services/notifications.hook";
 import { useState } from "react";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
@@ -33,7 +33,7 @@ export function NotificationList() {
     sort: "desc",
   });
   const notifications = useGetNotifications(pagination);
-  const { data: unreadCount } = useGetUnreadCount(pagination);
+  // const { data: unreadCount } = useGetUnreadCount(pagination);
   const notificationData = notifications.allData ?? [];
   const { newNotification: _newNotification } = useFcm((notification) => {
     if (notification && window.document.visibilityState === "visible") {
@@ -102,7 +102,8 @@ export function NotificationList() {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-100" align="end">
         <DropdownMenuLabel className="flex justify-between mb-2 border-b">
-          Notifications ({unreadCount})
+          {/* Notifications ({unreadCount}) */}
+          Notifications
           <Link to={"/notifications"} onClick={() => setOpen(false)}>
             <span>View All</span>
           </Link>

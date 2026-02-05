@@ -23,6 +23,9 @@ export const formSchema = z.object({
   // Accept null/undefined as well just in case
   hideReportingToField: z.boolean().nullable().optional(),
 
+  // Flag to indicate if territory filtering is enabled for the organization
+  allowTerritoryFilter: z.boolean().nullable().optional(),
+
   permissions: z.array(z.string()).optional(),
 
   jobTitle: z.string().optional(),
@@ -34,7 +37,7 @@ export const formSchema = z.object({
     })
     .min(1, "Department is required"),
   isWebUser: z.boolean().optional(),
-  shiftId: z.string().optional(),
+  shiftId: z.string().min(1, "Shift is required"),
 });
 
 // Conditionally require the reporting fields when hideReportingToField is false/undefined
@@ -42,15 +45,17 @@ export const formSchema = z.object({
 // - When `hideReportingToField` is true (or explicitly set), reporting fields are optional.
 // - Otherwise (visible/default) reporting fields are required.
 
-// Schema variant when reporting fields are hidden/irrelevant
+// Schema variant when reporting fields are hidden/irrelevant and territory is optional
 export const formSchemaHidden = formSchema.extend({
   hideReportingToField: z.literal(true).nullable().optional(),
   // keep reporting fields optional/null when hidden
   reportingToRoleId: z.string().nullable().optional(),
   reportingToIds: z.array(z.string()).nullable().optional(),
+  // territory is optional when filter is not enabled
+  territoryId: z.string().optional(),
 });
 
-// Schema variant when reporting fields should be present
+// Schema variant when reporting fields should be present and territory is optional
 export const formSchemaShown = formSchema.extend({
   // hideReportingToField can be false/undefined/null in this branch
   hideReportingToField: z
@@ -66,12 +71,42 @@ export const formSchemaShown = formSchema.extend({
     (v) => (v === null ? undefined : v),
     z.array(z.string()).min(1, "Reporting to is required"),
   ),
+  // territory is optional when filter is not enabled
+  territoryId: z.string().optional(),
 });
 
-// Union of the two variants; this avoids using superRefine
+// Schema variant when reporting fields are hidden but territory is required
+export const formSchemaHiddenTerritoryRequired = formSchema.extend({
+  hideReportingToField: z.literal(true).nullable().optional(),
+  reportingToRoleId: z.string().nullable().optional(),
+  reportingToIds: z.array(z.string()).nullable().optional(),
+  allowTerritoryFilter: z.literal(true).nullable().optional(),
+  territoryId: z.string().min(1, "Territory is required"),
+});
+
+// Schema variant when reporting fields are shown and territory is required
+export const formSchemaShownTerritoryRequired = formSchema.extend({
+  hideReportingToField: z
+    .union([z.literal(false), z.undefined(), z.null()])
+    .optional(),
+  reportingToRoleId: z.preprocess(
+    (v) => (v === null ? undefined : v),
+    z.string().min(1, "Reporting To Role is required"),
+  ),
+  reportingToIds: z.preprocess(
+    (v) => (v === null ? undefined : v),
+    z.array(z.string()).min(1, "Reporting to is required"),
+  ),
+  allowTerritoryFilter: z.literal(true).nullable().optional(),
+  territoryId: z.string().min(1, "Territory is required"),
+});
+
+// Union of all variants to handle all combinations
 export const formSchemaConditional = z.union([
   formSchemaHidden,
   formSchemaShown,
+  formSchemaHiddenTerritoryRequired,
+  formSchemaShownTerritoryRequired,
 ]);
 
 export type TFormSchema = z.infer<typeof formSchema>;
