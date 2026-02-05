@@ -1,23 +1,29 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo } from "react";
 import {
   useReactTable,
   getCoreRowModel,
   flexRender,
   getPaginationRowModel,
   PaginationState,
-} from '@tanstack/react-table';
-import { Button } from '@/components/ui/button';
+} from "@tanstack/react-table";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { ColumnDef } from '@tanstack/react-table'
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
+} from "@/components/ui/select";
+import { ColumnDef } from "@tanstack/react-table";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
@@ -25,10 +31,22 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { ChevronsRight, ChevronLeft, ChevronRight, Loader2, ChevronsLeft } from 'lucide-react';
-import { useSalesReps, useIndustries, useCustomerReports, useReportGeneration } from '../hooks/use-reports-api';
-import { reportsAPI, type ReportFilter } from '../services/reports-api';
+} from "@/components/ui/table";
+import {
+  ChevronsRight,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  ChevronsLeft,
+} from "lucide-react";
+import { TableLoader } from "@/components/shared/custom-table-loader";
+import {
+  useSalesReps,
+  useIndustries,
+  useCustomerReports,
+  useReportGeneration,
+} from "../hooks/use-reports-api";
+import { reportsAPI, type ReportFilter } from "../services/reports-api";
 
 // Types for the data
 interface DirectoryData {
@@ -56,7 +74,7 @@ const directoryData: DirectoryData[] = [
     newCustomers: 0,
     topIndustries: "60%",
     status: "Pending",
-    timeTracking: "50%"
+    timeTracking: "50%",
   },
   {
     id: 2,
@@ -65,7 +83,7 @@ const directoryData: DirectoryData[] = [
     newCustomers: 3,
     topIndustries: "80%",
     status: "Pending",
-    timeTracking: "80%"
+    timeTracking: "80%",
   },
   {
     id: 3,
@@ -74,7 +92,7 @@ const directoryData: DirectoryData[] = [
     newCustomers: 2,
     topIndustries: "80%",
     status: "Complete",
-    timeTracking: "80%"
+    timeTracking: "80%",
   },
   {
     id: 4,
@@ -83,7 +101,7 @@ const directoryData: DirectoryData[] = [
     newCustomers: 1,
     topIndustries: "80%",
     status: "Pending",
-    timeTracking: "80%"
+    timeTracking: "80%",
   },
   {
     id: 5,
@@ -92,7 +110,7 @@ const directoryData: DirectoryData[] = [
     newCustomers: 8,
     topIndustries: "80%",
     status: "Complete",
-    timeTracking: "80%"
+    timeTracking: "80%",
   },
   {
     id: 6,
@@ -101,7 +119,7 @@ const directoryData: DirectoryData[] = [
     newCustomers: 4,
     topIndustries: "80%",
     status: "Pending",
-    timeTracking: "80%"
+    timeTracking: "80%",
   },
   {
     id: 7,
@@ -110,26 +128,26 @@ const directoryData: DirectoryData[] = [
     newCustomers: 2,
     topIndustries: "80%",
     status: "Complete",
-    timeTracking: "80%"
-  }
+    timeTracking: "80%",
+  },
 ];
 
 const activityData: ActivityData[] = [
   {
     customerDirectory: "Kristin Watson",
     visitFrequency: "Wade Warren",
-    territoryWise: "Gianna Russell"
+    territoryWise: "Gianna Russell",
   },
   {
     customerDirectory: "Floyd Miles",
     visitFrequency: "Albert Flores",
-    territoryWise: "Ronald Richards"
+    territoryWise: "Ronald Richards",
   },
   {
     customerDirectory: "Eleanor Pena",
     visitFrequency: "Courtney Henry",
-    territoryWise: "Jerome Bell"
-  }
+    territoryWise: "Jerome Bell",
+  },
 ];
 
 // Define filters interface at component level
@@ -156,97 +174,167 @@ export default function CustomerReports() {
   });
 
   // API hooks
-  const { salesReps = [], loading: salesRepsLoading, error: salesRepsError } = useSalesReps();
-  const { industries = [], loading: industriesLoading, error: industriesError } = useIndustries();
-  const { generateReport, generating, error: generationError } = useReportGeneration();
+  const {
+    salesReps = [],
+    loading: salesRepsLoading,
+    error: salesRepsError,
+  } = useSalesReps();
+  const {
+    industries = [],
+    loading: industriesLoading,
+    error: industriesError,
+  } = useIndustries();
+  const {
+    generateReport,
+    generating,
+    error: generationError,
+  } = useReportGeneration();
 
   // Get static options
   const customerStatusOptions = reportsAPI.getCustomerStatusOptions();
   const reportTypeOptions = reportsAPI.getReportTypeOptions();
 
   // Convert filters to API format - memoized to prevent infinite re-renders
-  const apiFilters: ReportFilter = useMemo(() => ({
-    salesRep: filters.salesRep || undefined,
-    industry: filters.industry || undefined,
-    status: filters.customerStatus || undefined,
-  }), [filters.salesRep, filters.industry, filters.customerStatus]);
+  const apiFilters: ReportFilter = useMemo(
+    () => ({
+      salesRep: filters.salesRep || undefined,
+      industry: filters.industry || undefined,
+      status: filters.customerStatus || undefined,
+    }),
+    [filters.salesRep, filters.industry, filters.customerStatus],
+  );
 
-  const { reports: customerReports = [], loading: reportsLoading, error: reportsError, refetch } = useCustomerReports(apiFilters);
+  const {
+    reports: customerReports = [],
+    loading: reportsLoading,
+    error: reportsError,
+    refetch,
+  } = useCustomerReports(apiFilters);
 
   // Directory table columns
-  const directoryColumns = useMemo<ColumnDef<DirectoryData>[]>(() => [
-    {
-      accessorKey: 'name',
-      header: () => <span className="font-medium text-gray-600">Report Name</span>,
-      cell: ({ row }) => <span className="text-sm">{row.getValue('name')}</span>,
-    },
-    {
-      accessorKey: 'totalCustomers',
-      header: () => <span className="font-medium text-gray-600">Total Customers</span>,
-      cell: ({ row }) => <span className="text-sm">{row.getValue('totalCustomers')}</span>,
-    },
-    {
-      accessorKey: 'newCustomers',
-      header: () => <span className="font-medium text-gray-600">New Customers</span>,
-      cell: ({ row }) => <span className="text-sm">{row.getValue('newCustomers')}</span>,
-    },
-    {
-      accessorKey: 'topIndustries',
-      header: () => <span className="font-medium text-gray-600">Top Industries</span>,
-      cell: ({ row }) => <span className="text-sm">{row.getValue('topIndustries')}</span>,
-    },
-    {
-      accessorKey: 'status',
-      header: () => <span className="font-medium text-gray-600">Status</span>,
-      cell: ({ row }) => {
-        const status = row.getValue('status') as string;
-        return (
-          <Badge 
-            variant={status === 'Complete' ? 'default' : 'destructive'}
-            className={status === 'Complete' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'}
-          >
-            {status}
-          </Badge>
-        );
+  const directoryColumns = useMemo<ColumnDef<DirectoryData>[]>(
+    () => [
+      {
+        accessorKey: "name",
+        header: () => (
+          <span className="font-medium text-gray-600">Report Name</span>
+        ),
+        cell: ({ row }) => (
+          <span className="text-sm">{row.getValue("name")}</span>
+        ),
       },
-    },
-    {
-      accessorKey: 'timeTracking',
-      header: () => <span className="font-medium text-gray-600">Time Tracking Report</span>,
-      cell: ({ row }) => <span className="text-sm">{row.getValue('timeTracking')}</span>,
-    },
-  ], []);
+      {
+        accessorKey: "totalCustomers",
+        header: () => (
+          <span className="font-medium text-gray-600">Total Customers</span>
+        ),
+        cell: ({ row }) => (
+          <span className="text-sm">{row.getValue("totalCustomers")}</span>
+        ),
+      },
+      {
+        accessorKey: "newCustomers",
+        header: () => (
+          <span className="font-medium text-gray-600">New Customers</span>
+        ),
+        cell: ({ row }) => (
+          <span className="text-sm">{row.getValue("newCustomers")}</span>
+        ),
+      },
+      {
+        accessorKey: "topIndustries",
+        header: () => (
+          <span className="font-medium text-gray-600">Top Industries</span>
+        ),
+        cell: ({ row }) => (
+          <span className="text-sm">{row.getValue("topIndustries")}</span>
+        ),
+      },
+      {
+        accessorKey: "status",
+        header: () => <span className="font-medium text-gray-600">Status</span>,
+        cell: ({ row }) => {
+          const status = row.getValue("status") as string;
+          return (
+            <Badge
+              variant={status === "Complete" ? "default" : "destructive"}
+              className={
+                status === "Complete"
+                  ? "bg-green-500 hover:bg-green-600"
+                  : "bg-red-500 hover:bg-red-600"
+              }
+            >
+              {status}
+            </Badge>
+          );
+        },
+      },
+      {
+        accessorKey: "timeTracking",
+        header: () => (
+          <span className="font-medium text-gray-600">
+            Time Tracking Report
+          </span>
+        ),
+        cell: ({ row }) => (
+          <span className="text-sm">{row.getValue("timeTracking")}</span>
+        ),
+      },
+    ],
+    [],
+  );
 
   // Activity table columns
-  const activityColumns = useMemo<ColumnDef<ActivityData>[]>(() => [
-    {
-      accessorKey: 'customerDirectory',
-      header: () => <span className="font-medium text-gray-600">Customer Directory</span>,
-      cell: ({ row }) => <span className="text-sm">{row.getValue('customerDirectory')}</span>,
-    },
-    {
-      accessorKey: 'visitFrequency',
-      header: () => <span className="font-medium text-gray-600">Visit Frequency Analysis</span>,
-      cell: ({ row }) => <span className="text-sm">{row.getValue('visitFrequency')}</span>,
-    },
-    {
-      accessorKey: 'territoryWise',
-      header: () => <span className="font-medium text-gray-600">Territory-wise Customers Report</span>,
-      cell: ({ row }) => <span className="text-sm">{row.getValue('territoryWise')}</span>,
-    },
-  ], []);
+  const activityColumns = useMemo<ColumnDef<ActivityData>[]>(
+    () => [
+      {
+        accessorKey: "customerDirectory",
+        header: () => (
+          <span className="font-medium text-gray-600">Customer Directory</span>
+        ),
+        cell: ({ row }) => (
+          <span className="text-sm">{row.getValue("customerDirectory")}</span>
+        ),
+      },
+      {
+        accessorKey: "visitFrequency",
+        header: () => (
+          <span className="font-medium text-gray-600">
+            Visit Frequency Analysis
+          </span>
+        ),
+        cell: ({ row }) => (
+          <span className="text-sm">{row.getValue("visitFrequency")}</span>
+        ),
+      },
+      {
+        accessorKey: "territoryWise",
+        header: () => (
+          <span className="font-medium text-gray-600">
+            Territory-wise Customers Report
+          </span>
+        ),
+        cell: ({ row }) => (
+          <span className="text-sm">{row.getValue("territoryWise")}</span>
+        ),
+      },
+    ],
+    [],
+  );
 
   // Memoize the table data to prevent unnecessary re-renders
   const tableData = useMemo(() => {
-    return customerReports.length > 0 ? customerReports.map(report => ({
-      id: report.id,
-      name: report.name,
-      totalCustomers: report.totalCustomers,
-      newCustomers: report.newCustomers,
-      topIndustries: report.topIndustries,
-      status: report.status,
-      timeTracking: report.timeTracking,
-    })) : directoryData;
+    return customerReports.length > 0
+      ? customerReports.map((report) => ({
+          id: report.id,
+          name: report.name,
+          totalCustomers: report.totalCustomers,
+          newCustomers: report.newCustomers,
+          topIndustries: report.topIndustries,
+          status: report.status,
+          timeTracking: report.timeTracking,
+        }))
+      : directoryData;
   }, [customerReports]);
 
   const directoryTable = useReactTable<DirectoryData>({
@@ -285,13 +373,13 @@ export default function CustomerReports() {
 
   const handleApply = async () => {
     try {
-      const result = await generateReport('customer-report', apiFilters);
+      const result = await generateReport("customer-report", apiFilters);
       if (result.success) {
-        console.log('Customer report generated:', result.reportId);
+        console.log("Customer report generated:", result.reportId);
         await refetch(apiFilters);
       }
     } catch (error) {
-      console.error('Error generating report:', error);
+      console.error("Error generating report:", error);
     }
   };
 
@@ -299,26 +387,37 @@ export default function CustomerReports() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Customer Reports</h1>
-        <p className="text-sm text-gray-500">Generate reports on field activities and location tracking</p>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          Customer Reports
+        </h1>
+        <p className="text-sm text-gray-500">
+          Generate reports on field activities and location tracking
+        </p>
       </div>
 
       {/* Filters */}
       <Card>
         <CardHeader>
           <CardTitle>Report Filters</CardTitle>
-          <CardDescription>Configure your customer report parameters</CardDescription>
+          <CardDescription>
+            Configure your customer report parameters
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="space-y-2">
               <Label htmlFor="report-type">Report Type</Label>
-              <Select value={filters.reportType} onValueChange={(value) => handleFilterChange({ reportType: value })}>
+              <Select
+                value={filters.reportType}
+                onValueChange={(value) =>
+                  handleFilterChange({ reportType: value })
+                }
+              >
                 <SelectTrigger className="h-10 w-full">
                   <SelectValue placeholder="Select Report Type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {reportTypeOptions.map(option => (
+                  {reportTypeOptions.map((option) => (
                     <SelectItem key={option.id} value={option.id}>
                       {option.name}
                     </SelectItem>
@@ -329,12 +428,17 @@ export default function CustomerReports() {
 
             <div className="space-y-2">
               <Label htmlFor="customer-status">Customer Status</Label>
-              <Select value={filters.customerStatus} onValueChange={(value) => handleFilterChange({ customerStatus: value })}>
+              <Select
+                value={filters.customerStatus}
+                onValueChange={(value) =>
+                  handleFilterChange({ customerStatus: value })
+                }
+              >
                 <SelectTrigger className="h-10 w-full">
                   <SelectValue placeholder="Select Customer Status" />
                 </SelectTrigger>
                 <SelectContent>
-                  {customerStatusOptions.map(option => (
+                  {customerStatusOptions.map((option) => (
                     <SelectItem key={option.id} value={option.id}>
                       {option.name}
                     </SelectItem>
@@ -345,9 +449,18 @@ export default function CustomerReports() {
 
             <div className="space-y-2">
               <Label htmlFor="sales-rep">Sales Rep</Label>
-              <Select value={filters.salesRep} onValueChange={(value) => handleFilterChange({ salesRep: value })}>
+              <Select
+                value={filters.salesRep}
+                onValueChange={(value) =>
+                  handleFilterChange({ salesRep: value })
+                }
+              >
                 <SelectTrigger className="h-10 w-full">
-                  <SelectValue placeholder={salesRepsLoading ? "Loading..." : "Select Sales Rep"} />
+                  <SelectValue
+                    placeholder={
+                      salesRepsLoading ? "Loading..." : "Select Sales Rep"
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {salesRepsError ? (
@@ -355,7 +468,7 @@ export default function CustomerReports() {
                       Error loading sales reps
                     </SelectItem>
                   ) : (
-                    salesReps.map(rep => (
+                    salesReps.map((rep) => (
                       <SelectItem key={rep.id} value={rep.id}>
                         {rep.name}
                       </SelectItem>
@@ -364,15 +477,26 @@ export default function CustomerReports() {
                 </SelectContent>
               </Select>
               {salesRepsError && (
-                <p className="text-xs text-red-500">Failed to load sales representatives</p>
+                <p className="text-xs text-red-500">
+                  Failed to load sales representatives
+                </p>
               )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="industry">Industry</Label>
-              <Select value={filters.industry} onValueChange={(value) => handleFilterChange({ industry: value })}>
+              <Select
+                value={filters.industry}
+                onValueChange={(value) =>
+                  handleFilterChange({ industry: value })
+                }
+              >
                 <SelectTrigger className="h-10 w-full">
-                  <SelectValue placeholder={industriesLoading ? "Loading..." : "Select Industry"} />
+                  <SelectValue
+                    placeholder={
+                      industriesLoading ? "Loading..." : "Select Industry"
+                    }
+                  />
                 </SelectTrigger>
                 <SelectContent>
                   {industriesError ? (
@@ -380,7 +504,7 @@ export default function CustomerReports() {
                       Error loading industries
                     </SelectItem>
                   ) : (
-                    industries.map(ind => (
+                    industries.map((ind) => (
                       <SelectItem key={ind.id} value={ind.id}>
                         {ind.name}
                       </SelectItem>
@@ -389,7 +513,9 @@ export default function CustomerReports() {
                 </SelectContent>
               </Select>
               {industriesError && (
-                <p className="text-xs text-red-500">Failed to load industries</p>
+                <p className="text-xs text-red-500">
+                  Failed to load industries
+                </p>
               )}
             </div>
           </div>
@@ -405,7 +531,7 @@ export default function CustomerReports() {
                   Generating...
                 </>
               ) : (
-                'Apply'
+                "Apply"
               )}
             </Button>
           </div>
@@ -435,8 +561,8 @@ export default function CustomerReports() {
                 <div className="text-center">
                   <p className="text-red-600 mb-2">Error loading reports</p>
                   <p className="text-sm text-gray-500">{reportsError}</p>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     onClick={() => refetch(apiFilters)}
                     className="mt-2"
                   >
@@ -450,14 +576,20 @@ export default function CustomerReports() {
                   <Table>
                     <TableHeader>
                       {directoryTable.getHeaderGroups().map((headerGroup) => (
-                        <TableRow key={headerGroup.id} className="border-b border-border">
+                        <TableRow
+                          key={headerGroup.id}
+                          className="border-b border-border"
+                        >
                           {headerGroup.headers.map((header) => (
-                            <TableHead key={header.id} className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                            <TableHead
+                              key={header.id}
+                              className="h-12 px-4 text-left align-middle font-medium text-muted-foreground"
+                            >
                               {header.isPlaceholder
                                 ? null
                                 : flexRender(
                                     header.column.columnDef.header,
-                                    header.getContext()
+                                    header.getContext(),
                                   )}
                             </TableHead>
                           ))}
@@ -465,7 +597,9 @@ export default function CustomerReports() {
                       ))}
                     </TableHeader>
                     <TableBody>
-                      {directoryTable.getRowModel().rows?.length ? (
+                      {reportsLoading ? (
+                        <TableLoader columnsLength={directoryColumns.length} />
+                      ) : directoryTable.getRowModel().rows?.length ? (
                         directoryTable.getRowModel().rows.map((row) => (
                           <TableRow
                             key={row.id}
@@ -473,15 +607,24 @@ export default function CustomerReports() {
                             data-state={row.getIsSelected() && "selected"}
                           >
                             {row.getVisibleCells().map((cell) => (
-                              <TableCell key={cell.id} className="p-4 align-middle">
-                                {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                              <TableCell
+                                key={cell.id}
+                                className="p-4 align-middle"
+                              >
+                                {flexRender(
+                                  cell.column.columnDef.cell,
+                                  cell.getContext(),
+                                )}
                               </TableCell>
                             ))}
                           </TableRow>
                         ))
                       ) : (
                         <TableRow>
-                          <TableCell colSpan={directoryColumns.length} className="h-24 text-center">
+                          <TableCell
+                            colSpan={directoryColumns.length}
+                            className="h-24 text-center"
+                          >
                             No results.
                           </TableCell>
                         </TableRow>
@@ -489,13 +632,13 @@ export default function CustomerReports() {
                     </TableBody>
                   </Table>
                 </div>
-                
+
                 {/* Pagination Controls */}
                 <div className="flex items-center justify-between space-x-2 py-4">
                   <div className="flex-1 text-sm text-muted-foreground">
                     {tableData.length} of {tableData.length} row(s) total.
                   </div>
-                  
+
                   <div className="flex items-center space-x-6 lg:space-x-8">
                     <div className="flex items-center space-x-2">
                       <p className="text-sm font-medium">Rows per page</p>
@@ -506,7 +649,11 @@ export default function CustomerReports() {
                         }}
                       >
                         <SelectTrigger className="h-8 w-[70px]">
-                          <SelectValue placeholder={directoryTable.getState().pagination.pageSize} />
+                          <SelectValue
+                            placeholder={
+                              directoryTable.getState().pagination.pageSize
+                            }
+                          />
                         </SelectTrigger>
                         <SelectContent side="top">
                           {[10, 20, 30, 40, 50].map((pageSize) => (
@@ -517,12 +664,12 @@ export default function CustomerReports() {
                         </SelectContent>
                       </Select>
                     </div>
-                    
+
                     <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-                      Page {directoryTable.getState().pagination.pageIndex + 1} of{' '}
-                      {directoryTable.getPageCount()}
+                      Page {directoryTable.getState().pagination.pageIndex + 1}{" "}
+                      of {directoryTable.getPageCount()}
                     </div>
-                    
+
                     <div className="flex items-center space-x-2">
                       <Button
                         variant="outline"
@@ -540,7 +687,7 @@ export default function CustomerReports() {
                         disabled={!directoryTable.getCanPreviousPage()}
                       >
                         <span className="sr-only">Go to previous page</span>
-                        <ChevronLeft className="h-4 w-4" /> 
+                        <ChevronLeft className="h-4 w-4" />
                       </Button>
                       <Button
                         variant="outline"
@@ -554,7 +701,11 @@ export default function CustomerReports() {
                       <Button
                         variant="outline"
                         className="hidden h-8 w-8 p-0 lg:flex"
-                        onClick={() => directoryTable.setPageIndex(directoryTable.getPageCount() - 1)}
+                        onClick={() =>
+                          directoryTable.setPageIndex(
+                            directoryTable.getPageCount() - 1,
+                          )
+                        }
                         disabled={!directoryTable.getCanNextPage()}
                       >
                         <span className="sr-only">Go to last page</span>
@@ -581,14 +732,20 @@ export default function CustomerReports() {
               <Table>
                 <TableHeader>
                   {activityTable.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id} className="border-b border-border">
+                    <TableRow
+                      key={headerGroup.id}
+                      className="border-b border-border"
+                    >
                       {headerGroup.headers.map((header) => (
-                        <TableHead key={header.id} className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
+                        <TableHead
+                          key={header.id}
+                          className="h-12 px-4 text-left align-middle font-medium text-muted-foreground"
+                        >
                           {header.isPlaceholder
                             ? null
                             : flexRender(
                                 header.column.columnDef.header,
-                                header.getContext()
+                                header.getContext(),
                               )}
                         </TableHead>
                       ))}
@@ -596,7 +753,9 @@ export default function CustomerReports() {
                   ))}
                 </TableHeader>
                 <TableBody>
-                  {activityTable.getRowModel().rows?.length ? (
+                  {reportsLoading ? (
+                    <TableLoader columnsLength={activityColumns.length} />
+                  ) : activityTable.getRowModel().rows?.length ? (
                     activityTable.getRowModel().rows.map((row) => (
                       <TableRow
                         key={row.id}
@@ -605,14 +764,20 @@ export default function CustomerReports() {
                       >
                         {row.getVisibleCells().map((cell) => (
                           <TableCell key={cell.id} className="p-4 align-middle">
-                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext(),
+                            )}
                           </TableCell>
                         ))}
                       </TableRow>
                     ))
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={activityColumns.length} className="h-24 text-center">
+                      <TableCell
+                        colSpan={activityColumns.length}
+                        className="h-24 text-center"
+                      >
                         No results.
                       </TableCell>
                     </TableRow>
