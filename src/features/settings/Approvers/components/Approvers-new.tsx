@@ -47,7 +47,7 @@ const levelSchema = z.object({
     z.string(),
     z.object({
       tiers: z.array(tierSchema),
-    })
+    }),
   ),
   // Added for tracking backend ID for easier updates/deletions
   levelId: z.string().optional(),
@@ -176,7 +176,7 @@ export function ApproverFormNew() {
 
   const categories = useMemo(
     () => (expenseCategoriesData ?? []).map((c: any) => c.categoryName),
-    [expenseCategoriesData]
+    [expenseCategoriesData],
   );
 
   const territoryOptions = useSelectOptions<any>({
@@ -209,7 +209,7 @@ export function ApproverFormNew() {
   useDirtyTracker(isFormDirty);
 
   const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
-    form.formState.isDirty
+    form.formState.isDirty,
   );
 
   // Calculate strict data readiness
@@ -221,8 +221,8 @@ export function ApproverFormNew() {
     !isTerritoriesLoading &&
     categories.length > 0 &&
     dynamicTiers.length > 0 &&
-    // If territory logic is enabled, we MUST have a selected territory before populating
-    (!allowAddUsersBasedOnTerritories || !!selectedTerritory);
+    // If territory logic is enabled, we need territories loaded. Territory selection happens via useEffect
+    (!allowAddUsersBasedOnTerritories || allTerritories.length > 0);
 
   // Sync Default Territory Effect
   // This fixes the issue where data loads late and the form stays on empty territory
@@ -236,6 +236,10 @@ export function ApproverFormNew() {
         // Reset population flag so the main effect runs again with the correct territory
         hasPopulatedForm.current = false;
       }
+    } else if (!allowAddUsersBasedOnTerritories) {
+      // If territory mode is disabled, ensure form is ready to render even with empty data
+      form.setValue("territory", "");
+      hasPopulatedForm.current = false;
     }
   }, [allTerritories, allowAddUsersBasedOnTerritories, form]);
 
@@ -252,11 +256,11 @@ export function ApproverFormNew() {
   const findCategoryNameById = useCallback(
     (categoryId: string) => {
       const category = expenseCategoriesData?.find(
-        (cat: any) => cat.expensesCategoryId === categoryId
+        (cat: any) => cat.expensesCategoryId === categoryId,
       );
       return category?.categoryName;
     },
-    [expenseCategoriesData]
+    [expenseCategoriesData],
   );
 
   // Helper function to find expensesLevelId by data
@@ -266,7 +270,7 @@ export function ApproverFormNew() {
       categoryId: string,
       tierKey: string,
       apiData: any,
-      territoryId: string | undefined
+      territoryId: string | undefined,
     ) => {
       const levelData = apiData[userId];
       if (!levelData) return null;
@@ -275,11 +279,11 @@ export function ApproverFormNew() {
         (item: any) =>
           item.expensesCategoryId === categoryId &&
           item.tierkey === tierKey &&
-          (territoryId ? item.territoryId === territoryId : !item.territoryId)
+          (territoryId ? item.territoryId === territoryId : !item.territoryId),
       );
       return item?.id || null;
     },
-    []
+    [],
   );
 
   // -------- Transform API data to form structure --------
@@ -288,7 +292,7 @@ export function ApproverFormNew() {
       apiData: any,
       categories: string[],
       currentTerritory: string | undefined,
-      availableTiers: { key: string; label: string }[]
+      availableTiers: { key: string; label: string }[],
     ): any => {
       const levelsMap = new Map<number, any>();
 
@@ -298,7 +302,7 @@ export function ApproverFormNew() {
         filteredApiData[userId] = levelData.filter((item: any) =>
           currentTerritory
             ? item.territoryId === currentTerritory
-            : !item.territoryId
+            : !item.territoryId,
         );
       });
 
@@ -331,7 +335,7 @@ export function ApproverFormNew() {
 
               // Find the index in our sorted array matching the API tierkey
               const tierIndex = availableTiers.findIndex(
-                (t) => t.key === item.tierkey
+                (t) => t.key === item.tierkey,
               );
 
               if (tierIndex >= 0) {
@@ -342,7 +346,7 @@ export function ApproverFormNew() {
               }
             }
           });
-        }
+        },
       );
 
       // Fill missing categories with default values for each level
@@ -359,7 +363,7 @@ export function ApproverFormNew() {
       });
 
       const sortedLevels = Array.from(levelsMap.values()).sort(
-        (a, b) => a.levelNumber - b.levelNumber
+        (a, b) => a.levelNumber - b.levelNumber,
       );
 
       // Normalize level numbers strictly on load to avoid index gaps immediately
@@ -374,7 +378,7 @@ export function ApproverFormNew() {
         levels: normalizedLevels,
       };
     },
-    [expenseCategoriesData, findCategoryNameById]
+    [expenseCategoriesData, findCategoryNameById],
   );
 
   // Now strictly relies on isDataReady.
@@ -393,7 +397,7 @@ export function ApproverFormNew() {
         allApprovalsLevelList,
         categories,
         selectedTerritory || undefined,
-        dynamicTiers
+        dynamicTiers,
       );
       form.reset(transformedData);
       hasPopulatedForm.current = true;
@@ -415,7 +419,7 @@ export function ApproverFormNew() {
       categories: string[],
       prevLevels: FormData["levels"],
       availableUsers: { label: string; value: string }[],
-      availableTiers: { key: string; label: string }[]
+      availableTiers: { key: string; label: string }[],
     ): any => {
       const defaultUser =
         availableUsers.length > 0 ? availableUsers[0].value : "";
@@ -442,11 +446,11 @@ export function ApproverFormNew() {
                 }),
               },
             ];
-          })
+          }),
         ),
       };
     },
-    []
+    [],
   );
 
   // ⭐ All selected userIds from form state
@@ -460,7 +464,7 @@ export function ApproverFormNew() {
         return !selectedUserIds.includes(u.value);
       });
     },
-    [allUsersOptions, selectedUserIds]
+    [allUsersOptions, selectedUserIds],
   );
 
   // -------- Add Level --------
@@ -477,8 +481,8 @@ export function ApproverFormNew() {
         categories,
         prevLevels,
         availableUsersForNewLevel,
-        dynamicTiers
-      )
+        dynamicTiers,
+      ),
     );
     form.setValue("levels", form.getValues("levels"), { shouldDirty: true });
   };
@@ -500,7 +504,7 @@ export function ApproverFormNew() {
         acc[category.categoryName] = category.expensesCategoryId;
         return acc;
       },
-      {}
+      {},
     );
 
     const createList: any[] = [];
@@ -527,7 +531,7 @@ export function ApproverFormNew() {
               categoryId,
               tierKey,
               allApprovalsLevelList,
-              selectedTerritoryId
+              selectedTerritoryId,
             );
 
             const payload = {
@@ -562,7 +566,7 @@ export function ApproverFormNew() {
               createList.push(payload);
             }
           });
-        }
+        },
       );
     });
 
