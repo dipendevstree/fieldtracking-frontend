@@ -1,13 +1,12 @@
-
-import instance from '@/config/instance/instance';
-import { EnhancedError } from '@/types';
-import { extractErrorInfo } from '@/utils/error-response';
+import instance from "@/config/instance/instance";
+import { EnhancedError } from "@/types";
+import { extractErrorInfo } from "@/utils/error-response";
 import {
   UseMutationOptions,
   useMutation,
-  useQueryClient
-} from '@tanstack/react-query';
-import { toast } from 'sonner';
+  useQueryClient,
+} from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface PatchDataOptions<TData, TVariables> {
   url: string;
@@ -24,7 +23,7 @@ const usePutData = <TData = unknown, TVariables = unknown>({
   headers,
   mutationOptions,
   onSuccess,
-  onError
+  onError,
 }: PatchDataOptions<TData, TVariables>) => {
   const queryClient = useQueryClient();
 
@@ -36,7 +35,7 @@ const usePutData = <TData = unknown, TVariables = unknown>({
         return response.data as TData;
       }
 
-      const errorMessage = response?.message || 'Failed to update data';
+      const errorMessage = response?.message || "Failed to update data";
       const error = new Error(errorMessage);
 
       if (response?.statusCode === 400) {
@@ -45,7 +44,7 @@ const usePutData = <TData = unknown, TVariables = unknown>({
       if (response?.statusCode === 401) {
         throw Object.assign(error, {
           statusCode: 401,
-          message: 'Unauthorized'
+          message: "Unauthorized",
         });
       }
 
@@ -53,19 +52,22 @@ const usePutData = <TData = unknown, TVariables = unknown>({
     },
     onSuccess: (data: TData) => {
       refetchQueries.forEach((query) =>
-        queryClient.invalidateQueries({ queryKey: [query] })
+        queryClient.invalidateQueries({ queryKey: [query] }),
       );
       if (onSuccess) {
-        onSuccess(data)
+        onSuccess(data);
       }
-      toast.success('Data updated successfully');
+      toast.success("Data updated successfully", {
+        position: "top-right",
+        duration: 3000,
+      });
     },
     onError: (error: EnhancedError) => {
       const errorInfo = extractErrorInfo(error);
       // Display user-friendly toast notification
       toast.error(errorInfo.title, {
         description: errorInfo.description,
-        duration: errorInfo.duration
+        duration: errorInfo.duration,
       });
 
       // Call additional error handler if provided
@@ -73,7 +75,7 @@ const usePutData = <TData = unknown, TVariables = unknown>({
         onError(error);
       }
     },
-    ...mutationOptions
+    ...mutationOptions,
   });
 };
 
