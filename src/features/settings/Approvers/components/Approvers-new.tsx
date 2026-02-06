@@ -213,7 +213,6 @@ export function ApproverFormNew() {
   );
 
   // Calculate strict data readiness
-  // This ensures we don't try to transform data until we have columns, rows, and the filter (territory)
   const isDataReady =
     !isApprovalsLoading &&
     !isCategoriesLoading &&
@@ -221,8 +220,10 @@ export function ApproverFormNew() {
     !isTerritoriesLoading &&
     categories.length > 0 &&
     dynamicTiers.length > 0 &&
-    // If territory logic is enabled, we MUST have a selected territory before populating
-    (!allowAddUsersBasedOnTerritories || !!selectedTerritory);
+    (!allowAddUsersBasedOnTerritories ||
+      !!selectedTerritory ||
+      // If flag is on but no territories exist, consider data ready
+      (Array.isArray(allTerritories) && allTerritories.length === 0));
 
   // Sync Default Territory Effect
   // This fixes the issue where data loads late and the form stays on empty territory
