@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { MapPin, Loader2 } from "lucide-react";
+import { MapPin, Loader2, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { socket, socketForVisit } from "../../socket/socket";
 
@@ -33,7 +33,7 @@ const UserTrackingTimeline = ({
   setPath,
   setCurrentPosition,
   setMapCenter,
-  // onBack,
+  onBack,
 }: UserTrackingTimelineProps) => {
   const [selectedDate, setSelectedDate] = useState(
     new Date().toISOString().split("T")[0],
@@ -455,15 +455,15 @@ const UserTrackingTimeline = ({
 
   return (
     <div className="bg-gray-50 p-4 rounded-[4px]">
-      {/* <div className="mb-4">
+      <div className="mb-4 ">
         <button
           onClick={onBack}
-          className="text-sm text-teal-600 hover:underline flex items-center gap-1"
+          className="text-sm text-teal-600 hover:text-teal-700 flex items-center gap-1 cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to list
+          Back To List
         </button>
-      </div> */}
+      </div>
       <div className="[&_*]:overflow-visible [&_*]:max-w-full [&_*]:w-full">
         <GlobalFilterSection
           key={"calendar-view-filters"}

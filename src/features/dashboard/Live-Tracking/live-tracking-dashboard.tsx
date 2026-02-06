@@ -137,6 +137,19 @@ export default function Livetracking() {
     window.history.pushState({}, "", `?${newParams}`);
   };
 
+  const handleBackToList = () => {
+    if (socket) {
+      socket().emit("untrack_user", { selectedUserId });
+    }
+    setSelectedUserId("");
+    setPath([]);
+    setCurrentPosition(null);
+    updateMapCenterFromUserList(enhancedUserList);
+    const newParams = new URLSearchParams(window.location.search);
+    newParams.delete("userId");
+    window.history.pushState({}, "", `?${newParams}`);
+  };
+
   const updateMapCenterFromUserList = (userList: any[]) => {
     const validCoords = userList
       .map((item: any) => item.latLong)
@@ -338,6 +351,7 @@ export default function Livetracking() {
                   setPath={setPath}
                   setCurrentPosition={setCurrentPosition}
                   setMapCenter={setMapCenter}
+                  onBack={handleBackToList}
                 />
               ) : (
                 <>
