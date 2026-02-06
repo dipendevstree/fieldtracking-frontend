@@ -69,7 +69,7 @@ export function PendingLeaveRowActions({ row }: { row: any }) {
               </Button>
             </CustomTooltip>
           </PermissionGate>
-          <PermissionGate requiredPermission="my_leave" action="delete">
+          <PermissionGate requiredPermission="my_leave" action="edit">
             <CustomTooltip title="Cancel">
               <Button
                 variant="ghost"

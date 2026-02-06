@@ -1,5 +1,6 @@
 import API from "@/config/api/api";
 import useFetchData from "@/hooks/use-fetch-data";
+import usePatchData from "@/hooks/use-patch-data";
 import usePostData from "@/hooks/use-post-data";
 
 export const useGetAllLeaveRequest = (params: any, options?: any) => {
@@ -80,7 +81,22 @@ export const useGetAllLeaveBalanceHistory = (params: any, options?: any) => {
 export const useCreateLeaveEncashment = (onSuccess?: () => void) => {
   return usePostData({
     url: API.leaveEncashment.create,
-    refetchQueries: [],
+    refetchQueries: [API.leaveEncashmentApprovals.pendingList],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};
+
+export const useUpdateLeaveEncashment = (
+  id: string,
+  onSuccess?: () => void,
+) => {
+  return usePatchData({
+    url: `${API.leaveEncashment.update}/${id}`,
+    refetchQueries: [API.leaveEncashmentApprovals.pendingList],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();

@@ -318,6 +318,7 @@ const API = {
   },
   leaveEncashment: {
     create: "leaveEncashment/create",
+    update: "leaveEncashment/patch",
   },
   leaveEncashmentApprovals: {
     list: "leaveEncashmentApprovals/list",

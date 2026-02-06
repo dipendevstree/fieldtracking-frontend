@@ -42,9 +42,13 @@ interface Props {
     startDate: string;
     endDate: string;
   };
+  rulesData: any;
 }
 
-export default function MyLeaveRequest({ calendarQueryParams }: Props) {
+export default function MyLeaveRequest({
+  calendarQueryParams,
+  rulesData,
+}: Props) {
   const { pathname } = useLocation();
   const selfView = pathname.includes("my-leave");
   const [activeTab, setActiveTab] = useState("pending-leave-request");
@@ -153,17 +157,27 @@ export default function MyLeaveRequest({ calendarQueryParams }: Props) {
       >
         <div className="overflow-x-auto">
           <TabsList className="w-full justify-start h-12 bg-muted/50 p-1">
-            {tabs.map((tab) => {
-              return (
-                <TabsTrigger
-                  key={tab.value}
-                  value={tab.value}
-                  className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                >
-                  {tab.label}
-                </TabsTrigger>
-              );
-            })}
+            {tabs
+              ?.filter((tab) => {
+                if (
+                  !rulesData?.leaveEncashmentRuleActive &&
+                  tab.value === "leave-encashment-request"
+                ) {
+                  return false;
+                }
+                return true;
+              })
+              .map((tab) => {
+                return (
+                  <TabsTrigger
+                    key={tab.value}
+                    value={tab.value}
+                    className="gap-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  >
+                    {tab.label}
+                  </TabsTrigger>
+                );
+              })}
           </TabsList>
         </div>
 

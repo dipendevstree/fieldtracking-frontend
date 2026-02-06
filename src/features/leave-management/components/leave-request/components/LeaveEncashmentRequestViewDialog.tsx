@@ -21,6 +21,9 @@ import { PermissionGate } from "@/permissions/components/PermissionGate";
 import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useGetMyLeaves } from "@/features/leave-management/services/leave-action.hook";
+import { Info } from "lucide-react";
+import CustomTooltip from "@/components/shared/custom-tooltip";
 
 interface Props {
   open: boolean;
@@ -39,6 +42,20 @@ export default function LeaveEncashmentRequestViewDialog({
     useCreateLeaveEncashmentApproval(() => {
       closeDialog();
     });
+  const { data: myLeavesList } = useGetMyLeaves(
+    {
+      userId: currentRow?.userId,
+    },
+    {
+      enabled: open && !!currentRow.id,
+    },
+  );
+
+  const totalBalance = open
+    ? myLeavesList?.reduce((acc: number, item: any) => {
+        return acc + parseFloat(item?.leaveBalance?.remaining || "0");
+      }, 0)
+    : 0;
 
   const handleApprove = () => {
     createLeaveEncashmentApproval({
@@ -138,14 +155,6 @@ export default function LeaveEncashmentRequestViewDialog({
         </DialogHeader>
         <div className="flex flex-col gap-3 mt-2 w-full min-w-0">
           <div className="flex flex-col gap-2">
-            <Label>Leave Type</Label>
-            <Input
-              className="text-gray-700 border p-2 rounded"
-              value={currentRow?.leaveType?.name}
-              readOnly
-            />
-          </div>
-          <div className="flex flex-col gap-2">
             <Label>User Name</Label>
             <Input
               className="text-gray-700 border p-2 rounded"
@@ -175,6 +184,23 @@ export default function LeaveEncashmentRequestViewDialog({
             <Label>Status</Label>
             <StatusBadge status={currentRow?.status} />
           </div>
+          <div className="flex gap-2 font-semibold">
+            <Label>Available Balance:</Label>
+            <span
+              className={`text-${totalBalance < currentRow?.daysEncashed ? "red-500" : "green-500"}`}
+            >
+              {totalBalance || 0} Days
+            </span>
+            {totalBalance < currentRow?.daysEncashed && (
+              <span
+                className={`text-${totalBalance < currentRow?.daysEncashed ? "red-500" : "green-500"}`}
+              >
+                <CustomTooltip title="Available balance is less than the number of days encashed">
+                  <Info size={15} className="mt-1" />
+                </CustomTooltip>
+              </span>
+            )}
+          </div>
           <hr />
           <div className="flex flex-col gap-2">
             <Label className="text-sm">Approve/Reject Reason</Label>
@@ -196,7 +222,7 @@ export default function LeaveEncashmentRequestViewDialog({
           <PermissionGate requiredPermission="leave_request" action="add">
             <Button
               className="bg-green-500 text-white hover:bg-green-600"
-              disabled={isPending}
+              disabled={isPending || totalBalance < currentRow?.daysEncashed}
               onClick={handleApprove}
             >
               Approve

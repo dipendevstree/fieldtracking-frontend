@@ -98,7 +98,7 @@ export const useGetLeaveById = (id?: any, options?: { enabled?: boolean }) => {
 
 export const useGetAllLeaves = (
   params?: any,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) => {
   const query = useFetchData<any>({
     url: LEAVE_QUERY,
@@ -116,9 +116,13 @@ export const useGetAllLeaves = (
   };
 };
 
-export const useGetMyLeaves = (options?: { enabled?: boolean }) => {
+export const useGetMyLeaves = (
+  params?: any,
+  options?: { enabled?: boolean },
+) => {
   const query = useFetchData<any>({
     url: MY_LEAVE_QUERY,
+    params,
     enabled: options?.enabled ?? true,
   });
 
@@ -141,5 +145,25 @@ export const useGetLeaveStats = (options?: { enabled?: boolean }) => {
     data: query.data,
     isLoading: query.isLoading,
     error: query.error,
+  };
+};
+
+export const useCancelLeaveEncashment = (
+  id: string,
+  onSuccess?: () => void,
+) => {
+  const mutation = usePatchData({
+    url: `${API.leaveEncashment.update}/${id}`,
+    refetchQueries: [API.leaveEncashmentApprovals.pendingList],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+
+  return {
+    ...mutation,
+    mutate: () => mutation.mutate({ status: LEAVE_STATUS.CANCEL }),
   };
 };

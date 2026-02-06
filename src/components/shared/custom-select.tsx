@@ -90,7 +90,8 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
             type='button'
             onClick={() => {
               // onValueChange(undefined)
-              onValueChange(''), props?.onCancelPress()
+              onValueChange('')
+              props?.onCancelPress && props?.onCancelPress()
             }}
             className='text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2'
           >

@@ -7,14 +7,6 @@ import StatusBadge from "@/components/shared/common-status-badge";
 export const pendingLeaveEncashmentColumns = (
   hideUserColumn = false,
 ): ColumnDef<any>[] => [
-  {
-    accessorKey: "leaveType.name",
-    header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title="Leave Type" />
-    ),
-    enableHiding: false,
-    enableSorting: false,
-  },
   ...(!hideUserColumn
     ? [
         {
@@ -60,6 +52,30 @@ export const pendingLeaveEncashmentColumns = (
     enableHiding: false,
     enableSorting: false,
   },
+  ...(hideUserColumn
+    ? [
+        {
+          accessorKey: "leaveEncashmentApprovals.comment",
+          header: ({ column }: { column: any }) => (
+            <CustomDataTableColumnHeader
+              column={column}
+              title="Reviewer's Comment"
+            />
+          ),
+          cell: ({ row }: { row: any }) => {
+            return (
+              <div className="text-sm ">
+                {row.original?.leaveEncashmentApprovals?.length
+                  ? row.original?.leaveEncashmentApprovals?.[0]?.comment
+                  : "-"}
+              </div>
+            );
+          },
+          enableHiding: false,
+          enableSorting: false,
+        },
+      ]
+    : []),
   {
     accessorKey: "status",
     header: ({ column }) => (
@@ -75,19 +91,17 @@ export const pendingLeaveEncashmentColumns = (
     enableHiding: false,
     enableSorting: false,
   },
-  ...(!hideUserColumn
-    ? [
-        {
-          id: "actions",
-          header: ({ column }: { column: any }) => (
-            <CustomDataTableColumnHeader column={column} title="Action" />
-          ),
-          cell: ({ row }: { row: any }) => (
-            <PendingLeaveEncashmentRowActions row={row} />
-          ),
-        },
-      ]
-    : []),
+  {
+    accessorKey: "actions",
+    header: ({ column }: { column: any }) => (
+      <CustomDataTableColumnHeader column={column} title="Action" />
+    ),
+    cell: ({ row }: { row: any }) => (
+      <PendingLeaveEncashmentRowActions row={row} />
+    ),
+    enableHiding: false,
+    enableSorting: false,
+  },
 ];
 
 export default pendingLeaveEncashmentColumns;

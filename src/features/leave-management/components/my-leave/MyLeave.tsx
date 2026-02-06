@@ -7,7 +7,9 @@ import { endOfMonth, format, startOfMonth } from "date-fns";
 import { Button } from "@/components/ui/button";
 import {
   useCancelLeave,
+  useCancelLeaveEncashment,
   useGetAllLeaves,
+  useGetMyLeaves,
 } from "../../services/leave-action.hook";
 import { useGetAllLeaveTypes } from "../../services/leave-type.action.hook";
 import { useGetMyHolidays } from "@/features/holiday-management/services/holiday.action.hook";
@@ -37,6 +39,7 @@ export default function MyLeave() {
   const navigate = useNavigate();
   const { viewType, viewTypeToggle } = useViewType();
   const { open, setOpen, currentRow, setCurrentRow } = useLeaveRequestStore();
+  const { data: myLeavesList } = useGetMyLeaves();
 
   useEffect(() => {
     if (viewType === ViewType.Admin && viewTypeToggle) {
@@ -89,14 +92,28 @@ export default function MyLeave() {
 
   const cancelLeaveId =
     (open === "cancel" && currentRow && currentRow.id) || "";
+  const cancelLeaveEncashmentId =
+    (open === "cancel-leave-encashment" && currentRow && currentRow.id) || "";
 
   const cancelLeaveMutation = useCancelLeave(cancelLeaveId, () => {
     setOpen(null);
     setCurrentRow(null);
   });
 
+  const cancelLeaveEncashmentMutation = useCancelLeaveEncashment(
+    cancelLeaveEncashmentId,
+    () => {
+      setOpen(null);
+      setCurrentRow(null);
+    },
+  );
+
   const confirmCancel = () => {
     if (cancelLeaveId) cancelLeaveMutation.mutate();
+  };
+
+  const confirmCancelLeaveEncashment = () => {
+    if (cancelLeaveEncashmentId) cancelLeaveEncashmentMutation.mutate();
   };
 
   const events = useMemo(() => {
@@ -216,21 +233,32 @@ export default function MyLeave() {
         </CardContent>
       </Card>
 
-      <MyLeaveRequest calendarQueryParams={calendarQueryParams} />
+      <MyLeaveRequest
+        calendarQueryParams={calendarQueryParams}
+        rulesData={rulesData}
+      />
 
       <LeaveBalanceDialog
         open={openLeaveBalance}
         rulesData={rulesData}
+        myLeavesList={myLeavesList}
         onOpenChange={(value: boolean) => {
           setOpenLeaveBalance(value);
         }}
       />
 
       <LeaveEncashmentModal
-        open={open === "leave-encashment"}
+        open={open === "leave-encashment" || open === "edit-leave-encashment"}
         rulesData={rulesData}
+        myLeavesList={myLeavesList}
         onOpenChange={(value: boolean) => {
-          setOpen(value ? "leave-encashment" : null);
+          if (open === "edit-leave-encashment") {
+            setOpen(null);
+            setCurrentRow(null);
+          } else {
+            setOpen(value ? "leave-encashment" : null);
+            setCurrentRow(null);
+          }
         }}
       />
 
@@ -271,6 +299,28 @@ export default function MyLeave() {
             </span>
           }
           handleConfirm={confirmCancel}
+          confirmText="Yes, Cancel"
+          destructive
+        />
+      )}
+
+      {open === "cancel-leave-encashment" && currentRow && (
+        <ConfirmDialog
+          open={open === "cancel-leave-encashment"}
+          onOpenChange={() => {
+            if (open === "cancel-leave-encashment") {
+              setOpen(null);
+              setCurrentRow(null);
+            }
+          }}
+          title="Cancel Leave Encashment Request"
+          desc={
+            <span>
+              Are you sure you want to cancel the leave encashment request for{" "}
+              <strong className="text-slate-900">{currentRow.dateStr}</strong>?
+            </span>
+          }
+          handleConfirm={confirmCancelLeaveEncashment}
           confirmText="Yes, Cancel"
           destructive
         />

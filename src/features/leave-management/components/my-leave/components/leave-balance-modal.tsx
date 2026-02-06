@@ -4,16 +4,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useGetMyLeaves } from "@/features/leave-management/services/leave-action.hook";
 import { LeaveBalanceCard } from "../../user-view/components/leave-balance-card";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { useLeaveRequestStore } from "@/features/leave-management/store/leave-request.store";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { BanknoteArrowDown, Info } from "lucide-react";
+import CustomTooltip from "@/components/shared/custom-tooltip";
 
 interface Props {
   open: boolean;
   onOpenChange: (value: boolean) => void;
   rulesData: any;
+  myLeavesList: any;
 }
 
 const cardStyles = [
@@ -23,10 +26,14 @@ const cardStyles = [
   { headerBg: "bg-orange-50", titleColor: "text-orange-700" },
 ];
 
-export function LeaveBalanceDialog({ open, onOpenChange, rulesData }: Props) {
+export function LeaveBalanceDialog({
+  open,
+  onOpenChange,
+  rulesData,
+  myLeavesList,
+}: Props) {
   const { user } = useAuthStore();
   const allowWorkFromHome = user?.organization?.allowWorkFromHome;
-  const { data: myLeavesList } = useGetMyLeaves();
   const leaveList = myLeavesList?.length
     ? myLeavesList?.filter((item: any) =>
         item && item.id && allowWorkFromHome ? true : !item.superAdminCreatedBy,
@@ -34,17 +41,20 @@ export function LeaveBalanceDialog({ open, onOpenChange, rulesData }: Props) {
     : [];
   let errorMessage =
     "Leave encashment requests can be submitted only between 1st December and 15th December each year.";
+  const totalLeaveBalance = leaveList?.reduce((acc: number, item: any) => {
+    return acc + parseFloat(item?.leaveBalance?.remaining || "0");
+  }, 0);
   const { setOpen, setCurrentRow } = useLeaveRequestStore();
-  const handleClick = (data: any) => {
+  const handleClick = () => {
     const hasRequiredBalance =
       parseFloat(rulesData?.minimumEncashmentDaysRequired || "0") <=
-      parseFloat(data?.leaveBalance?.remaining || "0");
-    const hasBalance = parseFloat(data?.leaveBalance?.remaining || "0") > 0;
+      totalLeaveBalance;
+    const hasBalance = totalLeaveBalance > 0;
     const condition =
-      data.showLeaveEncashmentButton && hasBalance && hasRequiredBalance;
+      rulesData?.showLeaveEncashmentButton && hasBalance && hasRequiredBalance;
     if (condition) {
       setOpen("leave-encashment");
-      setCurrentRow(data);
+      setCurrentRow(myLeavesList);
     } else {
       if (!hasBalance) {
         toast.error("Invalid Action", {
@@ -78,6 +88,28 @@ export function LeaveBalanceDialog({ open, onOpenChange, rulesData }: Props) {
             Leave Balance for {new Date().getFullYear()}
           </DialogTitle>
         </DialogHeader>
+        {rulesData?.leaveEncashmentRuleActive && (
+          <div className="flex items-center justify-between mb-2">
+            <p>Total Balance: {totalLeaveBalance} days</p>
+            <div className="flex items-center gap-2">
+              {!rulesData?.showLeaveEncashmentButton && (
+                <CustomTooltip
+                  title={rulesData?.leaveEncashmentMessage || errorMessage}
+                >
+                  <Info size={16} className="text-slate-500 cursor-pointer" />
+                </CustomTooltip>
+              )}
+              <Button
+                variant="outline"
+                disabled={!rulesData?.showLeaveEncashmentButton}
+                onClick={() => handleClick()}
+              >
+                <BanknoteArrowDown size={16} className="mr-2" /> Apply Leave
+                Encashment
+              </Button>
+            </div>
+          </div>
+        )}
         {leaveList?.length > 0 ? (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {leaveList?.map((item: any, index: number) => {
@@ -99,9 +131,6 @@ export function LeaveBalanceDialog({ open, onOpenChange, rulesData }: Props) {
                   percentage={percentage}
                   headerBg={cardStyles[index % cardStyles.length].headerBg}
                   titleColor={cardStyles[index % cardStyles.length].titleColor}
-                  showLeaveEncashmentButton={item.showLeaveEncashmentButton}
-                  handleClick={() => handleClick(item)}
-                  errorMessage={errorMessage}
                 />
               );
             })}

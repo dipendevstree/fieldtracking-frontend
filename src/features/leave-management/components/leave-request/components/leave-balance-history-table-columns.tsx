@@ -50,7 +50,7 @@ export const leaveBalanceHistoryColumns: ColumnDef<any>[] = [
     ),
     cell: ({ row }) => (
       <div className="text-sm capitalize">
-        {moment(row.original.actionDate).format("DD/MM/YYYY h:mm A")}
+        {moment(row.original.createdDate).format("DD/MM/YYYY h:mm A")}
       </div>
     ),
     enableHiding: false,
