@@ -86,7 +86,7 @@ function DeleteVisitDialog({
     () => {
       if (onSuccess) onSuccess();
       onClose();
-    }
+    },
   );
 
   return (
@@ -392,7 +392,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
       locationInputMode: "map",
       isMapModalOpen: false,
       latLng: "",
-    }))
+    })),
   );
 
   useEffect(() => {
@@ -402,7 +402,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
         locationInputMode: locationStates[index]?.locationInputMode || "map",
         isMapModalOpen: locationStates[index]?.isMapModalOpen || false,
         latLng: locationStates[index]?.latLng || "",
-      }))
+      })),
     );
   }, [fields.length]);
 
@@ -416,7 +416,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
       country: string;
       postalCode: string;
     },
-    index: number
+    index: number,
   ) => {
     setValue(`visits.${index}.location`, data.address, {
       shouldValidate: true,
@@ -453,8 +453,8 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
 
     setLocationStates((prev) =>
       prev.map((state, i) =>
-        i === index ? { ...state, isMapModalOpen: false } : state
-      )
+        i === index ? { ...state, isMapModalOpen: false } : state,
+      ),
     );
   };
 
@@ -515,11 +515,11 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
           },
         ],
       });
-    }
+    },
   );
   const { mutate: updateVisit, isPending: isUpdateLoading } = useUpdateVisits(
     visitId || "",
-    onClose
+    onClose,
   );
   const isLoading = isCreateLoading || isUpdateLoading;
   const showLoadingSpinner = isEditMode && isVisitLoading;
@@ -553,8 +553,8 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
           onOpenChange={(open) =>
             setLocationStates((prev) =>
               prev.map((s, i) =>
-                i === index ? { ...s, isMapModalOpen: open } : s
-              )
+                i === index ? { ...s, isMapModalOpen: open } : s,
+              ),
             )
           }
           onLocationSelect={(data) => handleMapLocationSelect(data, index)}
@@ -662,7 +662,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                         key={field.id}
                         className={cn(
                           "border p-4 rounded-md relative",
-                          index !== 0 && "mt-4"
+                          index !== 0 && "mt-4",
                         )}
                       >
                         <div className="flex justify-between items-center mb-4">
@@ -723,7 +723,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                                   onChange={(value) => {
                                     field.onChange(value);
                                     const selectedCustomer = customerList.find(
-                                      (c: any) => c.customerId === value
+                                      (c: any) => c.customerId === value,
                                     );
                                     if (selectedCustomer) {
                                       setLocationStates((prev) =>
@@ -733,8 +733,8 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                                                 ...state,
                                                 isCustomLocation: false,
                                               }
-                                            : state
-                                        )
+                                            : state,
+                                        ),
                                       );
                                       const fullAddress = [
                                         selectedCustomer.streetAddress,
@@ -749,42 +749,42 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                                         fullAddress,
                                         {
                                           shouldValidate: true,
-                                        }
+                                        },
                                       );
                                       setValue(
                                         `visits.${index}.address`,
                                         selectedCustomer.streetAddress || "",
-                                        { shouldValidate: true }
+                                        { shouldValidate: true },
                                       );
                                       setValue(
                                         `visits.${index}.city`,
                                         selectedCustomer.city || "",
-                                        { shouldValidate: true }
+                                        { shouldValidate: true },
                                       );
                                       setValue(
                                         `visits.${index}.state`,
                                         selectedCustomer.state || "",
-                                        { shouldValidate: true }
+                                        { shouldValidate: true },
                                       );
                                       setValue(
                                         `visits.${index}.zipCode`,
                                         String(selectedCustomer.zipCode || ""),
-                                        { shouldValidate: true }
+                                        { shouldValidate: true },
                                       );
                                       setValue(
                                         `visits.${index}.country`,
                                         selectedCustomer.country || "",
-                                        { shouldValidate: true }
+                                        { shouldValidate: true },
                                       );
                                       setValue(
                                         `visits.${index}.latitude`,
                                         selectedCustomer.latitude,
-                                        { shouldValidate: true }
+                                        { shouldValidate: true },
                                       );
                                       setValue(
                                         `visits.${index}.longitude`,
                                         selectedCustomer.longitude,
-                                        { shouldValidate: true }
+                                        { shouldValidate: true },
                                       );
                                     }
                                   }}
@@ -949,8 +949,8 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                                         ...state,
                                         isCustomLocation: Boolean(checked),
                                       }
-                                    : state
-                                )
+                                    : state,
+                                ),
                               )
                             }
                           />
@@ -978,8 +978,8 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                                               | "search"
                                               | "map",
                                           }
-                                        : state
-                                    )
+                                        : state,
+                                    ),
                                   )
                                 }
                                 className="flex items-center space-x-4 pt-1"
@@ -1027,8 +1027,8 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                                       prev.map((state, i) =>
                                         i === index
                                           ? { ...state, latLng: e.target.value }
-                                          : state
-                                      )
+                                          : state,
+                                      ),
                                     )
                                   }
                                 />
@@ -1042,8 +1042,8 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                                       prev.map((state, i) =>
                                         i === index
                                           ? { ...state, isMapModalOpen: true }
-                                          : state
-                                      )
+                                          : state,
+                                      ),
                                     )
                                   }
                                   className="w-full justify-start text-left font-normal"
@@ -1156,7 +1156,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                   .filter(
                     (visit) =>
                       visit.date === selectedDate &&
-                      (!selectedRep || visit.salesRepId === selectedRep)
+                      (!selectedRep || visit.salesRepId === selectedRep),
                   )
                   .map((visit) => (
                     <div
