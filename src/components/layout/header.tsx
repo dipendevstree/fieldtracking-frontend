@@ -79,6 +79,7 @@ export const Header = ({
       server.off("connect", handleConnect);
       server.off("permission_change", handleLiveRolesAndSettingChange);
       server.off("setting_change", handleLiveRolesAndSettingChange);
+      server.disconnect();
     };
   }, []);
 
