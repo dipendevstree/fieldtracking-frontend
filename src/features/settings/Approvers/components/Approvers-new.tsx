@@ -133,8 +133,11 @@ export function ApproverFormNew() {
   const selectedTerritory = form.watch("territory");
 
   // API Hooks
-  const { data: allApprovalsLevelList = {}, isLoading: isApprovalsLoading } =
-    useGetAllApprovalsLevel();
+  const {
+    data: allApprovalsLevelList = {},
+    isLoading: isApprovalsLoading,
+    refetch,
+  } = useGetAllApprovalsLevel();
 
   const { mutateAsync: createApprovalLevel, isPending: isCreating } =
     useCreateApprovalsLevel();
@@ -584,7 +587,6 @@ export function ApproverFormNew() {
       });
 
     try {
-      // Execute all operations
       if (createList.length > 0) {
         await createApprovalLevel({ expenseApprovalLevels: createList });
       }
@@ -605,9 +607,22 @@ export function ApproverFormNew() {
         toast.success("Configuration saved successfully.");
       }
 
-      // Reset form state to pristine using the submitted data
-      form.reset(data);
-      hasPopulatedForm.current = false;
+      // 1. Force a fetch to get the NEW data from the server immediately
+      const { data: freshData } = await refetch();
+
+      // 2. Transform this NEW data
+      const transformedData = transformApiDataToForm(
+        freshData,
+        categories,
+        selectedTerritoryId,
+        dynamicTiers,
+      );
+
+      // 3. Reset the form with the fresh server data
+      form.reset(transformedData);
+
+      // 4. IMPORTANT: Keep this TRUE so the useEffect doesn't overwrite our work with stale cache
+      hasPopulatedForm.current = true;
     } catch (error) {
       toast.error("Failed to save configuration. Please try again.");
       console.error("Submission error:", error);
