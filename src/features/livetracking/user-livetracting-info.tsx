@@ -180,10 +180,6 @@ const UserTrackingTimeline = ({
   useEffect(() => {
     if (!socket || !userId) return;
 
-    const handleConnect = () => {
-      socket().emit("track_user", { userId });
-    };
-
     const handleLiveLocation = (event: any) => {
       if (
         event?.lat &&
@@ -216,6 +212,11 @@ const UserTrackingTimeline = ({
     };
 
     const userTrackingSocket = socket();
+
+    const handleConnect = () => {
+      userTrackingSocket.emit("track_user", { userId });
+    };
+
     if (userTrackingSocket.connected) {
       handleConnect();
     } else {
@@ -226,6 +227,7 @@ const UserTrackingTimeline = ({
     return () => {
       userTrackingSocket.off("connect", handleConnect);
       userTrackingSocket.off("live_location", handleLiveLocation);
+      userTrackingSocket.disconnect();
     };
   }, [socket, userId, selectedDate]); // Added props to dependency array
 
@@ -347,6 +349,7 @@ const UserTrackingTimeline = ({
       socketForVisitOrignal.off("work_session", handleWorkSession);
       socketForVisitOrignal.off("break_session", handleBreakSession);
       socketForVisitOrignal.off("in_visit", handleVisit);
+      socketForVisitOrignal.disconnect();
     };
   }, [socketForVisit, userId, selectedDate]);
 

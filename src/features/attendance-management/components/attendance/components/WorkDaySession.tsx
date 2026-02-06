@@ -172,6 +172,7 @@ const WorkDaySession = () => {
       socket.off("connect", onConnect);
       socket.off("work_session", onRefresh);
       socket.off("break_session", onRefresh);
+      socket.disconnect();
     };
   }, [user, refetch]);
 

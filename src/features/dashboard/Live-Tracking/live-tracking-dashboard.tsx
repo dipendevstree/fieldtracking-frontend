@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 
 import { cn } from "@/lib/utils";
@@ -47,7 +47,7 @@ export default function Livetracking() {
   });
 
   const { user: userAuth } = useAuthStore();
-
+  const socketForLiveTracking = useMemo(() => socket(), []);
   const [currentPosition, setCurrentPosition] = useState<{
     lat: number;
     lng: number;
@@ -187,14 +187,22 @@ export default function Livetracking() {
     setSelectedUserId(selectedUserId);
   }, [selectedUserId]);
 
+  useEffect(() => {
+    return () => {
+      if (socketForLiveTracking.connected) {
+        socketForLiveTracking.disconnect();
+      }
+    };
+  }, [socketForLiveTracking]);
+
   const handlePopState = () => {
     const params = new URLSearchParams(window.location.search);
     const userIdFromUrl = params.get("userId");
 
     if (!userIdFromUrl) {
       // If userId was removed (i.e. back to list view)
-      if (socket) {
-        socket().emit("untrack_user", { selectedUserId });
+      if (socketForLiveTracking) {
+        socketForLiveTracking.emit("untrack_user", { selectedUserId });
       }
       setSelectedUserId("");
       setPath([]);
@@ -292,6 +300,7 @@ export default function Livetracking() {
 
     return () => {
       socketForVisitOrignal.off("user_online_status", handleUserStatus);
+      socketForVisitOrignal.disconnect();
     };
   }, [socketForVisit]);
 
