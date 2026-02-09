@@ -8,7 +8,7 @@ import {
 } from "@/data/app.data";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import debounce from "lodash.debounce";
-import { CalendarIcon, Clock, Edit, Trash2 } from "lucide-react";
+import { CalendarIcon, Edit, Trash2 } from "lucide-react";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import {
   AlertDialog,
@@ -41,7 +41,7 @@ import {
   useGetAnalytics,
 } from "../services/calendar-view.hook";
 import { formatDropDownLabel } from "@/utils/commonFunction";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Analytics,
   DeleteVisitDialogProps,
@@ -144,6 +144,8 @@ export default function CalendarView() {
       rep:
         `${visit.salesRepresentativeUser.firstName} ${visit.salesRepresentativeUser.lastName}`.trim() ||
         "Unknown",
+      firstName: visit.salesRepresentativeUser.firstName,
+      lastName: visit.salesRepresentativeUser.lastName,
       salesRepId: visit.salesRepresentativeUser.id || "",
       roleId: visit.salesRepresentativeUser.roleId || "",
       customer:
@@ -161,6 +163,7 @@ export default function CalendarView() {
       priority: visit.priority,
       originalVisit: visit,
       checkInImageUrl: visit.checkInImageUrl || "",
+      profileUrl: visit.salesRepresentativeUser.profileUrl,
     })) || [];
 
   const handleDateChange = (newDate?: string) => {
@@ -396,16 +399,17 @@ export default function CalendarView() {
                   className="flex items-center space-x-4 rounded-lg border p-2"
                 >
                   <div className="flex-shrink-0">
-                    {visit?.checkInImageUrl ? (
-                      <Avatar className="h-10 w-10 ">
-                        <AvatarImage
-                          src={visit.checkInImageUrl}
-                          alt="Check-in"
-                        />
-                      </Avatar>
-                    ) : (
-                      <Clock className="text-muted-foreground h-4 w-4" />
-                    )}
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage
+                        src={visit.checkInImageUrl || visit.profileUrl || ""}
+                        alt="Visit Image"
+                        className="object-cover"
+                      />
+                      <AvatarFallback>
+                        {visit.firstName?.[0]}
+                        {visit.lastName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
                   </div>
 
                   <div className="min-w-0 flex-1">
@@ -426,8 +430,9 @@ export default function CalendarView() {
                       <StatusBadge status={visit.priority} showDot={false} />
                     </div>
                   </div>
-                  <div className="flex space-x-2">
-                    {/* <PermissionGate
+                  {visit.status === "Pending" && (
+                    <div className="flex space-x-2">
+                      {/* <PermissionGate
                       requiredPermission="calender_view"
                       action="viewOwn"
                     >
@@ -440,39 +445,40 @@ export default function CalendarView() {
                         <Eye className="h-3 w-3" />
                       </Button>
                     </PermissionGate> */}
-                    <PermissionGate
-                      requiredPermission="calender_view"
-                      action="edit"
-                    >
-                      <Button
-                        variant="outline"
-                        className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
-                        size="sm"
-                        onClick={() =>
-                          navigate({
-                            to: `/calendar/schedule-visit/${visit.id}`,
-                          })
-                        }
-                        aria-label={`Edit visit ${visit.id}`}
+                      <PermissionGate
+                        requiredPermission="calender_view"
+                        action="edit"
                       >
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                    </PermissionGate>
-                    <PermissionGate
-                      requiredPermission="calender_view"
-                      action="delete"
-                    >
-                      <Button
-                        className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setVisitToDelete(visit)}
-                        aria-label={`Delete visit ${visit.id}`}
+                        <Button
+                          variant="outline"
+                          className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
+                          size="sm"
+                          onClick={() =>
+                            navigate({
+                              to: `/calendar/schedule-visit/${visit.id}`,
+                            })
+                          }
+                          aria-label={`Edit visit ${visit.id}`}
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      </PermissionGate>
+                      <PermissionGate
+                        requiredPermission="calender_view"
+                        action="delete"
                       >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </PermissionGate>
-                  </div>
+                        <Button
+                          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setVisitToDelete(visit)}
+                          aria-label={`Delete visit ${visit.id}`}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </PermissionGate>
+                    </div>
+                  )}
                 </div>
               ))}
           </div>

@@ -7,7 +7,7 @@ import {
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
-import { AlertCircle, MapPin, Trash2, Clock, Edit } from "lucide-react";
+import { AlertCircle, MapPin, Trash2, Edit } from "lucide-react";
 import moment from "moment-timezone";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
@@ -71,7 +71,7 @@ import { TimePicker } from "@/components/ui/TimePicker";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import StatusBadge from "@/components/shared/common-status-badge";
 
 function DeleteVisitDialog({
@@ -222,6 +222,8 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
       rep:
         `${visit.salesRepresentativeUser.firstName} ${visit.salesRepresentativeUser.lastName}`.trim() ||
         "Unknown",
+      firstName: visit.salesRepresentativeUser.firstName,
+      lastName: visit.salesRepresentativeUser.lastName,
       salesRepId: visit.salesRepresentativeUser.id || "",
       roleId: visit.salesRepresentativeUser.roleId || "",
       customer:
@@ -239,6 +241,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
       priority: visit.priority,
       originalVisit: visit,
       checkInImageUrl: visit.checkInImageUrl,
+      profileUrl: visit.salesRepresentativeUser.profileUrl,
     })) || [];
 
   useEffect(() => {
@@ -1140,16 +1143,19 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                       className="flex items-center space-x-4 rounded-lg border p-2"
                     >
                       <div className="flex-shrink-0">
-                        {visit?.checkInImageUrl ? (
-                          <Avatar className="h-10 w-10 ">
-                            <AvatarImage
-                              src={visit.checkInImageUrl}
-                              alt="Check-in"
-                            />
-                          </Avatar>
-                        ) : (
-                          <Clock className="text-muted-foreground h-4 w-4" />
-                        )}
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage
+                            src={
+                              visit.checkInImageUrl || visit.profileUrl || ""
+                            }
+                            alt="Visit Image"
+                            className="object-cover"
+                          />
+                          <AvatarFallback>
+                            {visit.firstName?.[0]}
+                            {visit.lastName?.[0]}
+                          </AvatarFallback>
+                        </Avatar>
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center space-x-2">
@@ -1172,8 +1178,9 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                           />
                         </div>
                       </div>
-                      <div className="flex gap-1">
-                        {/* <PermissionGate
+                      {visit.status === "Pending" && (
+                        <div className="flex gap-1">
+                          {/* <PermissionGate
                             requiredPermission="calender_view"
                             action="viewOwn"
                           >
@@ -1185,43 +1192,44 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                               <Eye />
                             </Button>
                           </PermissionGate> */}
-                        <PermissionGate
-                          requiredPermission="calender_view"
-                          action="edit"
-                        >
-                          <Button
-                            className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              navigate({
-                                to: `/calendar/schedule-visit/${visit.id}`,
-                              })
-                            }
-                            aria-label={`Edit visit ${visit.id}`}
+                          <PermissionGate
+                            requiredPermission="calender_view"
+                            action="edit"
                           >
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                        </PermissionGate>
-                        <PermissionGate
-                          requiredPermission="calender_view"
-                          action="delete"
-                        >
-                          <Button
-                            className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setOpenDeleteDialog(true);
-                              setVisitToDelete(visit);
-                            }}
-                            aria-label={`Delete visit ${visit.id}`}
-                            disabled={visitToDelete !== null}
+                            <Button
+                              className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                navigate({
+                                  to: `/calendar/schedule-visit/${visit.id}`,
+                                })
+                              }
+                              aria-label={`Edit visit ${visit.id}`}
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                          </PermissionGate>
+                          <PermissionGate
+                            requiredPermission="calender_view"
+                            action="delete"
                           >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </PermissionGate>
-                      </div>
+                            <Button
+                              className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setOpenDeleteDialog(true);
+                                setVisitToDelete(visit);
+                              }}
+                              aria-label={`Delete visit ${visit.id}`}
+                              disabled={visitToDelete !== null}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </PermissionGate>
+                        </div>
+                      )}
                     </div>
                   ))}
               </div>
