@@ -216,9 +216,9 @@ export const statusColors: Record<
     dot: "bg-green-500",
   },
   checkin: {
-    text: "text-blue-600",
-    bg: "bg-blue-100",
-    dot: "bg-blue-500",
+    text: "text-amber-600",
+    bg: "bg-amber-100",
+    dot: "bg-amber-500",
   },
   "in-progress": {
     text: "text-purple-600",
