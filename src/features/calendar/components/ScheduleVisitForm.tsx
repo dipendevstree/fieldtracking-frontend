@@ -157,6 +157,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
     control,
     reset,
     setValue,
+    getValues,
     watch,
     formState: { errors, isDirty },
   } = form;
@@ -492,8 +493,9 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
   const { mutate: createVisit, isPending: isCreateLoading } = useCreateVisits(
     () => {
       const salesRepId = watch("salesRep");
+      const currentDate = getValues("date");
       reset({
-        date: new Date().toISOString().split("T")[0],
+        date: currentDate || new Date().toISOString().split("T")[0],
         salesRep: salesRepId,
         visits: [
           {
@@ -519,7 +521,12 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
   );
   const { mutate: updateVisit, isPending: isUpdateLoading } = useUpdateVisits(
     visitId || "",
-    onClose,
+    () => {
+      reset(getValues());
+      setTimeout(() => {
+        onClose && onClose();
+      }, 0);
+    },
   );
   const isLoading = isCreateLoading || isUpdateLoading;
   const showLoadingSpinner = isEditMode && isVisitLoading;
