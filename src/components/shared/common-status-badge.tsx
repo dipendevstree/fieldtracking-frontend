@@ -5,6 +5,7 @@ type StatusType = string;
 
 interface StatusBadgeProps {
   status: StatusType;
+  showDot?: boolean;
 }
 
 export const statusColors: Record<
@@ -209,6 +210,57 @@ export const statusColors: Record<
     bg: "bg-yellow-100",
     dot: "bg-yellow-500",
   },
+  confirmed: {
+    text: "text-green-600",
+    bg: "bg-green-100",
+    dot: "bg-green-500",
+  },
+  checkin: {
+    text: "text-blue-600",
+    bg: "bg-blue-100",
+    dot: "bg-blue-500",
+  },
+  "in-progress": {
+    text: "text-purple-600",
+    bg: "bg-purple-100",
+    dot: "bg-purple-500",
+  },
+  partial_completed: {
+    text: "text-orange-600",
+    bg: "bg-orange-100",
+    dot: "bg-orange-500",
+  },
+  cancelled: {
+    text: "text-red-600",
+    bg: "bg-red-100",
+    dot: "bg-red-500",
+  },
+  high: {
+    text: "text-red-600",
+    bg: "bg-red-100",
+    dot: "bg-red-500",
+  },
+  medium: {
+    text: "text-yellow-700",
+    bg: "bg-yellow-100",
+    dot: "bg-yellow-500",
+  },
+  low: {
+    text: "text-green-600",
+    bg: "bg-green-100",
+    dot: "bg-green-500",
+  },
+};
+
+const displayTexts: Record<string, string> = {
+  partial_completed: "Partial Completed",
+  confirmed: "Confirmed",
+  pending: "Pending",
+  cancelled: "Cancelled",
+  completed: "Completed",
+  "in-progress": "In-progress",
+  checkin: "Check In",
+  checkout: "Check Out",
 };
 
 function formatStatusTitle(status: string): string {
@@ -219,7 +271,20 @@ function formatStatusTitle(status: string): string {
     .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize each word
 }
 
-const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
+function getStatusDisplayText(status: string): string {
+  const normalized = status.toLowerCase();
+
+  if (displayTexts[normalized]) {
+    return displayTexts[normalized];
+  }
+
+  return formatStatusTitle(normalized);
+}
+
+const StatusBadge: React.FC<StatusBadgeProps> = ({
+  status,
+  showDot = true,
+}) => {
   if (!status) {
     return "-";
   }
@@ -236,11 +301,13 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ status }) => {
       className={cn(
         "inline-flex items-center rounded-full px-2 py-1 text-xs font-medium",
         color.text,
-        color.bg
+        color.bg,
       )}
     >
-      <span className={cn("mr-1 h-2 w-2 rounded-full", color.dot)}></span>
-      {formatStatusTitle(normalizedStatus)}
+      {showDot && (
+        <span className={cn("mr-1 h-2 w-2 rounded-full", color.dot)} />
+      )}
+      {getStatusDisplayText(normalizedStatus)}
     </div>
   );
 };
