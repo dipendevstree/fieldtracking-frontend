@@ -19,6 +19,7 @@ export interface Visit {
     firstName: string;
     lastName: string;
     roleId?: string;
+    profileUrl?: string | null;
   };
   customer: { companyName: string } | string;
   contact: string;
@@ -34,6 +35,8 @@ export interface Visit {
 export interface MappedVisit {
   id: string;
   rep: string;
+  firstName: string;
+  lastName: string;
   salesRepId: string;
   roleId?: string;
   customer: string;
@@ -46,6 +49,7 @@ export interface MappedVisit {
   priority: string;
   originalVisit: Visit;
   checkInImageUrl: string;
+  profileUrl?: string | null;
 }
 
 export interface DeleteVisitDialogProps {
@@ -94,4 +98,58 @@ export interface DeleteVisitDialogProps {
   visit: MappedVisit | null;
   isOpen: boolean;
   onClose: () => void;
+}
+
+export interface SalesRepresentativeUser {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phoneNumber: string;
+  profileUrl: string | null;
+}
+
+export interface Customer {
+  customerId: string;
+  companyName: string;
+  streetAddress: string;
+  city: string;
+  state: string;
+  zipCode: number;
+  phoneNumber: string;
+  country: string;
+}
+
+export interface VisitReport {
+  visitId: string;
+  date: string;
+  time: string;
+  duration: number;
+  purpose: string;
+  status: string;
+  priority: string;
+  streetAddress: string;
+  city: string;
+  state: string;
+  zipCode: number;
+  country: string;
+  checkinAddress: string;
+  checkoutAddress: string;
+  visitCheckInTime: string;
+  visitCheckOutTime: string;
+  checkInImageUrl: string;
+  meetingNotes: string;
+  preparationNotes: string;
+  meetingOutcomes: string[];
+  nextActions: string;
+  followUpDate: string;
+  isCheckInLate: boolean;
+  isVisitNotCompletedOnTime: boolean;
+  feedBackSalesSkillsAndKnowledgeRating: number;
+  feedBackSalesRepPunctualityRating: number;
+  feedBackSalesRepBehaviorRating: number;
+  feedBackDescription: string;
+  salesRepresentativeUser: SalesRepresentativeUser;
+  customer: Customer;
+  checkOutFilesUrl: string[];
 }
