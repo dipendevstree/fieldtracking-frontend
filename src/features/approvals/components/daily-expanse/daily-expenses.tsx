@@ -111,7 +111,7 @@ export default function DailyExpenses() {
     })
   );
 
-  const expanseStatusOptions = Object.entries(EXPENSE_STATUS).map(
+  const expanseStatusOptions = Object.entries(Object.fromEntries(Object.entries(EXPENSE_STATUS).filter(([k]) => k !== "REJECTED"))).map(
     ([key, value]) => ({
       label: formatDropDownLabel(key),
       value,

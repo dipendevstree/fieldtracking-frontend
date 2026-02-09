@@ -49,6 +49,10 @@ export default function MyLeave() {
   }, [viewType, viewTypeToggle]);
 
   const [openLeaveBalance, setOpenLeaveBalance] = useState<boolean>(false);
+  const [leaveDateRange, setLeaveDateRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({ from: undefined, to: undefined });
   const [calendarMode, setCalendarMode] = useState<"holiday" | "leave">(
     "leave",
   );
@@ -116,6 +120,21 @@ export default function MyLeave() {
     if (cancelLeaveEncashmentId) cancelLeaveEncashmentMutation.mutate();
   };
 
+  const handleEditClick = (leaveData: any) => {
+    setOpen("edit");
+    setCurrentRow(leaveData);
+  };
+
+  const handleOpenLeaveModal = (event: any) => {
+    if (calendarMode === "leave") {
+      setIsApplyLeaveOpen(true);
+      setLeaveDateRange({
+        from: event.start,
+        to: event.end,
+      });
+    }
+  };
+
   const events = useMemo(() => {
     if (calendarMode === "holiday") {
       return holidays?.map((h: any) => {
@@ -149,6 +168,25 @@ export default function MyLeave() {
             lr.leaveType?.name ||
             leaveTypesList.find((t: any) => t.id === lr.leaveTypeId)?.name ||
             "Leave";
+          const title = (
+            <div
+              className="flex"
+              onClick={() => {
+                if (![LEAVE_STATUS.APPROVED, LEAVE_STATUS.REJECTED, LEAVE_STATUS.CANCEL].includes(lr.status)) {
+                  handleEditClick(lr);
+                } else {
+                  document.getElementById("my-leave-request-section")?.scrollIntoView({
+                    behavior: "smooth",
+                  });
+                }
+              }}
+              title={typeName}
+            >
+              <span className="font-xs">
+                {typeName}
+              </span>
+            </div>
+          );
           let status = lr.status?.toLowerCase() || "pending";
           if (lr.leaveType?.superAdminCreatedBy) {
             status =
@@ -167,7 +205,7 @@ export default function MyLeave() {
 
           return {
             id: lr.id,
-            title: typeName,
+            title,
             start,
             end,
             allDay: !lr.halfDay,
@@ -228,6 +266,7 @@ export default function MyLeave() {
               date={viewDate}
               onNavigate={setViewDate}
               weekOffDays={weekOffDays}
+              onSelectSlot={handleOpenLeaveModal}
             />
           )}
         </CardContent>
@@ -278,6 +317,7 @@ export default function MyLeave() {
         leaveToEditId={currentRow && currentRow.id}
         leaveTypesList={leaveTypesList}
         workFromHomeTypeOpen={workFromHomeTypeOpen}
+        selectDateRange={leaveDateRange}
       />
 
       {open === "cancel" && currentRow && (

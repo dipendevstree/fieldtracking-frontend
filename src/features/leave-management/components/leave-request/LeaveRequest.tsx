@@ -409,6 +409,7 @@ export default function LeaveRequest({ dashboardView = false }: Props) {
         value={activeTab}
         onValueChange={setActiveTab}
         className="space-y-4 gap-0"
+        id="pending-leave-section"
       >
         <div className="overflow-x-auto">
           <TabsList className="w-full justify-start h-12 bg-muted/50 p-1">
@@ -456,6 +457,7 @@ export default function LeaveRequest({ dashboardView = false }: Props) {
             value={activeEncashmentTab}
             onValueChange={setActiveEncashmentTab}
             className="space-y-4 gap-0"
+            id="pending-leave-encashment-section"
           >
             <div className="overflow-x-auto">
               <TabsList className="w-full justify-start h-12 bg-muted/50 p-1">

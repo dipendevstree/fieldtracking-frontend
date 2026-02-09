@@ -29,7 +29,7 @@ export function DataTableRowActions({ row }: RowProps) {
     <div className="flex items-center space-x-2">
       <PermissionGate requiredPermission="daily_expense" action="viewGlobal">
         <CustomTooltip title="View">
-          <Link to="/approvals/daily-expense-details/$id" params={{ id: row.original.id }} className="h-8 w-8 p-0 text-orange-500">
+          <Link to="/approvals/daily-expense-details/$id" params={{ id: row.original.id }} className="h-8 w-8 p-2 text-orange-500">
             <Eye size={16} />
           </Link>
         </CustomTooltip>

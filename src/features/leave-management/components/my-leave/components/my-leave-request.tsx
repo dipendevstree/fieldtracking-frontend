@@ -154,6 +154,7 @@ export default function MyLeaveRequest({
         value={activeTab}
         onValueChange={setActiveTab}
         className="space-y-4 gap-0"
+        id="my-leave-request-section"
       >
         <div className="overflow-x-auto">
           <TabsList className="w-full justify-start h-12 bg-muted/50 p-1">
