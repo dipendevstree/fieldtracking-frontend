@@ -28,6 +28,7 @@ export interface Visit {
   location: string;
   status: string;
   priority: string;
+  checkInImageUrl: string;
 }
 
 export interface MappedVisit {
@@ -44,6 +45,7 @@ export interface MappedVisit {
   status: string;
   priority: string;
   originalVisit: Visit;
+  checkInImageUrl: string;
 }
 
 export interface DeleteVisitDialogProps {
@@ -53,20 +55,43 @@ export interface DeleteVisitDialogProps {
 }
 
 export interface TopUsers {
-  id: string,
-  name: string,
-  profileUrl: string,
-  visitCount: number
+  id: string;
+  name: string;
+  profileUrl: string;
+  visitCount: number;
 }
 
 export interface VisitEmployeeAnalytics {
-  avgSatisfaction: string
-  avgVisitDuration: string
-  cancelledVisits: string
-  followupRate: string
-  rescheduledVisits: number
-  successRate: string
-  successVisits: number
-  topUsers: TopUsers[]
-  totalVisitsCount: number
+  avgSatisfaction: string;
+  avgVisitDuration: string;
+  cancelledVisits: string;
+  followupRate: string;
+  rescheduledVisits: number;
+  successRate: string;
+  successVisits: number;
+  topUsers: TopUsers[];
+  totalVisitsCount: number;
+}
+
+export interface Analytics {
+  totalVisits: number;
+  pending: number;
+  completed: number;
+  cancel: number;
+}
+
+export interface FormData {
+  roleId: string;
+  salesRep: string;
+  search: string;
+  territoryId: string;
+  customerId: string;
+  priority: string;
+  status: string;
+}
+
+export interface DeleteVisitDialogProps {
+  visit: MappedVisit | null;
+  isOpen: boolean;
+  onClose: () => void;
 }

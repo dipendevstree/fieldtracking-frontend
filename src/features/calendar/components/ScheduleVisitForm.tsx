@@ -31,7 +31,6 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Main } from "@/components/layout/main";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -72,6 +71,8 @@ import { TimePicker } from "@/components/ui/TimePicker";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import StatusBadge from "@/components/shared/common-status-badge";
 
 function DeleteVisitDialog({
   visit,
@@ -237,40 +238,8 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
         visit.status.slice(1).toLowerCase(),
       priority: visit.priority,
       originalVisit: visit,
+      checkInImageUrl: visit.checkInImageUrl,
     })) || [];
-
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, string> = {
-      Confirmed: "bg-green-100 text-green-800",
-      Pending: "bg-yellow-100 text-yellow-800",
-      Cancelled: "bg-red-100 text-red-800",
-      Completed: "bg-blue-100 text-blue-800",
-      "In-progress": "bg-purple-100 text-purple-800",
-      Partial_completed: "bg-orange-100 text-orange-800",
-    };
-    return variants[status] || "bg-gray-100 text-gray-800";
-  };
-
-  const getStatusDisplayText = (status: string) => {
-    const displayTexts: Record<string, string> = {
-      Partial_completed: "Partial Completed",
-      Confirmed: "Confirmed",
-      Pending: "Pending",
-      Cancelled: "Cancelled",
-      Completed: "Completed",
-      "In-progress": "In-progress",
-    };
-    return displayTexts[status] || status;
-  };
-
-  const getPriorityBadge = (priority: string) => {
-    const variants: Record<string, string> = {
-      High: "bg-red-100 text-red-800",
-      Medium: "bg-yellow-100 text-yellow-800",
-      Low: "bg-green-100 text-green-800",
-    };
-    return variants[priority] || "bg-gray-100 text-gray-800";
-  };
 
   useEffect(() => {
     if (isEditMode && visitData) {
@@ -1171,17 +1140,21 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                       className="flex items-center space-x-4 rounded-lg border p-2"
                     >
                       <div className="flex-shrink-0">
-                        <Clock className="text-muted-foreground h-4 w-4" />
+                        {visit?.checkInImageUrl ? (
+                          <Avatar className="h-10 w-10 ">
+                            <AvatarImage
+                              src={visit.checkInImageUrl}
+                              alt="Check-in"
+                            />
+                          </Avatar>
+                        ) : (
+                          <Clock className="text-muted-foreground h-4 w-4" />
+                        )}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center space-x-2">
                           <p className="text-sm font-medium">{visit.time}</p>
-                          <Badge className={getPriorityBadge(visit.priority)}>
-                            {visit.priority}
-                          </Badge>
-                          <Badge className={getStatusBadge(visit.status)}>
-                            {getStatusDisplayText(visit.status)}
-                          </Badge>
+                          <StatusBadge status={visit.status} />
                         </div>
                         <p className="text-muted-foreground text-sm">
                           {visit.customer} - {visit.purpose}
@@ -1189,6 +1162,15 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                         <p className="text-muted-foreground text-xs">
                           Rep: {visit.rep}
                         </p>
+                        <div>
+                          <span className="text-muted-foreground text-sm">
+                            Priority:{" "}
+                          </span>
+                          <StatusBadge
+                            status={visit.priority}
+                            showDot={false}
+                          />
+                        </div>
                       </div>
                       <div className="flex gap-1">
                         {/* <PermissionGate
