@@ -61,6 +61,7 @@ const CustomerType = () => {
           totalCount={totalCount}
           loading={isLoading}
           currentPage={pagination.page}
+          pageSize={pagination.limit}
           paginationCallbacks={{ onPaginationChange }}
         />
       </TablePageLayout>

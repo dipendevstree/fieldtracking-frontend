@@ -257,9 +257,11 @@ export const CustomerDirectoryPage = () => {
         totalCount={totalCount}
         loading={isLoading}
         currentPage={pagination.page}
+        pageSize={pagination.limit}
         paginationCallbacks={{ onPaginationChange }}
         onEdit={handleEditCustomer}
       />
+
       {/* Action Modals */}
       <CustomersActionModal />
     </Main>

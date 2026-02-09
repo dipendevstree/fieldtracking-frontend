@@ -1,16 +1,17 @@
-import { ColumnDef } from '@tanstack/react-table'
-import { CustomDataTable } from '@/components/shared/custom-data-table'
-import { PaginationCallbacks } from '@/components/shared/custom-table-pagination'
-import { getColumns } from './columns'
-import { Customer } from '../types'
+import { ColumnDef } from "@tanstack/react-table";
+import { CustomDataTable } from "@/components/shared/custom-data-table";
+import { PaginationCallbacks } from "@/components/shared/custom-table-pagination";
+import { getColumns } from "./columns";
+import { Customer } from "../types";
 
 interface CustomerTableProps {
-  data: Customer[]
-  totalCount: number
-  loading?: boolean
-  paginationCallbacks: PaginationCallbacks
-  currentPage?: number
-  onEdit?: (id: string) => void
+  data: Customer[];
+  totalCount: number;
+  loading?: boolean;
+  paginationCallbacks: PaginationCallbacks;
+  currentPage?: number;
+  pageSize?: number;
+  onEdit?: (id: string) => void;
 }
 
 const CustomersTable = ({
@@ -19,12 +20,13 @@ const CustomersTable = ({
   loading,
   paginationCallbacks,
   currentPage,
+  pageSize,
   onEdit,
 }: CustomerTableProps) => {
   const columns = getColumns({ onEdit });
 
   return (
-    <div className='-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12'>
+    <div className="-mx-4 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12">
       <CustomDataTable
         paginationCallbacks={paginationCallbacks}
         loading={loading}
@@ -32,10 +34,11 @@ const CustomersTable = ({
         currentPage={currentPage}
         columns={columns as ColumnDef<unknown>[]}
         totalCount={totalCount}
-        key={'customers'}
+        defaultPageSize={pageSize}
+        key={"customers"}
       />
     </div>
-  )
-}
+  );
+};
 
-export default CustomersTable
+export default CustomersTable;

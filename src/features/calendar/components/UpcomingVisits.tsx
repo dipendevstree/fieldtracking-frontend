@@ -15,7 +15,7 @@ import {
   useGetAllCustomer,
   useGetAllVisit,
 } from "../services/calendar-view.hook";
-import { FormData } from "./CalendarView";
+import { FormData } from "../type/type";
 import UpcomingVisitsTable from "./upcoming-visits-table";
 import { formatDropDownLabel } from "@/utils/commonFunction";
 import { DateRange } from "react-day-picker";
@@ -93,7 +93,7 @@ export default function UpcomingVisits() {
         searchFor: value,
       }));
     }, 800),
-    []
+    [],
   );
   const handleGlobalSearchChange = (value: string | undefined) => {
     const searchValue = value ?? "";
