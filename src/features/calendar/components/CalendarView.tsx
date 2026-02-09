@@ -8,7 +8,7 @@ import {
 } from "@/data/app.data";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import debounce from "lodash.debounce";
-import { CalendarIcon, Clock, Edit, Trash2 } from "lucide-react";
+import { CalendarIcon, Edit, Trash2 } from "lucide-react";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import {
   AlertDialog,
@@ -20,7 +20,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -42,63 +41,15 @@ import {
   useGetAnalytics,
 } from "../services/calendar-view.hook";
 import { formatDropDownLabel } from "@/utils/commonFunction";
-
-interface Visit {
-  id: string;
-  visitId?: string;
-  salesRepresentativeUser: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    roleId?: string;
-  };
-  customer: { companyName: string } | string;
-  contact: string;
-  date: string;
-  time: string;
-  purpose: string;
-  location: string;
-  status: string;
-  priority: string;
-}
-
-interface Analytics {
-  totalVisits: number;
-  pending: number;
-  completed: number;
-  cancel: number;
-}
-
-export interface FormData {
-  roleId: string;
-  salesRep: string;
-  search: string;
-  territoryId: string;
-  customerId: string;
-  priority: string;
-}
-
-type MappedVisit = {
-  id: string;
-  rep: string;
-  salesRepId: string;
-  roleId?: string;
-  customer: string;
-  contact: string;
-  date: string;
-  time: string;
-  purpose: string;
-  location: string;
-  status: string;
-  priority: string;
-  originalVisit: Visit;
-};
-
-interface DeleteVisitDialogProps {
-  visit: MappedVisit | null;
-  isOpen: boolean;
-  onClose: () => void;
-}
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Analytics,
+  DeleteVisitDialogProps,
+  FormData,
+  MappedVisit,
+  Visit,
+} from "../type/type";
+import StatusBadge from "@/components/shared/common-status-badge";
 
 function DeleteVisitDialog({ visit, isOpen, onClose }: DeleteVisitDialogProps) {
   // Important: guard first to avoid calling hook with undefined
@@ -107,7 +58,7 @@ function DeleteVisitDialog({ visit, isOpen, onClose }: DeleteVisitDialogProps) {
 
   const { mutate: deleteVisit, isPending: isLoading } = useDeleteVisits(
     visit.id,
-    onClose
+    onClose,
   );
 
   return (
@@ -138,7 +89,7 @@ function DeleteVisitDialog({ visit, isOpen, onClose }: DeleteVisitDialogProps) {
 export default function CalendarView() {
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
@@ -149,7 +100,7 @@ export default function CalendarView() {
     roleId: "",
     salesRepresentativeUserId: "",
     customerId: "",
-    status: "pending",
+    status: "",
   });
 
   // State to manage which visit is targeted for deletion
@@ -162,13 +113,14 @@ export default function CalendarView() {
   });
 
   const { watch, setValue } = useForm<FormData>({
-    defaultValues: { roleId: "", salesRep: "", search: "" },
+    defaultValues: { roleId: "", salesRep: "", search: "", status: "" },
   });
 
   const roleId = watch("roleId");
   const selectedRep = watch("salesRep");
   const customerId = watch("customerId");
   const priority = watch("priority");
+  const status = watch("status");
 
   useEffect(() => {
     setPagination((prev) => ({
@@ -177,8 +129,9 @@ export default function CalendarView() {
       salesRepresentativeUserId: selectedRep,
       customerId,
       priority,
+      status,
     }));
-  }, [roleId, selectedRep, customerId, priority]);
+  }, [roleId, selectedRep, customerId, priority, status]);
 
   const { data: analytics } = useGetAnalytics(analyticsPagination) as {
     data: Analytics | undefined;
@@ -191,6 +144,8 @@ export default function CalendarView() {
       rep:
         `${visit.salesRepresentativeUser.firstName} ${visit.salesRepresentativeUser.lastName}`.trim() ||
         "Unknown",
+      firstName: visit.salesRepresentativeUser.firstName,
+      lastName: visit.salesRepresentativeUser.lastName,
       salesRepId: visit.salesRepresentativeUser.id || "",
       roleId: visit.salesRepresentativeUser.roleId || "",
       customer:
@@ -207,40 +162,9 @@ export default function CalendarView() {
         visit.status.slice(1).toLowerCase(),
       priority: visit.priority,
       originalVisit: visit,
+      checkInImageUrl: visit.checkInImageUrl || "",
+      profileUrl: visit.salesRepresentativeUser.profileUrl,
     })) || [];
-
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, string> = {
-      Confirmed: "bg-green-100 text-green-800",
-      Pending: "bg-yellow-100 text-yellow-800",
-      Cancelled: "bg-red-100 text-red-800",
-      Completed: "bg-blue-100 text-blue-800",
-      "In-progress": "bg-purple-100 text-purple-800",
-      Partial_completed: "bg-orange-100 text-orange-800",
-    };
-    return variants[status] || "bg-gray-100 text-gray-800";
-  };
-
-  const getStatusDisplayText = (status: string) => {
-    const displayTexts: Record<string, string> = {
-      Partial_completed: "Partial Completed",
-      Confirmed: "Confirmed",
-      Pending: "Pending",
-      Cancelled: "Cancelled",
-      Completed: "Completed",
-      "In-progress": "In-progress",
-    };
-    return displayTexts[status] || status;
-  };
-
-  const getPriorityBadge = (priority: string) => {
-    const variants: Record<string, string> = {
-      High: "bg-red-100 text-red-800",
-      Medium: "bg-yellow-100 text-yellow-800",
-      Low: "bg-green-100 text-green-800",
-    };
-    return variants[priority] || "bg-gray-100 text-gray-800";
-  };
 
   const handleDateChange = (newDate?: string) => {
     const value = newDate ?? new Date().toISOString().split("T")[0];
@@ -255,7 +179,7 @@ export default function CalendarView() {
         searchFor: value,
       }));
     }, 800),
-    []
+    [],
   );
 
   const handleGlobalSearchChange = (value: string | undefined) => {
@@ -299,6 +223,19 @@ export default function CalendarView() {
   }));
 
   const priorityOptions = Object.entries(Priority).map(([key, value]) => ({
+    label: formatDropDownLabel(key),
+    value,
+  }));
+
+  const Status = {
+    PENDING: "pending",
+    CHECKIN: "checkin",
+    COMPLETED: "completed",
+    CANCEL: "cancel",
+    PARTIAL_COMPLETED: "partial_completed",
+  };
+
+  const statusOptions = Object.entries(Status).map(([key, value]) => ({
     label: formatDropDownLabel(key),
     value,
   }));
@@ -356,6 +293,16 @@ export default function CalendarView() {
       placeholder: "Select Priority",
       value: priority,
       options: priorityOptions,
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+    {
+      key: "status",
+      type: "searchable-select",
+      onChange: (value) => setValue("status", value ?? ""),
+      onCancelPress: () => setValue("status", ""),
+      placeholder: "Select Status",
+      value: status,
+      options: statusOptions,
       searchableSelectClassName: "w-full max-w-[180px]",
     },
   ];
@@ -444,7 +391,7 @@ export default function CalendarView() {
                 (visit) =>
                   visit.date === selectedDate &&
                   (!roleId || visit.roleId === roleId) &&
-                  (!selectedRep || visit.salesRepId === selectedRep)
+                  (!selectedRep || visit.salesRepId === selectedRep),
               )
               .map((visit) => (
                 <div
@@ -452,17 +399,23 @@ export default function CalendarView() {
                   className="flex items-center space-x-4 rounded-lg border p-2"
                 >
                   <div className="flex-shrink-0">
-                    <Clock className="text-muted-foreground h-4 w-4" />
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage
+                        src={visit.checkInImageUrl || visit.profileUrl || ""}
+                        alt="Visit Image"
+                        className="object-cover"
+                      />
+                      <AvatarFallback>
+                        {visit.firstName?.[0]}
+                        {visit.lastName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
                   </div>
+
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center space-x-2">
                       <p className="text-sm font-medium">{visit.time}</p>
-                      <Badge className={getPriorityBadge(visit.priority)}>
-                        {visit.priority}
-                      </Badge>
-                      <Badge className={getStatusBadge(visit.status)}>
-                        {getStatusDisplayText(visit.status)}
-                      </Badge>
+                      <StatusBadge status={visit.status} />
                     </div>
                     <p className="text-muted-foreground text-sm">
                       {visit.customer} - {visit.purpose}
@@ -470,9 +423,16 @@ export default function CalendarView() {
                     <p className="text-muted-foreground text-xs">
                       Rep: {visit.rep}
                     </p>
+                    <div>
+                      <span className="text-muted-foreground text-sm">
+                        Priority:{" "}
+                      </span>
+                      <StatusBadge status={visit.priority} showDot={false} />
+                    </div>
                   </div>
-                  <div className="flex space-x-2">
-                    {/* <PermissionGate
+                  {visit.status === "Pending" && (
+                    <div className="flex space-x-2">
+                      {/* <PermissionGate
                       requiredPermission="calender_view"
                       action="viewOwn"
                     >
@@ -485,39 +445,40 @@ export default function CalendarView() {
                         <Eye className="h-3 w-3" />
                       </Button>
                     </PermissionGate> */}
-                    <PermissionGate
-                      requiredPermission="calender_view"
-                      action="edit"
-                    >
-                      <Button
-                        variant="outline"
-                        className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
-                        size="sm"
-                        onClick={() =>
-                          navigate({
-                            to: `/calendar/schedule-visit/${visit.id}`,
-                          })
-                        }
-                        aria-label={`Edit visit ${visit.id}`}
+                      <PermissionGate
+                        requiredPermission="calender_view"
+                        action="edit"
                       >
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                    </PermissionGate>
-                    <PermissionGate
-                      requiredPermission="calender_view"
-                      action="delete"
-                    >
-                      <Button
-                        className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setVisitToDelete(visit)}
-                        aria-label={`Delete visit ${visit.id}`}
+                        <Button
+                          variant="outline"
+                          className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
+                          size="sm"
+                          onClick={() =>
+                            navigate({
+                              to: `/calendar/schedule-visit/${visit.id}`,
+                            })
+                          }
+                          aria-label={`Edit visit ${visit.id}`}
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      </PermissionGate>
+                      <PermissionGate
+                        requiredPermission="calender_view"
+                        action="delete"
                       >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </PermissionGate>
-                  </div>
+                        <Button
+                          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setVisitToDelete(visit)}
+                          aria-label={`Delete visit ${visit.id}`}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </PermissionGate>
+                    </div>
+                  )}
                 </div>
               ))}
           </div>

@@ -7,7 +7,7 @@ import {
 } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useNavigate, useParams, useSearch } from "@tanstack/react-router";
-import { AlertCircle, MapPin, Trash2, Clock, Edit } from "lucide-react";
+import { AlertCircle, MapPin, Trash2, Edit } from "lucide-react";
 import moment from "moment-timezone";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
@@ -31,7 +31,6 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Main } from "@/components/layout/main";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -72,6 +71,8 @@ import { TimePicker } from "@/components/ui/TimePicker";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import StatusBadge from "@/components/shared/common-status-badge";
 
 function DeleteVisitDialog({
   visit,
@@ -86,7 +87,7 @@ function DeleteVisitDialog({
     () => {
       if (onSuccess) onSuccess();
       onClose();
-    }
+    },
   );
 
   return (
@@ -157,6 +158,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
     control,
     reset,
     setValue,
+    getValues,
     watch,
     formState: { errors, isDirty },
   } = form;
@@ -220,6 +222,8 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
       rep:
         `${visit.salesRepresentativeUser.firstName} ${visit.salesRepresentativeUser.lastName}`.trim() ||
         "Unknown",
+      firstName: visit.salesRepresentativeUser.firstName,
+      lastName: visit.salesRepresentativeUser.lastName,
       salesRepId: visit.salesRepresentativeUser.id || "",
       roleId: visit.salesRepresentativeUser.roleId || "",
       customer:
@@ -236,40 +240,9 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
         visit.status.slice(1).toLowerCase(),
       priority: visit.priority,
       originalVisit: visit,
+      checkInImageUrl: visit.checkInImageUrl,
+      profileUrl: visit.salesRepresentativeUser.profileUrl,
     })) || [];
-
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, string> = {
-      Confirmed: "bg-green-100 text-green-800",
-      Pending: "bg-yellow-100 text-yellow-800",
-      Cancelled: "bg-red-100 text-red-800",
-      Completed: "bg-blue-100 text-blue-800",
-      "In-progress": "bg-purple-100 text-purple-800",
-      Partial_completed: "bg-orange-100 text-orange-800",
-    };
-    return variants[status] || "bg-gray-100 text-gray-800";
-  };
-
-  const getStatusDisplayText = (status: string) => {
-    const displayTexts: Record<string, string> = {
-      Partial_completed: "Partial Completed",
-      Confirmed: "Confirmed",
-      Pending: "Pending",
-      Cancelled: "Cancelled",
-      Completed: "Completed",
-      "In-progress": "In-progress",
-    };
-    return displayTexts[status] || status;
-  };
-
-  const getPriorityBadge = (priority: string) => {
-    const variants: Record<string, string> = {
-      High: "bg-red-100 text-red-800",
-      Medium: "bg-yellow-100 text-yellow-800",
-      Low: "bg-green-100 text-green-800",
-    };
-    return variants[priority] || "bg-gray-100 text-gray-800";
-  };
 
   useEffect(() => {
     if (isEditMode && visitData) {
@@ -392,7 +365,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
       locationInputMode: "map",
       isMapModalOpen: false,
       latLng: "",
-    }))
+    })),
   );
 
   useEffect(() => {
@@ -402,7 +375,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
         locationInputMode: locationStates[index]?.locationInputMode || "map",
         isMapModalOpen: locationStates[index]?.isMapModalOpen || false,
         latLng: locationStates[index]?.latLng || "",
-      }))
+      })),
     );
   }, [fields.length]);
 
@@ -416,7 +389,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
       country: string;
       postalCode: string;
     },
-    index: number
+    index: number,
   ) => {
     setValue(`visits.${index}.location`, data.address, {
       shouldValidate: true,
@@ -453,8 +426,8 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
 
     setLocationStates((prev) =>
       prev.map((state, i) =>
-        i === index ? { ...state, isMapModalOpen: false } : state
-      )
+        i === index ? { ...state, isMapModalOpen: false } : state,
+      ),
     );
   };
 
@@ -492,8 +465,9 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
   const { mutate: createVisit, isPending: isCreateLoading } = useCreateVisits(
     () => {
       const salesRepId = watch("salesRep");
+      const currentDate = getValues("date");
       reset({
-        date: new Date().toISOString().split("T")[0],
+        date: currentDate || new Date().toISOString().split("T")[0],
         salesRep: salesRepId,
         visits: [
           {
@@ -515,11 +489,16 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
           },
         ],
       });
-    }
+    },
   );
   const { mutate: updateVisit, isPending: isUpdateLoading } = useUpdateVisits(
     visitId || "",
-    onClose
+    () => {
+      reset(getValues());
+      setTimeout(() => {
+        onClose && onClose();
+      }, 0);
+    },
   );
   const isLoading = isCreateLoading || isUpdateLoading;
   const showLoadingSpinner = isEditMode && isVisitLoading;
@@ -553,8 +532,8 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
           onOpenChange={(open) =>
             setLocationStates((prev) =>
               prev.map((s, i) =>
-                i === index ? { ...s, isMapModalOpen: open } : s
-              )
+                i === index ? { ...s, isMapModalOpen: open } : s,
+              ),
             )
           }
           onLocationSelect={(data) => handleMapLocationSelect(data, index)}
@@ -662,7 +641,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                         key={field.id}
                         className={cn(
                           "border p-4 rounded-md relative",
-                          index !== 0 && "mt-4"
+                          index !== 0 && "mt-4",
                         )}
                       >
                         <div className="flex justify-between items-center mb-4">
@@ -723,7 +702,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                                   onChange={(value) => {
                                     field.onChange(value);
                                     const selectedCustomer = customerList.find(
-                                      (c: any) => c.customerId === value
+                                      (c: any) => c.customerId === value,
                                     );
                                     if (selectedCustomer) {
                                       setLocationStates((prev) =>
@@ -733,8 +712,8 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                                                 ...state,
                                                 isCustomLocation: false,
                                               }
-                                            : state
-                                        )
+                                            : state,
+                                        ),
                                       );
                                       const fullAddress = [
                                         selectedCustomer.streetAddress,
@@ -749,42 +728,42 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                                         fullAddress,
                                         {
                                           shouldValidate: true,
-                                        }
+                                        },
                                       );
                                       setValue(
                                         `visits.${index}.address`,
                                         selectedCustomer.streetAddress || "",
-                                        { shouldValidate: true }
+                                        { shouldValidate: true },
                                       );
                                       setValue(
                                         `visits.${index}.city`,
                                         selectedCustomer.city || "",
-                                        { shouldValidate: true }
+                                        { shouldValidate: true },
                                       );
                                       setValue(
                                         `visits.${index}.state`,
                                         selectedCustomer.state || "",
-                                        { shouldValidate: true }
+                                        { shouldValidate: true },
                                       );
                                       setValue(
                                         `visits.${index}.zipCode`,
                                         String(selectedCustomer.zipCode || ""),
-                                        { shouldValidate: true }
+                                        { shouldValidate: true },
                                       );
                                       setValue(
                                         `visits.${index}.country`,
                                         selectedCustomer.country || "",
-                                        { shouldValidate: true }
+                                        { shouldValidate: true },
                                       );
                                       setValue(
                                         `visits.${index}.latitude`,
                                         selectedCustomer.latitude,
-                                        { shouldValidate: true }
+                                        { shouldValidate: true },
                                       );
                                       setValue(
                                         `visits.${index}.longitude`,
                                         selectedCustomer.longitude,
-                                        { shouldValidate: true }
+                                        { shouldValidate: true },
                                       );
                                     }
                                   }}
@@ -949,8 +928,8 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                                         ...state,
                                         isCustomLocation: Boolean(checked),
                                       }
-                                    : state
-                                )
+                                    : state,
+                                ),
                               )
                             }
                           />
@@ -978,8 +957,8 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                                               | "search"
                                               | "map",
                                           }
-                                        : state
-                                    )
+                                        : state,
+                                    ),
                                   )
                                 }
                                 className="flex items-center space-x-4 pt-1"
@@ -1027,8 +1006,8 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                                       prev.map((state, i) =>
                                         i === index
                                           ? { ...state, latLng: e.target.value }
-                                          : state
-                                      )
+                                          : state,
+                                      ),
                                     )
                                   }
                                 />
@@ -1042,8 +1021,8 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                                       prev.map((state, i) =>
                                         i === index
                                           ? { ...state, isMapModalOpen: true }
-                                          : state
-                                      )
+                                          : state,
+                                      ),
                                     )
                                   }
                                   className="w-full justify-start text-left font-normal"
@@ -1156,7 +1135,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                   .filter(
                     (visit) =>
                       visit.date === selectedDate &&
-                      (!selectedRep || visit.salesRepId === selectedRep)
+                      (!selectedRep || visit.salesRepId === selectedRep),
                   )
                   .map((visit) => (
                     <div
@@ -1164,17 +1143,24 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                       className="flex items-center space-x-4 rounded-lg border p-2"
                     >
                       <div className="flex-shrink-0">
-                        <Clock className="text-muted-foreground h-4 w-4" />
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage
+                            src={
+                              visit.checkInImageUrl || visit.profileUrl || ""
+                            }
+                            alt="Visit Image"
+                            className="object-cover"
+                          />
+                          <AvatarFallback>
+                            {visit.firstName?.[0]}
+                            {visit.lastName?.[0]}
+                          </AvatarFallback>
+                        </Avatar>
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center space-x-2">
                           <p className="text-sm font-medium">{visit.time}</p>
-                          <Badge className={getPriorityBadge(visit.priority)}>
-                            {visit.priority}
-                          </Badge>
-                          <Badge className={getStatusBadge(visit.status)}>
-                            {getStatusDisplayText(visit.status)}
-                          </Badge>
+                          <StatusBadge status={visit.status} />
                         </div>
                         <p className="text-muted-foreground text-sm">
                           {visit.customer} - {visit.purpose}
@@ -1182,9 +1168,19 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                         <p className="text-muted-foreground text-xs">
                           Rep: {visit.rep}
                         </p>
+                        <div>
+                          <span className="text-muted-foreground text-sm">
+                            Priority:{" "}
+                          </span>
+                          <StatusBadge
+                            status={visit.priority}
+                            showDot={false}
+                          />
+                        </div>
                       </div>
-                      <div className="flex gap-1">
-                        {/* <PermissionGate
+                      {visit.status === "Pending" && (
+                        <div className="flex gap-1">
+                          {/* <PermissionGate
                             requiredPermission="calender_view"
                             action="viewOwn"
                           >
@@ -1196,43 +1192,44 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                               <Eye />
                             </Button>
                           </PermissionGate> */}
-                        <PermissionGate
-                          requiredPermission="calender_view"
-                          action="edit"
-                        >
-                          <Button
-                            className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              navigate({
-                                to: `/calendar/schedule-visit/${visit.id}`,
-                              })
-                            }
-                            aria-label={`Edit visit ${visit.id}`}
+                          <PermissionGate
+                            requiredPermission="calender_view"
+                            action="edit"
                           >
-                            <Edit className="h-3 w-3" />
-                          </Button>
-                        </PermissionGate>
-                        <PermissionGate
-                          requiredPermission="calender_view"
-                          action="delete"
-                        >
-                          <Button
-                            className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setOpenDeleteDialog(true);
-                              setVisitToDelete(visit);
-                            }}
-                            aria-label={`Delete visit ${visit.id}`}
-                            disabled={visitToDelete !== null}
+                            <Button
+                              className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                navigate({
+                                  to: `/calendar/schedule-visit/${visit.id}`,
+                                })
+                              }
+                              aria-label={`Edit visit ${visit.id}`}
+                            >
+                              <Edit className="h-3 w-3" />
+                            </Button>
+                          </PermissionGate>
+                          <PermissionGate
+                            requiredPermission="calender_view"
+                            action="delete"
                           >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </PermissionGate>
-                      </div>
+                            <Button
+                              className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setOpenDeleteDialog(true);
+                                setVisitToDelete(visit);
+                              }}
+                              aria-label={`Delete visit ${visit.id}`}
+                              disabled={visitToDelete !== null}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </PermissionGate>
+                        </div>
+                      )}
                     </div>
                   ))}
               </div>

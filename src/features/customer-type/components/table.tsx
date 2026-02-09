@@ -11,6 +11,7 @@ interface CustomerTypeTableProps {
   loading?: boolean;
   paginationCallbacks: PaginationCallbacks;
   currentPage?: number;
+  pageSize?: number;
 }
 
 const CustomerTypeTable = ({
@@ -19,6 +20,7 @@ const CustomerTypeTable = ({
   loading,
   paginationCallbacks,
   currentPage,
+  pageSize,
 }: CustomerTypeTableProps) => {
   return (
     <div className="-mx-4 -mt-2 flex-1 overflow-auto px-4 py-1 lg:flex-row lg:space-y-0 lg:space-x-12">
@@ -29,6 +31,7 @@ const CustomerTypeTable = ({
         currentPage={currentPage}
         columns={columns as ColumnDef<unknown>[]}
         totalCount={totalCount}
+        defaultPageSize={pageSize}
         key={"customerType"}
       />
       <CustomerTypeActionModal key={"CustomerType-action-modal"} />
