@@ -265,6 +265,7 @@ export default function Livetracking() {
       type: "searchable-select",
       key: "userSelect",
       placeholder: "Select User",
+      searchableSelectClassName: "w-[200px]",
       value: selectedUserId,
       options: usersOptions,
       onChange: (value) => {

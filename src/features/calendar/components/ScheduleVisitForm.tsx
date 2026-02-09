@@ -446,6 +446,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
       longitude: visit.longitude || 0,
       country: visit.country || "",
       preparationNotes: visit.preparationNotes || "",
+      salesRepresentativeUserId: data.salesRep,
     }));
 
     if (isEditMode) {
@@ -615,7 +616,9 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                             placeholder={
                               isUsersLoading ? "Loading..." : "Select User..."
                             }
-                            disabled={isUsersLoading || isEditMode}
+                            disabled={isUsersLoading
+                              // || isEditMode
+                            }
                             onCancelPress={() => {
                               setValue("salesRep", "");
                             }}

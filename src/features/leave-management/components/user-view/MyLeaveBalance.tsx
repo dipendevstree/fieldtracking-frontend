@@ -247,6 +247,11 @@ export default function MyLeaveBalance() {
           const title = (
             <div
               className="flex"
+              onClick={() => {
+                document.getElementById("pending-leave-section")?.scrollIntoView({
+                  behavior: "smooth",
+                });
+              }}
               title={`
                 ${employeeName} (${typeName}) - ${
                   isSameDay(start, end)

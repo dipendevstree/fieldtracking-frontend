@@ -2,12 +2,13 @@ import { ColumnDef } from "@tanstack/react-table";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import { DataTableRowActions } from "./table-action-button";
 import { format } from "date-fns";
+import CustomTooltip from "@/components/shared/custom-tooltip";
 
 export const columns: ColumnDef<any>[] = [
   {
     accessorKey: "salesRap",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title="SalesRap" />
+      <CustomDataTableColumnHeader column={column} title="Sales Representative" />
     ),
     cell: ({ row }) => {
       const user = row.original.salesRepresentativeUser;
@@ -71,14 +72,15 @@ export const columns: ColumnDef<any>[] = [
     ),
     cell: ({ row }) => {
       const streetAddress = row.original.streetAddress || "";
-      const firstPart = streetAddress.split(",")[0];
       return (
-        <div
-          className="text-muted-foreground max-w-[200px] cursor-default truncate text-sm"
-          title={streetAddress}
-        >
-          {firstPart}
-        </div>
+        <CustomTooltip title={streetAddress}>
+          <div
+            className="text-muted-foreground max-w-[200px] cursor-default truncate text-sm"
+            title={streetAddress}
+          >
+            {streetAddress}
+          </div>
+        </CustomTooltip>
       );
     },
     enableSorting: false,

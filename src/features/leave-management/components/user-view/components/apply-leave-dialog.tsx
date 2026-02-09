@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, subDays } from "date-fns";
 import { Loader2, Paperclip, UploadCloud } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 
@@ -49,6 +49,10 @@ interface ApplyLeaveDialogProps {
   defaultLeaveTypeId?: string;
   leaveTypesList: any[];
   workFromHomeTypeOpen?: boolean;
+  selectDateRange?: {
+    from: Date | undefined;
+    to: Date | undefined;
+  };
 }
 
 export function ApplyLeaveDialog({
@@ -58,6 +62,7 @@ export function ApplyLeaveDialog({
   defaultLeaveTypeId,
   leaveTypesList,
   workFromHomeTypeOpen,
+  selectDateRange,
 }: ApplyLeaveDialogProps) {
   const [dateRange, setDateRange] = useState<{
     from: Date | undefined;
@@ -202,6 +207,17 @@ export function ApplyLeaveDialog({
     }
   }, [watchStartDate, watchEndDate]);
 
+  useEffect(() => {
+    if (selectDateRange && selectDateRange.from && selectDateRange.to) {
+      setDateRange({
+        from: selectDateRange.from,
+        to: subDays(selectDateRange.to, 1), // Subtract 1 day to make it inclusive
+      });
+      form.setValue("startDate", selectDateRange.from);
+      form.setValue("endDate", subDays(selectDateRange.to, 1));
+    }
+  }, [selectDateRange]);
+
   const onSubmit = (data: ApplyLeaveFormValues) => {
     const formData = new FormData();
     formData.append("leaveTypeId", data.leaveTypeId);
@@ -292,7 +308,7 @@ export function ApplyLeaveDialog({
           </div>
         ) : (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
               <FormField
                 control={form.control}
                 name="leaveTypeId"
