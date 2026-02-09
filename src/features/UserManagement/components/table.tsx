@@ -10,6 +10,7 @@ interface UserTableProps {
   loading?: boolean;
   paginationCallbacks: PaginationCallbacks;
   currentPage?: number;
+  pageSize?: number;
   hideActions?: boolean;
 }
 
@@ -19,6 +20,7 @@ const AllUsersTable = ({
   loading,
   paginationCallbacks,
   currentPage,
+  pageSize,
   hideActions = false,
 }: UserTableProps) => {
   const { user } = useAuthStore();
@@ -40,6 +42,7 @@ const AllUsersTable = ({
         currentPage={currentPage}
         columns={filteredColumns as ColumnDef<unknown>[]}
         totalCount={totalCount}
+        defaultPageSize={pageSize}
         key={"users"}
       />
     </div>
