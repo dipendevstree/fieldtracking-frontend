@@ -19,14 +19,8 @@ export const feedbackFormSchema = z.object({
     .max(5, "Rating cannot exceed 5 stars")
     .int("Rating must be a whole number"),
 
-  comments: z
-    .string()
-    .min(1, "Please describe your experience")
-    .min(10, "Please provide at least 10 characters describing your experience")
-    .max(500, "Comments must be less than 500 characters")
-    .transform((val) => val.trim()),
+  comments: z.string().max(500, "Comments must be less than 500 characters"),
 
-  // Optional fields that might be useful for feedback tracking
   visitId: z.string().optional(),
   submittedAt: z.date().optional(),
   customerSatisfaction: z
