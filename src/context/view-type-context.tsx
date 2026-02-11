@@ -52,6 +52,15 @@ export function ViewTypeProvider({ children }: Props) {
     setViewType(viewType);
   }, [viewType]);
 
+  // set decvice id to local storage if not present
+  React.useEffect(() => {
+    let deviceId = localStorage.getItem("deviceId");
+    if (!deviceId) {
+      deviceId = `web_${crypto.randomUUID()}`;
+      localStorage.setItem("deviceId", deviceId);
+    }
+  }, []);
+
   return (
     <ViewTypeContext.Provider
       value={{ viewType, setViewType, viewTypeToggle, setViewTypeToggle }}

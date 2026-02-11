@@ -19,11 +19,14 @@ export const useSendOpt = (onSuccess: (data: any) => void) => {
     },
   });
 };
-export const useAdminLogin = (onSuccess: (data: any) => void) => {
+export const useAdminLogin = (onSuccess: (data: any) => void, onFailure: (error: any) => void) => {
   return usePostData({
     url: API.auth.adminLogin,
     onSuccess: (data: any) => {
       onSuccess(data);
+    },
+    onError: (error: any) => {
+      onFailure(error);
     },
   });
 };
