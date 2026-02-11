@@ -1,7 +1,22 @@
 import StatusBadge from "@/components/shared/common-status-badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { LogOut } from "lucide-react";
+import moment from "moment";
 
+interface UserDevice {
+  id: string;
+  deviceId: string;
+  deviceName: string;
+  userId: string;
+  isWeb: boolean;
+  lastActive: string;
+}
 interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -9,16 +24,20 @@ interface Props {
     user: {
       id: string;
       schemaName: string;
+      timeZone: string;
     };
-    userDevices: {
-      id: string;
-      deviceName: string;
-      lastActive: string;
-    }[] | null;
+    userDevices: UserDevice[] | null;
   };
 }
 
-export default function UserDeviceModal({ open, onOpenChange, loginData }: Props) {
+export default function UserDeviceModal({
+  open,
+  onOpenChange,
+  loginData,
+}: Props) {
+  const MAX_DEVICE_LIMIT = 1;
+  const handleLogoutDevice = (userDevice: UserDevice) => {};
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -30,22 +49,34 @@ export default function UserDeviceModal({ open, onOpenChange, loginData }: Props
         </DialogHeader>
         <div className="space-y-4">
           <p className="text-sm">
-            You've reached the maximum number of active devices. Please log out from one of your active devices to continue.
+            You've reached the maximum number of active devices. Please log out
+            from one of your active devices to continue.
           </p>
-          <div className="bg-muted p-4 rounded">
-            <h3 className="font-semibold">Active Devices</h3>
+          <div className="border p-4 rounded bg-gray-100">
+            <h3 className="font-semibold mb-2">Active Devices</h3>
             <div className="space-y-2 mt-2">
               {loginData?.userDevices?.map((device: any) => (
-                <div key={device.id} className="p-2 border rounded">
+                <div
+                  key={device.id}
+                  className={`p-2 border rounded-sm border-2 ${device.isActive ? "border-green-200 bg-green-50" : "border-gray-200 bg-gray-50"}`}
+                >
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="text-sm font-medium">Device: {device.isWeb ? "Web" : "Mobile"} <StatusBadge status={device.isActive ? "Active" : "Inactive"} /></p>
+                      <p className="text-sm font-medium">
+                        Device: {device.isWeb ? "Web Browser" : "Mobile"}{" "}
+                        <StatusBadge
+                          status={device.isActive ? "Active" : "Inactive"}
+                        />
+                      </p>
                       <p className="text-xs text-muted-foreground">
-                        Last active: {new Date(device.lastActive).toLocaleString()}
+                        Last active:{" "}
+                        {moment
+                          .tz(device.lastActive, loginData.user.timeZone)
+                          .format("DD MMM YYYY, h:mm A")}
                       </p>
                     </div>
-                    <Button variant="outline" size="sm" disabled>
-                      Log Out
+                    <Button variant="outline" size="sm" onClick={() => handleLogoutDevice(device)}>
+                      <LogOut size={20} />
                     </Button>
                   </div>
                 </div>
@@ -53,7 +84,7 @@ export default function UserDeviceModal({ open, onOpenChange, loginData }: Props
             </div>
           </div>
         </div>
-        <Button>Continue</Button>
+        <Button disabled={loginData?.userDevices?.length !== MAX_DEVICE_LIMIT}>Continue</Button>
       </DialogContent>
     </Dialog>
   );

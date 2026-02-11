@@ -48,3 +48,7 @@ export const useLogout = (onSuccess: (data: any) => void) => {
     },
   });
 };
+
+export const useLogoutDevice = (onSuccess: (data: any) => void) => {
+  
+}

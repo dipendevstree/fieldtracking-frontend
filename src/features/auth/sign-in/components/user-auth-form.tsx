@@ -50,7 +50,10 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
 
   function onSubmit(data: TFormSchema) {
     let deviceId = localStorage.getItem("deviceId");
-    const payload = { ...data, deviceId };
+    const payload = {
+      ...data,
+      deviceId
+    };
     loginMutate(payload);
   }
 
