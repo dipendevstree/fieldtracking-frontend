@@ -69,5 +69,21 @@ export interface AuditPagination {
   action?: string;
   startDate?: string;
   endDate?: string;
-  userId?:string
+  userId?: string;
+}
+
+export interface CustomerContact {
+  customerName?: string;
+  phoneNumber?: string;
+  email?: string;
+  designation?: string;
+  isPrimary?: boolean;
+}
+
+export interface Customer {
+  companyName?: string;
+  streetAddress?: string;
+  customerType?: { typeName?: string };
+  industry?: { industryName?: string };
+  customerContacts?: CustomerContact[];
 }
