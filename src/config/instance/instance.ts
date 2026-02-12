@@ -66,7 +66,7 @@ axiosInstance.interceptors.response.use(
     if (status === 401) {
       setItem(StorageEnum.TOKEN, null);
       useAuthStore.getState().logout();
-      window.localStorage.clear();
+      // window.localStorage.clear(); // Prevent to delete deviceId value
     }
 
     if (!error.response) {

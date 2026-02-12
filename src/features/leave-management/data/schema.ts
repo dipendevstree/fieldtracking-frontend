@@ -25,15 +25,78 @@ export const LeaveRulesSchema = z.object({
   // Carry Forward
   leaveCarryForwardRuleActive: z.boolean(),
   maximumCarryForwardDays: z.coerce.number().min(0),
-  carryForwardExpiryMonths: z.coerce
-    .number()
-    .min(1, "Carry Forward Leave Expiry Months is greater than or equal to 1")
-    .max(11, "Carry Forward Leave Expiry Months is less than or equal to 11"),
+  carryForwardExpiryMonths: z.coerce.number(),
 
   // Encashment
   leaveEncashmentRuleActive: z.boolean(),
   maximumEncashmentDays: z.coerce.number().min(0),
   minimumEncashmentDaysRequired: z.coerce.number().min(0),
+}).superRefine((data, ctx) => {
+  // Sandwich Leave Validation
+  if (data.sandwichLeaveRuleActive) {
+    if (data.maximumSandwichLeaveDays <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Maximum sandwich leave days must be greater than zero.",
+        path: ["maximumSandwichLeaveDays"],
+      });
+    }
+  }
+
+  // Cross Leave Validation
+  if (data.crossLeaveDeductionRuleActive) {
+    if (!data.primaryLeaveType) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Primary leave type is required.",
+        path: ["primaryLeaveType"],
+      });
+    }
+
+    if (data.secondaryLeaveTypes && data.secondaryLeaveTypes.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "At least one secondary leave type must be selected.",
+        path: ["secondaryLeaveTypes"],
+      });
+    }
+  }
+
+  // Carry Forward Validation
+  if (data.leaveCarryForwardRuleActive) {
+    if (data.maximumCarryForwardDays <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Maximum carry-forward days must be greater than zero.",
+        path: ["maximumCarryForwardDays"],
+      });
+    }
+    if (data.carryForwardExpiryMonths <= 0 || data.carryForwardExpiryMonths > 11) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Carry-forward expiry months must be between 1 and 11.",
+        path: ["carryForwardExpiryMonths"],
+      });
+    }
+  }
+
+  // Encashment Validation
+  if (data.leaveEncashmentRuleActive) {
+    if (data.maximumEncashmentDays <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Maximum encashment days must be greater than zero.",
+        path: ["maximumEncashmentDays"],
+      });
+    }
+    if (data.minimumEncashmentDaysRequired < 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Minimum encashment days required cannot be less than zero.",
+        path: ["minimumEncashmentDaysRequired"],
+      });
+    }
+  }
 });
 
 export type LeaveRules = z.infer<typeof LeaveRulesSchema>;

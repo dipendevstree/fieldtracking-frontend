@@ -111,6 +111,7 @@ const API = {
   },
   userDevice: {
     upsert: "userDevice/upsert",
+    logoutFromOtherDevices: "userDevice/logout-other-devices",
   },
   roles: {
     list: "role/list",
