@@ -30,10 +30,8 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
     login(data);
   };
   const onFailure = (error: any) => {
-    console.error("Login failed, error:", error);
     if (error?.status === 409) {
       setLoginData(error?.response?.data?.data);
-      console.log("Login data for device modal:", error?.response?.data?.data);
       setOpenDeviceModal(true);
     }
   }
@@ -144,6 +142,7 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             }
           }}
           loginData={loginData}
+          login={() => form.handleSubmit(onSubmit)()}
         />
       </form>
     </Form>
