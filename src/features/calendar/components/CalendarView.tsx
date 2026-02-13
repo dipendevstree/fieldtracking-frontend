@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "@tanstack/react-router";
 import {
@@ -10,6 +10,8 @@ import { PermissionGate } from "@/permissions/components/PermissionGate";
 import debounce from "lodash.debounce";
 import { CalendarIcon, Edit, Trash2 } from "lucide-react";
 import { useSelectOptions } from "@/hooks/use-select-option";
+import { DateRange } from "react-day-picker";
+import moment from "moment";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -88,14 +90,28 @@ function DeleteVisitDialog({ visit, isOpen, onClose }: DeleteVisitDialogProps) {
 
 export default function CalendarView() {
   const navigate = useNavigate();
-  const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split("T")[0],
-  );
+  const initialTodayDate = moment().format("YYYY-MM-DD");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(),
+    to: new Date(),
+  });
+
+  // Calculate isToday dynamically to ensure fresh comparison
+  const isToday = useMemo(() => {
+    const todayDate = moment().format("YYYY-MM-DD");
+    const fromDate = dateRange?.from
+      ? moment(dateRange.from).format("YYYY-MM-DD")
+      : null;
+    const toDate = dateRange?.to
+      ? moment(dateRange.to).format("YYYY-MM-DD")
+      : null;
+    return fromDate === todayDate && toDate === todayDate;
+  }, [dateRange]);
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
-    startDate: new Date().toISOString().split("T")[0],
-    endDate: new Date().toISOString().split("T")[0],
+    startDate: initialTodayDate,
+    endDate: initialTodayDate,
     searchFor: "",
     roleId: "",
     salesRepresentativeUserId: "",
@@ -105,12 +121,6 @@ export default function CalendarView() {
 
   // State to manage which visit is targeted for deletion
   const [visitToDelete, setVisitToDelete] = useState<MappedVisit | null>(null);
-
-  const [analyticsPagination] = useState({
-    startDate: new Date().toISOString().split("T")[0],
-    endDate: new Date().toISOString().split("T")[0],
-    byOrganization: true,
-  });
 
   const { watch, setValue } = useForm<FormData>({
     defaultValues: { roleId: "", salesRep: "", search: "", status: "" },
@@ -133,10 +143,14 @@ export default function CalendarView() {
     }));
   }, [roleId, selectedRep, customerId, priority, status]);
 
-  const { data: analytics } = useGetAnalytics(analyticsPagination) as {
+  const { data: analytics } = useGetAnalytics({
+    startDate: pagination.startDate,
+    endDate: pagination.endDate,
+    byOrganization: true,
+  }) as {
     data: Analytics | undefined;
   };
-  
+
   const { data: visits, isLoading, error } = useGetAllVisit(pagination);
 
   const upcomingVisits: MappedVisit[] =
@@ -167,10 +181,31 @@ export default function CalendarView() {
       profileUrl: visit.salesRepresentativeUser.profileUrl,
     })) || [];
 
-  const handleDateChange = (newDate?: string) => {
-    const value = newDate ?? new Date().toISOString().split("T")[0];
-    setSelectedDate(value);
-    setPagination((prev) => ({ ...prev, startDate: value, endDate: value }));
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    setDateRange(range);
+    if (range?.from && range?.to) {
+      setPagination((prev) => ({
+        ...prev,
+        startDate: moment(range.from).format("YYYY-MM-DD"),
+        endDate: moment(range.to).format("YYYY-MM-DD"),
+      }));
+    } else if (range?.from) {
+      // If only 'from' is selected, use it for both start and end
+      const dateStr = moment(range.from).format("YYYY-MM-DD");
+      setPagination((prev) => ({
+        ...prev,
+        startDate: dateStr,
+        endDate: dateStr,
+      }));
+    } else {
+      // If range is cleared, reset to today
+      const today = moment().format("YYYY-MM-DD");
+      setPagination((prev) => ({
+        ...prev,
+        startDate: today,
+        endDate: today,
+      }));
+    }
   };
 
   const debouncedSearch = useCallback(
@@ -244,10 +279,12 @@ export default function CalendarView() {
   const filters: FilterConfig[] = [
     {
       key: "date",
-      type: "date",
-      onChange: handleDateChange,
-      placeholder: "Select Date",
-      value: selectedDate,
+      type: "date-range",
+      dateRangeValue: dateRange,
+      onDateRangeChange: handleDateRangeChange,
+      placeholder: "Select Date Range",
+      allowClear: false,
+      dataRangeClassName: "w-full max-w-[350px]",
     },
     {
       key: "search",
@@ -314,7 +351,7 @@ export default function CalendarView() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Today's Visits
+              {isToday ? "Today's" : ""} Total Visits
             </CardTitle>
             <CalendarIcon className="text-muted-foreground h-4 w-4" />
           </CardHeader>
@@ -327,7 +364,7 @@ export default function CalendarView() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Today's Pending Visits
+              {isToday ? "Today's" : ""} Pending Visits
             </CardTitle>
             <CalendarIcon className="text-muted-foreground h-4 w-4" />
           </CardHeader>
@@ -338,7 +375,7 @@ export default function CalendarView() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Today's Completed Visits
+              {isToday ? "Today's" : ""} Completed Visits
             </CardTitle>
             <CalendarIcon className="text-muted-foreground h-4 w-4" />
           </CardHeader>
@@ -351,7 +388,7 @@ export default function CalendarView() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Today's Cancelled Visits
+              {isToday ? "Today's" : ""} Cancelled Visits
             </CardTitle>
             <CalendarIcon className="text-muted-foreground h-4 w-4" />
           </CardHeader>
@@ -365,8 +402,12 @@ export default function CalendarView() {
       <Card className="md:col-span-2">
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Today's Schedule</CardTitle>
-            <CardDescription>Visits scheduled for today</CardDescription>
+            <CardTitle>
+              {isToday ? "Today's" : "Visits"} Schedule{isToday ? "" : "d"}
+            </CardTitle>
+            {isToday && (
+              <CardDescription>Visits scheduled for today</CardDescription>
+            )}
           </div>
           <PermissionGate requiredPermission="calender_view" action="add">
             <Button
@@ -390,7 +431,6 @@ export default function CalendarView() {
             {upcomingVisits
               .filter(
                 (visit) =>
-                  visit.date === selectedDate &&
                   (!roleId || visit.roleId === roleId) &&
                   (!selectedRep || visit.salesRepId === selectedRep),
               )

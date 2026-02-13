@@ -163,6 +163,12 @@ const AllUsers = () => {
     };
   }, [open]);
 
+  useEffect(() => {
+    return () => {
+      setFilters({});
+    };
+  }, []);
+
   return (
     <Main className={cn("flex flex-col gap-2")}>
       <TablePageLayout

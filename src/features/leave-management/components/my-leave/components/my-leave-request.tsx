@@ -195,7 +195,6 @@ export default function MyLeaveRequest({
                   selfView,
                 },
                 onPaginationChange,
-                dashboardView: true,
               })}
             </TabsContent>
           );

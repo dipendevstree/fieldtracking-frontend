@@ -134,8 +134,10 @@ export default function LeaveRequest({ dashboardView = false }: Props) {
     valueKey: "id",
   }).map((option) => ({ ...option, value: String(option.value) }));
 
+  const { pending: _, ...LeaveStatus } = LeaveRequestStatus;
+
   const leaveTypeSelectOptions = useSelectOptions<any>({
-    listData: Object.entries(LeaveRequestStatus).map(([key, value]) => ({
+    listData: Object.entries(LeaveStatus).map(([key, value]) => ({
       label: formatDropDownLabel(value),
       value: String(key),
     })),
@@ -206,14 +208,18 @@ export default function LeaveRequest({ dashboardView = false }: Props) {
       onCancelPress: () => handleFilterChange("userId", ""),
       searchableSelectClassName: "w-full max-w-[180px]",
     },
-    {
-      key: "status",
-      type: "select",
-      onChange: (value) => handleFilterChange("status", String(value)),
-      placeholder: "Select Status",
-      value: pagination.status,
-      options: leaveTypeSelectOptions,
-    },
+    ...(activeTab !== "pending-leave-request"
+      ? ([
+          {
+            key: "status",
+            type: "select",
+            onChange: (value) => handleFilterChange("status", String(value)),
+            placeholder: "Select Status",
+            value: pagination.status,
+            options: leaveTypeSelectOptions,
+          },
+        ] as FilterConfig[])
+      : []),
     {
       key: "leaveTypeId",
       type: "select",
@@ -244,15 +250,19 @@ export default function LeaveRequest({ dashboardView = false }: Props) {
       onCancelPress: () => handleEncashmentFilterChange("userId", ""),
       searchableSelectClassName: "w-full max-w-[180px]",
     },
-    {
-      key: "status",
-      type: "select",
-      onChange: (value) =>
-        handleEncashmentFilterChange("status", String(value)),
-      placeholder: "Select Status",
-      value: encashmentPagination.status,
-      options: leaveTypeSelectOptions,
-    },
+    ...(activeEncashmentTab !== "pending-encashment-request"
+      ? ([
+          {
+            key: "status",
+            type: "select",
+            onChange: (value) =>
+              handleEncashmentFilterChange("status", String(value)),
+            placeholder: "Select Status",
+            value: encashmentPagination.status,
+            options: leaveTypeSelectOptions,
+          },
+        ] as FilterConfig[])
+      : []),
   ];
 
   const handleCardClick = (status: LEAVE_STATUS) => {

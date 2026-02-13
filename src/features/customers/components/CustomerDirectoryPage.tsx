@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Plus, Download } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
@@ -138,6 +138,12 @@ export const CustomerDirectoryPage = () => {
       searchableSelectClassName: "w-full max-w-[180px]",
     },
   ];
+
+  useEffect(() => {
+    return () => {
+      setFilters({ search: "", industryId: "", customerTypeId: "" });
+    };
+  }, []);
 
   // Show loading state
   if (isLoading)
