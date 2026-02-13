@@ -2,7 +2,7 @@ import { format } from "date-fns";
 
 export function jsonToFormData(
   json: Record<string, any>,
-  prefix: string = ""
+  prefix: string = "",
 ): FormData {
   const formData = new FormData();
 
@@ -35,7 +35,7 @@ export function jsonToFormData(
 
     formData.append(
       formKey,
-      value instanceof Date ? value.toISOString() : String(value)
+      value instanceof Date ? value.toISOString() : String(value),
     );
   }
 
@@ -55,7 +55,7 @@ export function jsonToFormData(
  */
 export const getFormattedAddress = (
   lat: number,
-  lng: number
+  lng: number,
 ): Promise<string | null> => {
   return new Promise((resolve) => {
     new google.maps.Geocoder().geocode(
@@ -66,7 +66,7 @@ export const getFormattedAddress = (
         } else {
           resolve(null);
         }
-      }
+      },
     );
   });
 };
@@ -210,3 +210,32 @@ export function formatFileSize(bytes: number, decimals: number = 2): string {
 
   return `${size.toFixed(decimals)} ${units[index]}`;
 }
+
+/**
+ * Convert decimal work hours into HH:mm format.
+ *
+ * @param {number | string | undefined} hours - Total worked hours in decimal format.
+ * Example:
+ *  - 2.5   => "02:30"
+ *  - 3.19  => "03:11"
+ *  - "1.75" => "01:45"
+ *
+ * @returns {string} Formatted time string in "HH:mm".
+ *
+ * @description
+ * This utility is intended for **duration formatting** (worked hours),
+ * NOT real calendar dates. It avoids timezone issues and is safe for
+ * attendance, reports, and data tables.
+ */
+export const formatWorkHours = (hours?: number | string): string => {
+  const value = Number(hours);
+
+  // Return default if empty, null, NaN, or 0
+  if (!value) return "00:00";
+
+  const totalMinutes = Math.round(value * 60);
+  const hh = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
+  const mm = String(totalMinutes % 60).padStart(2, "0");
+
+  return `${hh}:${mm}`;
+};

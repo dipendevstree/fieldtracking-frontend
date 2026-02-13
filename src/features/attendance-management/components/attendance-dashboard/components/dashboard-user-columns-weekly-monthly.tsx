@@ -2,6 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import StatusBadge from "@/components/shared/common-status-badge";
+import { formatWorkHours } from "@/utils/commonFunction";
 
 export const dashboardUserColumnsWeeklyMonthly: ColumnDef<any>[] = [
   {
@@ -55,7 +56,7 @@ export const dashboardUserColumnsWeeklyMonthly: ColumnDef<any>[] = [
       const shiftTotalHours = row.original.shiftTotalHours;
       return (
         <div className="text-sm font-medium">
-          {shiftTotalHours ? `${shiftTotalHours} hrs` : "0.00 hrs"}
+          {formatWorkHours(shiftTotalHours)}
         </div>
       );
     },
@@ -70,7 +71,7 @@ export const dashboardUserColumnsWeeklyMonthly: ColumnDef<any>[] = [
       const totalWorkHours = row.original.totalWorkHours;
       return (
         <div className="text-sm font-medium">
-          {totalWorkHours ? `${totalWorkHours.toFixed(2)} hrs` : "0.00 hrs"}
+          {formatWorkHours(totalWorkHours)}
         </div>
       );
     },

@@ -3,12 +3,16 @@ import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-he
 import { DataTableRowActions } from "./table-action-button";
 import { format } from "date-fns";
 import CustomTooltip from "@/components/shared/custom-tooltip";
+import StatusBadge from "@/components/shared/common-status-badge";
 
 export const columns: ColumnDef<any>[] = [
   {
     accessorKey: "salesRap",
     header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title="Sales Representative" />
+      <CustomDataTableColumnHeader
+        column={column}
+        title="Sales Representative"
+      />
     ),
     cell: ({ row }) => {
       const user = row.original.salesRepresentativeUser;
@@ -30,7 +34,18 @@ export const columns: ColumnDef<any>[] = [
     ),
     cell: ({ row }) => {
       const companyName = row.original.customer?.companyName || "";
-      return <div className="text-muted-foreground text-sm">{companyName}</div>;
+      return <div className="text-sm">{companyName}</div>;
+    },
+    enableSorting: false,
+  },
+  {
+    accessorKey: "Priority",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Priority" />
+    ),
+    cell: ({ row }) => {
+      const priority = row.original.priority || "";
+      return <StatusBadge status={priority} />;
     },
     enableSorting: false,
   },
@@ -50,7 +65,7 @@ export const columns: ColumnDef<any>[] = [
           ? `${formattedDate}, ${time}`
           : formattedDate || time || "-";
 
-      return <div className="text-muted-foreground text-sm">{dateAndTime}</div>;
+      return <div className="text-sm">{dateAndTime}</div>;
     },
     enableSorting: false,
   },
@@ -61,7 +76,7 @@ export const columns: ColumnDef<any>[] = [
     ),
     cell: ({ row }) => {
       const purpose = row.original.purpose || "";
-      return <div className="text-muted-foreground text-sm">{purpose}</div>;
+      return <div className="text-sm">{purpose}</div>;
     },
     enableSorting: false,
   },
@@ -75,7 +90,7 @@ export const columns: ColumnDef<any>[] = [
       return (
         <CustomTooltip title={streetAddress}>
           <div
-            className="text-muted-foreground max-w-[200px] cursor-default truncate text-sm"
+            className=" max-w-[200px] cursor-default truncate text-sm"
             title={streetAddress}
           >
             {streetAddress}
@@ -92,21 +107,11 @@ export const columns: ColumnDef<any>[] = [
     ),
     cell: ({ row }) => {
       const status = row.original.status || "";
-      return <div className="text-muted-foreground text-sm">{status}</div>;
+      return <StatusBadge status={status} />;
     },
     enableSorting: false,
   },
-  {
-    accessorKey: "Priority",
-    header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title="Priority" />
-    ),
-    cell: ({ row }) => {
-      const priority = row.original.priority || "";
-      return <div className="text-muted-foreground text-sm">{priority}</div>;
-    },
-    enableSorting: false,
-  },
+
   {
     id: "actions",
     header: ({ column }) => (

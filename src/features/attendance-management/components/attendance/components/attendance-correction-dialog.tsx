@@ -68,7 +68,7 @@ export function AttendanceCorrectionDialog({
   // Update Mutation
   const { mutate: updateCorrection, isPending: isUpdatePending } =
     useUpdateAttendanceCorrection(correctionToEdit?.correctionId || "", () =>
-      handleSuccess()
+      handleSuccess(),
     );
 
   const isPending = isCreatePending || isUpdatePending;
@@ -178,7 +178,9 @@ export function AttendanceCorrectionDialog({
                 name="requestedCheckIn"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Correct Check-In</FormLabel>
+                    <FormLabel>
+                      Correct Check-In <span className="text-red-500">*</span>
+                    </FormLabel>
                     <FormControl>
                       <TimePicker
                         value={field.value}
@@ -197,7 +199,9 @@ export function AttendanceCorrectionDialog({
                 name="requestedCheckOut"
                 render={({ field }) => (
                   <FormItem className="flex flex-col">
-                    <FormLabel>Correct Check-Out</FormLabel>
+                    <FormLabel>
+                      Correct Check-Out <span className="text-red-500">*</span>
+                    </FormLabel>
                     <FormControl>
                       <TimePicker
                         value={field.value}
@@ -217,7 +221,9 @@ export function AttendanceCorrectionDialog({
               name="reason"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Reason</FormLabel>
+                  <FormLabel>
+                    Reason <span className="text-red-500">*</span>
+                  </FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="e.g. Forgot to punch out..."

@@ -120,14 +120,14 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
         page: 1, // Reset to first page when searching
       }));
     }, 800),
-    []
+    [],
   );
 
   const handleScheduleSearchChange = useCallback(
     (value: string) => {
       debouncedScheduleSearch(value);
     },
-    [debouncedScheduleSearch]
+    [debouncedScheduleSearch],
   );
 
   const handleScheduleCustomerFilterChange = (value: string) => {
@@ -172,7 +172,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
         page: 1, // Reset to first page when searching
       }));
     }, 800),
-    []
+    [],
   );
 
   const handleCustomerTypeFilterChange = (value: string) => {
@@ -187,7 +187,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
     (value: string) => {
       debouncedCustomerSearch(value);
     },
-    [debouncedCustomerSearch]
+    [debouncedCustomerSearch],
   );
 
   // Industry filter handler
@@ -229,14 +229,14 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
         page: 1,
       }));
     }, 300),
-    []
+    [],
   );
 
   const handleAuditSearchChange = useCallback(
     (value: string) => {
       debouncedAuditSearch(value);
     },
-    [debouncedAuditSearch]
+    [debouncedAuditSearch],
   );
 
   // user filter handler
@@ -283,7 +283,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
         label: formatName(getFullName(user.firstName, user.lastName)),
         value: String(user.id),
       })),
-    [liveTrackingUsers]
+    [liveTrackingUsers],
   );
 
   const customersOptions = useMemo(
@@ -292,7 +292,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
         label: c.companyName,
         value: c.customerId,
       })),
-    [customers]
+    [customers],
   );
 
   const statusOptions = useMemo(
@@ -301,12 +301,12 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
       { label: "Completed", value: "Completed" },
       { label: "Pending", value: "Pending" },
     ],
-    []
+    [],
   );
 
   const priorityOptions = useMemo(
     () => Object.values(PRIORITY).map((p) => ({ label: p, value: p })),
-    []
+    [],
   );
 
   const customerTypeOptions = useMemo(
@@ -315,7 +315,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
         label: formatDropDownLabel(t.typeName),
         value: t.customerTypeId,
       })),
-    [customerTypeList]
+    [customerTypeList],
   );
 
   const industryOptions = useMemo(
@@ -324,7 +324,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
         label: i.industryName,
         value: i.industryId,
       })),
-    [industryList]
+    [industryList],
   );
 
   const auditActionOptions = useMemo(
@@ -333,7 +333,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
         label: a,
         value: a,
       })),
-    []
+    [],
   );
 
   const scheduleSelectFilters: FilterConfig[] = [
@@ -467,8 +467,8 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
         <PermissionGate requiredPermission="all_users">
           <Card
             className="gap-2 cursor-pointer"
-            onClick={() =>
-              navigate({ to: "/calendar" })
+            onClick={
+              () => navigate({ to: "/calendar" })
               // navigate({ to: "/user-management", search: { noAdmin: true } })
             }
           >
@@ -566,7 +566,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
           <CardContent>
             <CustomDataTable
               data={(customers ?? []).slice(0, limit)}
-              columns={customerColumns}
+              columns={customerColumns as any}
               totalCount={customerTotalCount}
               loading={customersLoading}
               key="customer-table"
