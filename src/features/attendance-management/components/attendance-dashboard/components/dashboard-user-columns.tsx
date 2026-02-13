@@ -3,6 +3,7 @@ import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-he
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import StatusBadge from "@/components/shared/common-status-badge";
+import { formatWorkHours } from "@/utils/commonFunction";
 
 export const dashboardUserColumns: ColumnDef<any>[] = [
   {
@@ -88,7 +89,7 @@ export const dashboardUserColumns: ColumnDef<any>[] = [
       const totalWorkHours = row.original.totalWorkHours;
       return (
         <div className="text-sm font-medium">
-          {totalWorkHours?.toFixed(2) || "0.00"} hrs
+          {formatWorkHours(totalWorkHours)}
         </div>
       );
     },
