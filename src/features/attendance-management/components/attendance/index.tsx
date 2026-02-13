@@ -157,8 +157,8 @@ export default function MyAttendance() {
   // Calendar click handler for events
   const handleCalendarEventSelect = (event: AttendanceEvent) => {
     const s = event.resource.status;
-    if (s === ATTENDANCE_STATUS.LEAVE) {
-      toast.warning("Cannot request correction on a Full Day Leave");
+    if (s === ATTENDANCE_STATUS.LEAVE || s === ATTENDANCE_STATUS.ABSENT) {
+      toast.warning(`Cannot request correction on ${formatStatus(s)}.`);
       return;
     }
     if (s !== ATTENDANCE_STATUS.WEEK_OFF && s !== ATTENDANCE_STATUS.HOLIDAY) {
@@ -181,8 +181,8 @@ export default function MyAttendance() {
 
     if (attendanceRecord) {
       const s = attendanceRecord.status;
-      if (s === ATTENDANCE_STATUS.LEAVE) {
-        toast.warning("Cannot request correction on a Full Day Leave");
+      if (s === ATTENDANCE_STATUS.LEAVE || s === ATTENDANCE_STATUS.ABSENT) {
+        toast.warning(`Cannot request correction on ${formatStatus(s)}.`);
         return;
       }
       if (s !== ATTENDANCE_STATUS.WEEK_OFF && s !== ATTENDANCE_STATUS.HOLIDAY) {
