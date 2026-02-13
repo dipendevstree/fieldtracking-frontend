@@ -35,7 +35,7 @@ const tabs = [
     component: PendingRequest,
   },
   {
-    label: "Approval History",
+    label: "Approval/Rejection History",
     value: "approval-history",
     component: LeaveApprovalHistory,
   },
