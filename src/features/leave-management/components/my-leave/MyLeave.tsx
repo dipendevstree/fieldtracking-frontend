@@ -30,6 +30,8 @@ import { LEAVE_STATUS } from "@/data/app.data";
 import LeaveRuleList from "../leave-rules/components/LeaveRuleList";
 import LeaveEncashmentModal from "./components/leave-encashment-modal";
 import { useGetLeaveRulesConfig } from "../../services/leave-rules-config.action.hook";
+import moment from "moment";
+import { toast } from "sonner";
 
 export default function MyLeave() {
   const { user } = useAuthStore();
@@ -127,6 +129,10 @@ export default function MyLeave() {
 
   const handleOpenLeaveModal = (event: any) => {
     if (calendarMode === "leave") {
+      if (moment(event.start).isBefore(moment(), 'day')) {
+        toast.warning("Cannot select past dates");
+        return;
+      }
       setIsApplyLeaveOpen(true);
       setLeaveDateRange({
         from: event.start,

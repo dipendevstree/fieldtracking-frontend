@@ -33,7 +33,7 @@ const Roles = () => {
       ...pagination,
       searchFor: filters.search || "",
     }),
-    [pagination, filters]
+    [pagination, filters],
   );
 
   // Debug: Log query parameters when they change
@@ -103,7 +103,7 @@ const Roles = () => {
       setFilters({ search: value });
       setPagination((prev) => ({ ...prev, page: DEFAULT_PAGE_NUMBER })); // Reset to first page when searching
     }, 800),
-    []
+    [],
   );
 
   const handleGlobalSearchChange = (value: string | undefined) => {
@@ -129,6 +129,12 @@ const Roles = () => {
   ];
 
   const {} = useRouter();
+
+  useEffect(() => {
+    return () => {
+      setFilters({});
+    };
+  }, []);
 
   if (error) {
     const errorResponse = (error as ErrorResponse)?.response?.data;
