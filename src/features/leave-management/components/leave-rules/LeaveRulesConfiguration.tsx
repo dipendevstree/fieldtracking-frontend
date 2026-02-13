@@ -163,6 +163,11 @@ export default function LeaveRulesConfiguration() {
           desc="Count holidays between leaves"
         />
         <SummaryCard
+          title="Cross-Leave Use"
+          enabled={form.watch("crossLeaveDeductionRuleActive")}
+          desc="Use alternate leave types"
+        />
+        <SummaryCard
           title="Carry Forward"
           enabled={form.watch("leaveCarryForwardRuleActive")}
           desc="Roll over unused leaves"
@@ -171,11 +176,6 @@ export default function LeaveRulesConfiguration() {
           title="Encashment"
           enabled={form.watch("leaveEncashmentRuleActive")}
           desc="Convert leaves to cash"
-        />
-        <SummaryCard
-          title="Cross-Leave Use"
-          enabled={form.watch("crossLeaveDeductionRuleActive")}
-          desc="Use alternate leave types"
         />
       </div>
 
@@ -249,6 +249,7 @@ export default function LeaveRulesConfiguration() {
                           days
                         </span>
                       </div>
+                      <FormMessage />
                       <FormDescription>
                         Maximum number of holidays/weekends that can be counted
                         as sandwich leave
@@ -334,6 +335,7 @@ export default function LeaveRulesConfiguration() {
                           ))}
                         </SelectContent>
                       </Select>
+                      <FormMessage />
                       <FormDescription>
                         This leave type will be used first when the requested
                         leave type has insufficient balance
@@ -394,6 +396,7 @@ export default function LeaveRulesConfiguration() {
                           />
                         ))}
                       </div>
+                      <FormMessage />
                       <FormDescription>
                         Select which leave types can be used as backup when the
                         primary leave type has insufficient balance
@@ -473,6 +476,7 @@ export default function LeaveRulesConfiguration() {
                             days
                           </span>
                         </div>
+                        <FormMessage />
                         <FormDescription>
                           Maximum leaves that can be carried forward
                         </FormDescription>
@@ -499,10 +503,10 @@ export default function LeaveRulesConfiguration() {
                             months
                           </span>
                         </div>
+                        <FormMessage />
                         <FormDescription>
                           Carried forward leaves expire after this period
                         </FormDescription>
-                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -577,6 +581,7 @@ export default function LeaveRulesConfiguration() {
                             days
                           </span>
                         </div>
+                        <FormMessage />
                         <FormDescription>
                           Maximum leaves that can be encashed per year
                         </FormDescription>
@@ -601,6 +606,7 @@ export default function LeaveRulesConfiguration() {
                             days
                           </span>
                         </div>
+                        <FormMessage />
                         <FormDescription>
                           Minimum leave balance user must maintain
                         </FormDescription>

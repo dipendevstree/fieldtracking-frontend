@@ -65,10 +65,6 @@ export function AuthenticatedLayout({
       cachedFcmToken !== token // Only call API if token actually changed
     ) {
       let deviceId = localStorage.getItem("deviceId");
-      if (!deviceId) {
-        deviceId = `web_${crypto.randomUUID()}`;
-        localStorage.setItem("deviceId", deviceId);
-      }
 
       // Cache the token to prevent repeated API calls
       localStorage.setItem("fcm_token", token);

@@ -1,4 +1,4 @@
-import { HTMLAttributes } from "react";
+import { HTMLAttributes, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -18,16 +18,25 @@ import CustomButton from "@/components/shared/custom-button";
 import { useAdminLogin } from "../services/sign-in-services";
 import { formSchema, TFormSchema } from "./schema";
 import { useRouter } from "@tanstack/react-router";
+import UserDeviceModal from "./user-device-modal";
 
 type UserAuthFormProps = Readonly<HTMLAttributes<HTMLFormElement>>;
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   const { login } = useAuthStore();
+  const [loginData, setLoginData] = useState<any | null>(null);
+  const [openDeviceModal, setOpenDeviceModal] = useState(false);
   const onSuccess = (data: any) => {
     login(data);
   };
+  const onFailure = (error: any) => {
+    if (error?.status === 409) {
+      setLoginData(error?.response?.data?.data);
+      setOpenDeviceModal(true);
+    }
+  }
   const { mutate: loginMutate, isPending: isLoading } =
-    useAdminLogin(onSuccess);
+    useAdminLogin(onSuccess, onFailure);
   const { navigate } = useRouter();
   const form = useForm<TFormSchema>({
     resolver: zodResolver(formSchema),
@@ -38,7 +47,12 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   });
 
   function onSubmit(data: TFormSchema) {
-    loginMutate(data);
+    let deviceId = localStorage.getItem("deviceId");
+    const payload = {
+      ...data,
+      deviceId
+    };
+    loginMutate(payload);
   }
 
   return (
@@ -119,6 +133,17 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
             <IconBrandFacebook className='h-4 w-4' /> Facebook
           </Button>
         </div> */}
+
+        <UserDeviceModal
+          open={openDeviceModal}
+          onOpenChange={(open) => {
+            if (!open) {
+              setOpenDeviceModal(false);
+            }
+          }}
+          loginData={loginData}
+          login={() => form.handleSubmit(onSubmit)()}
+        />
       </form>
     </Form>
   );
