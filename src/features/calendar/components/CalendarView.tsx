@@ -136,8 +136,9 @@ export default function CalendarView() {
   const { data: analytics } = useGetAnalytics(analyticsPagination) as {
     data: Analytics | undefined;
   };
+  
   const { data: visits, isLoading, error } = useGetAllVisit(pagination);
-  console.log("visits", visits);
+
   const upcomingVisits: MappedVisit[] =
     visits?.map((visit: Visit) => ({
       id: visit.id || visit.visitId || "",
