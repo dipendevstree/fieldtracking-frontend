@@ -449,12 +449,12 @@ export default function Livetracking() {
                           </div>
                           <span
                             className={`rounded-full px-2 py-0.5 text-xs ${
-                              user.isOnline || user.isOnlineInChat
+                              user.isOnlineInChat
                                 ? "bg-green-100 text-green-600"
                                 : "bg-red-100 text-red-600"
                             }`}
                           >
-                            {user.isOnline || user.isOnlineInChat
+                            {user.isOnlineInChat
                               ? "Online"
                               : "Offline"}
                           </span>
