@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useForgotPassword } from "../services/forgot-services";
+import { useRouter } from "@tanstack/react-router";
 
 type ForgotFormProps = HTMLAttributes<HTMLFormElement>;
 
@@ -25,15 +26,15 @@ const formSchema = z.object({
 });
 
 export function ForgotPasswordForm({ className, ...props }: ForgotFormProps) {
+  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { email: "" },
   });
 
-  const onSuccess = (data: any) => {
+  const onSuccess = (_data: any) => {
     // Handle success, e.g., show a success message or redirect
-
-    console.log("Password reset email sent successfully", data);
+    router.navigate({ to: "/sign-in" });
   };
 
   const { mutate: forgotPasswordMutate, isPending: isLoading } =
