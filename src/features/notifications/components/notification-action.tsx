@@ -1,10 +1,13 @@
 import { Link } from "@tanstack/react-router";
-import { NOTIFICATION_TYPE } from "../data/notification.types";
+import { useMarkAsRead } from "../services/notifications.hook";
+import React from "react";
+import { NOTIFICATION_TYPE } from "../types";
 
 interface Props {
   children?: React.ReactNode;
   row?: any;
   removeElementIfNoLink?: boolean;
+  onClick?: () => void;
 }
 
 export function toUrl(row: any) {
@@ -50,15 +53,33 @@ export default function NotificationAction({
   children,
   row,
   removeElementIfNoLink,
+  onClick,
 }: Props) {
   const url = toUrl(row);
+  const { mutate: markAsRead } = useMarkAsRead();
+
+  const handleClick = () => {
+    if (row?.original?.id && !row?.original?.isRead) {
+      markAsRead({ ids: [row.original.id] });
+    }
+    if (onClick) onClick();
+  };
 
   if (url && url?.to) {
     return (
-      <Link {...url} target="_blank">
+      <Link
+        {...url}
+        target="_blank"
+        onClick={handleClick}
+        className="w-full block"
+      >
         {children}
       </Link>
     );
   }
-  return <>{removeElementIfNoLink ? null : children}</>;
+  return (
+    <div onClick={handleClick} className="w-full cursor-pointer">
+      {removeElementIfNoLink ? null : children}
+    </div>
+  );
 }

@@ -1,16 +1,21 @@
 import moment from "moment-timezone";
-import React from "react";
+import { Notification as NotificationType } from "../types";
 
 export default function Notification({
   notification,
   ref = null,
 }: {
-  notification: any;
+  notification: NotificationType;
   ref?: React.Ref<HTMLDivElement>;
 }) {
   return (
-    <div className={`flex items-center gap-3`} ref={ref}>
-      <div className={`truncate`}>
+    <div
+      className={`flex items-center gap-3 w-full p-2 rounded-md transition-colors group border ${
+        !notification.isRead ? "bg-muted" : "hover:bg-accent/50"
+      }`}
+      ref={ref}
+    >
+      <div className={`relative flex-shrink-0`}>
         {notification?.createdByData && (
           <img
             src={
@@ -18,7 +23,7 @@ export default function Notification({
               `https://ui-avatars.com/api/?name=${encodeURIComponent(
                 notification.createdByData.firstName +
                   " " +
-                  notification.createdByData.lastName
+                  notification.createdByData.lastName,
               )}`
             }
             alt={notification.createdByData.fullName}
