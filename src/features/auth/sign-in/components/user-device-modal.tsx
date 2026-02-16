@@ -28,6 +28,7 @@ interface Props {
       id: string;
       schemaName: string;
       timeZone: string;
+      maxDeviceLimit: number;
     };
     userDevices: UserDevice[] | null;
   };
@@ -64,7 +65,7 @@ export default function UserDeviceModal({
     };
   }, [loginData]);
 
-  const MAX_DEVICE_LIMIT = userDevices?.length;
+  const MAX_DEVICE_LIMIT = loginData?.user?.maxDeviceLimit || 1;
   const activeDevicesCount = userDevices?.filter(
     (device: UserDevice) => device.isActive,
   ).length;
@@ -114,7 +115,10 @@ export default function UserDeviceModal({
                           Last active:{" "}
                           {device.lastActiveAt
                             ? moment
-                                .tz(device.lastActiveAt,loginData.user.timeZone)
+                                .tz(
+                                  device.lastActiveAt,
+                                  loginData.user.timeZone,
+                                )
                                 .format("DD MMM YYYY, h:mm A")
                             : "N/A"}
                         </p>
@@ -136,6 +140,11 @@ export default function UserDeviceModal({
         <Button
           disabled={activeDevicesCount >= MAX_DEVICE_LIMIT}
           onClick={() => login()}
+          title={
+            activeDevicesCount >= MAX_DEVICE_LIMIT
+              ? "Logout from other devices to continue login."
+              : ""
+          }
         >
           Continue
         </Button>
