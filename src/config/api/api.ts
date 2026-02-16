@@ -302,6 +302,7 @@ const API = {
     update: "leave/patch",
     delete: "leave/delete",
     stats: "leave/stats",
+    applyStats: "leave/apply/stats",
   },
   holidayType: {
     list: "holidayType/list",

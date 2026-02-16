@@ -321,7 +321,7 @@ export default function MyLeave() {
           }
         }}
         leaveToEditId={currentRow && currentRow.id}
-        leaveTypesList={leaveTypesList}
+        leaveTypesList={myLeavesList}
         workFromHomeTypeOpen={workFromHomeTypeOpen}
         selectDateRange={leaveDateRange}
       />

@@ -68,12 +68,12 @@ const GeneralSettingsPage = () => {
     ];
 
     const missingFields = requiredFields.filter(
-      (field) => !currentSettingsData[field]
+      (field) => !currentSettingsData[field],
     );
 
     if (missingFields.length > 0) {
       toast.error(
-        `Please fill in all required fields: ${missingFields.join(", ")}`
+        `Please fill in all required fields: ${missingFields.join(", ")}`,
       );
       return;
     }
@@ -85,7 +85,7 @@ const GeneralSettingsPage = () => {
         parseFloat(currentSettingsData.ratePerKm) <= 0)
     ) {
       toast.error(
-        "Rate per KM is required when auto-expense approval is enabled"
+        "Rate per KM is required when auto-expense approval is enabled",
       );
       return;
     }
@@ -102,7 +102,7 @@ const GeneralSettingsPage = () => {
       formData.append("industryId", currentSettingsData.industryId || ""); // You may need to add this fiel);
       formData.append(
         "organizationTypeId",
-        currentSettingsData.organizationType
+        currentSettingsData.organizationType,
       );
       formData.append("website", currentSettingsData.website);
       formData.append("description", currentSettingsData.description);
@@ -114,54 +114,54 @@ const GeneralSettingsPage = () => {
       formData.append("isActive", String(true));
       formData.append(
         "isAutoExpense",
-        currentSettingsData.autoExpenseApproval ? "true" : ""
+        currentSettingsData.autoExpenseApproval ? "true" : "",
       );
       formData.append(
         "isFixedDayExpense",
-        currentSettingsData.fixedDayExpense ? "true" : ""
+        currentSettingsData.fixedDayExpense ? "true" : "",
       );
       formData.append(
         "rsPerKm",
         currentSettingsData.autoExpenseApproval
           ? currentSettingsData.ratePerKm || 0
-          : 0
+          : 0,
       );
       formData.append(
         "allowAddUsersBasedOnTerritories",
-        currentSettingsData.allowAddUsersBasedOnTerritories ? "true" : ""
+        currentSettingsData.allowAddUsersBasedOnTerritories ? "true" : "",
       );
       formData.append(
         "allowWorkFromHome",
-        currentSettingsData.allowWorkFromHome ? "true" : ""
+        currentSettingsData.allowWorkFromHome ? "true" : "",
       );
       formData.append("currency", currentSettingsData.currency || "");
       formData.append("orgIcon", currentSettingsData.orgIcon || null);
       formData.append("profileImage", currentSettingsData.profileImage || null);
       formData.append(
         "userFirstName",
-        currentSettingsData.userFirstName || null
+        currentSettingsData.userFirstName || null,
       );
       formData.append("userLastName", currentSettingsData.userLastName || null);
       formData.append("userEmail", currentSettingsData.userEmail || null);
       formData.append(
         "userPhoneNumber",
-        currentSettingsData.userPhoneNumber || null
+        currentSettingsData.userPhoneNumber || null,
       );
       formData.append(
         "userPhoneCode",
-        currentSettingsData.userPhoneCode || null
+        currentSettingsData.userPhoneCode || null,
       );
       formData.append(
         "userDepartment",
-        currentSettingsData.userDepartment || null
+        currentSettingsData.userDepartment || null,
       );
       formData.append(
         "removeOrgIcon",
-        currentSettingsData.removeOrgIcon ? "true" : ""
+        currentSettingsData.removeOrgIcon ? "true" : "",
       );
       formData.append(
         "removeProfileImage",
-        currentSettingsData.removeProfileImage ? "true" : ""
+        currentSettingsData.removeProfileImage ? "true" : "",
       );
       // console.log('Organization update payload:', organizationUpdatePayload)
 
