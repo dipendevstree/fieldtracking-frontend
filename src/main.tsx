@@ -17,6 +17,13 @@ import "./index.css";
 import { routeTree } from "./routeTree.gen";
 import { ViewTypeProvider } from "./context/view-type-context";
 
+// Timestamps to track when toast was last shown (prevents duplicates within 1 second)
+let last401ToastTime = 0;
+let last500ToastTime = 0;
+let last403ToastTime = 0;
+
+const TOAST_DEBOUNCE_MS = 1000; // 1 second debounce window
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -50,18 +57,31 @@ const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error) => {
       if (error instanceof AxiosError) {
+        const now = Date.now();
+
         if (error.response?.status === 401) {
-          toast.error("Session expired!");
-          const redirect = `${router.history.location.href}`;
-          router.navigate({ to: "/sign-in", search: { redirect } });
+          if (now - last401ToastTime > TOAST_DEBOUNCE_MS) {
+            last401ToastTime = now;
+            toast.error(
+              "Session expired or You were logged out from this device!",
+            );
+            const redirect = `${router.history.location.href}`;
+            router.navigate({ to: "/sign-in", search: { redirect } });
+          }
         }
         if (error.response?.status === 500) {
-          toast.error("Internal Server Error!");
-          router.navigate({ to: "/500" });
+          if (now - last500ToastTime > TOAST_DEBOUNCE_MS) {
+            last500ToastTime = now;
+            toast.error("Internal Server Error!");
+            router.navigate({ to: "/500" });
+          }
         }
         if (error.response?.status === 403) {
-          router.navigate({ to: "/403" });
-          toast.error("Access Denied!");
+          if (now - last403ToastTime > TOAST_DEBOUNCE_MS) {
+            last403ToastTime = now;
+            router.navigate({ to: "/403" });
+            toast.error("Access Denied!");
+          }
         }
       }
     },
@@ -104,6 +124,6 @@ if (!rootElement.innerHTML) {
           </FontProvider>
         </ThemeProvider>
       </QueryClientProvider>
-    </StrictMode>
+    </StrictMode>,
   );
 }
