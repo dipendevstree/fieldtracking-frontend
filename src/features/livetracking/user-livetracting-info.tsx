@@ -539,19 +539,17 @@ const UserTrackingTimeline = ({
             </div>
             <span
               className={`flex items-center gap-1 rounded-full px-3 py-1 text-sm font-medium ${
-                user?.isOnline || user?.isOnlineInChat
+                user?.isOnlineInChat
                   ? "bg-green-100 text-green-700"
                   : "bg-red-100 text-red-700"
               }`}
             >
               <div
                 className={`h-2 w-2 rounded-full ${
-                  user?.isOnline || user?.isOnlineInChat
-                    ? "bg-green-500"
-                    : "bg-red-500"
+                  user?.isOnlineInChat ? "bg-green-500" : "bg-red-500"
                 }`}
               ></div>
-              {user?.isOnline || user?.isOnlineInChat ? "Online" : "Offline"}
+              {user?.isOnlineInChat ? "Online" : "Offline"}
             </span>
           </div>
         </div>

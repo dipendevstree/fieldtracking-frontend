@@ -495,8 +495,20 @@ export default function LeaveRulesConfiguration() {
                           <FormControl>
                             <Input
                               type="number"
+                              min={1}
+                              max={11}
                               {...field}
                               disabled={!canEdit}
+                              onChange={(e) => {
+                                const value = parseInt(e.target.value);
+                                if (
+                                  !isNaN(value) &&
+                                  value >= 1 &&
+                                  value <= 11
+                                ) {
+                                  field.onChange(value);
+                                }
+                              }}
                             />
                           </FormControl>
                           <span className="text-sm text-muted-foreground w-12">

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format, parseISO, subDays } from "date-fns";
-import { Loader2, Paperclip, UploadCloud } from "lucide-react";
+import { Loader2, Paperclip, TriangleAlert, UploadCloud } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 
 import { Button } from "@/components/ui/button";
@@ -37,10 +37,12 @@ import {
   useCreateLeave,
   useUpdateLeave,
   useGetLeaveById,
+  useGetLeaveApplyStats,
 } from "@/features/leave-management/services/leave-action.hook";
 
 import { AttachmentItem } from "./attachment-item";
 import moment from "moment";
+import { formatDropDownLabel } from "@/utils/commonFunction";
 
 interface ApplyLeaveDialogProps {
   open: boolean;
@@ -79,21 +81,34 @@ export function ApplyLeaveDialog({
     onOpenChange(false),
   );
 
-  const leaveTypeOptions = leaveTypesList
-    .filter((type: any) =>
-      workFromHomeTypeOpen
-        ? type.superAdminCreatedBy
-        : !type.superAdminCreatedBy,
-    )
-    .map((type: any) => ({
-      value: type.id,
-      label: type.name,
-    }));
+  const leaveTypeOptions =
+    leaveTypesList?.length > 0
+      ? leaveTypesList
+          .filter((type: any) =>
+            workFromHomeTypeOpen
+              ? type.superAdminCreatedBy
+              : !type.superAdminCreatedBy,
+          )
+          .map((type: any) => {
+            let total = 0;
+            if (type?.leaveBalance) {
+              total =
+                Number(type?.leaveBalance?.earned) +
+                Number(type?.leaveBalance?.carryForward);
+            }
+            return {
+              value: type.id,
+              label: `${type.name} (${total} Days Available)`,
+            };
+          })
+      : [];
 
   const requiredAttachmentIds = useMemo(() => {
-    return leaveTypesList
-      .filter((lt: any) => lt.requiresAttachment)
-      .map((lt: any) => lt.id);
+    return leaveTypesList?.length > 0
+      ? leaveTypesList
+          .filter((lt: any) => lt.requiresAttachment)
+          .map((lt: any) => lt.id)
+      : [];
   }, [leaveTypesList]);
 
   const formSchema = useMemo(
@@ -123,6 +138,7 @@ export function ApplyLeaveDialog({
   const watchStartDate = watch("startDate");
   const watchEndDate = watch("endDate");
   const watchHalfDay = watch("halfDay");
+  const watchHalfDayType = watch("halfDayType");
   const watchLeaveTypeId = watch("leaveTypeId");
   const watchAttachments = watch("attachments") || [];
   const singleDay =
@@ -131,6 +147,19 @@ export function ApplyLeaveDialog({
     moment(watchStartDate).isSame(watchEndDate, "day");
   const requiresAttachment = requiredAttachmentIds.includes(watchLeaveTypeId);
 
+  const { data: leaveApplyStats } = useGetLeaveApplyStats(
+    {
+      startDate: moment(watchStartDate).format("YYYY-MM-DD"),
+      endDate: moment(watchEndDate).format("YYYY-MM-DD"),
+      halfDay: watchHalfDay,
+      halfDayType: watchHalfDayType,
+      leaveTypeId: watchLeaveTypeId,
+    },
+    {
+      enabled: open && !!watchStartDate && !!watchEndDate && !!watchLeaveTypeId,
+    },
+  );
+  console.log("leaveApplyStats", leaveApplyStats);
   // Initial Reset / Population
   useEffect(() => {
     if (!open) {
@@ -308,7 +337,10 @@ export function ApplyLeaveDialog({
           </div>
         ) : (
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 mt-4">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="space-y-4 mt-4"
+            >
               <FormField
                 control={form.control}
                 name="leaveTypeId"
@@ -420,6 +452,50 @@ export function ApplyLeaveDialog({
                       )}
                     />
                   )}
+                </div>
+              )}
+
+              {leaveApplyStats && (
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 text-sm text-yellow-700">
+                  <div className="flex flex-col items-start gap-2 mb-1">
+                    <div className="flex flex-row items-center gap-2">
+                      <TriangleAlert className="text-yellow-500" size={16} />{" "}
+                      <span className="font-semibold">Warning!</span>
+                    </div>
+                    {leaveApplyStats?.availableBalance <= 0 &&
+                      (leaveApplyStats?.availableBalance <
+                      leaveApplyStats?.sandwichData?.totalDays ? (
+                        <span className="text-sm">
+                          Insufficient Balance! (Available Balance:{" "}
+                          {leaveApplyStats?.availableBalance})
+                        </span>
+                      ) : (
+                        <span className="text-sm">
+                          Insufficient Balance! (Available Balance:{" "}
+                          {leaveApplyStats?.availableBalance})
+                        </span>
+                      ))}
+                    {leaveApplyStats?.sandwichData && (
+                      <span className="text-sm">
+                        Leave Count: {leaveApplyStats?.sandwichData?.leaveCount}
+                        <br />
+                        {leaveApplyStats?.sandwichData?.sandwichLeaveCount >
+                          0 && (
+                          <>
+                            Sandwich Leave Count:{" "}
+                            {leaveApplyStats?.sandwichData?.sandwichLeaveCount}{" "}
+                            {leaveApplyStats?.sandwichData?.sandwichDates
+                              .length > 0
+                              ? `(${leaveApplyStats?.sandwichData?.sandwichDates.map((dates: { date: string; type: string }) => `${format(new Date(dates.date), "dd MMM")} (${formatDropDownLabel(dates.type)})`).join(", ")})`
+                              : ""}
+                            <br />
+                          </>
+                        )}
+                        Total Leave Count:{" "}
+                        {leaveApplyStats?.sandwichData?.totalDays}
+                      </span>
+                    )}
+                  </div>
                 </div>
               )}
 

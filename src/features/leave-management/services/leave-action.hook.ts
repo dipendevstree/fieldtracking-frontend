@@ -167,3 +167,21 @@ export const useCancelLeaveEncashment = (
     mutate: () => mutation.mutate({ status: LEAVE_STATUS.CANCEL }),
   };
 };
+
+export const useGetLeaveApplyStats = (
+  params?: any,
+  options?: { enabled?: boolean },
+) => {
+  const query = useFetchData<any>({
+    url: API.leave.applyStats,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    data: query.data,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};

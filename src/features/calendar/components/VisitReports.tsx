@@ -122,12 +122,8 @@ export default function VisitReports() {
     setSelectedRange(range);
     setPagination((prev) => ({
       ...prev,
-      startDate: range?.from
-        ? format(range.from, "yyyy-MM-dd")
-        : new Date().toISOString().split("T")[0],
-      endDate: range?.to
-        ? format(range.to, "yyyy-MM-dd")
-        : new Date().toISOString().split("T")[0],
+      startDate: range?.from ? format(range.from, "yyyy-MM-dd") : "",
+      endDate: range?.to ? format(range.to, "yyyy-MM-dd") : "",
     }));
   };
 

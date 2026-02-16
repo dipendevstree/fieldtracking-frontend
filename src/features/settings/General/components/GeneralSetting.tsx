@@ -32,6 +32,7 @@ import { useDirtyTracker } from "../../store/use-unsaved-changes-store";
 import { IconAlertTriangle } from "@tabler/icons-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { formatDropDownLabel } from "@/utils/commonFunction";
 
 interface GeneralApplicationSettingsProps {
   onDataChange?: (data: any) => void;
@@ -78,6 +79,8 @@ export default function GeneralApplicationSettings({
     userPhoneNumber: "",
     userPhoneCode: "",
     userDepartment: "",
+    userRole: "",
+    userTier: "",
     // Flags to tell backend to remove existing files
     removeOrgIcon: false,
     removeProfileImage: false,
@@ -139,6 +142,14 @@ export default function GeneralApplicationSettings({
         userPhoneNumber: user?.phoneNumber || "",
         userPhoneCode: user?.countryCode || "",
         userDepartment: user?.departmentId || "",
+        userRole: user?.role?.roleName || "",
+        userTier: user?.role?.tierkey || "",
+        userTerritory: user?.territoryId || "",
+        // userShift: user?.shiftId || "",
+        // userReportingTo:
+        //   user?.reportingToUser[0].firstName +
+        //     " " +
+        //     user?.reportingToUser[0].lastName || "",
         removeOrgIcon: false,
         removeProfileImage: false,
       };
@@ -160,7 +171,7 @@ export default function GeneralApplicationSettings({
       setAutoExpenseApproval(org.isAutoExpense || false);
       setFixedDayExpense(org.isFixedDayExpense || false);
       setAllowAddUsersBasedOnTerritories(
-        org.allowAddUsersBasedOnTerritories || false
+        org.allowAddUsersBasedOnTerritories || false,
       );
       setAllowWorkFromHome(org.allowWorkFromHome || false);
 
@@ -179,7 +190,7 @@ export default function GeneralApplicationSettings({
   // Effect to load all countries on component mount
   useEffect(() => {
     const india = Country.getAllCountries().find(
-      (country) => country.name.toLowerCase() === "india"
+      (country) => country.name.toLowerCase() === "india",
     );
     if (india) {
       setCountries([india]);
@@ -201,10 +212,10 @@ export default function GeneralApplicationSettings({
     if (formData.country && formData.state) {
       const stateData = State.getStateByCodeAndCountry(
         formData.state,
-        formData.country
+        formData.country,
       );
       setCities(
-        City.getCitiesOfState(formData.country, stateData?.isoCode ?? "")
+        City.getCitiesOfState(formData.country, stateData?.isoCode ?? ""),
       );
     } else {
       setCities([]);
@@ -264,7 +275,7 @@ export default function GeneralApplicationSettings({
     previewKey: string,
     fileNameKey: string,
     inputRef: React.RefObject<HTMLInputElement | null> | null,
-    removeFlagKey: "removeOrgIcon" | "removeProfileImage"
+    removeFlagKey: "removeOrgIcon" | "removeProfileImage",
   ) => {
     const preview = (filePreview as any)[previewKey] as string | undefined;
     try {
@@ -495,11 +506,11 @@ export default function GeneralApplicationSettings({
                     if (phoneNumber) {
                       handleInputChange(
                         "userPhoneCode",
-                        `+${phoneNumber.countryCallingCode}`
+                        `+${phoneNumber.countryCallingCode}`,
                       );
                       handleInputChange(
                         "userPhoneNumber",
-                        phoneNumber.nationalNumber
+                        phoneNumber.nationalNumber,
                       );
                       //   setValue(
                       //     "countryCode",
@@ -652,7 +663,7 @@ export default function GeneralApplicationSettings({
                                 "userProfile",
                                 "userProfile",
                                 profileImageInputRef,
-                                "removeProfileImage"
+                                "removeProfileImage",
                               )
                             }
                           >
@@ -667,6 +678,101 @@ export default function GeneralApplicationSettings({
                 </div>
               </div>
             </div>
+
+            {/* Row 4: User Role & Tier */}
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="role"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Role
+                </Label>
+                <Input
+                  id="role"
+                  placeholder="Enter role"
+                  value={formatDropDownLabel(formData?.userRole)}
+                  name="role"
+                  onChange={(e) => handleInputChange("role", e.target.value)}
+                  disabled
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor="tier"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Tier
+                </Label>
+                <Input
+                  id="tier"
+                  placeholder="Enter tier"
+                  value={formatDropDownLabel(formData?.userTier)}
+                  name="tier"
+                  onChange={(e) => handleInputChange("tier", e.target.value)}
+                  disabled
+                />
+              </div>
+            </div>
+
+            {/* Row 5: Territory, Shift & Reporting To */}
+            {/* <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="territory"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Territory
+                </Label>
+                <Input
+                  id="territory"
+                  placeholder="Enter territory"
+                  value={formatDropDownLabel(formData?.userTerritory)}
+                  name="territory"
+                  onChange={(e) =>
+                    handleInputChange("territory", e.target.value)
+                  }
+                  disabled
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor="shift"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Shift
+                </Label>
+                <Input
+                  id="shift"
+                  placeholder="Enter shift"
+                  value={formatDropDownLabel(formData?.userShift)}
+                  name="shift"
+                  onChange={(e) => handleInputChange("shift", e.target.value)}
+                  disabled
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor="reportingTo"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Reporting To
+                </Label>
+                <Input
+                  id="reportingTo"
+                  placeholder="Enter reporting to"
+                  value={formatDropDownLabel(formData?.userReportingTo)}
+                  name="reportingTo"
+                  onChange={(e) =>
+                    handleInputChange("reportingTo", e.target.value)
+                  }
+                  disabled
+                />
+              </div>
+            </div> */}
           </div>
 
           {user?.superAdminCreatedBy !== null && (
@@ -807,7 +913,9 @@ export default function GeneralApplicationSettings({
                                 type.organizationTypeId || type.value || type.id
                               }
                               value={String(
-                                type.organizationTypeId || type.value || type.id
+                                type.organizationTypeId ||
+                                  type.value ||
+                                  type.id,
                               )}
                             >
                               {type.organizationTypeName ||
@@ -900,7 +1008,7 @@ export default function GeneralApplicationSettings({
                             } else {
                               if (filePreview.orgIconFileName)
                                 URL.revokeObjectURL(
-                                  filePreview.orgIconFileName
+                                  filePreview.orgIconFileName,
                                 );
                               setFileName((prev) => ({
                                 ...prev,
@@ -961,7 +1069,7 @@ export default function GeneralApplicationSettings({
                                   "orgIconFileName",
                                   "orgIconFileName",
                                   orgIconInputRef,
-                                  "removeOrgIcon"
+                                  "removeOrgIcon",
                                 )
                               }
                             >
