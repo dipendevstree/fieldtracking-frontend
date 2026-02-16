@@ -44,6 +44,7 @@ interface DataTableProps {
   readonly currentPage?: number;
   readonly paginationCallbacks?: PaginationCallbacks;
   readonly defaultPageSize?: number;
+  readonly getRowClassName?: (row: RowData) => string;
 }
 
 export function CustomDataTable({
@@ -54,6 +55,7 @@ export function CustomDataTable({
   paginationCallbacks,
   currentPage,
   defaultPageSize,
+  getRowClassName,
 }: DataTableProps) {
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -124,7 +126,7 @@ export function CustomDataTable({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="group/row"
+                  className={`group/row ${getRowClassName ? getRowClassName(row.original) : ""}`}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
