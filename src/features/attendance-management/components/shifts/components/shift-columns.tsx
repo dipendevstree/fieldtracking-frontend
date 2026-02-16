@@ -2,6 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import { ShiftRowActions } from "./table-action-button";
 import { format } from "date-fns";
+import { formatDropDownLabel } from "@/utils/commonFunction";
 
 // Helper to format time string from "HH:mm" to 12-hour format with AM/PM
 const formatTimeTo12Hour = (timeString: string) => {
@@ -22,6 +23,9 @@ export const getShiftColumns = (totalCount: number): ColumnDef<any>[] => [
     accessorKey: "name",
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Shift Name" />
+    ),
+    cell: ({ row }) => (
+      <div className="text-sm">{formatDropDownLabel(row.original.name)}</div>
     ),
     enableHiding: false,
     enableSorting: false,
