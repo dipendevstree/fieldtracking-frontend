@@ -69,7 +69,7 @@ export default function NotificationAction({
     return (
       <Link
         {...url}
-        target="_blank"
+        // target="_blank"
         onClick={handleClick}
         className="w-full block"
       >
