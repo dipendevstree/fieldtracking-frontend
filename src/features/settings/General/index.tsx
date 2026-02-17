@@ -74,6 +74,10 @@ const GeneralSettingsPage = () => {
     if (missingFields.length > 0) {
       toast.error(
         `Please fill in all required fields: ${missingFields.join(", ")}`,
+        {
+          duration: 3000,
+          position: "top-right",
+        },
       );
       return;
     }
