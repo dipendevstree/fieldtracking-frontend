@@ -28,7 +28,6 @@ import {
   IconFile,
 } from "@tabler/icons-react";
 import { FileDown } from "lucide-react";
-import { toast } from "sonner";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
@@ -71,6 +70,7 @@ export default function LeaveRequestViewDialog({
   currentRow,
 }: Props) {
   const [reason, setReason] = useState("");
+  const [reasonError, setReasonError] = useState("");
   const [showLocalWarning, setShowLocalWarning] = useState(false);
   const { mutate: createLeaveApproval, isPending } = useCreateLeaveApproval(
     () => {
@@ -89,9 +89,7 @@ export default function LeaveRequestViewDialog({
 
   const handleReject = () => {
     if (!reason) {
-      toast.error("Please enter a reason.", {
-        position: "top-right",
-      });
+      setReasonError("Please enter a reason.");
       return;
     }
     createLeaveApproval({
@@ -288,12 +286,20 @@ export default function LeaveRequestViewDialog({
           <div className="flex flex-col gap-2">
             <Label className="text-sm">Approve/Reject Reason</Label>
             <Textarea
-              className="w-full resize-none border border-gray-300 p-2"
+              className={`w-full resize-none border p-2 ${
+                reasonError ? "border-red-500" : "border-gray-300"
+              }`}
               name="reason"
               placeholder="Enter reason"
               value={reason}
-              onChange={(e) => setReason(e.target.value)}
+              onChange={(e) => {
+                setReason(e.target.value);
+                if (reasonError) setReasonError("");
+              }}
             ></Textarea>
+            {reasonError && (
+              <p className="text-xs text-red-500">{reasonError}</p>
+            )}
           </div>
         </div>
         <DialogFooter>
