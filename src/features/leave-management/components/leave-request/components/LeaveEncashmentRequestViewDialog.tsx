@@ -16,7 +16,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useCreateLeaveEncashmentApproval } from "@/features/leave-management/services/leave-request.hook";
 import { LEAVE_STATUS } from "@/data/app.data";
-import { toast } from "sonner";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
@@ -37,6 +36,7 @@ export default function LeaveEncashmentRequestViewDialog({
   currentRow,
 }: Props) {
   const [reason, setReason] = useState("");
+  const [reasonError, setReasonError] = useState("");
   const [showLocalWarning, setShowLocalWarning] = useState(false);
   const { mutate: createLeaveEncashmentApproval, isPending } =
     useCreateLeaveEncashmentApproval(() => {
@@ -68,9 +68,7 @@ export default function LeaveEncashmentRequestViewDialog({
 
   const handleReject = () => {
     if (!reason) {
-      toast.error("Please enter a reason.", {
-        position: "top-right",
-      });
+      setReasonError("Please enter a reason.");
       return;
     }
     createLeaveEncashmentApproval({
@@ -205,12 +203,20 @@ export default function LeaveEncashmentRequestViewDialog({
           <div className="flex flex-col gap-2">
             <Label className="text-sm">Approve/Reject Reason</Label>
             <Textarea
-              className="w-full resize-none border border-gray-300 p-2"
+              className={`w-full resize-none border p-2 ${
+                reasonError ? "border-red-500" : "border-gray-300"
+              }`}
               name="reason"
               placeholder="Enter reason"
               value={reason}
-              onChange={(e) => setReason(e.target.value)}
+              onChange={(e) => {
+                setReason(e.target.value);
+                if (reasonError) setReasonError("");
+              }}
             ></Textarea>
+            {reasonError && (
+              <p className="text-xs text-red-500">{reasonError}</p>
+            )}
           </div>
         </div>
         <DialogFooter>
