@@ -2,6 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@/components/ui/badge";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import { DataTableRowActions } from "./table-action-button";
+import { formatDropDownLabel } from "@/utils/commonFunction";
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -102,7 +103,7 @@ export const columns: ColumnDef<any>[] = [
     ),
     cell: ({ row }) => {
       const shiftName = row.original.shift?.name || "-";
-      return <div className="text-sm">{shiftName}</div>;
+      return <div className="text-sm">{formatDropDownLabel(shiftName)}</div>;
     },
     enableSorting: false,
   },
@@ -126,7 +127,7 @@ export const columns: ColumnDef<any>[] = [
       if (Array.isArray(reportingTo) && reportingTo.length > 0) {
         displayValue = reportingTo
           .map((user: any) =>
-            `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
+            `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
           )
           .filter((name) => name.length > 0)
           .join(", ");
@@ -140,7 +141,7 @@ export const columns: ColumnDef<any>[] = [
         ) {
           displayValue = reportingToIds
             .map((user: any) =>
-              `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim()
+              `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim(),
             )
             .filter((name) => name.length > 0)
             .join(", ");
