@@ -92,9 +92,7 @@ export function ApplyLeaveDialog({
           .map((type: any) => {
             let total = 0;
             if (type?.leaveBalance) {
-              total =
-                Number(type?.leaveBalance?.earned) +
-                Number(type?.leaveBalance?.carryForward);
+              total = Number(type?.leaveBalance?.remaining);
             }
             return {
               value: type.id,

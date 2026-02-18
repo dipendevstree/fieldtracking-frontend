@@ -44,7 +44,11 @@ const UserTrackingTimeline = ({
   );
 
   // Destructure isLoading state from custom hooks
-  const { user, isLoading: isUserLoading } = userDetailsById(userId ?? "");
+  const {
+    user,
+    isLoading: isUserLoading,
+    refetch: refetchUserDetails,
+  } = userDetailsById(userId ?? "");
   const { data: visits, isFetched: isVisitsFetched } = useGetAllVisit({
     startDate: selectedDate,
     endDate: selectedDate,
@@ -341,11 +345,19 @@ const UserTrackingTimeline = ({
       socketForVisitOrignal.on("connect", handleConnect);
     }
 
+    const handleUserStatus = () => {
+      refetchUserDetails();
+    };
+
+    socketForVisitOrignal.on("user_online", handleUserStatus);
+    socketForVisitOrignal.on("user_online_status", handleUserStatus);
     socketForVisitOrignal.on("work_session", handleWorkSession);
     socketForVisitOrignal.on("break_session", handleBreakSession);
     socketForVisitOrignal.on("in_visit", handleVisit);
 
     return () => {
+      socketForVisitOrignal.off("user_online", handleUserStatus);
+      socketForVisitOrignal.off("user_online_status", handleUserStatus);
       socketForVisitOrignal.off("work_session", handleWorkSession);
       socketForVisitOrignal.off("break_session", handleBreakSession);
       socketForVisitOrignal.off("in_visit", handleVisit);
