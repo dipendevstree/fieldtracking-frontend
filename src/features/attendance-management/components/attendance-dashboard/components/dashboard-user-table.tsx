@@ -1,18 +1,8 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { CustomDataTable } from "@/components/shared/custom-data-table";
-import { PaginationCallbacks } from "@/components/shared/custom-table-pagination";
 import { dashboardUserColumns } from "./dashboard-user-columns";
 import { dashboardUserColumnsWeeklyMonthly } from "./dashboard-user-columns-weekly-monthly";
-
-interface Props {
-  data: any[];
-  totalCount: number;
-  loading?: boolean;
-  paginationCallbacks: PaginationCallbacks;
-  currentPage?: number;
-  defaultPageSize?: number;
-  viewType?: "daily" | "range";
-}
+import { DashboardUserTableProps } from "@/features/attendance-management/types";
 
 const DashboardUserTable = ({
   data,
@@ -22,7 +12,7 @@ const DashboardUserTable = ({
   currentPage,
   defaultPageSize,
   viewType = "daily",
-}: Props) => {
+}: DashboardUserTableProps) => {
   const columns =
     viewType === "daily"
       ? dashboardUserColumns

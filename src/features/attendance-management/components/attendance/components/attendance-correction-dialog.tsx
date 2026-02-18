@@ -32,6 +32,7 @@ import {
   AttendanceCorrectionSchema,
 } from "@/features/attendance-management/data/schema";
 import { TimePicker } from "@/components/ui/TimePicker";
+import { AttendanceCorrectionDialogProps } from "@/features/attendance-management/types";
 
 // Helper: Extract HH:mm from ISO string
 const extractTime = (dateStr?: string | null) => {
@@ -43,21 +44,12 @@ const extractTime = (dateStr?: string | null) => {
   }
 };
 
-interface Props {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  // The base attendance record we are correcting
-  selectedAttendance: any | null;
-  // If editing an existing request, this will be populated
-  correctionToEdit: any | null;
-}
-
 export function AttendanceCorrectionDialog({
   open,
   onOpenChange,
   selectedAttendance,
   correctionToEdit,
-}: Props) {
+}: AttendanceCorrectionDialogProps) {
   // Determine Mode
   const isEditMode = !!correctionToEdit;
 

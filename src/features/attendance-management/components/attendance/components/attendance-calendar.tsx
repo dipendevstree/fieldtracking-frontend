@@ -10,32 +10,12 @@ import { ATTENDANCE_STATUS } from "@/data/app.data";
 import { LegendItem } from "@/components/ui/legend-item";
 import { toast } from "sonner";
 import { IconInfoCircle } from "@tabler/icons-react";
+import {
+  AttendanceCalendarProps,
+  AttendanceEvent,
+} from "@/features/attendance-management/types";
 
 const localizer = momentLocalizer(moment);
-
-export interface AttendanceEvent {
-  id: string;
-  title: string;
-  start: Date;
-  end: Date;
-  resource: {
-    status: ATTENDANCE_STATUS;
-    checkIn?: string;
-    checkOut?: string;
-    [key: string]: any;
-  };
-}
-
-interface AttendanceCalendarProps {
-  events: AttendanceEvent[];
-  date: Date;
-  onNavigate: (date: Date) => void;
-  onSelectEvent?: (event: AttendanceEvent) => void;
-  onSelectSlot?: (slotInfo: any) => void;
-  holidays?: any[];
-  weekOffDays?: number[];
-  isSelectable?: boolean;
-}
 
 // --- HELPER: BE Enum -> Tailwind Styles ---
 const getStatusStyles = (status: ATTENDANCE_STATUS) => {
@@ -108,7 +88,7 @@ const AttendanceEventComponent = ({ event }: { event: AttendanceEvent }) => {
       <span
         className={cn(
           "text-[10px] px-2 py-0.5 rounded text-white font-semibold shadow-sm",
-          styles.badge
+          styles.badge,
         )}
       >
         {formatStatus(status)}
@@ -135,7 +115,7 @@ const CustomToolbar = ({ onNavigate, label, date, isSelectable }: any) => {
     const firstDayOfNextMonth = new Date(
       date.getFullYear(),
       date.getMonth() + 1,
-      1
+      1,
     );
     firstDayOfNextMonth.setHours(0, 0, 0, 0);
 
@@ -210,12 +190,12 @@ export default function AttendanceCalendarView({
       return {
         className: cn(
           styles.bg,
-          "transition-colors hover:brightness-95 cursor-pointer"
+          "transition-colors hover:brightness-95 cursor-pointer",
         ),
         style: { margin: 0 },
       };
     },
-    [events]
+    [events],
   );
 
   const eventPropGetter = useCallback(
@@ -228,7 +208,7 @@ export default function AttendanceCalendarView({
         height: "100%",
       },
     }),
-    []
+    [],
   );
 
   const { components } = useMemo(
@@ -260,7 +240,7 @@ export default function AttendanceCalendarView({
         },
       },
     }),
-    [holidays, weekOffDays]
+    [holidays, weekOffDays],
   );
 
   return (

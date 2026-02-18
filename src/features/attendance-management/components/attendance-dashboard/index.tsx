@@ -1,10 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  AttendanceEvent,
-  TeamAttendanceCalendar,
-} from "./components/dashboard-calendar";
+import { TeamAttendanceCalendar } from "./components/dashboard-calendar";
 import DashboardUserTable from "./components/dashboard-user-table";
 import { Main } from "@/components/layout/main";
 import { TopStatsCard } from "@/components/ui/TopStatsCard";
@@ -52,6 +49,7 @@ import { useViewType } from "@/context/view-type-context";
 import { ViewType as ViewTypeContextType } from "@/components/layout/types";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
+import { AttendanceEvent } from "../../types";
 
 type ViewType = "daily" | "range";
 
