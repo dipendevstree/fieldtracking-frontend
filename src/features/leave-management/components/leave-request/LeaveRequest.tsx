@@ -1,7 +1,7 @@
 import { FilterConfig, Option } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import { format, subDays } from "date-fns";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DateRange } from "react-day-picker";
 import {
   DEFAULT_PAGE_NUMBER,
@@ -56,9 +56,19 @@ const encashmentTabs = [
 
 interface Props {
   dashboardView?: boolean;
+  calendarQueryParams?: {
+    userId?: string;
+    leaveTypeId?: string;
+    status?: string;
+    startDate?: string;
+    endDate?: string;
+  };
 }
 
-export default function LeaveRequest({ dashboardView = false }: Props) {
+export default function LeaveRequest({
+  dashboardView = false,
+  calendarQueryParams,
+}: Props) {
   const [activeTab, setActiveTab] = useState("pending-leave-request");
   const { data: rulesData } = useGetLeaveRulesConfig();
   const [activeEncashmentTab, setActiveEncashmentTab] = useState(
@@ -286,6 +296,16 @@ export default function LeaveRequest({ dashboardView = false }: Props) {
       status,
     }));
   };
+
+  useEffect(() => {
+    if (calendarQueryParams) {
+      setPagination((prev) => ({
+        ...prev,
+        ...calendarQueryParams,
+        page: 1,
+      }));
+    }
+  }, [calendarQueryParams]);
 
   const leaveRequestView = (
     <>

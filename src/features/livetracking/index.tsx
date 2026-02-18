@@ -42,7 +42,7 @@ export default function Livetracking() {
     roleId: "",
     territoryId: "",
     includeLatLong: true,
-    sortField: "isOnline",
+    sortField: "isOnlineInChat",
     status: "",
     onlyTeamMembers: true,
   });
@@ -118,7 +118,7 @@ export default function Livetracking() {
   const enhancedUserList = (data?.list ?? [])
     .map(enhanceUser)
     .sort((a: any, b: any) =>
-      a.isOnline === b.isOnline ? 0 : a.isOnline ? -1 : 1,
+      a.isOnlineInChat === b.isOnlineInChat ? 0 : a.isOnlineInChat ? -1 : 1,
     );
 
   const { data: territoriesList } = useGetAllTerritoriesForDropdown();
@@ -155,8 +155,8 @@ export default function Livetracking() {
   };
 
   const handleBackToList = () => {
-    if (socket) {
-      socket().emit("untrack_user", { selectedUserId });
+    if (socketForLiveTracking) {
+      socketForLiveTracking.emit("untrack_user", { selectedUserId });
     }
     setSelectedUserId("");
     setPath([]);
@@ -349,9 +349,11 @@ export default function Livetracking() {
       socketForVisitOrignal.on("connect", handleConnect);
     }
 
+    socketForVisitOrignal.on("user_online", handleUserStatus);
     socketForVisitOrignal.on("user_online_status", handleUserStatus);
 
     return () => {
+      socketForVisitOrignal.off("user_online", handleUserStatus);
       socketForVisitOrignal.off("user_online_status", handleUserStatus);
       socketForVisitOrignal.disconnect();
     };
@@ -360,10 +362,10 @@ export default function Livetracking() {
   const enhancedUserListWithStatus = enhancedUserList
     .map((user: any) => ({
       ...user,
-      isOnline: userStatusMap[user.id] ?? user.isOnline,
+      isOnlineInChat: userStatusMap[user.id] ?? user.isOnlineInChat,
     }))
     .sort((a: any, b: any) =>
-      a.isOnline === b.isOnline ? 0 : a.isOnline ? -1 : 1,
+      a.isOnlineInChat === b.isOnlineInChat ? 0 : a.isOnlineInChat ? -1 : 1,
     );
 
   const selectedUser = enhancedUserListWithStatus.find(
@@ -391,7 +393,7 @@ export default function Livetracking() {
             territoryId: "",
             includeLatLong: true,
             status: "",
-            sortField: "isOnline",
+            sortField: "isOnlineInChat",
             onlyTeamMembers: true,
           });
         }}
@@ -454,9 +456,7 @@ export default function Livetracking() {
                                 : "bg-red-100 text-red-600"
                             }`}
                           >
-                            {user.isOnlineInChat
-                              ? "Online"
-                              : "Offline"}
+                            {user.isOnlineInChat ? "Online" : "Offline"}
                           </span>
                         </CardContent>
                       </Card>

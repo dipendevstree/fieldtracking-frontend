@@ -58,6 +58,10 @@ export default function LeaveEncashmentRequestViewDialog({
     : 0;
 
   const handleApprove = () => {
+    if (totalBalance < currentRow?.daysEncashed) {
+      setReasonError("Insufficient balance");
+      return;
+    }
     createLeaveEncashmentApproval({
       leaveEncashmentId: currentRow.id,
       comment: reason || "",
