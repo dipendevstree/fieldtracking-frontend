@@ -167,6 +167,18 @@ const GeneralSettingsPage = () => {
         "removeProfileImage",
         currentSettingsData.removeProfileImage ? "true" : "",
       );
+      formData.append(
+        "enableAddLeaveAfterProbation",
+        currentSettingsData.enableAddLeaveAfterProbation ? "true" : "",
+      );
+      formData.append(
+        "addLeaveAfterProbationValue",
+        currentSettingsData.addLeaveAfterProbationValue || 0,
+      );
+      formData.append(
+        "addLeaveAfterProbationUnit",
+        currentSettingsData.addLeaveAfterProbationUnit || null,
+      );
       // console.log('Organization update payload:', organizationUpdatePayload)
 
       // Update organization data

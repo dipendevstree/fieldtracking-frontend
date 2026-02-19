@@ -33,6 +33,12 @@ import { IconAlertTriangle } from "@tabler/icons-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { formatDropDownLabel } from "@/utils/commonFunction";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface GeneralApplicationSettingsProps {
   onDataChange?: (data: any) => void;
@@ -53,8 +59,14 @@ export default function GeneralApplicationSettings({
   const [allowAddUsersBasedOnTerritories, setAllowAddUsersBasedOnTerritories] =
     useState(false);
   const [allowWorkFromHome, setAllowWorkFromHome] = useState(false);
+  const [enableAddLeaveAfterProbation, setEnableAddLeaveAfterProbation] =
+    useState(false);
+  const [addLeaveAfterProbationValue, setAddLeaveAfterProbationValue] =
+    useState("");
+  const [addLeaveAfterProbationUnit, setAddLeaveAfterProbationUnit] =
+    useState("months");
+
   const [showTerritoryConfirm, setShowTerritoryConfirm] = useState(false);
-  const [pendingToggle, setPendingToggle] = useState(false);
   const [formData, setFormData] = useState({
     organizationName: "",
     organizationType: "",
@@ -174,6 +186,11 @@ export default function GeneralApplicationSettings({
         org.allowAddUsersBasedOnTerritories || false,
       );
       setAllowWorkFromHome(org.allowWorkFromHome || false);
+      setEnableAddLeaveAfterProbation(org.isProbationPeriod || false);
+      setAddLeaveAfterProbationValue(
+        org.probationPeriodValue?.toString() || "",
+      );
+      setAddLeaveAfterProbationUnit(org.probationPeriodUnit || "months");
 
       // ✅  Capture the baseline state for dirty checking
       setInitialState({
@@ -183,6 +200,9 @@ export default function GeneralApplicationSettings({
         allowAddUsersBasedOnTerritories:
           org.allowAddUsersBasedOnTerritories || false,
         allowWorkFromHome: org.allowWorkFromHome || false,
+        enableAddLeaveAfterProbation: org.isProbationPeriod || false,
+        addLeaveAfterProbationValue: org.probationPeriodValue?.toString() || "",
+        addLeaveAfterProbationUnit: org.probationPeriodUnit || "months",
       });
     }
   }, [user]);
@@ -231,6 +251,9 @@ export default function GeneralApplicationSettings({
         fixedDayExpense,
         allowAddUsersBasedOnTerritories,
         allowWorkFromHome,
+        enableAddLeaveAfterProbation,
+        addLeaveAfterProbationValue,
+        addLeaveAfterProbationUnit,
         isFixedExpenseDirty,
       });
     }
@@ -240,6 +263,9 @@ export default function GeneralApplicationSettings({
     fixedDayExpense,
     allowAddUsersBasedOnTerritories,
     allowWorkFromHome,
+    enableAddLeaveAfterProbation,
+    addLeaveAfterProbationValue,
+    addLeaveAfterProbationUnit,
     onDataChange,
     isFixedExpenseDirty,
   ]);
@@ -352,10 +378,23 @@ export default function GeneralApplicationSettings({
     // 1. Check Child Component (FixedDayExpenses)
     if (isFixedExpenseDirty) return true;
 
-    // 2. Check Toggles
+    // 2. Check Toggles & Values
     if (autoExpenseApproval !== initialState.autoExpenseApproval) return true;
     if (fixedDayExpense !== initialState.fixedDayExpense) return true;
     if (allowWorkFromHome !== initialState.allowWorkFromHome) return true;
+
+    // Updated variable checks
+    if (
+      enableAddLeaveAfterProbation !== initialState.enableAddLeaveAfterProbation
+    )
+      return true;
+    if (
+      addLeaveAfterProbationValue !== initialState.addLeaveAfterProbationValue
+    )
+      return true;
+    if (addLeaveAfterProbationUnit !== initialState.addLeaveAfterProbationUnit)
+      return true;
+
     if (
       allowAddUsersBasedOnTerritories !==
       initialState.allowAddUsersBasedOnTerritories
@@ -392,6 +431,10 @@ export default function GeneralApplicationSettings({
     autoExpenseApproval,
     fixedDayExpense,
     allowAddUsersBasedOnTerritories,
+    allowWorkFromHome,
+    enableAddLeaveAfterProbation,
+    addLeaveAfterProbationValue,
+    addLeaveAfterProbationUnit,
     initialState,
     isFixedExpenseDirty,
   ]);
@@ -501,7 +544,6 @@ export default function GeneralApplicationSettings({
                     formData?.userPhoneCode + formData?.userPhoneNumber || ""
                   }
                   onChange={(value) => {
-                    // field.onChange(value || "");
                     const phoneNumber = parsePhoneNumberFromString(value || "");
                     if (phoneNumber) {
                       handleInputChange(
@@ -512,19 +554,6 @@ export default function GeneralApplicationSettings({
                         "userPhoneNumber",
                         phoneNumber.nationalNumber,
                       );
-                      //   setValue(
-                      //     "countryCode",
-                      //     `+${phoneNumber.countryCallingCode}`,
-                      //     {
-                      //       shouldValidate: true,
-                      //       shouldDirty: true,
-                      //     }
-                      //   );
-                    } else {
-                      //   setValue("countryCode", "+91", {
-                      //     shouldValidate: true,
-                      //     shouldDirty: true,
-                      //   });
                     }
                   }}
                   className="w-full rounded-md border border-gray-300 px-3 py-2"
@@ -548,6 +577,7 @@ export default function GeneralApplicationSettings({
                     onValueChange={(value) =>
                       handleInputChange("userDepartment", value)
                     }
+                    disabled={true}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select department..." />
@@ -1226,17 +1256,33 @@ export default function GeneralApplicationSettings({
               <div className="flex items-center justify-between">
                 <div className="space-y-3">
                   <Label className="text-lg font-medium text-gray-900">
-                    Allow to add Users based on Territories
+                    Allow Users Based on Territories
                   </Label>
                 </div>
-                <Switch
-                  id="territory-users"
-                  checked={allowAddUsersBasedOnTerritories}
-                  onCheckedChange={(value) => {
-                    setPendingToggle(value);
-                    setShowTerritoryConfirm(true);
-                  }}
-                />
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div>
+                        <Switch
+                          id="territory-users"
+                          checked={allowAddUsersBasedOnTerritories}
+                          disabled={allowAddUsersBasedOnTerritories}
+                          onCheckedChange={(value) => {
+                            if (value) {
+                              setShowTerritoryConfirm(true);
+                            }
+                          }}
+                        />
+                      </div>
+                    </TooltipTrigger>
+
+                    {allowAddUsersBasedOnTerritories && (
+                      <TooltipContent side="left">
+                        Cannot be disabled as it affects existing records
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
               </div>
 
               <Separator className="my-6" />
@@ -1254,6 +1300,79 @@ export default function GeneralApplicationSettings({
                     setAllowWorkFromHome(value);
                   }}
                 />
+              </div>
+
+              <Separator className="my-6" />
+
+              {/*  Add Leave Balance after Probation Period Section */}
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label className="text-lg font-medium text-gray-900">
+                      Add Leave Balance after Probation Period
+                    </Label>
+                  </div>
+                  <Switch
+                    id="probation-period"
+                    checked={enableAddLeaveAfterProbation}
+                    onCheckedChange={(value: boolean) =>
+                      setEnableAddLeaveAfterProbation(value)
+                    }
+                  />
+                </div>
+
+                {enableAddLeaveAfterProbation && (
+                  <div className="mt-4 p-4 rounded-lg border bg-gray-50/50">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <Label
+                        htmlFor="probation-value"
+                        className="text-sm font-medium text-gray-700 whitespace-nowrap"
+                      >
+                        Add Leave Balance after
+                      </Label>
+
+                      <div className="w-20">
+                        <Input
+                          id="probation-value"
+                          value={addLeaveAfterProbationValue}
+                          onChange={(e) =>
+                            setAddLeaveAfterProbationValue(e.target.value)
+                          }
+                          placeholder="0"
+                          type="number"
+                          className="h-9 bg-white"
+                        />
+                      </div>
+
+                      <div className="w-32">
+                        <Select
+                          value={addLeaveAfterProbationUnit}
+                          onValueChange={setAddLeaveAfterProbationUnit}
+                        >
+                          <SelectTrigger className="h-9 w-full bg-white">
+                            <SelectValue placeholder="Unit" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="days">Days</SelectItem>
+                            <SelectItem value="months">Months</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <Label className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                        of Probation Period
+                      </Label>
+                    </div>
+
+                    {/* Validation Error Message */}
+                    {addLeaveAfterProbationUnit === "months" &&
+                      parseInt(addLeaveAfterProbationValue) > 12 && (
+                        <p className="text-xs text-red-500 mt-2">
+                          Maximum 12 months allowed
+                        </p>
+                      )}
+                  </div>
+                )}
               </div>
 
               <Separator className="my-6" />
@@ -1344,35 +1463,32 @@ export default function GeneralApplicationSettings({
                   className="stroke-destructive mr-1 inline-block"
                   size={18}
                 />{" "}
-                <span>
-                  Warning:{" "}
-                  {allowAddUsersBasedOnTerritories ? "Disable" : "Enable"}{" "}
-                  Territory-Based Users?
-                </span>
+                <span>Warning: Enable Territory-Based Users?</span>
               </span>
             }
             desc={
               <div className="space-y-4">
                 <p className="mb-2">
-                  If you will change the settings of Territories wise Users, it
-                  may cause issues in the existing Users Settings and its
-                  relevant functionalities.
+                  Enabling Territory-Based Users will permanently apply
+                  territory restrictions to existing users and related records.
                 </p>
                 <Alert variant="destructive">
                   <AlertTitle>Warning!</AlertTitle>
                   <AlertDescription>
-                    Are you sure that you want to make changes?
+                    Once this setting is enabled, it cannot be disabled as it
+                    may impact existing user records and system configurations.
+                    Please proceed carefully.
                   </AlertDescription>
                 </Alert>
               </div>
             }
             destructive
             handleConfirm={() => {
-              setAllowAddUsersBasedOnTerritories(pendingToggle); // apply toggle
+              setAllowAddUsersBasedOnTerritories(true); // apply toggle
               setShowTerritoryConfirm(false); // close dialog
             }}
             cancelBtnText="Cancel"
-            confirmText="Yes"
+            confirmText="Yes, Enable"
           />
         </CardContent>
       </Card>
