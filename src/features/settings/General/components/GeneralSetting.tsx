@@ -212,8 +212,8 @@ export default function GeneralApplicationSettings({
         allowAddUsersBasedOnTerritories:
           org.allowAddUsersBasedOnTerritories || false,
         allowWorkFromHome: org.allowWorkFromHome || false,
-        enableAddLeaveAfterProbation: org.isProbationPeriod || false,
-        addLeaveAfterProbationValue: org.probationPeriodValue?.toString() || "",
+        enableAddLeaveAfterProbation: org.allowUserInProbationPeriod || false,
+        addLeaveAfterProbationValue: org.probationPeriod?.toString() || "0",
         addLeaveAfterProbationUnit: org.probationPeriodUnit || "months",
       });
     }
