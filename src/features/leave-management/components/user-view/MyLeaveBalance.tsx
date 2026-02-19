@@ -248,9 +248,13 @@ export default function MyLeaveBalance() {
             <div
               className="flex"
               onClick={() => {
-                document.getElementById("pending-leave-section")?.scrollIntoView({
-                  behavior: "smooth",
-                });
+                if (status === LEAVE_STATUS.PENDING) {
+                  document
+                    .getElementById("pending-leave-section")
+                    ?.scrollIntoView({
+                      behavior: "smooth",
+                    });
+                }
               }}
               title={`
                 ${employeeName} (${typeName}) - ${
@@ -548,7 +552,9 @@ export default function MyLeaveBalance() {
         />
       )}
 
-      {canViewLeaveRequest && <LeaveRequest dashboardView />}
+      {canViewLeaveRequest && (
+        <LeaveRequest calendarQueryParams={calendarQueryParams} dashboardView />
+      )}
     </Main>
   );
 }
