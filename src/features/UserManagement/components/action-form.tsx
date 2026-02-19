@@ -35,6 +35,8 @@ import { formSchemaConditional, TFormSchemaConditional } from "../data/schema";
 import { useGetAllRolesForDropdown } from "../services/Roles.hook";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { SimpleDatePicker } from "@/components/ui/datepicker";
+import { formatDropDownLabel } from "@/utils/commonFunction";
 
 interface Props {
   currentRow?: any;
@@ -57,7 +59,6 @@ export function UserActionForm({
   const [hideReportingToField, setHideReportingToField] = useState(false);
   const [showLocalWarning, setShowLocalWarning] = useState(false);
   const { data: rolesList } = useGetAllRolesForDropdown();
-
   // Initialize selectedRoleId with current row's reportingToRoleId for edit mode
   const [selectedRoleId, setSelectedRoleId] = useState<string>(
     currentRow?.reportingToRoleId || "",
@@ -149,6 +150,7 @@ export function UserActionForm({
       reportingToRoleId: currentRow?.reportingToRoleId,
       reportingToIds: [],
       shiftId: currentRow?.shiftId ?? "",
+      joiningDate: currentRow?.joiningDate ?? "",
       // include the hide flag so the resolver can see it and validate conditionally
       hideReportingToField: hideReportingToField,
       // include the territory filter flag for conditional validation
@@ -252,6 +254,7 @@ export function UserActionForm({
         reportingToRoleId: currentRow.reportingToRoleId,
         reportingToIds: processedReportingToIds,
         shiftId: currentRow.shiftId ?? "",
+        joiningDate: currentRow.joiningDate ?? "",
         hideReportingToField: hideField,
         allowTerritoryFilter: allowTerritoryFilter,
       });
@@ -568,15 +571,12 @@ export function UserActionForm({
                 </div>
               </div>
 
-              {/* Row 4: Territory & Shift ID */}
-              {allowTerritoryFilter && (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {/* Row 4: Territory, Shift ID & Joining Date */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {allowTerritoryFilter && (
                   <div className="space-y-2">
                     <Label htmlFor="territoryId">
-                      Territory
-                      {allowTerritoryFilter && (
-                        <span className="text-red-500">*</span>
-                      )}
+                      Territory <span className="text-red-500">*</span>
                     </Label>
                     <Controller
                       name="territoryId"
@@ -609,83 +609,66 @@ export function UserActionForm({
                       </p>
                     )}
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="shiftId">
-                      Shift <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="shiftId"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          value={getFieldValue(field.value)}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select Shift" />
-                          </SelectTrigger>
-                          <SelectContent className="!w-full">
-                            {shifts.map((option) => (
-                              <SelectItem
-                                key={option.value}
-                                value={String(option.value)}
-                              >
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                    {errors.shiftId && (
-                      <p className="flex items-center gap-1 text-xs text-red-500">
-                        <AlertCircle className="h-3 w-3" />
-                        {errors.shiftId.message}
-                      </p>
+                )}
+                <div className="space-y-2">
+                  <Label htmlFor="shiftId">
+                    Shift <span className="text-red-500">*</span>
+                  </Label>
+                  <Controller
+                    name="shiftId"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        value={getFieldValue(field.value)}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select Shift" />
+                        </SelectTrigger>
+                        <SelectContent className="!w-full">
+                          {shifts.map((option) => (
+                            <SelectItem
+                              key={option.value}
+                              value={String(option.value)}
+                            >
+                              {formatDropDownLabel(option.label)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     )}
-                  </div>
+                  />
+                  {errors.shiftId && (
+                    <p className="flex items-center gap-1 text-xs text-red-500">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.shiftId.message}
+                    </p>
+                  )}
                 </div>
-              )}
-              {!allowTerritoryFilter && (
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="shiftId">
-                      Shift <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="shiftId"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          value={getFieldValue(field.value)}
-                          onValueChange={field.onChange}
-                        >
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select Shift" />
-                          </SelectTrigger>
-                          <SelectContent className="!w-full">
-                            {shifts.map((option) => (
-                              <SelectItem
-                                key={option.value}
-                                value={String(option.value)}
-                              >
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      )}
-                    />
-                    {errors.shiftId && (
-                      <p className="flex items-center gap-1 text-xs text-red-500">
-                        <AlertCircle className="h-3 w-3" />
-                        {errors.shiftId.message}
-                      </p>
+                <div className="space-y-2">
+                  <Label htmlFor="joiningDate">
+                    Joining Date <span className="text-red-500">*</span>
+                  </Label>
+                  <Controller
+                    name="joiningDate"
+                    control={control}
+                    render={({ field }) => (
+                      <SimpleDatePicker
+                        date={field.value ?? ""}
+                        setDate={field.onChange}
+                        className="w-full"
+                        disableFuture={false}
+                      />
                     )}
-                  </div>
-                  <div></div>
+                  />
+                  {errors.joiningDate && (
+                    <p className="flex items-center gap-1 text-xs text-red-500">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.joiningDate.message}
+                    </p>
+                  )}
                 </div>
-              )}
+              </div>
             </div>
 
             {/* Reporting Structure Section */}

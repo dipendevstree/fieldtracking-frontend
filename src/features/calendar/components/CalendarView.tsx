@@ -361,7 +361,10 @@ export default function CalendarView() {
             </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card
+          className="cursor-pointer"
+          onClick={() => navigate({ to: "/calendar/upcoming-visit" })}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               {isToday ? "Today's" : ""} Pending Visits

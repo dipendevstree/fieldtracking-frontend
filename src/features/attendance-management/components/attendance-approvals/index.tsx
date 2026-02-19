@@ -30,7 +30,7 @@ export default function AttendanceApprovals() {
   const { mutate: approveRejectCorrection, isPending: isUpdating } =
     useApproveRejectAttendanceCorrection(
       currentRow?.correctionId || "",
-      closeModal
+      closeModal,
     );
 
   const handleApproveConfirm = () => {
@@ -59,13 +59,23 @@ export default function AttendanceApprovals() {
       dateRangeValue: currentDateRange,
       onDateRangeChange: (range) => {
         setCurrentDateRange(range);
-        setPagination({
-          ...pagination,
-          page: 1,
-          ...(range?.from && { startDate: format(range.from, "yyyy-MM-dd") }),
-          ...(range?.to && { endDate: format(range.to, "yyyy-MM-dd") }),
+
+        setPagination((prev) => {
+          const { startDate, endDate, ...rest } = prev as any;
+
+          return {
+            ...rest,
+            page: 1,
+            ...(range?.from && {
+              startDate: format(range.from, "yyyy-MM-dd"),
+            }),
+            ...(range?.to && {
+              endDate: format(range.to, "yyyy-MM-dd"),
+            }),
+          };
         });
       },
+
       dataRangeClassName: "w-full max-w-xs",
     },
     {

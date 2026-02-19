@@ -400,7 +400,7 @@ const UserTrackingTimeline = ({
               location: task?.checkoutAddress,
               time: format(visitTime, "hh:mm a"),
               rawTime: visitTime.getTime(),
-              color: "bg-gray-400",
+              color: "bg-blue-400",
             });
           }
         });

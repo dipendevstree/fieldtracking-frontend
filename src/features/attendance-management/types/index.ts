@@ -1,4 +1,25 @@
 import { ATTENDANCE_STATUS } from "@/data/app.data";
+import { PaginationCallbacks } from "@/components/shared/custom-table-pagination";
+
+export interface AttendanceCalendarProps {
+  events: AttendanceEvent[];
+  date: Date;
+  onNavigate: (date: Date) => void;
+  onSelectEvent?: (event: AttendanceEvent) => void;
+  onSelectSlot?: (slotInfo: any) => void;
+  holidays?: any[];
+  weekOffDays?: number[];
+  isSelectable?: boolean;
+}
+
+export interface TeamAttendanceCalendarProps {
+  events: AttendanceEvent[];
+  date: Date;
+  onNavigate: (date: Date) => void;
+  className?: string;
+  holidays?: any[];
+  weekOffDays?: number[];
+}
 
 export interface AttendanceRecord {
   attendanceId: string;
@@ -16,6 +37,7 @@ export interface IListParams {
   page: number;
   [key: string]: unknown;
 }
+
 export interface AttendanceCorrection {
   correctionId: string;
   userId: string;
@@ -65,6 +87,15 @@ export interface AttendanceCorrection {
   approver: any | null;
 }
 
+export interface AttendanceCorrectionDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  // The base attendance record we are correcting
+  selectedAttendance: any | null;
+  // If editing an existing request, this will be populated
+  correctionToEdit: any | null;
+}
+
 export interface AttendanceCorrectionListResponse {
   statusCode: number;
   error: boolean;
@@ -87,4 +118,38 @@ export interface AttendanceApprovalParams {
   userId?: string;
   startDate?: string;
   endDate?: string;
+}
+
+export interface AttendanceEvent {
+  id: string;
+  title: string;
+  start: Date;
+  end: Date;
+  resource: {
+    status: ATTENDANCE_STATUS;
+    // For individual attendance
+    checkIn?: string;
+    checkOut?: string;
+    // For team dashboard
+    name?: string;
+    leaveType?: string;
+    halfDay?: boolean;
+    halfDayType?: string;
+    [key: string]: any;
+  };
+}
+
+export interface EmployeeData {
+  id: string;
+  name: string;
+}
+
+export interface DashboardUserTableProps {
+  data: any[];
+  totalCount: number;
+  loading?: boolean;
+  paginationCallbacks: PaginationCallbacks;
+  currentPage?: number;
+  defaultPageSize?: number;
+  viewType?: "daily" | "range";
 }

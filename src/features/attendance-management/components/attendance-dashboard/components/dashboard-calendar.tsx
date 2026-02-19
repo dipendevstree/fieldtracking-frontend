@@ -20,41 +20,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { formatDropDownLabel } from "@/utils/commonFunction";
+import {
+  AttendanceEvent,
+  TeamAttendanceCalendarProps,
+} from "@/features/attendance-management/types";
 
 // --- 1. CONFIG & TYPES ---
-
 const localizer = momentLocalizer(moment);
 
-export interface AttendanceEvent {
-  id: string;
-  title: string; // Initials (e.g., "JS")
-  start: Date;
-  end: Date;
-  resource: {
-    status: ATTENDANCE_STATUS;
-    name: string;
-    leaveType?: string; // For leave events
-    halfDay?: boolean; // For leave events
-    halfDayType?: string; // For leave events
-  };
-}
-
-export interface EmployeeData {
-  id: string;
-  name: string;
-}
-
-interface TeamAttendanceCalendarProps {
-  events: AttendanceEvent[];
-  date: Date;
-  onNavigate: (date: Date) => void;
-  className?: string;
-  holidays?: any[];
-  weekOffDays?: number[];
-}
-
 // --- 2. HELPERS ---
-
 const getStatusStyles = (status: ATTENDANCE_STATUS) => {
   switch (status) {
     case ATTENDANCE_STATUS.PRESENT:
@@ -79,7 +53,6 @@ const getStatusStyles = (status: ATTENDANCE_STATUS) => {
 };
 
 // --- 3. SUB-COMPONENTS ---
-
 const EventComponent = ({ event }: { event: AttendanceEvent }) => (
   <div
     title={`${event.resource.name} - ${event.resource.status}`}
@@ -163,7 +136,6 @@ const CustomToolbar = (toolbar: ToolbarProps & { date?: Date }) => {
 };
 
 // --- 4. MAIN COMPONENT ---
-
 export function TeamAttendanceCalendar({
   events,
   date,
@@ -323,7 +295,7 @@ export function TeamAttendanceCalendar({
         .rbc-header { padding: 12px 0; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748b; background: #fff; border-bottom: 1px solid #e2e8f0; }
         .rbc-day-bg + .rbc-day-bg { border-left: 1px solid #e2e8f0; }
         .rbc-month-row { border-bottom: 1px solid #e2e8f0; min-height: 120px; }
-        .rbc-date-cell { padding: 8px; text-align: left; font-size: 0.9rem; font-weight: 600; color: #334155; }
+        .rbc-date-cell { padding-top: 8px; text-align: left; font-size: 0.9rem; font-weight: 600; color: #334155; }
         .rbc-today { background-color: transparent !important; }
         .selected-date { border: 2px solid #3b82f6 !important; }
         .holiday-date { background-color: #f1f5f9 !important; position: relative; }

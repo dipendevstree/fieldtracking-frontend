@@ -9,9 +9,6 @@ import { Button } from "@/components/ui/button";
 import CustomTooltip from "@/components/shared/custom-tooltip";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { Main } from "@/components/layout/main";
-import AttendanceCalendarView, {
-  AttendanceEvent,
-} from "./components/attendance-calendar";
 import { AttendanceCorrectionDialog } from "./components/attendance-correction-dialog";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 
@@ -32,8 +29,10 @@ import { toast } from "sonner";
 import { useNavigate } from "@tanstack/react-router";
 import { useViewType } from "@/context/view-type-context";
 import { ViewType } from "@/components/layout/types";
+import { AttendanceEvent } from "../../types";
+import AttendanceCalendarView from "./components/attendance-calendar";
 
-// --- HELPERS (Keep existing helpers) ---
+// --- HELPERS  ---
 const formatStatus = (status: string) => {
   return status
     ?.replace(/_/g, " ")

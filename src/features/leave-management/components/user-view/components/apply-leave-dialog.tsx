@@ -90,13 +90,24 @@ export function ApplyLeaveDialog({
               : !type.superAdminCreatedBy,
           )
           .map((type: any) => {
-            let total = 0;
-            if (type?.leaveBalance) {
-              total = Number(type?.leaveBalance?.remaining);
+            const total = Number(type?.leaveBalance?.remaining || 0);
+            const absTotal = Math.abs(total);
+            const unit = absTotal === 1 ? "Day" : "Days";
+
+            let statusText = "";
+
+            if (total > 0) {
+              statusText = `${total} ${unit} Available`;
+            } else if (total === 0) {
+              statusText = `0 Days Available`;
+            } else {
+              // Handles negative numbers gracefully
+              statusText = `${absTotal} ${unit} Overdrawn`;
             }
+
             return {
-              value: type.id,
-              label: `${type.name} (${total} Days Available)`,
+              value: type?.id,
+              label: `${type.name} (${statusText})`,
             };
           })
       : [];

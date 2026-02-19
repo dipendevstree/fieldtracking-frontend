@@ -38,6 +38,7 @@ export const formSchema = z.object({
     .min(1, "Department is required"),
   isWebUser: z.boolean().optional(),
   shiftId: z.string().min(1, "Shift is required"),
+  joiningDate: z.string().min(1, "Joining date is required"),
 });
 
 // Conditionally require the reporting fields when hideReportingToField is false/undefined
@@ -52,6 +53,9 @@ export const formSchemaHidden = formSchema.extend({
   reportingToRoleId: z.string().nullable().optional(),
   reportingToIds: z.array(z.string()).nullable().optional(),
   // territory is optional when filter is not enabled
+  allowTerritoryFilter: z
+    .union([z.literal(false), z.undefined(), z.null()])
+    .optional(),
   territoryId: z.string().optional(),
 });
 
@@ -72,6 +76,9 @@ export const formSchemaShown = formSchema.extend({
     z.array(z.string()).min(1, "Reporting to is required"),
   ),
   // territory is optional when filter is not enabled
+  allowTerritoryFilter: z
+    .union([z.literal(false), z.undefined(), z.null()])
+    .optional(),
   territoryId: z.string().optional(),
 });
 

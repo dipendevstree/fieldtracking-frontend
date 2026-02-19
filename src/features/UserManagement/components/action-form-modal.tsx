@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { format } from "date-fns";
 import { DeleteModal } from "@/components/shared/common-delete-modal";
 import {
   useCreateUsers,
@@ -65,6 +66,9 @@ export function UsersActionModal() {
           ? [values.reportingToIds]
           : [],
       shiftId: values.shiftId || null,
+      joiningDate: values.joiningDate
+        ? format(new Date(values.joiningDate), "dd-MM-yyyy")
+        : null,
     };
 
     if (allowTerritoryFilter) {
@@ -95,6 +99,9 @@ export function UsersActionModal() {
           ? [values.reportingToIds]
           : [],
       shiftId: values.shiftId || null,
+      joiningDate: values.joiningDate
+        ? format(new Date(values.joiningDate), "dd-MM-yyyy")
+        : null,
     };
     if (allowTerritoryFilter) {
       payload.territoryId = values.territoryId;
