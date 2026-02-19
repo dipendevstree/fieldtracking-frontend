@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { ROUTE_PERMISSIONS } from "@/components/layout/data/sidebar-data";
-import { AuthState, UserRole } from "@/components/layout/types";
+import { AuthState, UserRole, Permission } from "@/components/layout/types";
 import { LoginUser } from "@/features/auth/sign-in/types";
 
 // Auth storage keys
@@ -22,7 +22,7 @@ export const useAuthStore = create<AuthState>()(
       refreshTrigger: 0,
 
       // Actions
-      login: (data: any) => {
+      login: (data: LoginUser) => {
         set({ isLoading: true });
 
         try {
@@ -40,11 +40,11 @@ export const useAuthStore = create<AuthState>()(
             if (typeof window !== "undefined") {
               localStorage.setItem(
                 AUTH_STORAGE_KEYS.ACCESS_TOKEN,
-                data.access_token
+                data.access_token,
               );
               localStorage.setItem(
                 AUTH_STORAGE_KEYS.USER_DATA,
-                JSON.stringify(data)
+                JSON.stringify(data),
               );
             }
 
@@ -52,11 +52,11 @@ export const useAuthStore = create<AuthState>()(
               user: data,
               isAuthenticated: true,
               isLoading: false,
-              isPasswordChanged: data.isPasswordChanged,
+              isPasswordChanged: data.isPasswordChanged || false,
             });
           } else {
             throw new Error(
-              "Invalid login data: missing access token or user ID"
+              "Invalid login data: missing access token or user ID",
             );
           }
         } catch (error) {
@@ -89,6 +89,7 @@ export const useAuthStore = create<AuthState>()(
       setIsPasswordChanged: (isPasswordChanged: boolean) => {
         set({ isPasswordChanged });
       },
+
       updateUser: (userData: Partial<LoginUser>) => {
         set((state) => {
           if (!state.user) return state;
@@ -99,7 +100,7 @@ export const useAuthStore = create<AuthState>()(
           if (typeof window !== "undefined") {
             localStorage.setItem(
               AUTH_STORAGE_KEYS.USER_DATA,
-              JSON.stringify(updatedUser)
+              JSON.stringify(updatedUser),
             );
           }
 
@@ -116,9 +117,9 @@ export const useAuthStore = create<AuthState>()(
 
         return user.permissions.some((group) =>
           group.children.some(
-            (permission) =>
-              permission?.name?.toLowerCase() === permissionName?.toLowerCase()
-          )
+            (permission: Permission) =>
+              permission?.name?.toLowerCase() === permissionName?.toLowerCase(),
+          ),
         );
       },
 
@@ -127,7 +128,7 @@ export const useAuthStore = create<AuthState>()(
         if (!user?.permissions) return false;
 
         return user.permissions.some(
-          (group) => group.name.toLowerCase() === groupName.toLowerCase()
+          (group) => group.name.toLowerCase() === groupName.toLowerCase(),
         );
       },
 
@@ -136,12 +137,12 @@ export const useAuthStore = create<AuthState>()(
         if (!user?.permissions) return false;
 
         return permissionNames.some((permissionName) =>
-          user.permissions.some((group) =>
+          user.permissions?.some((group) =>
             group.children.some(
-              (permission) =>
-                permission.name.toLowerCase() === permissionName.toLowerCase()
-            )
-          )
+              (permission: Permission) =>
+                permission.name.toLowerCase() === permissionName.toLowerCase(),
+            ),
+          ),
         );
       },
 
@@ -150,9 +151,9 @@ export const useAuthStore = create<AuthState>()(
         if (!user?.permissions) return false;
 
         return groupNames.some((groupName) =>
-          user.permissions.some(
-            (group) => group.name.toLowerCase() === groupName.toLowerCase()
-          )
+          user.permissions?.some(
+            (group) => group.name.toLowerCase() === groupName.toLowerCase(),
+          ),
         );
       },
 
@@ -161,18 +162,22 @@ export const useAuthStore = create<AuthState>()(
         const { user } = get();
         if (!user) return null;
 
-        // Example: Determine role based on permissions or user data
-        // You might need to adjust this based on your actual role determination logic
-        if (user.email === "admin@gmail.com") return "admin";
+        // Determine role based on user data roleName or role mapping
+        const roleName = user.role?.roleName?.toLowerCase() || "";
 
-        // Or determine based on permissions
+        if (roleName.includes("admin")) return "admin";
+        if (roleName.includes("merchant")) return "merchant";
+        if (roleName.includes("driver")) return "driver";
+        if (roleName.includes("business")) return "business";
+
+        // Fallback to permission groups if role name is not descriptive
         const { hasPermissionGroup } = get();
         if (hasPermissionGroup("Admin")) return "admin";
         if (hasPermissionGroup("Merchant")) return "merchant";
         if (hasPermissionGroup("Driver")) return "driver";
         if (hasPermissionGroup("Business")) return "business";
 
-        return "user";
+        return (roleName as UserRole) || "user";
       },
 
       hasRole: (roleName: string) => {
@@ -187,7 +192,7 @@ export const useAuthStore = create<AuthState>()(
         if (!userRole) return false;
 
         return roleNames.some(
-          (roleName) => userRole.toLowerCase() === roleName.toLowerCase()
+          (roleName) => userRole.toLowerCase() === roleName.toLowerCase(),
         );
       },
 
@@ -201,14 +206,14 @@ export const useAuthStore = create<AuthState>()(
           // Check if route requires specific permissions
           if (permission.requiredPermissions) {
             return permission.requiredPermissions.some((perm) =>
-              hasPermission(perm)
+              hasPermission(perm),
             );
           }
 
           // Check if route requires specific permission groups
           if (permission.requiredPermissionGroups) {
             return permission.requiredPermissionGroups.some((group) =>
-              hasPermissionGroup(group)
+              hasPermissionGroup(group),
             );
           }
 
@@ -232,10 +237,10 @@ export const useAuthStore = create<AuthState>()(
         if (permission.requiredPermissions?.length) {
           const hasRequiredPermission = permission.requireAll
             ? permission.requiredPermissions.every((perm) =>
-                hasPermission(perm)
+                hasPermission(perm),
               )
             : permission.requiredPermissions.some((perm) =>
-                hasPermission(perm)
+                hasPermission(perm),
               );
 
           if (!hasRequiredPermission) return false;
@@ -245,10 +250,10 @@ export const useAuthStore = create<AuthState>()(
         if (permission.requiredPermissionGroups?.length) {
           const hasRequiredGroup = permission.requireAll
             ? permission.requiredPermissionGroups.every((group) =>
-                hasPermissionGroup(group)
+                hasPermissionGroup(group),
               )
             : permission.requiredPermissionGroups.some((group) =>
-                hasPermissionGroup(group)
+                hasPermissionGroup(group),
               );
 
           if (!hasRequiredGroup) return false;
@@ -258,7 +263,7 @@ export const useAuthStore = create<AuthState>()(
         if (permission.requiredRoles?.length) {
           const hasRequiredRole = permission.requireAll
             ? permission.requiredRoles.every((role) =>
-                hasAnyRole([role as UserRole])
+                hasAnyRole([role as UserRole]),
               )
             : hasAnyRole(permission.requiredRoles as UserRole[]);
 
@@ -284,10 +289,10 @@ export const useAuthStore = create<AuthState>()(
         try {
           set((state) => ({
             ...state,
-            refreshTrigger: Date.now()
+            refreshTrigger: Date.now(),
           }));
         } catch (error) {
-          console.error('Error refreshing user data:', error);
+          console.error("Error refreshing user data:", error);
           throw error;
         }
       },
@@ -304,7 +309,7 @@ export const useAuthStore = create<AuthState>()(
         if (state?.user && typeof window !== "undefined") {
           // Ensure localStorage is in sync
           const storedToken = localStorage.getItem(
-            AUTH_STORAGE_KEYS.ACCESS_TOKEN
+            AUTH_STORAGE_KEYS.ACCESS_TOKEN,
           );
           const storedUser = localStorage.getItem(AUTH_STORAGE_KEYS.USER_DATA);
 
@@ -315,8 +320,8 @@ export const useAuthStore = create<AuthState>()(
           }
         }
       },
-    }
-  )
+    },
+  ),
 );
 
 // Utility hooks for common auth operations

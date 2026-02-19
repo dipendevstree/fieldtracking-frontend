@@ -62,29 +62,82 @@ export interface PermissionGroup {
   readonly children: readonly Permission[];
 }
 
+export interface Role {
+  roleId: string;
+  roleName: string;
+  tierkey: string;
+  isActive: boolean;
+  permissions?: PermissionGroup[];
+}
+
+export interface Organization {
+  organizationID: string;
+  organizationName: string;
+  organizationIcon?: string | null;
+  currency?: string;
+  time_zone?: string;
+  isAutoExpense?: boolean;
+  isFixedDayExpense?: boolean;
+  rsPerKm?: string;
+  organizationTypeId?: string;
+  industryId?: string;
+  website?: string;
+  description?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  country?: string;
+  allowAddUsersBasedOnTerritories?: boolean;
+  allowWorkFromHome?: boolean;
+  allowUserInProbationPeriod?: boolean;
+  probationPeriod?: number;
+  probationPeriodUnit?: string;
+  isProbationPeriod?: boolean;
+  probationPeriodValue?: number;
+}
+
+export interface Shift {
+  id: string;
+  name: string;
+  startTime: string;
+  endTime: string;
+}
+
+export interface Territory {
+  id: string;
+  name: string;
+}
+
 // User data from login response
 export interface LoginUser {
   id: string;
-  readonly firstName: string;
-  readonly lastName: string;
-  readonly phoneNumber: string;
-  readonly countryCode: string;
-  readonly departmentId: string;
-  readonly user_id: string;
-  readonly name: string;
-  readonly email: string;
-  readonly isSuperAdmin: boolean;
-  readonly mobile: string | null;
-  readonly access_token: string;
-  readonly profileUrl?: string | null;
-  role: any;
-  readonly permissions: readonly PermissionGroup[];
-  organizationID: string;
-  organization: any;
-  userName: string;
+  roleId?: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  countryCode?: string;
+  departmentId?: string;
+  user_id?: string;
+  name?: string;
+  email?: string;
+  isSuperAdmin?: boolean;
+  mobile?: string | null;
+  access_token: string;
+  profileUrl?: string | null;
+  role?: Role;
+  readonly permissions?: readonly PermissionGroup[];
+  organizationID?: string;
+  organization?: Organization;
+  userName?: string;
   fcm_token?: string | null;
   superAdminCreatedBy?: string | null;
   territoryId?: string | null;
+  shift?: Shift | null;
+  readonly reportingTo?: readonly LoginUser[];
+  territory?: Territory | null;
+  isPasswordChanged?: boolean;
+  superAdminId?: string;
 }
 
 // Complete login response
@@ -165,11 +218,11 @@ export interface AuthActions {
   refreshToken: () => Promise<void>;
   checkPermission: (
     permissionName: string,
-    options?: PermissionCheckOptions
+    options?: PermissionCheckOptions,
   ) => boolean;
   checkPermissionGroup: (
     groupName: string,
-    options?: PermissionCheckOptions
+    options?: PermissionCheckOptions,
   ) => boolean;
 }
 
@@ -213,13 +266,13 @@ export interface AuthError {
 export type PermissionChecker = (
   user: LoginUser | null,
   permissionName: string,
-  options?: PermissionCheckOptions
+  options?: PermissionCheckOptions,
 ) => boolean;
 
 export type PermissionGroupChecker = (
   user: LoginUser | null,
   groupName: string,
-  options?: PermissionCheckOptions
+  options?: PermissionCheckOptions,
 ) => boolean;
 
 export type RoleChecker = (user: LoginUser | null, role: UserRole) => boolean;
@@ -268,17 +321,17 @@ export interface EnhancedAuthState {
   // Enhanced permission helpers
   checkPermission: (
     permissionName: string,
-    options?: PermissionCheckOptions
+    options?: PermissionCheckOptions,
   ) => PermissionCheckResult;
 
   checkPermissionGroup: (
     groupName: string,
-    options?: PermissionCheckOptions
+    options?: PermissionCheckOptions,
   ) => PermissionCheckResult;
 
   checkMultiplePermissions: (
     permissions: string[],
-    options?: PermissionCheckOptions
+    options?: PermissionCheckOptions,
   ) => PermissionCheckResult;
 
   // Route access
@@ -295,7 +348,7 @@ export type AuthUser = NonNullable<AuthState["user"]>;
 
 // Type guard functions
 export const isAuthenticatedUser = (
-  user: LoginUser | null
+  user: LoginUser | null,
 ): user is LoginUser => {
   return user !== null && !!user.access_token && !!user.user_id;
 };

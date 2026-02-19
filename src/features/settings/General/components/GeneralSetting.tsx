@@ -18,6 +18,7 @@ import {
   useGetDepartment,
   useGetOrganizationTypes,
 } from "@/features/auth/Admin-sign-up/services/sign-up-services";
+import { useGetAllRolesForDropdown } from "@/features/UserManagement/services/Roles.hook";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import currency from "../data/currency/currency.data";
 import PhoneInput from "react-phone-number-input";
@@ -93,6 +94,10 @@ export default function GeneralApplicationSettings({
     userDepartment: "",
     userRole: "",
     userTier: "",
+    userShiftName: "",
+    userReportingToName: "",
+    userReportingToRoleName: "",
+    userTerritoryName: "",
     // Flags to tell backend to remove existing files
     removeOrgIcon: false,
     removeProfileImage: false,
@@ -122,6 +127,8 @@ export default function GeneralApplicationSettings({
     labelKey: "departmentName",
     valueKey: "departmentId",
   });
+
+  const { data: rolesList } = useGetAllRolesForDropdown();
 
   const isLoading = !user;
   const hasError = false;
@@ -157,11 +164,18 @@ export default function GeneralApplicationSettings({
         userRole: user?.role?.roleName || "",
         userTier: user?.role?.tierkey || "",
         userTerritory: user?.territoryId || "",
-        // userShift: user?.shiftId || "",
-        // userReportingTo:
-        //   user?.reportingToUser[0].firstName +
-        //     " " +
-        //     user?.reportingToUser[0].lastName || "",
+        userShiftName: user?.shift?.name || "",
+        userReportingToName: user?.reportingTo?.[0]
+          ? `${user.reportingTo[0].firstName || ""} ${user.reportingTo[0].lastName || ""}`.trim()
+          : "",
+        userReportingToRoleName: (() => {
+          const reportingToRoleId = user?.reportingTo?.[0]?.roleId;
+          const role = rolesList?.find(
+            (r: any) => r.roleId === reportingToRoleId,
+          );
+          return role?.roleName || "";
+        })(),
+        userTerritoryName: user?.territory?.name || "",
         removeOrgIcon: false,
         removeProfileImage: false,
       };
@@ -170,13 +184,13 @@ export default function GeneralApplicationSettings({
         userProfile: user?.profileUrl
           ? (user?.profileUrl.split("/")?.pop() as string)
           : "",
-        orgIconFileName: user?.organization.organizationIcon
+        orgIconFileName: user?.organization?.organizationIcon
           ? (user?.organization.organizationIcon.split("/")?.pop() as string)
           : "",
       }));
       setFilePreview((prev) => ({
         ...prev,
-        orgIconFileName: user?.organization.organizationIcon || "",
+        orgIconFileName: user?.organization?.organizationIcon || "",
         userProfile: user?.profileUrl || "",
       }));
       setFormData(newFormData);
@@ -203,7 +217,7 @@ export default function GeneralApplicationSettings({
         addLeaveAfterProbationUnit: org.probationPeriodUnit || "months",
       });
     }
-  }, [user]);
+  }, [user, rolesList]);
 
   // Effect to load all countries on component mount
   useEffect(() => {
@@ -575,9 +589,9 @@ export default function GeneralApplicationSettings({
                     onValueChange={(value) =>
                       handleInputChange("userDepartment", value)
                     }
-                    disabled={true}
+                    disabled
                   >
-                    <SelectTrigger className="w-full">
+                    <SelectTrigger className="w-full disabled:cursor-default">
                       <SelectValue placeholder="Select department..." />
                     </SelectTrigger>
                     <SelectContent className="w-full">
@@ -745,25 +759,24 @@ export default function GeneralApplicationSettings({
             </div>
 
             {/* Row 5: Territory, Shift & Reporting To */}
-            {/* <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label
-                  htmlFor="territory"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Territory
-                </Label>
-                <Input
-                  id="territory"
-                  placeholder="Enter territory"
-                  value={formatDropDownLabel(formData?.userTerritory)}
-                  name="territory"
-                  onChange={(e) =>
-                    handleInputChange("territory", e.target.value)
-                  }
-                  disabled
-                />
-              </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {formData.userTerritoryName && (
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="territory"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Territory
+                  </Label>
+                  <Input
+                    id="territory"
+                    placeholder="Enter territory"
+                    value={formData.userTerritoryName}
+                    name="territory"
+                    disabled
+                  />
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label
@@ -775,32 +788,47 @@ export default function GeneralApplicationSettings({
                 <Input
                   id="shift"
                   placeholder="Enter shift"
-                  value={formatDropDownLabel(formData?.userShift)}
+                  value={formData.userShiftName}
                   name="shift"
-                  onChange={(e) => handleInputChange("shift", e.target.value)}
                   disabled
                 />
               </div>
+              {formData.userReportingToRoleName && (
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="reportingToRole"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Reporting To Role
+                  </Label>
+                  <Input
+                    id="reportingToRole"
+                    placeholder="Enter reporting to role"
+                    value={formData.userReportingToRoleName}
+                    name="reportingToRole"
+                    disabled
+                  />
+                </div>
+              )}
 
-              <div className="space-y-2">
-                <Label
-                  htmlFor="reportingTo"
-                  className="text-sm font-medium text-gray-700"
-                >
-                  Reporting To
-                </Label>
-                <Input
-                  id="reportingTo"
-                  placeholder="Enter reporting to"
-                  value={formatDropDownLabel(formData?.userReportingTo)}
-                  name="reportingTo"
-                  onChange={(e) =>
-                    handleInputChange("reportingTo", e.target.value)
-                  }
-                  disabled
-                />
-              </div>
-            </div> */}
+              {formData.userReportingToName && (
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="reportingTo"
+                    className="text-sm font-medium text-gray-700"
+                  >
+                    Reporting To
+                  </Label>
+                  <Input
+                    id="reportingTo"
+                    placeholder="Enter reporting to"
+                    value={formData.userReportingToName}
+                    name="reportingTo"
+                    disabled
+                  />
+                </div>
+              )}
+            </div>
           </div>
 
           {user?.superAdminCreatedBy !== null && (
