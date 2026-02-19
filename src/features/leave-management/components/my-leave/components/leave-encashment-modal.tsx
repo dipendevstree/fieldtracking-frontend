@@ -142,7 +142,7 @@ export default function LeaveEncashmentModal({
                 !leaveEncashmentDays ||
                 parseFloat(leaveEncashmentDays) >
                   parseFloat(rulesData?.maximumEncashmentDays || "0") ||
-                parseFloat(leaveEncashmentDays) >= totalBalance
+                parseFloat(leaveEncashmentDays) > totalBalance
               }
             >
               {currentRow?.id
