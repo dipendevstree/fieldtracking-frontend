@@ -95,6 +95,23 @@ export interface Organization {
   probationPeriodUnit?: string;
   isProbationPeriod?: boolean;
   probationPeriodValue?: number;
+  isActive?: boolean;
+  planEndDate?: string;
+  employeeRang?: EmployeeRange;
+  organizationType?: OrganizationType;
+}
+
+export interface OrganizationType {
+  organizationTypeId: string;
+  organizationTypeName: string;
+  organizationTypeKey: string;
+  isActive: boolean;
+}
+
+export interface EmployeeRange {
+  employeeRangeId: string;
+  employeeRange: string;
+  isActive: boolean;
 }
 
 export interface Shift {
