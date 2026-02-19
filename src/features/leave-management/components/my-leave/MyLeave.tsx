@@ -41,7 +41,8 @@ export default function MyLeave() {
   const navigate = useNavigate();
   const { viewType, viewTypeToggle } = useViewType();
   const { open, setOpen, currentRow, setCurrentRow } = useLeaveRequestStore();
-  const { data: myLeavesList } = useGetMyLeaves();
+  const [currentYear, setCurrentYear] = useState(moment().year());
+  const { data: myLeavesList } = useGetMyLeaves({ year: currentYear });
 
   useEffect(() => {
     if (viewType === ViewType.Admin && viewTypeToggle) {
@@ -129,7 +130,7 @@ export default function MyLeave() {
 
   const handleOpenLeaveModal = (event: any) => {
     if (calendarMode === "leave") {
-      if (moment(event.start).isBefore(moment(), 'day')) {
+      if (moment(event.start).isBefore(moment(), "day")) {
         toast.warning("Cannot select past dates");
         return;
       }
@@ -178,19 +179,25 @@ export default function MyLeave() {
             <div
               className="flex"
               onClick={() => {
-                if (![LEAVE_STATUS.APPROVED, LEAVE_STATUS.REJECTED, LEAVE_STATUS.CANCEL].includes(lr.status)) {
+                if (
+                  ![
+                    LEAVE_STATUS.APPROVED,
+                    LEAVE_STATUS.REJECTED,
+                    LEAVE_STATUS.CANCEL,
+                  ].includes(lr.status)
+                ) {
                   handleEditClick(lr);
                 } else {
-                  document.getElementById("my-leave-request-section")?.scrollIntoView({
-                    behavior: "smooth",
-                  });
+                  document
+                    .getElementById("my-leave-request-section")
+                    ?.scrollIntoView({
+                      behavior: "smooth",
+                    });
                 }
               }}
               title={typeName}
             >
-              <span className="font-xs">
-                {typeName}
-              </span>
+              <span className="font-xs">{typeName}</span>
             </div>
           );
           let status = lr.status?.toLowerCase() || "pending";
@@ -287,6 +294,8 @@ export default function MyLeave() {
         open={openLeaveBalance}
         rulesData={rulesData}
         myLeavesList={myLeavesList}
+        currentYear={currentYear}
+        setCurrentYear={setCurrentYear}
         onOpenChange={(value: boolean) => {
           setOpenLeaveBalance(value);
         }}
