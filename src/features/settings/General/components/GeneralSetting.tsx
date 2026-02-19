@@ -186,10 +186,8 @@ export default function GeneralApplicationSettings({
         org.allowAddUsersBasedOnTerritories || false,
       );
       setAllowWorkFromHome(org.allowWorkFromHome || false);
-      setEnableAddLeaveAfterProbation(org.isProbationPeriod || false);
-      setAddLeaveAfterProbationValue(
-        org.probationPeriodValue?.toString() || "",
-      );
+      setEnableAddLeaveAfterProbation(org.allowUserInProbationPeriod || false);
+      setAddLeaveAfterProbationValue(org.probationPeriod?.toString() || "");
       setAddLeaveAfterProbationUnit(org.probationPeriodUnit || "months");
 
       // ✅  Capture the baseline state for dirty checking
