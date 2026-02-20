@@ -11,12 +11,22 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { BanknoteArrowDown, Info } from "lucide-react";
 import CustomTooltip from "@/components/shared/custom-tooltip";
+import moment from "moment";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface Props {
   open: boolean;
   onOpenChange: (value: boolean) => void;
   rulesData: any;
   myLeavesList: any;
+  currentYear: number;
+  setCurrentYear: (value: number) => void;
 }
 
 const cardStyles = [
@@ -31,6 +41,8 @@ export function LeaveBalanceDialog({
   onOpenChange,
   rulesData,
   myLeavesList,
+  currentYear,
+  setCurrentYear,
 }: Props) {
   const { user } = useAuthStore();
   const allowWorkFromHome = user?.organization?.allowWorkFromHome;
@@ -77,6 +89,9 @@ export function LeaveBalanceDialog({
       }
     }
   };
+  const handleYearChange = (year: string) => {
+    setCurrentYear(parseInt(year));
+  };
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
@@ -85,7 +100,27 @@ export function LeaveBalanceDialog({
       >
         <DialogHeader className="mb-2">
           <DialogTitle>
-            Leave Balance for {new Date().getFullYear()}
+            <div className="flex items-center gap-2">
+              Leave Balance for
+              <Select
+                value={currentYear.toString()}
+                onValueChange={handleYearChange}
+              >
+                <SelectTrigger className="w-[100px] bg-white border-slate-200 shadow-sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 15 }).map((_, i) => {
+                    const year = moment().year() - 10 + i;
+                    return (
+                      <SelectItem key={year} value={year.toString()}>
+                        {year}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
           </DialogTitle>
         </DialogHeader>
         {rulesData?.leaveEncashmentRuleActive && (

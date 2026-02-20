@@ -240,6 +240,8 @@ export function ExpenseDetailsSideCard(
   };
 
   const handleReviewAction = (id: string, status: any) => {
+    // Sync initialComments so isDirty becomes false before navigation triggers
+    setInitialComments({ ...comments });
     onExpenseReviewAndApproval({
       parentId: id,
       status: status,
@@ -250,8 +252,10 @@ export function ExpenseDetailsSideCard(
   const handleUpdateReview = (
     id: string,
     status: "approved" | "rejected" | "reviewed",
-    commentId: string
+    commentId: string,
   ) => {
+    // Sync initialComments so isDirty becomes false before navigation triggers
+    setInitialComments({ ...comments });
     onUpdateExpanseDetails({
       id,
       status: isApprovalLevel && status === "reviewed" ? "approved" : status,

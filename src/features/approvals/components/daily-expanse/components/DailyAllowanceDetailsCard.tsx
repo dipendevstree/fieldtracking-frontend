@@ -219,6 +219,8 @@ export function DailyAllowanceDetailsCard({
     dailyAllowanceDetailsId: string,
     status: "approved" | "rejected" | "reviewed"
   ) => {
+    // Sync initialComments so isDirty becomes false before navigation triggers
+    setInitialComments({ ...comments });
     onExpenseReviewAndApproval({
       dailyAllowanceId,
       dailyAllowanceDetailsId,
@@ -232,6 +234,8 @@ export function DailyAllowanceDetailsCard({
     status: "approved" | "rejected" | "reviewed",
     commentId: string
   ) => {
+    // Sync initialComments so isDirty becomes false before navigation triggers
+    setInitialComments({ ...comments });
     onUpdateExpanseDetails({
       id,
       status,
