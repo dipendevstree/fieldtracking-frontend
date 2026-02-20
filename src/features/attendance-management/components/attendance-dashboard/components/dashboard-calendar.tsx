@@ -42,9 +42,9 @@ const getStatusStyles = (status: ATTENDANCE_STATUS) => {
     case ATTENDANCE_STATUS.EARLY_EXIT:
       return "bg-amber-500 text-white";
     case ATTENDANCE_STATUS.LEAVE:
-      return "bg-orange-500 text-white"; // Match legend "leave" color
+      return "bg-orange-500 text-white";
     case ATTENDANCE_STATUS.HOLIDAY:
-      return "bg-slate-300 text-white"; // Changed to match legend "week off / holiday" color
+      return "bg-slate-300 text-white";
     case ATTENDANCE_STATUS.WEEK_OFF:
       return "bg-gray-200 text-gray-600";
     default:
@@ -57,7 +57,7 @@ const EventComponent = ({ event }: { event: AttendanceEvent }) => (
   <div
     title={`${event.resource.name} - ${event.resource.status}`}
     className={cn(
-      "w-6 h-6 md:w-7 md:h-7 text-[10px] md:text-xs font-semibold rounded-sm flex items-center justify-center cursor-pointer shadow-sm hover:opacity-80 transition-opacity",
+      "w-5 h-5 sm:w-6 sm:h-6 text-[9px] sm:text-[10px] font-bold rounded-sm flex items-center justify-center cursor-pointer shadow-sm hover:scale-105 hover:opacity-90 transition-all",
       getStatusStyles(event.resource.status),
     )}
   >
@@ -65,19 +65,17 @@ const EventComponent = ({ event }: { event: AttendanceEvent }) => (
   </div>
 );
 
-// --- CUSTOM TOOLBAR (Matching Reference) ---
+// --- CUSTOM TOOLBAR ---
 const CustomToolbar = (toolbar: ToolbarProps & { date?: Date }) => {
   const goToBack = () => toolbar.onNavigate("PREV");
   const goToNext = () => toolbar.onNavigate("NEXT");
   const goToCurrent = () => toolbar.onNavigate("TODAY");
 
-  // Check if viewing current or future month
   const isCurrentOrFutureMonth = () => {
     if (!toolbar.date) return false;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Get the first day of the NEXT month (where Next button would navigate to)
     const firstDayOfNextMonth = new Date(
       toolbar.date.getFullYear(),
       toolbar.date.getMonth() + 1,
@@ -85,13 +83,11 @@ const CustomToolbar = (toolbar: ToolbarProps & { date?: Date }) => {
     );
     firstDayOfNextMonth.setHours(0, 0, 0, 0);
 
-    // Disable next if navigating to next month would go into the future
     return firstDayOfNextMonth > today;
   };
 
   return (
     <div className="flex flex-col md:flex-row items-center justify-between mb-6 gap-4 px-1">
-      {/* LEFT: Name */}
       <div className="self-start md:self-auto">
         <h2 className="text-lg font-bold text-slate-900">
           Attendance Calendar
@@ -101,23 +97,22 @@ const CustomToolbar = (toolbar: ToolbarProps & { date?: Date }) => {
         </p>
       </div>
 
-      {/* MIDDLE: Date & Arrows */}
-      <div className="flex items-center gap-2 p-1 rounded-lg border border-slate-200 bg-white">
+      <div className="flex items-center gap-2 p-1 rounded-lg border border-slate-200 bg-white shadow-sm w-full md:w-auto justify-between md:justify-center">
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className="h-8 w-8 shrink-0"
           onClick={goToBack}
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <span className="text-sm font-semibold w-40 text-center text-slate-700 select-none">
+        <span className="text-sm font-semibold w-32 sm:w-40 text-center text-slate-700 select-none truncate">
           {toolbar.label}
         </span>
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className="h-8 w-8 shrink-0"
           onClick={goToNext}
           disabled={isCurrentOrFutureMonth()}
         >
@@ -125,8 +120,7 @@ const CustomToolbar = (toolbar: ToolbarProps & { date?: Date }) => {
         </Button>
       </div>
 
-      {/* RIGHT: Today Button */}
-      <div className="flex gap-2 self-end md:self-auto">
+      <div className="flex gap-2 self-end md:self-auto hidden md:flex">
         <Button variant="outline" size="sm" onClick={goToCurrent}>
           Today
         </Button>
@@ -148,7 +142,6 @@ export function TeamAttendanceCalendar({
   const [modalEvents, setModalEvents] = useState<AttendanceEvent[]>([]);
   const [modalDate, setModalDate] = useState<Date | null>(null);
 
-  // Handle show more events - show in modal
   const handleShowMore = useCallback(
     (events: AttendanceEvent[], date: Date) => {
       setModalEvents(events);
@@ -158,17 +151,14 @@ export function TeamAttendanceCalendar({
     [],
   );
 
-  // Handle individual event click
   const handleEventClick = useCallback((event: AttendanceEvent) => {
     setModalEvents([event]);
     setModalDate(event.start);
     setShowModal(true);
   }, []);
 
-  // Handle date slot selection (clicking on a date)
   const handleSelectSlot = useCallback(
     (slotInfo: { start: Date; end: Date }) => {
-      // Prevent selecting future dates from manual calendar cell clicks
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const selectedDate = new Date(slotInfo.start);
@@ -184,24 +174,13 @@ export function TeamAttendanceCalendar({
     [onNavigate],
   );
 
-  // Style overrides logic
   const eventPropGetter = useCallback(
     () => ({
-      style: {
-        backgroundColor: "transparent",
-        padding: 0,
-        border: "none",
-        outline: "none",
-        width: "fit-content",
-        display: "inline-block",
-        marginRight: "4px",
-        marginBottom: "2px",
-      },
+      style: { display: "none" },
     }),
     [],
   );
 
-  // Custom day styling to highlight selected date, holidays, and week-off days
   const dayPropGetter = useCallback(
     (calendarDate: Date) => {
       const isSelected =
@@ -209,7 +188,6 @@ export function TeamAttendanceCalendar({
         calendarDate.getMonth() === date.getMonth() &&
         calendarDate.getFullYear() === date.getFullYear();
 
-      // Check if date is a holiday
       const holiday = holidays.find((holiday: any) => {
         const holidayDate = new Date(holiday.date);
         return (
@@ -219,7 +197,6 @@ export function TeamAttendanceCalendar({
         );
       });
 
-      // Check if date is a week-off day
       const isWeekOff = weekOffDays.includes(calendarDate.getDay());
 
       let className = "";
@@ -250,7 +227,6 @@ export function TeamAttendanceCalendar({
       components: {
         month: {
           dateHeader: ({ date, label }: any) => {
-            // Check if date is a holiday
             const holiday = holidays.find((holiday: any) => {
               const holidayDate = new Date(holiday.date);
               return (
@@ -260,23 +236,69 @@ export function TeamAttendanceCalendar({
               );
             });
 
-            // Check if date is a week-off day
             const isWeekOff = weekOffDays.includes(date.getDay());
 
+            const dayEvents = events.filter((e) => {
+              const eDate = new Date(e.start);
+              return (
+                eDate.getDate() === date.getDate() &&
+                eDate.getMonth() === date.getMonth() &&
+                eDate.getFullYear() === date.getFullYear()
+              );
+            });
+
+            //  Max 6 boxes total. (5 events + 1 count box)
+            const MAX_TOTAL_BOXES = 6;
+            let visibleEvents = dayEvents;
+            let hiddenCount = 0;
+
+            if (dayEvents.length > MAX_TOTAL_BOXES) {
+              visibleEvents = dayEvents.slice(0, MAX_TOTAL_BOXES - 1);
+              hiddenCount = dayEvents.length - (MAX_TOTAL_BOXES - 1);
+            }
+
             return (
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center w-full pb-1">
                 <span className="rbc-button-link">{label}</span>
                 {holiday && (
-                  <>
-                    <span className="text-[10px] sm:text-xs text-emerald-600 font-bold truncate max-w-[95%] block mt-1 px-1">
-                      {holiday.name}
-                    </span>
-                  </>
+                  <span className="text-[9px] sm:text-[12px] text-emerald-600 font-bold truncate max-w-[95%] block mt-0.5 px-1">
+                    {holiday.name}
+                  </span>
                 )}
                 {!holiday && isWeekOff && (
-                  <span className="text-[10px] sm:text-xs text-slate-500 font-semibold block mt-1">
+                  <span className="text-[9px] sm:text-[12px] text-slate-500 font-semibold block mt-0.5">
                     Week Off
                   </span>
+                )}
+
+                {dayEvents.length > 0 && (
+                  <div className="flex flex-wrap justify-center gap-1 mt-1.5 px-0.5 w-full max-w-[85px]">
+                    {visibleEvents.map((event, idx) => (
+                      <div
+                        key={idx}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEventClick(event);
+                        }}
+                      >
+                        <EventComponent event={event} />
+                      </div>
+                    ))}
+
+                    {/* The "+X" Count Box */}
+                    {hiddenCount > 0 && (
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleShowMore(dayEvents, date);
+                        }}
+                        title={`View ${hiddenCount} more events`}
+                        className="w-5 h-5 sm:w-6 sm:h-6 text-[9px] sm:text-[10px] font-bold rounded-sm flex items-center justify-center cursor-pointer shadow-sm transition-all bg-blue-50 border border-blue-200 text-blue-700 hover:bg-blue-100 hover:border-blue-300 hover:text-blue-800 hover:scale-105"
+                      >
+                        {hiddenCount}+
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             );
@@ -284,63 +306,83 @@ export function TeamAttendanceCalendar({
         },
       },
     }),
-    [holidays, weekOffDays],
+    [holidays, weekOffDays, events, handleEventClick, handleShowMore],
   );
 
   return (
-    <div className={cn("w-full bg-white", className)}>
-      {/* CSS Injection for exact visual match */}
+    <div
+      className={cn(
+        "w-full bg-white rounded-xl shadow-sm border border-slate-100 p-2 sm:p-4",
+        className,
+      )}
+    >
       <style>{`
-        .rbc-month-view { border-radius: 0.75rem; border: 1px solid #e2e8f0; overflow: hidden; background: white; }
-        .rbc-header { padding: 12px 0; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748b; background: #fff; border-bottom: 1px solid #e2e8f0; }
+        .rbc-month-view { border-radius: 0.5rem; border: 1px solid #e2e8f0; overflow: hidden; background: white; }
+        .rbc-header { padding: 8px 0; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748b; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
         .rbc-day-bg + .rbc-day-bg { border-left: 1px solid #e2e8f0; }
-        .rbc-month-row { border-bottom: 1px solid #e2e8f0; min-height: 120px; }
-        .rbc-date-cell { padding-top: 8px; text-align: left; font-size: 0.9rem; font-weight: 600; color: #334155; }
+        .rbc-month-row { border-bottom: 1px solid #e2e8f0; min-height: 110px; }
+        .rbc-date-cell { padding-top: 4px; text-align: left; font-size: 0.85rem; font-weight: 600; color: #334155; }
         .rbc-today { background-color: transparent !important; }
         .selected-date { border: 2px solid #3b82f6 !important; }
-        .holiday-date { background-color: #f1f5f9 !important; position: relative; }
+        .holiday-date { background-color: #f1f5f9 !important; }
         .holiday-date .rbc-date-cell { color: #059669 !important; font-weight: 700 !important; }
-        .weekoff-date { background-color: #f8fafc !important; position: relative; }
+        .weekoff-date { background-color: #f8fafc !important; }
         .weekoff-date .rbc-date-cell { color: #64748b !important; font-weight: 600 !important; }
-        .rbc-event { min-height: 0; }
-        .rbc-row-segment { padding: 2px 4px !important; }
-        .rbc-row-content .rbc-row { display: flex; flex-wrap: wrap; gap: 4px; padding-left: 6px; }
+        
+        /* Hide default RBC overlapping event rows */
+        .rbc-month-view .rbc-row-content .rbc-row:nth-child(n+2) { display: none !important; }
+        .rbc-month-view .rbc-show-more { display: none !important; }
+
+        /* Custom Elegant Scrollbar for smaller screens */
+        .calendar-scroll-container::-webkit-scrollbar { height: 8px; }
+        .calendar-scroll-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
+        .calendar-scroll-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+        .calendar-scroll-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
       `}</style>
 
-      {/* CALENDAR */}
-      <div className="h-[750px]">
-        <Calendar
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
-          views={[Views.MONTH]}
-          defaultView={Views.MONTH}
-          date={date}
-          onNavigate={onNavigate}
-          onSelectSlot={handleSelectSlot}
-          onShowMore={handleShowMore}
-          onSelectEvent={handleEventClick}
-          popup={false}
-          components={{
-            toolbar: ((props: any) => (
-              <CustomToolbar {...props} date={date} />
-            )) as any,
-            event: EventComponent,
-            ...components,
-          }}
-          eventPropGetter={eventPropGetter}
-          dayPropGetter={dayPropGetter}
-          selectable
-        />
+      {/*
+        overflow-x-auto allows horizontal scrolling ONLY when the screen is smaller than 768px.
+      */}
+      <div className="w-full overflow-x-auto calendar-scroll-container pb-4">
+        <div className="h-[650px] sm:h-[750px] min-w-[768px]">
+          <Calendar
+            localizer={localizer}
+            events={events}
+            startAccessor="start"
+            endAccessor="end"
+            views={[Views.MONTH]}
+            defaultView={Views.MONTH}
+            date={date}
+            onNavigate={onNavigate}
+            onSelectSlot={handleSelectSlot}
+            popup={false}
+            components={{
+              toolbar: ((props: any) => (
+                <CustomToolbar {...props} date={date} />
+              )) as any,
+              event: EventComponent,
+              ...components,
+            }}
+            eventPropGetter={eventPropGetter}
+            dayPropGetter={dayPropGetter}
+            selectable
+          />
+        </div>
       </div>
 
       {/* Modal for Event Details */}
       <Dialog open={showModal} onOpenChange={setShowModal}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md w-[95vw] rounded-xl">
           <DialogHeader>
             <DialogTitle className="text-lg">
-              {modalDate ? modalDate.toLocaleDateString() : "Event Details"}
+              {modalDate
+                ? modalDate.toLocaleDateString(undefined, {
+                    weekday: "short",
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                  })
+                : "Event Details"}
               {modalEvents.length > 1 && (
                 <span className="text-sm font-normal text-gray-500 ml-2">
                   ({modalEvents.length} users)
@@ -348,15 +390,15 @@ export function TeamAttendanceCalendar({
               )}
             </DialogTitle>
           </DialogHeader>
-          <div className="space-y-3 max-h-80 overflow-y-auto">
+          <div className="space-y-3 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
             {modalEvents.map((event, index) => (
               <div
                 key={index}
-                className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg border hover:bg-gray-100 transition-colors"
+                className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg border border-gray-100 hover:bg-gray-100 transition-colors"
               >
                 <div
                   className={cn(
-                    "w-5 h-5 rounded-md shrink-0 ring-2 ring-white shadow-sm",
+                    "w-6 h-6 rounded-md shrink-0 ring-2 ring-white shadow-sm",
                     getStatusStyles(event.resource.status).split(" ")[0],
                   )}
                 />
@@ -365,10 +407,10 @@ export function TeamAttendanceCalendar({
                     {event.title}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm text-gray-900 truncate">
+                    <div className="font-semibold text-sm text-gray-900 truncate">
                       {event.resource.name}
                     </div>
-                    <div className="text-xs text-gray-600 capitalize font-medium">
+                    <div className="text-xs text-gray-600 capitalize font-medium mt-0.5">
                       {event.resource.status.toLowerCase().replace("_", " ")}
                       {event.resource.leaveType && (
                         <span className="ml-1 text-gray-500">
@@ -386,7 +428,8 @@ export function TeamAttendanceCalendar({
         </DialogContent>
       </Dialog>
 
-      <div className="mt-2  py-3 flex flex-wrap gap-4 text-xs text-slate-600">
+      {/* Legends */}
+      <div className="mt-2 flex flex-wrap justify-center sm:justify-start gap-x-4 gap-y-2 text-xs text-slate-600 border-t border-slate-100 pt-4">
         <LegendItem label="present" />
         <LegendItem label="late" />
         <LegendItem label="early exit" />

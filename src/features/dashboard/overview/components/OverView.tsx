@@ -463,14 +463,11 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
   return (
     <div className="space-y-4">
       {/* KPI Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+      <div className="flex flex-col md:flex-row gap-4 w-full">
         <PermissionGate requiredPermission="all_users">
           <Card
-            className="gap-2 cursor-pointer"
-            onClick={
-              () => navigate({ to: "/calendar" })
-              // navigate({ to: "/user-management", search: { noAdmin: true } })
-            }
+            className="gap-2 cursor-pointer flex-1 w-full"
+            onClick={() => navigate({ to: "/calendar" })}
           >
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-sm font-medium">
@@ -488,9 +485,10 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
             </CardContent>
           </Card>
         </PermissionGate>
+
         <PermissionGate requiredPermission="live_tracking">
           <Card
-            className="gap-2 cursor-pointer"
+            className="gap-2 cursor-pointer flex-1 w-full"
             onClick={() => navigate({ to: "/livetracking" })}
           >
             <CardHeader className="flex flex-row items-center justify-between">
