@@ -155,6 +155,7 @@ export interface LoginUser {
   territory?: Territory | null;
   isPasswordChanged?: boolean;
   superAdminId?: string;
+  joiningDate?: string;
 }
 
 // Complete login response
