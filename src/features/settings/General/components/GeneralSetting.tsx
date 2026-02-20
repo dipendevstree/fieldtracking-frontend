@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -98,6 +99,7 @@ export default function GeneralApplicationSettings({
     userReportingToName: "",
     userReportingToRoleName: "",
     userTerritoryName: "",
+    userJoiningDate: "",
     // Flags to tell backend to remove existing files
     removeOrgIcon: false,
     removeProfileImage: false,
@@ -176,6 +178,7 @@ export default function GeneralApplicationSettings({
           return role?.roleName || "";
         })(),
         userTerritoryName: user?.territory?.name || "",
+        userJoiningDate: user?.joiningDate || "",
         removeOrgIcon: false,
         removeProfileImage: false,
       };
@@ -828,6 +831,26 @@ export default function GeneralApplicationSettings({
                   />
                 </div>
               )}
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor="joiningDate"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Joining Date
+                </Label>
+                <Input
+                  id="joiningDate"
+                  placeholder="Enter joining date"
+                  value={
+                    formData.userJoiningDate
+                      ? format(new Date(formData.userJoiningDate), "dd-MM-yyyy")
+                      : "-"
+                  }
+                  name="joiningDate"
+                  disabled
+                />
+              </div>
             </div>
           </div>
 

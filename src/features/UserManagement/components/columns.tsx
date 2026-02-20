@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import { DataTableRowActions } from "./table-action-button";
 import { formatDropDownLabel } from "@/utils/commonFunction";
+import { format } from "date-fns";
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -104,6 +105,24 @@ export const columns: ColumnDef<any>[] = [
     cell: ({ row }) => {
       const shiftName = row.original.shift?.name || "-";
       return <div className="text-sm">{formatDropDownLabel(shiftName)}</div>;
+    },
+    enableSorting: false,
+  },
+  {
+    accessorKey: "joiningDate",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Joining Date" />
+    ),
+    cell: ({ row }) => {
+      const joiningDate = row.original.joiningDate;
+      const date = joiningDate ? new Date(joiningDate) : null;
+      const isValid = date && !isNaN(date.getTime());
+
+      return (
+        <div className="text-sm">
+          {isValid ? format(date, "dd-MM-yyyy") : "-"}
+        </div>
+      );
     },
     enableSorting: false,
   },
