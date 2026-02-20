@@ -37,7 +37,7 @@ const getStatusStyles = (status: ATTENDANCE_STATUS) => {
         bg: "bg-amber-50",
         badge: "bg-amber-600",
         text: "text-amber-800",
-      }; // Distinct Amber
+      };
     case ATTENDANCE_STATUS.HALF_DAY:
       return { bg: "bg-blue-50", badge: "bg-blue-500", text: "text-blue-700" };
     case ATTENDANCE_STATUS.LEAVE:
@@ -84,10 +84,10 @@ const AttendanceEventComponent = ({ event }: { event: AttendanceEvent }) => {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-full w-full space-y-1.5 pt-1">
+    <div className="flex flex-col items-center justify-center h-full w-full space-y-1 sm:space-y-1.5 pt-1">
       <span
         className={cn(
-          "text-[10px] px-2 py-0.5 rounded text-white font-semibold shadow-sm",
+          "text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded text-white font-semibold shadow-sm",
           styles.badge,
         )}
       >
@@ -95,7 +95,7 @@ const AttendanceEventComponent = ({ event }: { event: AttendanceEvent }) => {
       </span>
 
       {(checkIn || checkOut) && (
-        <div className="flex flex-col items-center text-[10px] leading-tight text-slate-600 font-medium">
+        <div className="flex flex-col items-center text-[9px] sm:text-[10px] leading-tight text-slate-600 font-medium">
           <span>
             {checkIn || "--:--"} - {checkOut || "--:--"}
           </span>
@@ -111,7 +111,7 @@ const CustomToolbar = ({ onNavigate, label, date, isSelectable }: any) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Get the first day of the NEXT month (where Next button would navigate to)
+    // Get the first day of the NEXT month
     const firstDayOfNextMonth = new Date(
       date.getFullYear(),
       date.getMonth() + 1,
@@ -119,7 +119,6 @@ const CustomToolbar = ({ onNavigate, label, date, isSelectable }: any) => {
     );
     firstDayOfNextMonth.setHours(0, 0, 0, 0);
 
-    // Disable next if navigating to next month would go into the future
     return firstDayOfNextMonth > today;
   };
 
@@ -131,30 +130,30 @@ const CustomToolbar = ({ onNavigate, label, date, isSelectable }: any) => {
             Attendance Calendar
           </h2>
           {isSelectable && (
-            <p className="text-xs text-blue-500 flex items-center gap-1">
-              <IconInfoCircle size={14} />
+            <p className="text-[11px] sm:text-xs text-blue-600 flex items-center gap-1.5 mt-0.5 bg-blue-50 py-1 px-2 rounded-md border border-blue-100">
+              <IconInfoCircle size={14} className="shrink-0" />
               Click on a date to request an attendance correction.
             </p>
           )}
         </div>
       </div>
 
-      <div className="flex items-center gap-2  p-1 rounded-lg border border-slate-200">
+      <div className="flex items-center gap-2 p-1 rounded-lg border border-slate-200 bg-white shadow-sm w-full md:w-auto justify-between md:justify-center">
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className="h-8 w-8 shrink-0"
           onClick={() => onNavigate("PREV")}
         >
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <span className="text-sm font-semibold w-32 text-center text-slate-700">
+        <span className="text-sm font-semibold w-32 sm:w-40 text-center text-slate-700 truncate">
           {label}
         </span>
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8"
+          className="h-8 w-8 shrink-0"
           onClick={() => onNavigate("NEXT")}
           disabled={isCurrentOrFutureMonth()}
         >
@@ -162,7 +161,7 @@ const CustomToolbar = ({ onNavigate, label, date, isSelectable }: any) => {
         </Button>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 self-end md:self-auto hidden md:flex">
         <Button variant="outline" size="sm" onClick={() => onNavigate("TODAY")}>
           Today
         </Button>
@@ -180,7 +179,8 @@ export default function AttendanceCalendarView({
   holidays = [],
   weekOffDays = [],
   isSelectable,
-}: AttendanceCalendarProps) {
+  className,
+}: AttendanceCalendarProps & { className?: string }) {
   const dayPropGetter = useCallback(
     (currentDate: Date) => {
       const daysEvent = events.find((evt) => isSameDay(evt.start, currentDate));
@@ -230,7 +230,7 @@ export default function AttendanceCalendarView({
               <div className="flex flex-col items-center">
                 <span className="rbc-button-link">{label}</span>
                 {holiday && (
-                  <span className="text-[10px] sm:text-xs text-emerald-600 font-bold truncate max-w-[95%] block mt-1 px-1">
+                  <span className="text-[9px] sm:text-[10px] text-emerald-600 font-bold truncate max-w-[95%] block mt-0.5 px-1">
                     {holiday.name}
                   </span>
                 )}
@@ -244,10 +244,15 @@ export default function AttendanceCalendarView({
   );
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+    <div
+      className={cn(
+        "w-full bg-white rounded-xl shadow-sm border border-slate-100 p-2 sm:p-4 md:p-6",
+        className,
+      )}
+    >
       <style>{`
-        .rbc-month-view { border-radius: 0.75rem; border: 1px solid #e2e8f0; overflow: hidden; }
-        .rbc-header { padding: 12px 0; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748b; background: #fff; border-bottom: 1px solid #e2e8f0; }
+        .rbc-month-view { border-radius: 0.5rem; border: 1px solid #e2e8f0; overflow: hidden; background: white; }
+        .rbc-header { padding: 8px 0; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #64748b; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
         .rbc-day-bg + .rbc-day-bg { border-left: 1px solid #e2e8f0; }
         .rbc-month-row { border-top: 1px solid #e2e8f0; min-height: 110px; }
         .rbc-off-range-bg { background-color: #f9fafb !important; opacity: 0.5; }
@@ -256,52 +261,67 @@ export default function AttendanceCalendarView({
         .rbc-today { background-color: transparent !important; }
         .rbc-now .rbc-button-link { background-color: #e2e8f0; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; border-radius: 999px; }
         .rbc-event-content { pointer-events: auto; }
+
+        /* Custom Elegant Scrollbar for horizontal scrolling on mobile */
+        .calendar-scroll-container::-webkit-scrollbar { height: 8px; }
+        .calendar-scroll-container::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 8px; }
+        .calendar-scroll-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 8px; }
+        .calendar-scroll-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
       `}</style>
 
-      <Calendar
-        localizer={localizer}
-        events={events}
-        startAccessor="start"
-        endAccessor="end"
-        view={Views.MONTH}
-        onView={() => {}}
-        date={date}
-        onNavigate={onNavigate}
-        toolbar={true}
-        selectable={isSelectable}
-        onSelectEvent={onSelectEvent}
-        onSelectSlot={
-          onSelectSlot
-            ? (slotInfo) => {
-                // Prevent selecting future dates
-                const selectedDate = new Date(slotInfo.start);
-                const today = new Date();
-                selectedDate.setHours(0, 0, 0, 0);
-                today.setHours(0, 0, 0, 0);
+      {/* Horizontal scroll wrapper for screens under 768px */}
+      <div className="w-full overflow-x-auto calendar-scroll-container pb-4">
+        <div className="h-[650px] sm:h-[750px] min-w-[768px]">
+          <Calendar
+            localizer={localizer}
+            events={events}
+            startAccessor="start"
+            endAccessor="end"
+            view={Views.MONTH}
+            onView={() => {}}
+            date={date}
+            onNavigate={onNavigate}
+            toolbar={true}
+            selectable={isSelectable}
+            onSelectEvent={onSelectEvent}
+            onSelectSlot={
+              onSelectSlot
+                ? (slotInfo) => {
+                    // Prevent selecting future dates
+                    const selectedDate = new Date(slotInfo.start);
+                    const today = new Date();
+                    selectedDate.setHours(0, 0, 0, 0);
+                    today.setHours(0, 0, 0, 0);
 
-                if (selectedDate > today) {
-                  toast.warning("Cannot select future dates");
-                  return;
-                }
+                    if (selectedDate > today) {
+                      toast.warning("Cannot select future dates");
+                      return;
+                    }
 
-                // Call the parent's onSelectSlot handler
-                onSelectSlot(slotInfo);
-              }
-            : undefined
-        }
-        components={{
-          toolbar: (props) => (
-            <CustomToolbar {...props} date={date} isSelectable={isSelectable} />
-          ),
-          event: AttendanceEventComponent,
-          ...components,
-        }}
-        dayPropGetter={dayPropGetter}
-        eventPropGetter={eventPropGetter}
-        style={{ height: 750 }}
-      />
+                    // Call the parent's onSelectSlot handler
+                    onSelectSlot(slotInfo);
+                  }
+                : undefined
+            }
+            components={{
+              toolbar: (props) => (
+                <CustomToolbar
+                  {...props}
+                  date={date}
+                  isSelectable={isSelectable}
+                />
+              ),
+              event: AttendanceEventComponent,
+              ...components,
+            }}
+            dayPropGetter={dayPropGetter}
+            eventPropGetter={eventPropGetter}
+          />
+        </div>
+      </div>
 
-      <div className="mt-2  py-3 flex flex-wrap gap-4 text-xs text-slate-600">
+      {/* Legends aligned responsively */}
+      <div className="mt-2 flex flex-wrap justify-center sm:justify-start gap-x-4 gap-y-2 text-xs text-slate-600 border-t border-slate-100 pt-4">
         <LegendItem label="present" />
         <LegendItem label="late" />
         <LegendItem label="early exit" />
