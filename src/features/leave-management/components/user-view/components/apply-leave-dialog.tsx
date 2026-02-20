@@ -205,10 +205,17 @@ export function ApplyLeaveDialog({
       });
     } else if (!leaveToEditId) {
       // New Application Mode
-      if (defaultLeaveTypeId) {
-        setValue("leaveTypeId", defaultLeaveTypeId);
-      } else if (leaveTypesList.length > 0 && !watchLeaveTypeId) {
-        setValue("leaveTypeId", leaveTypesList[0].id);
+      if (leaveTypeOptions.length > 0 && defaultLeaveTypeId) {
+        const isDefaultLeaveTypeAvailable = leaveTypeOptions.some(
+          (lt: any) => lt.value === defaultLeaveTypeId,
+        );
+        if (isDefaultLeaveTypeAvailable) {
+          setValue("leaveTypeId", defaultLeaveTypeId);
+        } else {
+          setValue("leaveTypeId", leaveTypeOptions[0].value);
+        }
+      } else if (leaveTypeOptions.length > 0 && !watchLeaveTypeId) {
+        setValue("leaveTypeId", leaveTypeOptions[0].value);
       }
 
       if (workFromHomeTypeOpen) {
