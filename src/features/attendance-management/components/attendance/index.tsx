@@ -126,7 +126,7 @@ export default function MyAttendance() {
   // Calendar Events
   const events: AttendanceEvent[] = useMemo(() => {
     return attendanceData.map((record: any) => ({
-      id: record.id,
+      id: record.attendanceId,
       title: record.status,
       start: new Date(record.date),
       end: new Date(record.date),
