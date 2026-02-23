@@ -354,6 +354,9 @@ const API = {
     list: "leaveApprovalsLevels",
     create: "leaveApprovalsLevels",
   },
+  task: {
+    processLeaveBalance: "task/process-leave-balance",
+  },
 };
 
 Object.freeze(API);
