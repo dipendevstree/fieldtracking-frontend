@@ -103,8 +103,12 @@ export const columns: ColumnDef<any>[] = [
       <CustomDataTableColumnHeader column={column} title="Shift" />
     ),
     cell: ({ row }) => {
-      const shiftName = row.original.shift?.name || "-";
-      return <div className="text-sm">{formatDropDownLabel(shiftName)}</div>;
+      const shiftName = row.original.shift?.name ?? "";
+      return (
+        <div className="text-sm">
+          {shiftName.trim() ? formatDropDownLabel(shiftName) : "-"}
+        </div>
+      );
     },
     enableSorting: false,
   },
