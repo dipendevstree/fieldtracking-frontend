@@ -16,6 +16,7 @@ import { useFcmTokenUpdateUser } from "@/features/UserManagement/services/AllUse
 import WorkDaySession from "@/features/attendance-management/components/attendance/components/WorkDaySession";
 import { usePermission } from "@/permissions/hooks/use-permission";
 import { usePermissionData } from "@/hooks/use-permission-data";
+import ProcessLeaveBalance from "@/features/leave-management/components/leave-balance/ProcessLeaveBalance";
 
 export function AuthenticatedLayout({
   children,
@@ -135,6 +136,7 @@ export function AuthenticatedLayout({
         >
           <Header fixed className="shadow">
             <div className="ml-auto flex items-center space-x-2">
+              {user?.superAdminCreatedBy && <ProcessLeaveBalance />}
               {canView && <WorkDaySession />}
               <Search />
               {!user?.isSuperAdmin && <NotificationList />}

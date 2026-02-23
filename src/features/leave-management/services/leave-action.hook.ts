@@ -4,6 +4,7 @@ import useDeleteData from "@/hooks/use-delete-data";
 import useFetchData from "@/hooks/use-fetch-data";
 import usePatchData from "@/hooks/use-patch-data";
 import usePostData from "@/hooks/use-post-data";
+import usePutData from "@/hooks/use-put-data";
 
 const LEAVE_QUERY = API.leave.list;
 const MY_LEAVE_QUERY = API.leave.myLeave;
@@ -184,4 +185,15 @@ export const useGetLeaveApplyStats = (
     isLoading: query.isLoading,
     error: query.error,
   };
+};
+
+export const useProcessLeaveBalance = (onSuccess?: () => void) => {
+  return usePutData({
+    url: API.task.processLeaveBalance,
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
 };
