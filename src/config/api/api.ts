@@ -356,6 +356,7 @@ const API = {
   },
   task: {
     processLeaveBalance: "task/process-leave-balance",
+    expireCarryForwardLeaveBalance: "task/expire-carry-forward-leave-balance",
   },
 };
 
