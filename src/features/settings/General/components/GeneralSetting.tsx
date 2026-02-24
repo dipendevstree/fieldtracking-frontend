@@ -134,10 +134,12 @@ export default function GeneralApplicationSettings({
 
   const { data: rolesList } = useGetAllRolesForDropdown();
 
-  const timeZoneOptions = moment.tz.names().map((timezone) => ({
-    value: timezone,
-    label: `${timezone} ${moment.tz(timezone).format("z (Z)")}`,
-  }));
+  const timeZoneOptions = useMemo(() => {
+    return moment.tz.names().map((timezone) => ({
+      value: timezone,
+      label: `${timezone} ${moment().tz(timezone).format("z (Z)")}`,
+    }));
+  }, []);
 
   const isLoading = !user;
   const hasError = false;
