@@ -42,6 +42,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import moment from "moment-timezone";
 
 interface GeneralApplicationSettingsProps {
   onDataChange?: (data: any) => void;
@@ -133,32 +134,10 @@ export default function GeneralApplicationSettings({
 
   const { data: rolesList } = useGetAllRolesForDropdown();
 
-  const timeZoneOptions = [
-    {
-      value: "Asia/Calcutta",
-      label: "Asia/Calcutta IST (+05:30)",
-    },
-    {
-      value: "America/New_York",
-      label: "Eastern Time (EST)",
-    },
-    {
-      value: "America/Chicago",
-      label: "Central Time (CST)",
-    },
-    {
-      value: "America/Denver",
-      label: "Mountain Time (MST)",
-    },
-    {
-      value: "America/Los_Angeles",
-      label: "Pacific Time (PST)",
-    },
-    { value: "Europe/London", label: "GMT (London)" },
-    { value: "Europe/Paris", label: "CET (Paris)" },
-    { value: "Asia/Tokyo", label: "JST (Tokyo)" },
-    { value: "Australia/Sydney", label: "AEDT (Sydney)" },
-  ];
+  const timeZoneOptions = moment.tz.names().map((timezone) => ({
+    value: timezone,
+    label: `${timezone} ${moment.tz(timezone).format("z (Z)")}`,
+  }));
 
   const isLoading = !user;
   const hasError = false;
