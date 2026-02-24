@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -131,6 +132,33 @@ export default function GeneralApplicationSettings({
   });
 
   const { data: rolesList } = useGetAllRolesForDropdown();
+
+  const timeZoneOptions = [
+    {
+      value: "Asia/Calcutta",
+      label: "Asia/Calcutta IST (+05:30)",
+    },
+    {
+      value: "America/New_York",
+      label: "Eastern Time (EST)",
+    },
+    {
+      value: "America/Chicago",
+      label: "Central Time (CST)",
+    },
+    {
+      value: "America/Denver",
+      label: "Mountain Time (MST)",
+    },
+    {
+      value: "America/Los_Angeles",
+      label: "Pacific Time (PST)",
+    },
+    { value: "Europe/London", label: "GMT (London)" },
+    { value: "Europe/Paris", label: "CET (Paris)" },
+    { value: "Asia/Tokyo", label: "JST (Tokyo)" },
+    { value: "Australia/Sydney", label: "AEDT (Sydney)" },
+  ];
 
   const isLoading = !user;
   const hasError = false;
@@ -892,46 +920,14 @@ export default function GeneralApplicationSettings({
                         Default Timezone <span className="text-red-500">*</span>
                       </Label>
                       {/* Set form user system timezone */}
-                      <Select
+                      <SearchableSelect
                         value={formData.timezone}
-                        onValueChange={(value) =>
+                        onChange={(value) =>
                           handleInputChange("timezone", value)
                         }
-                      >
-                        <SelectTrigger className="h-10 w-full">
-                          <SelectValue placeholder="Select your system timezone" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {/* Ideally, populate this list dynamically from user system or backend */}
-                          <SelectItem value="Asia/Calcutta">
-                            Asia/Calcutta IST (+05:30)
-                          </SelectItem>
-                          <SelectItem value="America/New_York">
-                            Eastern Time (EST)
-                          </SelectItem>
-                          <SelectItem value="America/Chicago">
-                            Central Time (CST)
-                          </SelectItem>
-                          <SelectItem value="America/Denver">
-                            Mountain Time (MST)
-                          </SelectItem>
-                          <SelectItem value="America/Los_Angeles">
-                            Pacific Time (PST)
-                          </SelectItem>
-                          <SelectItem value="Europe/London">
-                            GMT (London)
-                          </SelectItem>
-                          <SelectItem value="Europe/Paris">
-                            CET (Paris)
-                          </SelectItem>
-                          <SelectItem value="Asia/Tokyo">
-                            JST (Tokyo)
-                          </SelectItem>
-                          <SelectItem value="Australia/Sydney">
-                            AEDT (Sydney)
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
+                        placeholder="Select your system timezone"
+                        options={timeZoneOptions}
+                      />
                     </div>
                     <div className="space-y-2">
                       <Label
@@ -941,24 +937,17 @@ export default function GeneralApplicationSettings({
                         Default Currency <span className="text-red-500">*</span>
                       </Label>
                       {/* Set form user system timezone */}
-                      <Select
+                      <SearchableSelect
                         value={formData.currency}
-                        onValueChange={(value) =>
+                        onChange={(value) =>
                           handleInputChange("currency", value)
                         }
-                      >
-                        <SelectTrigger className="h-10 w-full">
-                          <SelectValue placeholder="Select your system currency" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {currency.map((c: any, index: number) => (
-                            <SelectItem
-                              key={index}
-                              value={c.currency.symbol}
-                            >{`${c.currency.name} (${c.currency.symbol})`}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        placeholder="Select your system currency"
+                        options={currency.map((c: any) => ({
+                          value: c.currency.symbol,
+                          label: `${c.currency.name} (${c.currency.symbol})`,
+                        }))}
+                      />
                     </div>
                   </div>
 
@@ -976,34 +965,22 @@ export default function GeneralApplicationSettings({
                         Failed to load organization types
                       </div>
                     ) : (
-                      <Select
+                      <SearchableSelect
                         value={formData.organizationType}
-                        onValueChange={(value) =>
+                        onChange={(value) =>
                           handleInputChange("organizationType", value)
                         }
-                      >
-                        <SelectTrigger className="h-10 w-full">
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {orgTypeList?.map((type: any) => (
-                            <SelectItem
-                              key={
-                                type.organizationTypeId || type.value || type.id
-                              }
-                              value={String(
-                                type.organizationTypeId ||
-                                  type.value ||
-                                  type.id,
-                              )}
-                            >
-                              {type.organizationTypeName ||
-                                type.label ||
-                                type.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        placeholder="Select type"
+                        options={(orgTypeList ?? []).map((type: any) => ({
+                          value: String(
+                            type.organizationTypeId || type.value || type.id,
+                          ),
+                          label:
+                            type.organizationTypeName ||
+                            type.label ||
+                            type.name,
+                        }))}
+                      />
                     )}
                   </div>
 
@@ -1201,24 +1178,15 @@ export default function GeneralApplicationSettings({
                       >
                         Country <span className="text-red-500">*</span>
                       </Label>
-                      <Select
+                      <SearchableSelect
                         value={formData.country}
-                        onValueChange={handleCountryChange}
-                      >
-                        <SelectTrigger className="h-10 w-full">
-                          <SelectValue placeholder="Select country" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {countries.map((country) => (
-                            <SelectItem
-                              key={country.isoCode}
-                              value={country.isoCode}
-                            >
-                              {country.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        onChange={handleCountryChange}
+                        placeholder="Select country"
+                        options={countries.map((country) => ({
+                          value: country.isoCode,
+                          label: country.name,
+                        }))}
+                      />
                     </div>
 
                     <div className="space-y-2">
@@ -1228,25 +1196,16 @@ export default function GeneralApplicationSettings({
                       >
                         State/Province <span className="text-red-500">*</span>
                       </Label>
-                      <Select
+                      <SearchableSelect
                         value={formData.state}
-                        onValueChange={handleStateChange}
+                        onChange={handleStateChange}
+                        placeholder="Select state/province"
                         disabled={!formData.country || states.length === 0}
-                      >
-                        <SelectTrigger className="h-10 w-full">
-                          <SelectValue placeholder="Select state/province" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {states.map((state) => (
-                            <SelectItem
-                              key={state.isoCode}
-                              value={state.isoCode}
-                            >
-                              {state.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        options={states.map((state) => ({
+                          value: state.isoCode,
+                          label: state.name,
+                        }))}
+                      />
                     </div>
                   </div>
 
@@ -1258,24 +1217,16 @@ export default function GeneralApplicationSettings({
                       >
                         City <span className="text-red-500">*</span>
                       </Label>
-                      <Select
+                      <SearchableSelect
                         value={formData.city}
-                        onValueChange={(value) =>
-                          handleInputChange("city", value)
-                        }
+                        onChange={(value) => handleInputChange("city", value)}
+                        placeholder="Select city"
                         disabled={!formData.state || cities.length === 0}
-                      >
-                        <SelectTrigger className="h-10 w-full">
-                          <SelectValue placeholder="Select city" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {cities.map((city) => (
-                            <SelectItem key={city.name} value={city.name}>
-                              {city.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        options={cities.map((city) => ({
+                          value: city.name,
+                          label: city.name,
+                        }))}
+                      />
                     </div>
 
                     <div className="space-y-2">
