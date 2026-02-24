@@ -85,6 +85,7 @@ export const useMarkAsRead = (options?: any) => {
     url: API.notifications.markAsRead,
     refetchQueries: [API.notifications.list],
     ...options,
+    skipToast: true,
   });
 };
 
@@ -93,5 +94,6 @@ export const useMarkAllAsRead = (options?: any) => {
     url: API.notifications.markAsRead,
     refetchQueries: [API.notifications.list],
     ...options,
+    skipToast: true,
   });
 };

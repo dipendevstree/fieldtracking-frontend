@@ -16,6 +16,7 @@ import { CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { getNotificationColumns } from "./components/notification-columns";
 import { CustomDataTable } from "@/components/shared/custom-data-table";
+import { toast } from "sonner";
 
 export default function Notifications() {
   const initialDateRange: DateRange = {
@@ -36,8 +37,23 @@ export default function Notifications() {
   });
   const notifications = useGetAllNotifications(pagination);
   const unreadCount = notifications.unreadCount;
-  const { mutate: markAllAsRead } = useMarkAllAsRead();
-  const { mutate: markAsRead } = useMarkAsRead();
+  const { mutate: markAllAsRead } = useMarkAllAsRead({
+    onSuccess: () => {
+      toast.success("Marked all as read successfully", {
+        position: "top-center",
+        duration: 3000,
+      });
+    },
+  });
+
+  const { mutate: markAsRead } = useMarkAsRead({
+    onSuccess: () => {
+      toast.success("Marked as read successfully", {
+        position: "top-center",
+        duration: 3000,
+      });
+    },
+  });
   const notificationData = notifications?.list ?? [];
 
   const { listData } = useGetUsers({
