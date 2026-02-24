@@ -261,7 +261,7 @@ const WorkDaySession = () => {
   const handleCheckIn = () =>
     startWorkDay({
       date: moment().format("DD-MM-YYYY"),
-      dayStartAddress: "web",
+      dayStartAddress: "Web",
     });
 
   const handleCheckOut = () => {
@@ -269,7 +269,7 @@ const WorkDaySession = () => {
     if (!activeWorkSession) return toast.error("No active session");
     endWorkDay({
       workDaySessionId: activeWorkSession.workDaySessionId,
-      dayEndAddress: "web",
+      dayEndAddress: "Web",
     });
   };
 
