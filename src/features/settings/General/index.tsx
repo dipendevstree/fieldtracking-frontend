@@ -108,6 +108,7 @@ const GeneralSettingsPage = () => {
         "organizationTypeId",
         currentSettingsData.organizationType,
       );
+      formData.append("timeZone", currentSettingsData.timezone);
       formData.append("website", currentSettingsData.website);
       formData.append("description", currentSettingsData.description);
       formData.append("address", currentSettingsData.streetAddress);
@@ -199,7 +200,10 @@ const GeneralSettingsPage = () => {
       setCurrentSettingsData(null);
     } catch (error) {
       console.error("Error updating settings:", error);
-      toast.error("Failed to update settings. Please try again.");
+      toast.error("Failed to update settings. Please try again.", {
+        duration: 3000,
+        position: "top-right",
+      });
     }
   };
 
