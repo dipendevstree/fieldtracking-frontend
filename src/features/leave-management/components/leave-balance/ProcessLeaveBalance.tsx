@@ -18,7 +18,7 @@ import moment from "moment";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
 import { useSelectOptions } from "@/hooks/use-select-option";
-import { useProcessLeaveBalance } from "../../services/leave-action.hook";
+import { useExpireCarryForwardLeaveBalance, useProcessLeaveBalance } from "../../services/leave-action.hook";
 
 export default function ProcessLeaveBalance() {
   const [isOpen, setIsOpen] = useState(false);
@@ -41,6 +41,9 @@ export default function ProcessLeaveBalance() {
   const { mutate: processLeaveBalance, isPending } = useProcessLeaveBalance(
     () => {},
   );
+
+  const { mutate: expireCarryForwardLeaveBalance, isPending: isExpirePending } =
+    useExpireCarryForwardLeaveBalance(() => {});
 
   const { data: userList = [], isLoading: isUsersLoading } =
     useGetUsersForDropdown({});
@@ -135,18 +138,16 @@ export default function ProcessLeaveBalance() {
               </div>
             </div>
           </div>
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             <Button
               className={cn("w-full")}
-              disabled={true}
-              title="Under Development"
-              //   disabled={
-              //     isUsersLoading ||
-              //     !userId ||
-              //     currentMonth === null ||
-              //     currentYear === null ||
-              //     isPending
-              //   }
+              disabled={
+                isUsersLoading ||
+                !userId ||
+                currentMonth === null ||
+                currentYear === null ||
+                isPending
+              }
               onClick={() => {
                 processLeaveBalance({
                   userId,
@@ -154,9 +155,31 @@ export default function ProcessLeaveBalance() {
                   year: currentYear,
                 });
               }}
-            >
+              >
               {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Process Leave Balance
+            </Button>
+            <Button
+              className={cn("w-full")}
+              disabled={
+                isUsersLoading ||
+                !userId ||
+                currentMonth === null ||
+                currentYear === null ||
+                isExpirePending
+              }
+              onClick={() => {
+                expireCarryForwardLeaveBalance({
+                  userId,
+                  month: currentMonth,
+                  year: currentYear,
+                });
+              }}
+              >
+              {isExpirePending && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Expire Carry Forward Leave Balance
             </Button>
           </div>
         </div>

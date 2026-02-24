@@ -197,3 +197,14 @@ export const useProcessLeaveBalance = (onSuccess?: () => void) => {
     },
   });
 };
+
+export const useExpireCarryForwardLeaveBalance = (onSuccess?: () => void) => {
+  return usePutData({
+    url: API.task.expireCarryForwardLeaveBalance,
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};

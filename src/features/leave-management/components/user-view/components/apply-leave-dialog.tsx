@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format, parseISO, subDays } from "date-fns";
-import { Loader2, Paperclip, TriangleAlert, UploadCloud } from "lucide-react";
+import { Loader2, Paperclip, UploadCloud } from "lucide-react";
 import { useDropzone } from "react-dropzone";
 
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,16 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   Form,
   FormControl,
@@ -41,8 +51,12 @@ import {
 } from "@/features/leave-management/services/leave-action.hook";
 
 import { AttachmentItem } from "./attachment-item";
+import {
+  LeaveApplyWarnings,
+  hasAmberWarnings,
+} from "./leave-apply-warnings";
+import { LeaveSummaryCard } from "./leave-summary-card";
 import moment from "moment";
-import { formatDropDownLabel } from "@/utils/commonFunction";
 
 interface ApplyLeaveDialogProps {
   open: boolean;
@@ -156,19 +170,31 @@ export function ApplyLeaveDialog({
     moment(watchStartDate).isSame(watchEndDate, "day");
   const requiresAttachment = requiredAttachmentIds.includes(watchLeaveTypeId);
 
-  const { data: leaveApplyStats } = useGetLeaveApplyStats(
-    {
-      startDate: moment(watchStartDate).format("YYYY-MM-DD"),
-      endDate: moment(watchEndDate).format("YYYY-MM-DD"),
-      halfDay: watchHalfDay,
-      halfDayType: watchHalfDayType,
-      leaveTypeId: watchLeaveTypeId,
-    },
-    {
-      enabled: open && !!watchStartDate && !!watchEndDate && !!watchLeaveTypeId,
-    },
-  );
-  console.log("leaveApplyStats", leaveApplyStats);
+  const { data: leaveApplyStats, isLoading: isLoadingStats } =
+    useGetLeaveApplyStats(
+      {
+        startDate: moment(watchStartDate).format("YYYY-MM-DD"),
+        endDate: moment(watchEndDate).format("YYYY-MM-DD"),
+        halfDay: watchHalfDay,
+        halfDayType: watchHalfDayType,
+        leaveTypeId: watchLeaveTypeId,
+      },
+      {
+        enabled:
+          open && !!watchStartDate && !!watchEndDate && !!watchLeaveTypeId,
+      },
+    );
+
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingFormData, setPendingFormData] =
+    useState<ApplyLeaveFormValues | null>(null);
+
+  const selectedLeaveTypeName = useMemo(() => {
+    const found = leaveTypesList?.find(
+      (lt: any) => lt.id === watchLeaveTypeId,
+    );
+    return found?.name ?? "";
+  }, [leaveTypesList, watchLeaveTypeId]);
   // Initial Reset / Population
   useEffect(() => {
     if (!open) {
@@ -263,7 +289,7 @@ export function ApplyLeaveDialog({
     }
   }, [selectDateRange]);
 
-  const onSubmit = (data: ApplyLeaveFormValues) => {
+  const submitLeave = (data: ApplyLeaveFormValues) => {
     const formData = new FormData();
     formData.append("leaveTypeId", data.leaveTypeId);
     formData.append("reason", data.reason || "");
@@ -301,6 +327,24 @@ export function ApplyLeaveDialog({
     } else {
       createLeaveMutation.mutate(formData);
     }
+  };
+
+  const onSubmit = (data: ApplyLeaveFormValues) => {
+    // If amber warnings exist, show confirmation dialog before submitting
+    if (leaveApplyStats && hasAmberWarnings(leaveApplyStats)) {
+      setPendingFormData(data);
+      setShowConfirmDialog(true);
+      return;
+    }
+    submitLeave(data);
+  };
+
+  const handleConfirmSubmit = () => {
+    if (pendingFormData) {
+      submitLeave(pendingFormData);
+      setPendingFormData(null);
+    }
+    setShowConfirmDialog(false);
   };
 
   const onDropList = useCallback(
@@ -471,48 +515,27 @@ export function ApplyLeaveDialog({
                 </div>
               )}
 
-              {leaveApplyStats && (
-                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 text-sm text-yellow-700">
-                  <div className="flex flex-col items-start gap-2 mb-1">
-                    <div className="flex flex-row items-center gap-2">
-                      <TriangleAlert className="text-yellow-500" size={16} />{" "}
-                      <span className="font-semibold">Warning!</span>
-                    </div>
-                    {leaveApplyStats?.availableBalance <= 0 &&
-                      (leaveApplyStats?.availableBalance <
-                      leaveApplyStats?.sandwichData?.totalDays ? (
-                        <span className="text-sm">
-                          Insufficient Balance! (Available Balance:{" "}
-                          {leaveApplyStats?.availableBalance})
-                        </span>
-                      ) : (
-                        <span className="text-sm">
-                          Insufficient Balance! (Available Balance:{" "}
-                          {leaveApplyStats?.availableBalance})
-                        </span>
-                      ))}
-                    {leaveApplyStats?.sandwichData && (
-                      <span className="text-sm">
-                        Leave Count: {leaveApplyStats?.sandwichData?.leaveCount}
-                        <br />
-                        {leaveApplyStats?.sandwichData?.sandwichLeaveCount >
-                          0 && (
-                          <>
-                            Sandwich Leave Count:{" "}
-                            {leaveApplyStats?.sandwichData?.sandwichLeaveCount}{" "}
-                            {leaveApplyStats?.sandwichData?.sandwichDates
-                              .length > 0
-                              ? `(${leaveApplyStats?.sandwichData?.sandwichDates.map((dates: { date: string; type: string }) => `${format(new Date(dates.date), "dd MMM")} (${formatDropDownLabel(dates.type)})`).join(", ")})`
-                              : ""}
-                            <br />
-                          </>
-                        )}
-                        Total Leave Count:{" "}
-                        {leaveApplyStats?.sandwichData?.totalDays}
-                      </span>
-                    )}
-                  </div>
+              {/* Loading spinner for stats API */}
+              {isLoadingStats && (
+                <div className="flex items-center justify-center py-3">
+                  <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+                  <span className="ml-2 text-sm text-slate-500">
+                    Checking leave details...
+                  </span>
                 </div>
+              )}
+
+              {/* Warning banners */}
+              {leaveApplyStats && !isLoadingStats && (
+                <LeaveApplyWarnings
+                  stats={leaveApplyStats}
+                  selectedLeaveTypeName={selectedLeaveTypeName}
+                />
+              )}
+
+              {/* Leave summary card */}
+              {leaveApplyStats && !isLoadingStats && (
+                <LeaveSummaryCard stats={leaveApplyStats} />
               )}
 
               <FormField
@@ -628,6 +651,70 @@ export function ApplyLeaveDialog({
           </Form>
         )}
       </DialogContent>
+
+      {/* Confirmation dialog for amber warnings */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Leave Submission</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div>
+                <p className="mb-2">
+                  Are you sure? The following deductions will apply:
+                </p>
+                {leaveApplyStats?.sandwichData && (
+                  <div className="bg-amber-50 border border-amber-200 rounded-md p-3 text-sm text-amber-800 space-y-1">
+                    <p>
+                      Leave Days:{" "}
+                      <span className="font-medium">
+                        {leaveApplyStats.sandwichData.leaveCount}
+                      </span>
+                    </p>
+                    {leaveApplyStats.sandwichData.sandwichLeaveCount > 0 && (
+                      <p>
+                        Sandwich Days:{" "}
+                        <span className="font-medium">
+                          {leaveApplyStats.sandwichData.sandwichLeaveCount}
+                        </span>
+                      </p>
+                    )}
+                    <p>
+                      Total Deduction:{" "}
+                      <span className="font-semibold">
+                        {leaveApplyStats.sandwichData.totalDays} day(s)
+                      </span>
+                    </p>
+                    <p>
+                      Balance After:{" "}
+                      <span
+                        className={`font-medium ${
+                          leaveApplyStats.availableBalance -
+                            leaveApplyStats.sandwichData.totalDays <
+                          0
+                            ? "text-red-600"
+                            : ""
+                        }`}
+                      >
+                        {leaveApplyStats.availableBalance -
+                          leaveApplyStats.sandwichData.totalDays}{" "}
+                        day(s)
+                      </span>
+                    </p>
+                  </div>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingFormData(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmSubmit}>
+              Confirm & Submit
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 }
