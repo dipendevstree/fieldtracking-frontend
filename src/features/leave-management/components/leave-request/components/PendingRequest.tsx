@@ -18,7 +18,7 @@ export default function PendingRequest({
   onPaginationChange,
   dashboardView,
 }: Props) {
-  const { open, setOpen, currentRow } = useLeaveRequestStore();
+  const { open, setOpen, currentRow, setCurrentRow } = useLeaveRequestStore();
   const {
     data: leaveRequestList,
     isLoading,
@@ -30,7 +30,10 @@ export default function PendingRequest({
       {open === "view" && (
         <LeaveRequestViewDialog
           open={open === "view"}
-          onClose={() => setOpen(null)}
+          onClose={() => {
+            setOpen(null);
+            setCurrentRow(null);
+          }}
           currentRow={currentRow}
         />
       )}

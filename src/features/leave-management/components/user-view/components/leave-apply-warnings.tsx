@@ -13,11 +13,15 @@ import type { LeaveApplyStatsResponse } from "@/features/leave-management/types/
 interface LeaveApplyWarningsProps {
   stats: LeaveApplyStatsResponse;
   selectedLeaveTypeName: string;
+  selectedLeaveTypeId: string;
+  isWorkFromHomeLeave?: boolean;
 }
 
 export function LeaveApplyWarnings({
   stats,
   selectedLeaveTypeName,
+  selectedLeaveTypeId,
+  isWorkFromHomeLeave,
 }: LeaveApplyWarningsProps) {
   const [sandwichExpanded, setSandwichExpanded] = useState(false);
 
@@ -193,33 +197,91 @@ export function LeaveApplyWarnings({
   // ─── Warning 3: Cross-Leave Deduction (AMBER) ───
   if (
     leaveRuleConfig?.crossLeaveDeductionRuleActive &&
-    leaveRuleConfig?.primaryLeaveTypeData &&
-    availableBalance < totalDays
+    availableBalance < totalDays &&
+    !isWorkFromHomeLeave
   ) {
-    warnings.push(
-      <div
-        key="cross-leave"
-        className="bg-amber-50 border border-amber-200 rounded-md p-3 text-sm text-amber-800"
-      >
-        <div className="flex items-start gap-2">
-          <TriangleAlert
-            className="text-amber-500 shrink-0 mt-0.5"
-            size={16}
-          />
-          <div>
-            <span className="font-semibold">Cross-Leave Deduction</span>
-            <p className="mt-0.5">
-              If your <span className="font-medium">{selectedLeaveTypeName}</span>{" "}
-              balance is insufficient, the shortfall will be deducted from your{" "}
-              <span className="font-medium">
-                {leaveRuleConfig.primaryLeaveTypeData.name}
-              </span>{" "}
-              balance as per the Cross-Leave Deduction Rule.
-            </p>
+    // Build the full deduction chain, filtering out the selected leave type
+    const fallbackTypes: { id: string; name: string }[] = [];
+
+    if (
+      leaveRuleConfig.primaryLeaveTypeData &&
+      leaveRuleConfig.primaryLeaveType !== selectedLeaveTypeId
+    ) {
+      fallbackTypes.push({
+        id: leaveRuleConfig.primaryLeaveType!,
+        name: leaveRuleConfig.primaryLeaveTypeData.name,
+      });
+    }
+
+    if (leaveRuleConfig.secondaryLeaveTypesData?.length) {
+      for (const sec of leaveRuleConfig.secondaryLeaveTypesData) {
+        if (
+          sec.id !== selectedLeaveTypeId &&
+          !fallbackTypes.some((f) => f.id === sec.id)
+        ) {
+          fallbackTypes.push({ id: sec.id, name: sec.name });
+        }
+      }
+    }
+
+    if (fallbackTypes.length > 0) {
+      const fallbackNames = fallbackTypes.map((f) => f.name);
+      const formattedNames =
+        fallbackNames.length === 1
+          ? fallbackNames[0]
+          : `${fallbackNames.slice(0, -1).join(", ")} and ${fallbackNames[fallbackNames.length - 1]}`;
+
+      warnings.push(
+        <div
+          key="cross-leave"
+          className="bg-amber-50 border border-amber-200 rounded-md p-3 text-sm text-amber-800"
+        >
+          <div className="flex items-start gap-2">
+            <TriangleAlert
+              className="text-amber-500 shrink-0 mt-0.5"
+              size={16}
+            />
+            <div>
+              <span className="font-semibold">Cross-Leave Deduction</span>
+              <p className="mt-0.5">
+                If your{" "}
+                <span className="font-medium">{selectedLeaveTypeName}</span>{" "}
+                balance is insufficient, the shortfall will be deducted from
+                your{" "}
+                <span className="font-medium">{formattedNames}</span>{" "}
+                balance as per the Cross-Leave Deduction Rule.
+                {fallbackTypes.length > 1 &&
+                  " If all balances are insufficient, your leave balance will go into negative."}
+              </p>
+            </div>
           </div>
-        </div>
-      </div>,
-    );
+        </div>,
+      );
+    } else {
+      // No unique fallback types — balance will go negative
+      warnings.push(
+        <div
+          key="negative-balance"
+          className="bg-amber-50 border border-amber-200 rounded-md p-3 text-sm text-amber-800"
+        >
+          <div className="flex items-start gap-2">
+            <TriangleAlert
+              className="text-amber-500 shrink-0 mt-0.5"
+              size={16}
+            />
+            <div>
+              <span className="font-semibold">Negative Balance</span>
+              <p className="mt-0.5">
+                Your{" "}
+                <span className="font-medium">{selectedLeaveTypeName}</span>{" "}
+                balance is insufficient. If you proceed, your leave balance will
+                go into negative.
+              </p>
+            </div>
+          </div>
+        </div>,
+      );
+    }
   }
 
   // ─── Warning 4: In-Between Holidays/Week-offs (BLUE) ───

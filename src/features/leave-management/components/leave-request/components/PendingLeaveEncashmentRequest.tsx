@@ -18,7 +18,7 @@ export default function PendingLeaveEncashmentRequest({
   onPaginationChange,
   dashboardView,
 }: Props) {
-  const { open, setOpen, currentRow } = useLeaveRequestStore();
+  const { open, setOpen, currentRow, setCurrentRow } = useLeaveRequestStore();
   const {
     data: leaveEncashmentRequestList,
     isLoading,
@@ -30,7 +30,10 @@ export default function PendingLeaveEncashmentRequest({
       {open === "view-leave-encashment" && currentRow && (
         <LeaveEncashmentRequestViewDialog
           open={open === "view-leave-encashment"}
-          onClose={() => setOpen(null)}
+          onClose={() => {
+            setOpen(null);
+            setCurrentRow(null);
+          }}
           currentRow={currentRow}
         />
       )}
