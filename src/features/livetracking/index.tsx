@@ -10,7 +10,7 @@ import { Main } from "@/components/layout/main";
 import { useGetAllRolesForDropdown } from "../UserManagement/services/Roles.hook";
 import { useGetAllTerritoriesForDropdown } from "../userterritory/services/user-territory.hook";
 import UserTrackingTimeline from "./user-livetracting-info";
-import UserPolylineMap from "./components/UserPolylineMap";
+import UserPolylineMap, { VisitMarker } from "./components/UserPolylineMap";
 import UserListMap from "./components/UserListMap";
 import {
   useGetUsers,
@@ -55,6 +55,7 @@ export default function Livetracking() {
     lng: number;
   } | null>(null);
   const [path, setPath] = useState<{ lat: number; lng: number }[]>([]);
+  const [visitMarkers, setVisitMarkers] = useState<VisitMarker[]>([]);
   const [mapCenter, setMapCenter] = useState<{
     lat: number;
     lng: number;
@@ -160,6 +161,7 @@ export default function Livetracking() {
     }
     setSelectedUserId("");
     setPath([]);
+    setVisitMarkers([]);
     setCurrentPosition(null);
     updateMapCenterFromUserList(enhancedUserList);
     const newParams = new URLSearchParams(window.location.search);
@@ -236,6 +238,7 @@ export default function Livetracking() {
       }
       setSelectedUserId("");
       setPath([]);
+      setVisitMarkers([]);
       setCurrentPosition(null);
     } else {
       // If userId is present in URL, update selectedUserId
@@ -421,6 +424,7 @@ export default function Livetracking() {
                   setPath={setPath}
                   setCurrentPosition={setCurrentPosition}
                   setMapCenter={setMapCenter}
+                  setVisitMarkers={setVisitMarkers}
                   onBack={handleBackToList}
                 />
               ) : (
@@ -504,6 +508,7 @@ export default function Livetracking() {
                       currentPosition={currentPosition}
                       selectedUser={selectedUser || enhancedSingleUser}
                       mapRef={mapRef}
+                      visitMarkers={visitMarkers}
                     />
                   ) : (
                     <UserListMap

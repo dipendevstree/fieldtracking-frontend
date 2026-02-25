@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { MapPin, Loader2, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { socket, socketForVisit } from "../../socket/socket";
+import type { VisitMarker } from "./components/UserPolylineMap";
 
 import {
   getWorkDaySession,
@@ -25,6 +26,7 @@ interface UserTrackingTimelineProps {
     React.SetStateAction<{ lat: number; lng: number } | null>
   >;
   setMapCenter: (center: { lat: number; lng: number }) => void;
+  setVisitMarkers: React.Dispatch<React.SetStateAction<VisitMarker[]>>;
   onBack?: () => void;
 }
 
@@ -33,6 +35,7 @@ const UserTrackingTimeline = ({
   setPath,
   setCurrentPosition,
   setMapCenter,
+  setVisitMarkers,
   onBack,
 }: UserTrackingTimelineProps) => {
   const [selectedDate, setSelectedDate] = useState(
@@ -179,6 +182,25 @@ const UserTrackingTimeline = ({
       setLiveVisits([]);
     }
   }, [visits, isVisitsFetched]);
+
+  // Push visit locations up to parent for map markers
+  useEffect(() => {
+    if (liveVisits && liveVisits.length > 0) {
+      const markers: VisitMarker[] = liveVisits
+        .filter(
+          (v: any) => v.latitude && v.longitude && v.status === "completed",
+        )
+        .map((v: any) => ({
+          visitId: v.visitId,
+          lat: parseFloat(v.latitude),
+          lng: parseFloat(v.longitude),
+          purpose: v.purpose || "",
+        }));
+      setVisitMarkers(markers);
+    } else {
+      setVisitMarkers([]);
+    }
+  }, [liveVisits, setVisitMarkers]);
 
   // MODIFIED: Socket effect now efficiently updates the distance.
   useEffect(() => {
