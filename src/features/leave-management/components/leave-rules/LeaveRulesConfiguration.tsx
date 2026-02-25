@@ -77,7 +77,7 @@ export default function LeaveRulesConfiguration() {
       secondaryLeaveTypes: [],
       leaveCarryForwardRuleActive: false,
       maximumCarryForwardDays: 0,
-      carryForwardExpiryMonths: 0,
+      carryForwardExpiryMonths: 1,
       leaveEncashmentRuleActive: false,
       maximumEncashmentDays: 0,
       minimumEncashmentDaysRequired: 0,
@@ -96,7 +96,7 @@ export default function LeaveRulesConfiguration() {
         leaveCarryForwardRuleActive:
           rulesData.leaveCarryForwardRuleActive ?? false,
         maximumCarryForwardDays: rulesData.maximumCarryForwardDays ?? 0,
-        carryForwardExpiryMonths: rulesData.carryForwardExpiryMonths ?? 0,
+        carryForwardExpiryMonths: rulesData.carryForwardExpiryMonths ?? 1,
         leaveEncashmentRuleActive: rulesData.leaveEncashmentRuleActive ?? false,
         maximumEncashmentDays: rulesData.maximumEncashmentDays ?? 0,
         minimumEncashmentDaysRequired:
@@ -445,7 +445,12 @@ export default function LeaveRulesConfiguration() {
                       <FormControl>
                         <Switch
                           checked={field.value}
-                          onCheckedChange={field.onChange}
+                          onCheckedChange={(checked) => {
+                            field.onChange(checked);
+                            if (checked) {
+                              form.setValue("leaveEncashmentRuleActive", false);
+                            }
+                          }}
                           disabled={!canEdit}
                         />
                       </FormControl>
@@ -562,7 +567,12 @@ export default function LeaveRulesConfiguration() {
                       <FormControl>
                         <Switch
                           checked={field.value}
-                          onCheckedChange={field.onChange}
+                          onCheckedChange={(checked) => {
+                            field.onChange(checked);
+                            if (checked) {
+                              form.setValue("leaveCarryForwardRuleActive", false);
+                            }
+                          }}
                           disabled={!canEdit}
                         />
                       </FormControl>

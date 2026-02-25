@@ -530,6 +530,8 @@ export function ApplyLeaveDialog({
                 <LeaveApplyWarnings
                   stats={leaveApplyStats}
                   selectedLeaveTypeName={selectedLeaveTypeName}
+                  selectedLeaveTypeId={watchLeaveTypeId}
+                  isWorkFromHomeLeave={workFromHomeTypeOpen}
                 />
               )}
 
@@ -635,7 +637,9 @@ export function ApplyLeaveDialog({
                 <Button
                   type="submit"
                   disabled={
-                    isSaving || (requiresAttachment && !!errors.attachments)
+                    isSaving ||
+                    (requiresAttachment && !!errors.attachments) ||
+                    (workFromHomeTypeOpen && leaveApplyStats?.availableBalance < leaveApplyStats?.sandwichData?.totalDays)
                   }
                 >
                   {isSaving ? (

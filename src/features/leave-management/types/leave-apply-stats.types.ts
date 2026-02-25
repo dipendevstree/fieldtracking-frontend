@@ -33,8 +33,8 @@ export interface LeaveRuleConfig {
   crossLeaveDeductionRuleActive: boolean;
   primaryLeaveType: string | null;
   secondaryLeaveTypes: string[] | null;
-  primaryLeaveTypeData: { name: string; [key: string]: any } | null;
-  secondaryLeaveTypesData: Array<{ name: string; [key: string]: any }> | null;
+  primaryLeaveTypeData: { id: string; name: string; [key: string]: any } | null;
+  secondaryLeaveTypesData: Array<{ id: string; name: string; [key: string]: any }> | null;
   leaveCarryForwardRuleActive: boolean;
   maximumCarryForwardDays: number | null;
   carryForwardExpiryMonths: number | null;
