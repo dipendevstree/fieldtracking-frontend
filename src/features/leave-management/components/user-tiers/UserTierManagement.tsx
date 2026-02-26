@@ -56,6 +56,7 @@ import { PermissionGate } from "@/permissions/components/PermissionGate";
 import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import LeaveTypeWarningModal from "../leave-types/components/leave-type-warning-modal";
 
 // --- HELPER COMPONENT: TIER CARD ---
 function TierCard({
@@ -168,6 +169,8 @@ export default function UserTierManagement() {
   const { data: singleUserTier, isLoading: isLoadingSingleTier } =
     useGetUserTierById(editingTierId || "");
   const [showLocalWarning, setShowLocalWarning] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const [pendingFormValues, setPendingFormValues] = useState<any>(null);
 
   // 2. Prepare Option Lists
   const leaveTypesMap = useMemo(() => {
@@ -322,11 +325,8 @@ export default function UserTierManagement() {
   };
 
   const onSubmit = (data: UserTierFormValues) => {
-    if (modalType === "edit" && selectedRow) {
-      updateMutation.mutate(data);
-    } else {
-      createMutation.mutate(data);
-    }
+    setPendingFormValues(data);
+    setShowWarning(true);
   };
 
   const onConfirmDelete = () => {
@@ -379,6 +379,18 @@ export default function UserTierManagement() {
     }
   };
 
+  const handleConfirm = () => {
+    if (pendingFormValues) {
+      if (modalType === "edit" && selectedRow) {
+        updateMutation.mutate(pendingFormValues);
+      } else {
+        createMutation.mutate(pendingFormValues);
+      }
+    }
+    setShowWarning(false);
+    setPendingFormValues(null);
+  }
+
   if (isLoadingTiers) {
     return (
       <div className="flex h-96 items-center justify-center">
@@ -426,6 +438,17 @@ export default function UserTierManagement() {
         cancelBtnText="Keep Editing"
         destructive={true}
         handleConfirm={handleConfirmDiscard}
+      />
+
+      <LeaveTypeWarningModal
+        open={showWarning}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setShowWarning(false);
+            setPendingFormValues(null);
+          }
+        }}
+        onConfirm={handleConfirm}
       />
 
       {/* Action Header */}

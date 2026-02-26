@@ -17,10 +17,13 @@ import LeaveTypeActionForm from "./leave-type-action-form";
 import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { LeaveTypeWarningModal } from "./leave-type-warning-modal";
 
 export function LeaveTypeActionModal() {
   const { open, setOpen, currentRow, setCurrentRow } = useLeaveTypeStore();
   const [showLocalWarning, setShowLocalWarning] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const [pendingFormValues, setPendingFormValues] = useState<any>(null);
 
   const {
     mutate: createLeaveType,
@@ -79,11 +82,13 @@ export function LeaveTypeActionModal() {
   }, [isCreateSuccess, isCreateError, isUpdateSuccess, isUpdateError]);
 
   const handleCreate = (values: any) => {
-    createLeaveType(values);
+    setPendingFormValues(values);
+    setShowWarning(true);
   };
 
   const handleUpdate = (values: any) => {
-    if (currentRow?.id) updateLeaveTypeMutate(values);
+    setPendingFormValues(values);
+    setShowWarning(true);
   };
 
   const handleDelete = () => {
@@ -136,6 +141,18 @@ export function LeaveTypeActionModal() {
     }
   };
 
+  const handleConfirm = () => {
+    if (pendingFormValues) {
+      if (open === "edit" && currentRow?.id) {
+        updateLeaveTypeMutate(pendingFormValues);
+      } else {
+        createLeaveType(pendingFormValues);
+      }
+    }
+    setShowWarning(false);
+    setPendingFormValues(null);
+  };
+
   return (
     <>
       <LeaveTypeActionForm
@@ -157,6 +174,17 @@ export function LeaveTypeActionModal() {
         cancelBtnText="Keep Editing"
         destructive={true}
         handleConfirm={handleConfirmDiscard}
+      />
+
+      <LeaveTypeWarningModal
+        open={showWarning}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            setShowWarning(false);
+            setPendingFormValues(null);
+          }
+        }}
+        onConfirm={handleConfirm}
       />
 
       {currentRow && (
