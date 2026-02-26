@@ -19,7 +19,7 @@ const setPasswordSchema = z
       .min(8, "Password must be at least 8 characters")
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/,
-        "Must include uppercase, lowercase, number, and special character"
+        "Must include uppercase, lowercase, number, and special character",
       ),
     confirmPassword: z.string(),
   })
@@ -38,13 +38,10 @@ export function SetPasswordForm() {
 
   const { navigate } = useRouter();
 
-  const { mutate: setPassword, isPending: isLoading } = useSetPassword(
-    (data) => {
-      console.log("firstdata", data);
-      setIsPasswordChanged(true);
-      navigate({ to: "/" });
-    }
-  );
+  const { mutate: setPassword, isPending: isLoading } = useSetPassword(() => {
+    setIsPasswordChanged(true);
+    navigate({ to: "/" });
+  });
 
   const {
     register,

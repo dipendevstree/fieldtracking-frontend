@@ -30,12 +30,6 @@ const LimitsControlsPage = () => {
     error,
   } = useGetLimitsControlsData(pagination);
 
-  // Debug: Log the data to understand the mismatch
-  console.log("Pagination params:", pagination);
-  console.log("Expense limits data:", expenseLimits);
-  console.log("Total count:", totalCount);
-  console.log("Actual records received:", expenseLimits.length);
-
   const debouncedSearch = useCallback(
     debounce((value: string) => {
       setPagination((prev) => ({
@@ -44,7 +38,7 @@ const LimitsControlsPage = () => {
         page: 1, // Reset to first page when searching
       }));
     }, 800), // Consistent with monthly-expense pattern
-    []
+    [],
   );
 
   const handleGlobalSearchChange = (value: string | undefined) => {
@@ -62,7 +56,7 @@ const LimitsControlsPage = () => {
         limit: pageSize,
       }));
     },
-    []
+    [],
   );
 
   if (error) {

@@ -13,7 +13,6 @@ export function DataTableRowActions({ row }: any) {
 
   const handleEditRole = (row: any) => {
     setCurrentRow(row.original);
-    console.log("Edit Role button clicked", row.original);
     navigate({
       to: `/user-management/edit-roles-permission/${row.original.roleId}`,
     });

@@ -4,8 +4,7 @@ import { Shield } from "lucide-react";
 import { useAuth } from "@/stores/use-auth-store";
 
 // // Define valid tab values for super admin dashboard
-export type SuperAdminTabValue =
-  | "/super-admin/organizations"
+export type SuperAdminTabValue = "/super-admin/organizations";
 
 export default function SuperAdminDashboard() {
   const { user } = useAuth();
@@ -16,7 +15,9 @@ export default function SuperAdminDashboard() {
       <Main className={cn("flex flex-col items-center justify-center p-8")}>
         <div className="text-center">
           <Shield className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h2 className="text-2xl font-bold text-destructive mb-2">Access Denied</h2>
+          <h2 className="text-2xl font-bold text-destructive mb-2">
+            Access Denied
+          </h2>
           <p className="text-muted-foreground">
             You don't have permission to access the Super Admin Dashboard.
           </p>
@@ -24,11 +25,6 @@ export default function SuperAdminDashboard() {
       </Main>
     );
   }
-
-  // const handleExportSystemReport = () => {
-  //   // TODO: Implement system-wide report export functionality
-  //   console.log('Exporting system report...');
-  // };
 
   return (
     <Main className={cn("flex flex-col gap-2 p-4")}>
@@ -42,12 +38,6 @@ export default function SuperAdminDashboard() {
             System-wide management and monitoring for FieldTrack platform
           </p>
         </div>
-        {/* <div className="flex items-center space-x-2">
-          <Button variant="outline" onClick={handleExportSystemReport}>
-            <Download className="h-4 w-4 mr-2" />
-            Export System Report
-          </Button>
-        </div> */}
       </div>
     </Main>
   );

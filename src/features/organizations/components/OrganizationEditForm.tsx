@@ -148,7 +148,6 @@ export function OrganizationEditForm({
   }, [selectedCountry, selectedState]);
 
   const onSubmit = (values: any) => {
-    console.log("Edit form submitted with values:", values);
     onSubmitValues(values);
   };
 
@@ -222,8 +221,6 @@ export function OrganizationEditForm({
   // Initialize form values when editing - IMPROVED VERSION
   useEffect(() => {
     if (currentRow && open) {
-      console.log("Setting edit values:", currentRow);
-
       const editValues = {
         organizationName: currentRow.organizationName || currentRow.name || "",
         industryId: String(
@@ -248,7 +245,6 @@ export function OrganizationEditForm({
         state: currentRow.state || "",
       };
 
-      console.log("Constructed edit values:", editValues);
       reset(editValues);
     }
   }, [currentRow, open, reset]);
@@ -591,7 +587,6 @@ export function OrganizationEditForm({
                           treeData={treeData}
                           value={field.value || []}
                           onChange={(value) => {
-                            console.log("TreeSelect value changed:", value);
                             field.onChange(value);
                           }}
                           treeCheckable={true}

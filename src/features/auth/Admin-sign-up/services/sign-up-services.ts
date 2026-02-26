@@ -3,7 +3,6 @@ import useFetchData from "@/hooks/use-fetch-data";
 import usePostData from "@/hooks/use-post-data";
 
 export const useGetUserByToken = (token: string) => {
-  console.log("useGetUserByToken called with token:", token);
   const query = useFetchData<any>({
     url: API.auth.getUserByToken,
     params: { token },
@@ -30,7 +29,6 @@ export const useGetDepartment = () => {
 
 export const useGetOrganizationTypes = () => {
   const query = useFetchData<any>({ url: API.auth.organizationTypes });
-  console.log("useGetOrganizationTypes called", query.data);
   return {
     ...query,
     data: query.data?.list ?? [],

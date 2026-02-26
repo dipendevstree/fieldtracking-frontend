@@ -180,7 +180,6 @@ const GeneralSettingsPage = () => {
         "addLeaveAfterProbationUnit",
         currentSettingsData.addLeaveAfterProbationUnit || null,
       );
-      // console.log('Organization update payload:', organizationUpdatePayload)
 
       // Update organization data
       await new Promise((resolve, reject) => {

@@ -33,7 +33,6 @@ export const useCreateTerritory = (onSuccess?: () => void) => {
 }
 
 export const useUpdateTerritory = (id: string, onSuccess?: () => void) => {
-  console.log('useUpdateTerritory called with id:', id)
   return usePatchData({
     url: `${API.territories.update}/${id}`,
     refetchQueries: [TERRITORY_QUERY],

@@ -6,7 +6,6 @@ import instance from "@/config/instance/instance";
 import { buildQueryString } from "@/utils/storage";
 
 export const useGetUserTrackingByUserId = (userId: string) => {
-  console.log("useGetUserByToken called with token:", userId);
   const query = useFetchData<any>({
     url: API.liveTracking.list,
     params: { userId },

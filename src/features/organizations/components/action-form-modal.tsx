@@ -1,36 +1,36 @@
-import { useEffect } from 'react'
-import { DeleteModal } from '@/components/shared/common-delete-modal'
+import { useEffect } from "react";
+import { DeleteModal } from "@/components/shared/common-delete-modal";
 import {
   useCreateOrganization,
   useUpdateOrganization,
-} from '../services/organization.hook'
-import { useUsersStore } from '../store/organizations.store'
-import { OrganizationEditForm } from './OrganizationEditForm'
-import { OrganizationActionForm } from './action-form'
+} from "../services/organization.hook";
+import { useUsersStore } from "../store/organizations.store";
+import { OrganizationEditForm } from "./OrganizationEditForm";
+import { OrganizationActionForm } from "./action-form";
 
 export function OrganizationsActionModal() {
-  const { open, setOpen, currentRow, setCurrentRow } = useUsersStore()
+  const { open, setOpen, currentRow, setCurrentRow } = useUsersStore();
   const {
     mutate: updateOrganization,
     isPending: isUpdateLoading,
     isSuccess: isUpdateSuccess,
     isError: isUpdateError,
-  } = useUpdateOrganization(currentRow?.organizationID)
+  } = useUpdateOrganization(currentRow?.organizationID);
 
   const {
     mutate: createOrganization,
     isPending: isCreateLoading,
     isError: isCreateError,
     isSuccess: isCreateSuccess,
-  } = useCreateOrganization()
+  } = useCreateOrganization();
 
   useEffect(() => {
     if (
       (isCreateSuccess || isUpdateSuccess) &&
       !(isCreateError || isUpdateError)
     ) {
-      setOpen(null) // Close the dialog on success
-      setCurrentRow(null) // Clear current row
+      setOpen(null); // Close the dialog on success
+      setCurrentRow(null); // Clear current row
     }
   }, [
     isCreateSuccess,
@@ -39,11 +39,11 @@ export function OrganizationsActionModal() {
     isUpdateError,
     setOpen,
     setCurrentRow,
-  ])
+  ]);
 
   const handleCreateOrganization = (values: any) => {
-    const fullPhone = values.adminPhone || ''
-    const nationalNumber = fullPhone.replace(values.adminPhoneCountryCode, '')
+    const fullPhone = values.adminPhone || "";
+    const nationalNumber = fullPhone.replace(values.adminPhoneCountryCode, "");
     const payload = {
       organizationName: values.name,
       industryId: values.industry,
@@ -55,13 +55,13 @@ export function OrganizationsActionModal() {
       adminJobTitle: values.adminJobTitle,
       menuIds: values.menuIds, // array of selected module IDs
       adminPhoneCountryCode: values.adminPhoneCountryCode,
-    }
-    createOrganization(payload)
-  }
+    };
+    createOrganization(payload);
+  };
 
   const handleUpdateOrganization = (values: any) => {
-    if (!currentRow) return
-    console.log('currentRowqqqqqq', values)
+    if (!currentRow) return;
+
     const payload = {
       organizationName: values.organizationName,
       industryId: values.industryId,
@@ -76,25 +76,24 @@ export function OrganizationsActionModal() {
       state: values.state,
       isActive: values.isActive,
       menuIds: values.menuIds,
-    }
-    console.log('payload111', payload)
+    };
 
-    updateOrganization(payload)
-  }
+    updateOrganization(payload);
+  };
 
   const handleDeleteOrganization = () => {
-    setOpen(null)
-    setCurrentRow(null)
-  }
+    setOpen(null);
+    setCurrentRow(null);
+  };
 
   return (
     <>
       {/* Create Organization Form - Uses the combined form with admin details */}
       <OrganizationActionForm
-        key='add-organization'
-        open={open === 'add'}
+        key="add-organization"
+        open={open === "add"}
         loading={isCreateLoading}
-        onOpenChange={(value) => setOpen(value ? 'add' : null)}
+        onOpenChange={(value) => setOpen(value ? "add" : null)}
         onSubmit={handleCreateOrganization}
       />
 
@@ -103,35 +102,35 @@ export function OrganizationsActionModal() {
         <>
           <OrganizationEditForm
             key={`organization-edit-${currentRow.organizationId || currentRow.id}`}
-            open={open === 'edit'}
+            open={open === "edit"}
             loading={isUpdateLoading}
             onSubmit={handleUpdateOrganization}
             currentRow={currentRow}
             onOpenChange={(value) => {
               if (!value) {
-                setOpen(null)
-                setTimeout(() => setCurrentRow(null), 300)
+                setOpen(null);
+                setTimeout(() => setCurrentRow(null), 300);
               } else {
-                setOpen('edit')
+                setOpen("edit");
               }
             }}
           />
           <DeleteModal
             onDelete={handleDeleteOrganization}
             key={`organization-delete-${currentRow.createdDate || currentRow.created_at}`}
-            open={open === 'delete'}
-            itemIdentifier={'organizationId'}
-            itemName={'Organization'}
+            open={open === "delete"}
+            itemIdentifier={"organizationId"}
+            itemName={"Organization"}
             onOpenChange={() => {
-              setOpen(null)
+              setOpen(null);
               setTimeout(() => {
-                setCurrentRow(null)
-              }, 500)
+                setCurrentRow(null);
+              }, 500);
             }}
             currentRow={currentRow}
           />
         </>
       )}
     </>
-  )
+  );
 }

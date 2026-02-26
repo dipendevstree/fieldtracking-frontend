@@ -139,10 +139,6 @@ export const columns: ColumnDef<any>[] = [
       const reportingToIds = row.original.reportingToIds;
       const reportingTo = row.original.reportingTo;
 
-      console.log("=== TABLE DISPLAY DEBUG ===");
-      console.log("Row data:", row.original);
-      console.log("reportingToIds:", reportingToIds);
-      console.log("reportingTo:", reportingTo);
 
       let displayValue = "-";
 

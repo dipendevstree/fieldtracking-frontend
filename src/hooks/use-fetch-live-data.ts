@@ -23,14 +23,12 @@ const useFetchLiveData = <TData = unknown, TParams = Record<string, unknown>>({
     queryFn: async (): Promise<TData> => {
       const queryString = buildQueryString(params as Record<string, unknown>);
       const response = await instance.get({ url: `${url}${queryString}` });
-
-      console.log("responseresponseresponse", response);
       if (response?.statusCode === 201 || response?.statusCode === 200) {
         return response.data as TData;
       }
 
       throw new Error(
-        response?.message || "Failed to fetch live tracking data"
+        response?.message || "Failed to fetch live tracking data",
       );
     },
     enabled,

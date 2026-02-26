@@ -33,8 +33,6 @@ export function CategoryActionForm({
 }: Props) {
   const isEdit = !!currentRow;
 
-  console.log("currentRow", currentRow?.categoryName);
-
   const form = useForm<TFormSchema>({
     resolver: zodResolver(formSchemaCategory),
 

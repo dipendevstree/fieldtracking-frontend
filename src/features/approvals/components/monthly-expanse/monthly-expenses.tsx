@@ -76,14 +76,6 @@ export default function MonthlyExpenses() {
     isLoading,
   } = useGetMonthlyExpensesData(pagination);
 
-  // Debug logging to see the current data
-  console.log("Monthly Expenses Data:", {
-    monthlyExpenses,
-    totalCount,
-    isLoading,
-    pagination,
-  });
-
   const { data: allRoles = [] } = useGetRolesForMonthlyExpenses();
   const { data: userList = [] } = useGetUsersForMonthlyExpenses(roleId);
 
