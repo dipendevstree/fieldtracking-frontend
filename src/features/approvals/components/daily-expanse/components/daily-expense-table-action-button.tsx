@@ -22,7 +22,6 @@ export function DataTableRowActions({ row }: RowProps) {
   const handleActionOnExpense = (actionType: EXPENSE_STATUS) => {
     setCurrentRow({ ...row.original, actionType });
     setOpen("action");
-    console.log("render, open and action type", actionType)
   }
 
   return (

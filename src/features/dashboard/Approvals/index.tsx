@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   DEFAULT_PAGE_NUMBER,
   DEFAULT_PAGE_SIZE,
@@ -27,7 +27,7 @@ export default function Approvals() {
   };
 
   const [dateRange, setDateRange] = useState<DateRange | undefined>(
-    initialDateRange
+    initialDateRange,
   );
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
@@ -42,7 +42,7 @@ export default function Approvals() {
     expenseType: "",
     status: "",
     expenseSubType: "",
-    sort: "desc"
+    sort: "desc",
   });
 
   const {
@@ -51,18 +51,7 @@ export default function Approvals() {
     isPending,
   } = useGetAllDailyExpanses(pagination);
 
-  // Debug logging
-  useEffect(() => {
-    console.log('Approvals Data:', {
-      dailyExpanses,
-      totalCount,
-      isPending,
-      pagination,
-    });
-  }, [dailyExpanses, totalCount, isPending, pagination]);
-
   const onPaginationChange = (page: number, pageSize: number) => {
-    console.log('Pagination changed:', { page, pageSize });
     setPagination((prev) => ({ ...prev, page, limit: pageSize }));
   };
 
@@ -101,21 +90,21 @@ export default function Approvals() {
     ([key, value]) => ({
       label: formatExpenseType(key),
       value,
-    })
+    }),
   );
 
   const expanseStatusOptions = Object.entries(EXPENSE_STATUS).map(
     ([key, value]) => ({
       label: formatDropDownLabel(key),
       value,
-    })
+    }),
   );
 
   const expanseSubTypeOptions = Object.entries(EXPENSE_SUB_TYPE).map(
     ([key, value]) => ({
       label: formatExpenseSubType(key),
       value,
-    })
+    }),
   );
 
   const filters: FilterConfig[] = [

@@ -166,13 +166,10 @@ export interface LoginResponse {
 }
 
 // User roles based on your system (you can extend this as needed)
-export type UserRole = "admin" | "merchant" | "driver" | "business" | "user";
+export type UserRole = "admin" | "user";
 
 export const USER_ROLES = {
   ADMIN: "admin",
-  MERCHANT: "merchant",
-  DRIVER: "driver",
-  BUSINESS: "business",
   USER: "user",
 } as const;
 

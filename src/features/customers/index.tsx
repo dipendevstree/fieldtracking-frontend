@@ -37,7 +37,6 @@ const Customers = () => {
     isLoading: customersLoading,
     error: customersError,
   } = useGetCustomers(pagination);
-  console.log("Customer:", Customer);
   // All users data
   const {
     totalCount: allUsersTotalCount = 0,

@@ -140,7 +140,7 @@ export const useUpdateOrganization = (
   organizationID: string,
   onSuccess?: () => void
 ) => {
-  console.log("organizationId", organizationID);
+
   return usePatchData({
     url: `${API.organizations.update}/${organizationID}`,
     refetchQueries: [ORGANIZATION_QUERY],

@@ -34,7 +34,6 @@ export function PendingLeaveEncashmentRowActions({ row }: { row: any }) {
     }
     setOpen("edit-leave-encashment");
     setCurrentRow(leaveEncashmentData);
-    console.log("leaveEncashmentData", leaveEncashmentData);
   };
 
   const handleCancelClick = (leaveEncashmentData: any) => {

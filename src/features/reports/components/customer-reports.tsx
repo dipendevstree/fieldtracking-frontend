@@ -375,7 +375,7 @@ export default function CustomerReports() {
     try {
       const result = await generateReport("customer-report", apiFilters);
       if (result.success) {
-        console.log("Customer report generated:", result.reportId);
+     
         await refetch(apiFilters);
       }
     } catch (error) {

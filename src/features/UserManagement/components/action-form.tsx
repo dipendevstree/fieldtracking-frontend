@@ -262,12 +262,6 @@ export function UserActionForm({
   }, [currentRow, open, reset]);
 
   const onSubmit = (values: any) => {
-    console.log("Form submit values:", values); // Debug log
-    console.log(
-      "reportingToIds type:",
-      typeof values.reportingToIds,
-      values.reportingToIds,
-    ); // Debug log
     onSubmitValues(values);
   };
 
@@ -735,7 +729,6 @@ export function UserActionForm({
                           <Select
                             value={displayValue}
                             onValueChange={(value) => {
-                              console.log("Select onChange with value:", value);
                               field.onChange([value]); // Always store as array
                             }}
                           >
@@ -763,85 +756,6 @@ export function UserActionForm({
                       </p>
                     )}
                   </div>
-
-                  {/* <div className='space-y-2'>
-                  <Label htmlFor='reportingToIds'>
-                    Reporting To <span className='text-red-500'>*</span>
-                  </Label>
-                  <Controller
-                    name='reportingToIds'
-                    control={control}
-                    render={({ field }) => {
-                      console.log('field', field)
-                      const [open, setOpen] = useState(false)
-                      const selectedValues: string[] = (field.value || []).map(
-                        String
-                      )
-                      console.log('selectedValues', selectedValues)
-
-                      const toggleSelection = (value: any) => {
-                        const stringValue = String(value)
-                        const newSelection = selectedValues.includes(
-                          stringValue
-                        )
-                          ? selectedValues.filter(
-                              (item: string) => item !== stringValue
-                            )
-                          : [...selectedValues, stringValue]
-                        field.onChange(newSelection)
-                      }
-
-                      const removeSelection = (valueToRemove: any) => {
-                        const stringValueToRemove = String(valueToRemove)
-                        field.onChange(
-                          selectedValues.filter(
-                            (item: string) => item !== stringValueToRemove
-                          )
-                        )
-                      }
-
-                      const selectedOptions = users
-                        .filter((option) =>
-                          selectedValues.includes(String(option.value))
-                        )
-                        .map((option) => ({
-                          value: String(option.value),
-                          label: option.label,
-                        }))
-
-                      return (
-                        <MultiSelect open={open} onOpenChange={setOpen}>
-                          <MultiSelectTrigger className='w-full'>
-                            <MultiSelectValue
-                              placeholder='Select users...'
-                              selectedItems={selectedOptions}
-                              onRemove={removeSelection}
-                            />
-                          </MultiSelectTrigger>
-                          <MultiSelectContent>
-                            {users.map((option) => (
-                              <MultiSelectItem
-                                key={option.value}
-                                selected={selectedValues.includes(
-                                  String(option.value)
-                                )}
-                                onSelect={() => toggleSelection(option.value)}
-                              >
-                                {option.label}
-                              </MultiSelectItem>
-                            ))}
-                          </MultiSelectContent>
-                        </MultiSelect>
-                      )
-                    }}
-                  />
-                  {errors.reportingToIds && (
-                    <p className='flex items-center gap-1 text-xs text-red-500'>
-                      <AlertCircle className='h-3 w-3' />
-                      {errors.reportingToIds.message}
-                    </p>
-                  )}
-                </div> */}
                 </div>
               </div>
             )}

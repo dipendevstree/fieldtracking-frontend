@@ -7,8 +7,6 @@ import TablePageLayout from "@/components/layout/table-page-layout";
 import { ErrorPage } from "@/components/shared/custom-error";
 import { useGetAllRoles } from "../services/Roles.hook";
 import { useRolesStore } from "../store/roles.store";
-import { useGetAllRolesForDropdown } from "../services/Roles.hook";
-import { useSelectOptions } from "@/hooks/use-select-option";
 import { FilterConfig } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import debounce from "lodash.debounce";
@@ -36,67 +34,12 @@ const Roles = () => {
     [pagination, filters],
   );
 
-  // Debug: Log query parameters when they change
-  console.log("Roles search query params:", queryParams);
-
   const {
     totalCount = 0,
     allRoles = [],
     isLoading,
     error,
   } = useGetAllRoles(queryParams);
-
-  // Debug: Log the API response
-  console.log("API Response - allRoles:", allRoles);
-  console.log("API Response - totalCount:", totalCount);
-
-  // Client-side filtering as fallback if API doesn't support filtering
-  const filteredRoles = useMemo(() => {
-    if (!filters.search && !filters.roleId) {
-      return allRoles;
-    }
-
-    return allRoles.filter((role: any) => {
-      const matchesSearch =
-        !filters.search ||
-        role.roleName?.toLowerCase().includes(filters.search.toLowerCase()) ||
-        role.name?.toLowerCase().includes(filters.search.toLowerCase());
-
-      const matchesRoleId =
-        !filters.roleId ||
-        String(role.roleId) === filters.roleId ||
-        String(role.id) === filters.roleId;
-
-      return matchesSearch && matchesRoleId;
-    });
-  }, [allRoles, filters.search, filters.roleId]);
-
-  // const displayRoles = filteredRoles;
-  // const displayTotalCount = filteredRoles.length;
-
-  // Debug: Log filtering results
-  console.log("Filtering results:", {
-    originalCount: allRoles.length,
-    filteredCount: filteredRoles.length,
-    searchFilter: filters.search,
-    roleIdFilter: filters.roleId,
-    filteredRoles: filteredRoles,
-  });
-
-  // Get filter options
-  const { data: roleList = [] } = useGetAllRolesForDropdown();
-
-  const roleOptions = useSelectOptions({
-    listData: roleList ?? [],
-    labelKey: "roleName",
-    valueKey: "roleId",
-  }).map((option) => ({
-    ...option,
-    value: String(option.value),
-  }));
-
-  // Debug: Log filter options
-  console.log("Role filter options:", roleOptions);
 
   const debouncedSearch = useCallback(
     debounce((value: string) => {
@@ -108,12 +51,11 @@ const Roles = () => {
 
   const handleGlobalSearchChange = (value: string | undefined) => {
     const searchValue = value ?? "";
-    console.log("Search value changed to:", searchValue);
+
     debouncedSearch(searchValue);
   };
 
   const clearFilters = () => {
-    console.log("Clearing all filters");
     setFilters({ search: "" });
     setPagination((prev) => ({ ...prev, page: DEFAULT_PAGE_NUMBER }));
   };
@@ -148,7 +90,7 @@ const Roles = () => {
 
   const handleAddRole = () => {
     // Clear any existing role data
-    console.log("Add Role button clicked");
+
     setCurrentRow(null);
     navigate({ to: "/user-management/add-roles-permission" });
   };

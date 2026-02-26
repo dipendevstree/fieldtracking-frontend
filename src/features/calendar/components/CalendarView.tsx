@@ -55,7 +55,6 @@ import StatusBadge from "@/components/shared/common-status-badge";
 
 function DeleteVisitDialog({ visit, isOpen, onClose }: DeleteVisitDialogProps) {
   // Important: guard first to avoid calling hook with undefined
-  console.log("visit11", visit);
   if (!visit) return null;
 
   const { mutate: deleteVisit, isPending: isLoading } = useDeleteVisits(

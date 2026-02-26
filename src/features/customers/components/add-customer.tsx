@@ -71,7 +71,7 @@ const customerFormSchema = z.object({
         isPrimary: z.boolean(),
         userRole: z.string().optional(),
         assignedRep: z.string().optional(),
-      })
+      }),
     )
     .min(1, "At least one contact is required"),
 });
@@ -91,7 +91,7 @@ export default function AddCustomerPage({
     "idle" | "success" | "error"
   >("idle");
   const [locationInputMode, setLocationInputMode] = useState<"search" | "map">(
-    "map"
+    "map",
   );
   const [isMapModalOpen, setIsMapModalOpen] = useState(false);
   const [latLng, setLatLng] = useState("");
@@ -102,7 +102,7 @@ export default function AddCustomerPage({
 
   const { data: customer } = useGetCustomerById(
     customerId ?? "",
-    isEditMode // Only run this query if we are in edit mode
+    isEditMode, // Only run this query if we are in edit mode
   );
 
   const { mutate: updateCustomer, isPending: updatePending } =
@@ -313,7 +313,7 @@ export default function AddCustomerPage({
 
       // Check if at least one contact is marked as primary
       const hasPrimaryContact = data.contacts.some(
-        (contact) => contact.isPrimary
+        (contact) => contact.isPrimary,
       );
       if (!hasPrimaryContact) {
         // If no primary contact is selected, mark the first one as primary
@@ -322,7 +322,7 @@ export default function AddCustomerPage({
 
       // Find primary contacts (can be multiple now)
       const primaryContacts = data.contacts.filter(
-        (contact) => contact.isPrimary
+        (contact) => contact.isPrimary,
       );
       const firstPrimaryContact = primaryContacts[0]; // Use first primary for main phone number
 
@@ -363,7 +363,7 @@ export default function AddCustomerPage({
   };
 
   const onError = (
-    errors: import("react-hook-form").FieldErrors<TCustomerFormSchema>
+    errors: import("react-hook-form").FieldErrors<TCustomerFormSchema>,
   ) => {
     const firstError = Object.keys(errors)[0];
     const errorElement = document.getElementById(`${firstError}-error`);
@@ -577,7 +577,7 @@ export default function AddCustomerPage({
                                         (type: CustomerType) =>
                                           typeof type.customerTypeId ===
                                             "string" &&
-                                          type.customerTypeId.trim() !== ""
+                                          type.customerTypeId.trim() !== "",
                                       )
                                       .map((type: CustomerType) => (
                                         <SelectItem
@@ -941,19 +941,12 @@ export default function AddCustomerPage({
                                       <Select
                                         value={field.value || ""}
                                         onValueChange={(val) => {
-                                          console.log("Role changed:", val);
                                           console.log(
                                             "Current selectedRoleIds:",
                                             selectedRoleIds,
-                                            selectedRoleIds[contact.id]
+                                            selectedRoleIds[contact.id],
                                           );
                                           if (val) {
-                                            console.log(
-                                              "Role selected:",
-                                              val,
-                                              "for contact:",
-                                              contact.id
-                                            );
                                             field.onChange(val);
                                             setSelectedRoleIds((prev) => ({
                                               ...prev,
@@ -961,16 +954,13 @@ export default function AddCustomerPage({
                                             }));
                                             const assignedRepField =
                                               form.getValues(
-                                                `contacts.${index}.assignedRep`
+                                                `contacts.${index}.assignedRep`,
                                               );
-                                            console.log(
-                                              "Assigned Rep Field:",
-                                              assignedRepField
-                                            );
+
                                             if (assignedRepField) {
                                               form.setValue(
                                                 `contacts.${index}.assignedRep`,
-                                                ""
+                                                "",
                                               );
                                             }
                                           }
@@ -1010,7 +1000,7 @@ export default function AddCustomerPage({
                                     render={({ field }) => {
                                       // Read the currently selected userRole directly from the form
                                       const userRoleValue = form.watch(
-                                        `contacts.${index}.userRole`
+                                        `contacts.${index}.userRole`,
                                       );
 
                                       const {
@@ -1019,7 +1009,7 @@ export default function AddCustomerPage({
                                         error,
                                       } = useGetUsersByRole(
                                         userRoleValue || "",
-                                        !!userRoleValue
+                                        !!userRoleValue,
                                       );
 
                                       const [searchTerm, setSearchTerm] =
@@ -1030,14 +1020,13 @@ export default function AddCustomerPage({
                                         users?.filter((user: any) =>
                                           `${user.firstName} ${user.lastName}`
                                             .toLowerCase()
-                                            .includes(searchTerm.toLowerCase())
+                                            .includes(searchTerm.toLowerCase()),
                                         ) || [];
 
                                       return (
                                         <Select
                                           value={field.value || ""}
                                           onValueChange={(val) => {
-                                            console.log("User selected:", val);
                                             if (val) {
                                               field.onChange(val);
                                             }
@@ -1089,10 +1078,10 @@ export default function AddCustomerPage({
                                                       className="cursor-pointer hover:bg-gray-50 px-3 py-2 text-sm"
                                                     >
                                                       {formatDropDownLabel(
-                                                        `${user.firstName} ${user.lastName}`
+                                                        `${user.firstName} ${user.lastName}`,
                                                       )}
                                                     </SelectItem>
-                                                  )
+                                                  ),
                                                 )
                                               ) : (
                                                 <div className="px-3 py-2 text-sm text-gray-500">

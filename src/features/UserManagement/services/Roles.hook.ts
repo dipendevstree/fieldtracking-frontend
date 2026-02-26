@@ -72,26 +72,6 @@ export const useGetAllRolesForDropdown = (options?: { enabled?: boolean }) => {
     error: query.error,
   };
 };
-// export const useGetRolesAndPermissionById = (
-//   roleId?: string,
-//   options?: { enabled?: boolean }
-// ) => {
-//   const shouldFetch = !!roleId && (options?.enabled ?? true)
-
-//   const { data, isLoading, error, ...rest } = useFetchData<{
-//     data: any
-//   }>({
-//     url: roleId ? `${API.roles.getAllPermissions}/${roleId}` : '',
-//     enabled: shouldFetch,
-//   })
-//   console.log('data', data)
-//   return {
-//     ...rest,
-//     data: data?.data ?? null, // only the nested `data` object
-//     isLoading,
-//     error,
-//   }
-// }
 
 export const useGetRolesAndPermissionById = (
   roleId?: string,
@@ -134,7 +114,6 @@ export const useOrganizationMenulist = (options?: { enabled?: boolean }) => {
   });
 
   const responseData = query.data;
-  console.log("responseData", responseData);
   return {
     ...query,
     data: responseData?.list ?? [],

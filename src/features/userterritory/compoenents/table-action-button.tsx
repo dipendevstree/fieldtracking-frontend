@@ -8,7 +8,6 @@ import { useUserTerritoryStore } from "../store/users-territory.store";
 export function DataTableRowActions({ row }: any) {
   const { setOpen, setCurrentRow } = useUserTerritoryStore();
   const navigate = useNavigate();
-  console.log("row", row);
   const handleEdit = (row: any) => {
     setOpen("edit");
     setCurrentRow(row.original);

@@ -26,7 +26,6 @@ export const useAuthStore = create<AuthState>()(
         set({ isLoading: true });
 
         try {
-          console.log("Login data received:", data);
           if (data?.access_token) {
             console.log("Login successful:", data);
             if (data?.superAdminId) {
@@ -164,18 +163,11 @@ export const useAuthStore = create<AuthState>()(
 
         // Determine role based on user data roleName or role mapping
         const roleName = user.role?.roleName?.toLowerCase() || "";
-
         if (roleName.includes("admin")) return "admin";
-        if (roleName.includes("merchant")) return "merchant";
-        if (roleName.includes("driver")) return "driver";
-        if (roleName.includes("business")) return "business";
 
         // Fallback to permission groups if role name is not descriptive
         const { hasPermissionGroup } = get();
         if (hasPermissionGroup("Admin")) return "admin";
-        if (hasPermissionGroup("Merchant")) return "merchant";
-        if (hasPermissionGroup("Driver")) return "driver";
-        if (hasPermissionGroup("Business")) return "business";
 
         return (roleName as UserRole) || "user";
       },

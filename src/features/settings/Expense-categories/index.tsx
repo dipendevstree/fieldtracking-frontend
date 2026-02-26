@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
 import { Main } from "@/components/layout/main";
 import TablePageLayout from "@/components/layout/table-page-layout";
@@ -24,22 +24,6 @@ const ExpenseCategoriesPage = () => {
 
   const { setOpen, open } = useExpenseCategoriesStore();
 
-  // Debug logging
-  useEffect(() => {
-    console.log("Expense Categories Data:", {
-      expenseCategories,
-      totalCount,
-      isLoading,
-      error,
-      pagination,
-    });
-    // Log individual category structure to debug ID field
-    if (expenseCategories && expenseCategories.length > 0) {
-      console.log("First category structure:", expenseCategories[0]);
-      console.log("Available fields:", Object.keys(expenseCategories[0]));
-    }
-  }, [expenseCategories, totalCount, isLoading, error, pagination]);
-
   if (error) {
     const errorResponse = (error as ErrorResponse)?.response?.data;
     console.error("Expense Categories Error:", error);
@@ -52,12 +36,10 @@ const ExpenseCategoriesPage = () => {
   }
 
   const handleAddExpenseCategory = () => {
-    console.log("Opening add expense category modal");
     setOpen("add-category");
   };
 
   const onPaginationChange = (page: number, pageSize: number) => {
-    console.log("Pagination changed:", { page, pageSize });
     setPagination((prev) => ({ ...prev, page, limit: pageSize }));
   };
 
