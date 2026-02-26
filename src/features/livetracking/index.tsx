@@ -214,19 +214,6 @@ export default function Livetracking() {
     };
   }, [socketForLiveTracking]);
 
-  // const handleBackToList = () => {
-  //   if (socket) {
-  //     socket.emit("untrack_user", { userId });
-  //   }
-  //   setSelectedUserId("");
-  //   setPath([]);
-  //   setCurrentPosition(null);
-  //   updateMapCenterFromUserList(enhancedUserList);
-  //   const newParams = new URLSearchParams(window.location.search);
-  //   newParams.delete("userId");
-  //   window.history.pushState({}, "", `?${newParams}`);
-  // };
-
   const handlePopState = () => {
     const params = new URLSearchParams(window.location.search);
     const userIdFromUrl = params.get("userId");
