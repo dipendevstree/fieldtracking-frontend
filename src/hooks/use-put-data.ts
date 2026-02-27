@@ -7,6 +7,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { TOAST_CONFIG } from "@/data/app.data";
 
 interface PatchDataOptions<TData, TVariables> {
   url: string;
@@ -15,6 +16,14 @@ interface PatchDataOptions<TData, TVariables> {
   onSuccess?: (data: TData) => void;
   onError?: (error: EnhancedError) => void;
   mutationOptions?: UseMutationOptions<TData, Error, TVariables>;
+  toastDuration?: number;
+  toastPosition?:
+    | "top-center"
+    | "top-right"
+    | "top-left"
+    | "bottom-center"
+    | "bottom-right"
+    | "bottom-left";
 }
 
 const usePutData = <TData = unknown, TVariables = unknown>({
@@ -24,6 +33,8 @@ const usePutData = <TData = unknown, TVariables = unknown>({
   mutationOptions,
   onSuccess,
   onError,
+  toastDuration = TOAST_CONFIG.duration,
+  toastPosition = TOAST_CONFIG.position,
 }: PatchDataOptions<TData, TVariables>) => {
   const queryClient = useQueryClient();
 
@@ -58,8 +69,8 @@ const usePutData = <TData = unknown, TVariables = unknown>({
         onSuccess(data);
       }
       toast.success("Data updated successfully", {
-        position: "top-right",
-        duration: 3000,
+        position: toastPosition,
+        duration: toastDuration,
       });
     },
     onError: (error: EnhancedError) => {
@@ -67,7 +78,8 @@ const usePutData = <TData = unknown, TVariables = unknown>({
       // Display user-friendly toast notification
       toast.error(errorInfo.title, {
         description: errorInfo.description,
-        duration: errorInfo.duration,
+        position: toastPosition,
+        duration: TOAST_CONFIG.errorDuration,
       });
 
       // Call additional error handler if provided
