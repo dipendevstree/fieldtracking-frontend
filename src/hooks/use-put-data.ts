@@ -76,10 +76,9 @@ const usePutData = <TData = unknown, TVariables = unknown>({
     onError: (error: EnhancedError) => {
       const errorInfo = extractErrorInfo(error);
       // Display user-friendly toast notification
-      toast.error(errorInfo.title, {
-        description: errorInfo.description,
+      toast.error(errorInfo.message, {
         position: toastPosition,
-        duration: TOAST_CONFIG.errorDuration,
+        duration: toastDuration,
       });
 
       // Call additional error handler if provided

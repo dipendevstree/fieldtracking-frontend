@@ -8,9 +8,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
-      className="toaster group [&_div[data-content]]:w-full"
+      className={`toaster group [&_div[data-content]]:w-full${!TOAST_CONFIG.showIcons ? " no-toast-icons" : ""}`}
       duration={TOAST_CONFIG.duration}
       position={TOAST_CONFIG.position}
+      closeButton={TOAST_CONFIG.showCloseButton}
       style={
         {
           "--normal-bg": "var(--popover)",

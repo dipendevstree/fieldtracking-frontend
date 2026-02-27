@@ -49,14 +49,14 @@ export const extractErrorInfo = (error: EnhancedError) => {
       case 429:
         title = "Too Many Requests";
         description = "Please wait a moment before trying again";
-        duration = 8000;
+        duration = 3000;
         break;
 
       case 500:
         title = "Server Error";
         description =
           "Our servers are experiencing issues. Please try again later";
-        duration = 8000;
+        duration = 3000;
         break;
 
       case 502:
@@ -65,7 +65,7 @@ export const extractErrorInfo = (error: EnhancedError) => {
         title = "Service Unavailable";
         description =
           "The service is temporarily unavailable. Please try again later";
-        duration = 8000;
+        duration = 3000;
         break;
 
       default:
@@ -78,14 +78,14 @@ export const extractErrorInfo = (error: EnhancedError) => {
       case "ERR_NETWORK":
         title = "Network Error";
         description = "Please check your internet connection and try again";
-        duration = 6000;
+        duration = 3000;
         break;
 
       case "ECONNABORTED":
       case "ERR_TIMEOUT":
         title = "Request Timeout";
         description = "The request took too long. Please try again";
-        duration = 6000;
+        duration = 3000;
         break;
 
       case "ERR_CANCELED":
@@ -113,7 +113,10 @@ export const extractErrorInfo = (error: EnhancedError) => {
       : error.message;
   }
 
-  return { title, description, duration };
+  return {
+    message: description || title,
+    duration,
+  };
 };
 
 const getValidationMessage = (responseData?: ErrorResponse): string | null => {

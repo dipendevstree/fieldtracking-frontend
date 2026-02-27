@@ -437,4 +437,34 @@
   pointer-events: auto !important;
 }
 
+/* Sonner close button alignment */
+/* Make toast content vertically centered */
+[data-sonner-toast] {
+  display: flex !important;
+  align-items: center !important;
+}
 
+/* Center icon */
+[data-sonner-toast] [data-icon] {
+  align-self: center !important;
+}
+
+/* Hide icons completely when showIcons is false */
+.no-toast-icons [data-sonner-toast] [data-icon] {
+  display: none !important;
+}
+
+/* Close button alignment */
+[data-sonner-toaster] [data-close-button] {
+  right: 1.25rem !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  left: auto !important;
+  border: none !important;
+}
+
+/* Prevent content overlapping with close button */
+/* Only add padding if close button exists */
+[data-sonner-toast]:has([data-close-button]) [data-content] {
+  padding-right: 2.5rem !important;
+}

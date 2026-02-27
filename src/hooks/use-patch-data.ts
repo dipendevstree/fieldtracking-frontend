@@ -53,7 +53,7 @@ const usePatchData = <TData = unknown, TVariables = unknown>({
 
       if (response?.statusCode === 200) {
         if (!skipToast)
-          toast(response?.message || "Data updated successfully", {
+          toast.success(response?.message || "Data updated successfully", {
             position: toastPosition,
             duration: toastDuration,
           });
@@ -86,10 +86,9 @@ const usePatchData = <TData = unknown, TVariables = unknown>({
     onError: (error: EnhancedError) => {
       const errorInfo = extractErrorInfo(error);
       // Display user-friendly toast notification
-      toast.error(errorInfo.title, {
-        description: errorInfo.description,
+      toast.error(errorInfo.message, {
         position: toastPosition,
-        duration: TOAST_CONFIG.errorDuration,
+        duration: toastDuration,
       });
 
       // Call additional error handler if provided

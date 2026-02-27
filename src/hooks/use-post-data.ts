@@ -61,7 +61,7 @@ const usePostData = <TData = unknown, TVariables = unknown>({
         (response?.statusCode === 200 || response?.statusCode === 201)
       ) {
         if (!skipToast)
-          toast(response?.message || "Data posted successfully", {
+          toast.success(response?.message || "Data posted successfully", {
             position: toastPosition,
             duration: toastDuration,
           });
@@ -107,10 +107,9 @@ const usePostData = <TData = unknown, TVariables = unknown>({
       const errorInfo = extractErrorInfo(error);
       // Display user-friendly toast notification
       if (!skipToast) {
-        toast.error(errorInfo.title, {
-          description: errorInfo.description,
+        toast.error(errorInfo.message, {
           position: toastPosition,
-          duration: TOAST_CONFIG.errorDuration,
+          duration: toastDuration,
         });
       }
 

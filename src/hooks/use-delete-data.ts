@@ -75,10 +75,9 @@ const useDeleteData = <TData = unknown, TVariables = void>({
     onError: (error: EnhancedError) => {
       const errorInfo = extractErrorInfo(error);
       if (!skipToast)
-        toast.error(errorInfo.title, {
-          description: errorInfo.description,
+        toast.error(errorInfo.message, {
           position: toastPosition,
-          duration: TOAST_CONFIG.errorDuration,
+          duration: toastDuration,
         });
 
       if (onError) {
