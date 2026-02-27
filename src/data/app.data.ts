@@ -135,6 +135,6 @@ export enum LEAVE_ENCASHMENT_STATUS {
 
 export const TOAST_CONFIG = {
   duration: 3000,
-  errorDuration: 4000,
-  position: "top-center" as const,
+  errorDuration: 3000,
+  position: "top-right" as const,
 };
