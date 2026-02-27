@@ -219,26 +219,19 @@ export default function BulkImport() {
 
           {/* Results (same as your code) */}
           {uploadResult && (
-            <Alert className="bg-green-50 border-green-200">
-              <FileCheck2 className="h-4 w-4 text-green-600" />
-              <AlertTitle className="text-green-800">
+            <Alert className={`bg-${uploadResult.errors?.length > 0 ? 'red': 'green'}-50 border-${uploadResult.errors?.length > 0 ? 'red': 'green'}-200`}>
+              <FileCheck2 className={`h-4 w-4 text-${uploadResult.errors?.length > 0 ? 'red': 'green'}-600`} />
+              <AlertTitle className={`text-${uploadResult.errors?.length > 0 ? 'red': 'green'}-800`}>
                 Upload Processed
               </AlertTitle>
-              <AlertDescription className="text-green-700">
+              <AlertDescription className={`text-${uploadResult.errors?.length > 0 ? 'red': 'green'}-700`}>
                 <p>Successfully imported: {uploadResult.successCount}</p>
                 <p>Failed rows: {uploadResult.errorCount}</p>
                 {uploadResult.errors?.length > 0 && (
                   <ul className="list-disc pl-5 mt-2 text-xs">
-                    {uploadResult.errors
-                      .slice(0, 5)
-                      .map((err: string, i: number) => (
-                        <li key={i}>{err}</li>
-                      ))}
-                    {uploadResult.errors.length > 5 && (
-                      <li>
-                        ...and {uploadResult.errors.length - 5} more errors.
-                      </li>
-                    )}
+                    {uploadResult.errors.map((err: string, i: number) => (
+                      <li key={i}>{err}</li>
+                    ))}
                   </ul>
                 )}
               </AlertDescription>
