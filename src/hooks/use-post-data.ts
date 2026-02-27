@@ -7,6 +7,7 @@ import instance from "@/config/instance/instance";
 import { EnhancedError } from "@/types";
 import { toast } from "sonner";
 import { extractErrorInfo } from "@/utils/error-response";
+import { TOAST_CONFIG } from "@/data/app.data";
 
 interface ApiResponse<T = unknown> {
   error: boolean;
@@ -24,6 +25,14 @@ interface UsePostDataProps<TData, TVariables> {
   onSuccess?: (data: TData) => void;
   onError?: (error: Error) => void;
   skipToast?: boolean;
+  toastDuration?: number;
+  toastPosition?:
+    | "top-center"
+    | "top-right"
+    | "top-left"
+    | "bottom-center"
+    | "bottom-right"
+    | "bottom-left";
 }
 
 const usePostData = <TData = unknown, TVariables = unknown>({
@@ -34,6 +43,8 @@ const usePostData = <TData = unknown, TVariables = unknown>({
   onSuccess,
   onError,
   skipToast = false,
+  toastDuration = TOAST_CONFIG.duration,
+  toastPosition = TOAST_CONFIG.position,
 }: UsePostDataProps<TData, TVariables>) => {
   const queryClient = useQueryClient();
 
@@ -50,9 +61,9 @@ const usePostData = <TData = unknown, TVariables = unknown>({
         (response?.statusCode === 200 || response?.statusCode === 201)
       ) {
         if (!skipToast)
-          toast(response?.message || "Data posted successfully", {
-            position: "top-center",
-            duration: 2000,
+          toast.success(response?.message || "Data posted successfully", {
+            position: toastPosition,
+            duration: toastDuration,
           });
         return response.data as TData; // Return the data with proper typing
       }
@@ -96,10 +107,9 @@ const usePostData = <TData = unknown, TVariables = unknown>({
       const errorInfo = extractErrorInfo(error);
       // Display user-friendly toast notification
       if (!skipToast) {
-        toast.error(errorInfo.title, {
-          description: errorInfo.description,
-          duration: errorInfo.duration,
-          position: "top-right",
+        toast.error(errorInfo.message, {
+          position: toastPosition,
+          duration: toastDuration,
         });
       }
 

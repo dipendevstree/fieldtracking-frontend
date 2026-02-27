@@ -32,6 +32,11 @@ const containerStyle = {
   overflow: "hidden",
 };
 
+const STATUS_OPTIONS_DATA = [
+  { status: "online", label: "Online" },
+  { status: "offline", label: "Offline" },
+];
+
 export default function Livetracking() {
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
@@ -70,7 +75,7 @@ export default function Livetracking() {
   const [selectedUserId, setSelectedUserId] = useState(userId);
   const { data: allRoles } = useGetAllRolesForDropdown();
   const roles = useSelectOptions({
-    listData: allRoles ?? [],
+    listData: allRoles,
     labelKey: "roleName",
     valueKey: "roleId",
   });
@@ -78,6 +83,7 @@ export default function Livetracking() {
   const { listData: userListDropDownData = [] } = useGetUsers({
     onlyTeamMembers: true,
     roleId: pagination.roleId,
+    territoryId: pagination.territoryId,
   });
 
   const userListDropDownList = userListDropDownData?.map((user: any) => ({
@@ -86,10 +92,7 @@ export default function Livetracking() {
   }));
 
   const statusOptions = useSelectOptions<any>({
-    listData: [
-      { status: "online", label: "Online" },
-      { status: "offline", label: "Offline" },
-    ],
+    listData: STATUS_OPTIONS_DATA,
     labelKey: "label",
     valueKey: "status",
   });
@@ -124,28 +127,33 @@ export default function Livetracking() {
 
   const { data: territoriesList } = useGetAllTerritoriesForDropdown();
   const territories = useSelectOptions<any>({
-    listData: territoriesList ?? [],
+    listData: territoriesList,
     labelKey: "name",
     valueKey: "id",
   });
 
-  const handleChangeTerritory = (value: string | undefined) => {
-    setPagination((prev) => ({
-      ...prev,
-      territoryId: value ?? "",
-      roleId: "",
-      searchFor: "",
-      page: DEFAULT_PAGE_NUMBER,
-    }));
-  };
+  const handleFilterChange = (key: string, value: string | undefined) => {
+    setPagination((prev: any) => {
+      const updates: any = {
+        ...prev,
+        [key]: value ?? "",
+        page: DEFAULT_PAGE_NUMBER,
+      };
 
-  const handleRoleChange = (value: string | undefined) => {
-    setPagination((prev) => ({
-      ...prev,
-      roleId: value ?? "",
-      searchFor: "",
-      page: DEFAULT_PAGE_NUMBER,
-    }));
+      // Cascading Resets
+      if (key === "territoryId") {
+        updates.roleId = "";
+        updates.searchFor = "";
+        handleBackToList();
+      } else if (key === "roleId") {
+        updates.searchFor = "";
+        handleBackToList();
+      } else if (key === "status" && !value) {
+        updates.status = "";
+      }
+
+      return updates;
+    });
   };
 
   const handleUserClick = (userId: string) => {
@@ -233,59 +241,71 @@ export default function Livetracking() {
     }
   };
 
-  const userterritoryFilter: FilterConfig = {
-    key: "UserTerritory",
-    type: "select",
-    onChange: handleChangeTerritory,
-    placeholder: "Select User Territory",
-    value: pagination.territoryId,
-    options: territories as Option[],
-  };
+  const filters: FilterConfig[] = useMemo(() => {
+    const configs: FilterConfig[] = [
+      {
+        key: "role",
+        type: "searchable-select",
+        onChange: (value) => handleFilterChange("roleId", value),
+        placeholder: "Select Role",
+        searchableSelectClassName: "w-[200px]",
+        onCancelPress: () => handleFilterChange("roleId", ""),
+        value: pagination.roleId,
+        options: roles as Option[],
+      },
+      {
+        type: "searchable-select",
+        key: "userSelect",
+        placeholder: "Select User",
+        searchableSelectClassName: "w-[200px]",
+        value: selectedUserId,
+        options: usersOptions,
+        onChange: (value) => {
+          if (value) {
+            handleUserClick(value);
+          }
+        },
+        onCancelPress: () => {
+          handleBackToList();
+        },
+      },
+      {
+        type: "searchable-select",
+        key: "status",
+        placeholder: "User Status",
+        searchableSelectClassName: "w-[200px]",
+        value: pagination.status,
+        options: statusOptions as Option[],
+        onChange: (value) => handleFilterChange("status", value),
+        onCancelPress: () => handleFilterChange("status", ""),
+      },
+    ];
 
-  const filters: FilterConfig[] = [
-    {
-      key: "role",
-      type: "select",
-      onChange: handleRoleChange,
-      placeholder: "Select Role",
-      value: pagination.roleId,
-      options: roles as Option[],
-    },
-    {
-      type: "searchable-select",
-      key: "userSelect",
-      placeholder: "Select User",
-      searchableSelectClassName: "w-[200px]",
-      value: selectedUserId,
-      options: usersOptions,
-      onChange: (value) => {
-        if (value) {
-          handleUserClick(value);
-        }
-      },
-    },
-    {
-      type: "select",
-      key: "status",
-      placeholder: "User Status",
-      value: pagination.status,
-      options: statusOptions as Option[],
-      onChange: (value) => {
-        if (value) {
-          setPagination((prev) => ({
-            ...prev,
-            status: value,
-          }));
-        }
-      },
-      onCancelPress: () => {
-        setPagination((prev) => ({
-          ...prev,
-          status: "",
-        }));
-      },
-    },
-  ];
+    if (userAuth?.organization?.allowAddUsersBasedOnTerritories) {
+      configs.unshift({
+        key: "UserTerritory",
+        type: "searchable-select",
+        onChange: (value) => handleFilterChange("territoryId", value),
+        placeholder: "Select User Territory",
+        searchableSelectClassName: "w-[200px]",
+        onCancelPress: () => handleFilterChange("territoryId", ""),
+        value: pagination.territoryId,
+        options: territories as Option[],
+      });
+    }
+
+    return configs;
+  }, [
+    pagination.territoryId,
+    territories,
+    pagination.roleId,
+    roles,
+    selectedUserId,
+    usersOptions,
+    pagination.status,
+    statusOptions,
+    userAuth?.organization?.allowAddUsersBasedOnTerritories,
+  ]);
 
   useEffect(() => {
     if (
@@ -366,11 +386,7 @@ export default function Livetracking() {
     <Main className={cn("flex flex-col p-4")}>
       <GlobalFilterSection
         key="calendar-view-filters"
-        filters={
-          userAuth?.organization?.allowAddUsersBasedOnTerritories
-            ? [userterritoryFilter, ...filters]
-            : filters
-        }
+        filters={filters}
         onCancelPress={() => {
           setSelectedUserId("");
           setPagination({

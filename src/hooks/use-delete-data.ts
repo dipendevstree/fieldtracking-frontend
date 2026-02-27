@@ -7,6 +7,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { TOAST_CONFIG } from "@/data/app.data";
 
 interface DeleteDataOptions<TData, TVariables = void> {
   url: string;
@@ -15,6 +16,14 @@ interface DeleteDataOptions<TData, TVariables = void> {
   onError?: (error: EnhancedError) => void;
   mutationOptions?: UseMutationOptions<TData, Error, TVariables>;
   skipToast?: boolean;
+  toastDuration?: number;
+  toastPosition?:
+    | "top-center"
+    | "top-right"
+    | "top-left"
+    | "bottom-center"
+    | "bottom-right"
+    | "bottom-left";
 }
 
 const useDeleteData = <TData = unknown, TVariables = void>({
@@ -24,6 +33,8 @@ const useDeleteData = <TData = unknown, TVariables = void>({
   onSuccess,
   onError,
   skipToast = false,
+  toastDuration = TOAST_CONFIG.duration,
+  toastPosition = TOAST_CONFIG.position,
 }: DeleteDataOptions<TData, TVariables>) => {
   const queryClient = useQueryClient();
 
@@ -37,8 +48,8 @@ const useDeleteData = <TData = unknown, TVariables = void>({
       if (response?.statusCode === 200) {
         if (!skipToast)
           toast.success(response.message || "Deleted successfully", {
-            position: "top-center",
-            duration: 2000,
+            position: toastPosition,
+            duration: toastDuration,
           });
         return response.data as TData;
       }
@@ -55,7 +66,7 @@ const useDeleteData = <TData = unknown, TVariables = void>({
     },
     onSuccess: (data) => {
       refetchQueries.forEach((query) =>
-        queryClient.invalidateQueries({ queryKey: [query] })
+        queryClient.invalidateQueries({ queryKey: [query] }),
       );
       if (onSuccess) {
         onSuccess(data);
@@ -64,10 +75,9 @@ const useDeleteData = <TData = unknown, TVariables = void>({
     onError: (error: EnhancedError) => {
       const errorInfo = extractErrorInfo(error);
       if (!skipToast)
-        toast.error(errorInfo.title, {
-          description: errorInfo.description,
-          duration: errorInfo.duration,
-          position: "top-right",
+        toast.error(errorInfo.message, {
+          position: toastPosition,
+          duration: toastDuration,
         });
 
       if (onError) {
