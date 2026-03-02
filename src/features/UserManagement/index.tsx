@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import CustomTableHeader from "@/components/shared/custom-table-header";
 import ActionButton from "@/components/shared/table-primary-action-button";
-import { IconFileImport } from "@tabler/icons-react";
+import { FileUp as IconFileImport } from "lucide-react";
 
 const AllUsers = () => {
   const [pagination, setPagination] = useState({
