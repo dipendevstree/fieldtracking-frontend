@@ -56,11 +56,11 @@ export default function UserBulkImport() {
       accessType: "web",
       ...(allowTerritory ? { territoryName: "South Zone" } : {}),
     },
-    {
-      firstName: "John",
+   {
+      firstName: "John1",
       lastName: "Doe",
-      email: "john.doe@example.com",
-      phoneNumber: "9876543210",
+      email: "john1.doe@example.com",
+      phoneNumber: "9876543211",
       countryCode: "+91",
       departmentName: "IT",
       roleName: "Admin",
