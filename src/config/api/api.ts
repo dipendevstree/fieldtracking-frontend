@@ -108,6 +108,7 @@ const API = {
     update: "users/patch",
     delete: "users/delete",
     stats: "users/stats",
+    bulkUpload: "users/bulk-upload",
   },
   userDevice: {
     upsert: "userDevice/upsert",

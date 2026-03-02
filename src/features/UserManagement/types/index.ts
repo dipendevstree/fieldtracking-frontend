@@ -154,3 +154,16 @@ export interface SelectFilterConfig extends FilterConfig {
   onChange: (value: string | undefined) => void;
   options: { label: string; value: string }[];
 }
+
+export interface BulkImportError {
+  rowNumber?: number;
+  field?: string;
+  message?: string;
+  value?: string;
+}
+
+export interface BulkImportResponse {
+  successCount: number;
+  errorCount: number;
+  errors: (string | BulkImportError)[];
+}

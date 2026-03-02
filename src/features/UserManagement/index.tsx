@@ -7,6 +7,7 @@ import TablePageLayout from "@/components/layout/table-page-layout";
 import { ErrorPage } from "@/components/shared/custom-error";
 import { ErrorResponse } from "../merchants/types";
 import { UsersActionModal } from "./components/action-form-modal";
+import { BulkImportModal } from "./components/bulk-import-modal";
 import AllUsersTable from "./components/table";
 import { useGetAllUsers } from "./services/AllUsers.hook";
 import { useUsersStore } from "./store/users.store";
@@ -18,6 +19,10 @@ import debounce from "lodash.debounce";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { SearchFilterConfig, SelectFilterConfig } from "./types";
 import { toast } from "sonner";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
+import CustomTableHeader from "@/components/shared/custom-table-header";
+import ActionButton from "@/components/shared/table-primary-action-button";
+import { IconFileImport } from "@tabler/icons-react";
 
 const AllUsers = () => {
   const [pagination, setPagination] = useState({
@@ -172,12 +177,27 @@ const AllUsers = () => {
   return (
     <Main className={cn("flex flex-col gap-2")}>
       <TablePageLayout
-        title="All Users"
-        description="Manage user accounts and permissions"
-        onAddButtonClick={handleAddUser}
-        addButtonText="Add User"
-        modulePermission="all_users"
-        moduleAction="add"
+        title=""
+        customHeader={
+          <CustomTableHeader
+            title="All Users"
+            subtitle="Manage user accounts and permissions"
+            onAddButtonClick={handleAddUser}
+            addButtonText="Add User"
+            modulePermission="all_users"
+            moduleAction="add"
+            className="w-full"
+          >
+            <PermissionGate requiredPermission="all_users" action="add">
+              <ActionButton
+                text="Import Users"
+                onAction={() => setOpen("import")}
+                icon={IconFileImport}
+                className="flex items-center gap-2"
+              />
+            </PermissionGate>
+          </CustomTableHeader>
+        }
         className="p-0"
       >
         <div className="space-y-4">
@@ -200,7 +220,10 @@ const AllUsers = () => {
         </div>
       </TablePageLayout>
 
-      {open && <UsersActionModal key={"users-action-modal"} />}
+      {open === "add" || open === "edit" || open === "delete" ? (
+        <UsersActionModal key={"users-action-modal"} />
+      ) : null}
+      <BulkImportModal key="bulk-import-modal" />
     </Main>
   );
 };
