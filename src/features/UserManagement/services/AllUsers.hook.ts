@@ -3,15 +3,9 @@ import useDeleteData from "@/hooks/use-delete-data";
 import useFetchData from "@/hooks/use-fetch-data";
 import usePatchData from "@/hooks/use-patch-data";
 import usePostData from "@/hooks/use-post-data";
+import { BulkImportResponse } from "../types";
 
 const USEALLUSERS_QUERY = "users-list";
-
-export interface IListParams {
-  sort?: string;
-  limit?: number;
-  page?: number;
-  [key: string]: unknown;
-}
 
 export const useCreateUsers = (onSuccess?: () => void) => {
   return usePostData({
@@ -23,7 +17,7 @@ export const useCreateUsers = (onSuccess?: () => void) => {
       }
     },
     onError: (error) => {
-      console.error("Error creating user:", error); // Debug log
+      console.error("Error creating user:", error);
     },
   });
 };
@@ -41,7 +35,7 @@ export const useFcmTokenUpdateUser = (
       }
     },
     onError: (error) => {
-      console.error("Error updating user:", error); // Debug log
+      console.error("Error updating user:", error);
     },
   });
 };
@@ -60,7 +54,7 @@ export const useUpdateUser = (
       }
     },
     onError: (error) => {
-      console.error("Error updating user:", error); // Debug log
+      console.error("Error updating user:", error);
     },
   });
 };
@@ -77,7 +71,7 @@ export const useDeleteUser = (id: string, onSuccess?: () => void) => {
 };
 
 export const useGetAllUsers = (
-  params?: IListParams,
+  params?: any,
   options?: { enabled?: boolean },
 ) => {
   const query = useFetchData<any>({
@@ -95,4 +89,22 @@ export const useGetAllUsers = (
     isLoading: query.isLoading,
     error: query.error,
   };
+};
+
+export const useBulkImportUsers = (
+  onSuccess?: (data: BulkImportResponse) => void,
+  onError?: (error: any) => void,
+) => {
+  return usePostData<any, FormData>({
+    url: API.users.bulkUpload,
+    refetchQueries: [USEALLUSERS_QUERY],
+    onSuccess,
+    mutationOptions: {
+      onError: (error: any) => {
+        if (onError) {
+          onError(error);
+        }
+      },
+    },
+  });
 };
