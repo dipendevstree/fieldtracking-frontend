@@ -47,7 +47,7 @@ export default function Livetracking() {
     roleId: "",
     territoryId: "",
     includeLatLong: true,
-    sortField: "isOnlineInChat",
+    sortField: "isOnline",
     status: "",
     onlyTeamMembers: true,
   });
@@ -122,7 +122,7 @@ export default function Livetracking() {
   const enhancedUserList = (data?.list ?? [])
     .map(enhanceUser)
     .sort((a: any, b: any) =>
-      a.isOnlineInChat === b.isOnlineInChat ? 0 : a.isOnlineInChat ? -1 : 1,
+      a.isOnline === b.isOnline ? 0 : a.isOnline ? -1 : 1,
     );
 
   const { data: territoriesList } = useGetAllTerritoriesForDropdown();
@@ -372,10 +372,10 @@ export default function Livetracking() {
   const enhancedUserListWithStatus = enhancedUserList
     .map((user: any) => ({
       ...user,
-      isOnlineInChat: userStatusMap[user.id] ?? user.isOnlineInChat,
+      isOnline: userStatusMap[user.id] ?? user.isOnline,
     }))
     .sort((a: any, b: any) =>
-      a.isOnlineInChat === b.isOnlineInChat ? 0 : a.isOnlineInChat ? -1 : 1,
+      a.isOnline === b.isOnline ? 0 : a.isOnline ? -1 : 1,
     );
 
   const selectedUser = enhancedUserListWithStatus.find(
@@ -399,7 +399,7 @@ export default function Livetracking() {
             territoryId: "",
             includeLatLong: true,
             status: "",
-            sortField: "isOnlineInChat",
+            sortField: "isOnline",
             onlyTeamMembers: true,
           });
         }}
@@ -458,12 +458,12 @@ export default function Livetracking() {
                           </div>
                           <span
                             className={`rounded-full px-2 py-0.5 text-xs ${
-                              user.isOnlineInChat
+                              user.isOnline
                                 ? "bg-green-100 text-green-600"
                                 : "bg-red-100 text-red-600"
                             }`}
                           >
-                            {user.isOnlineInChat ? "Online" : "Offline"}
+                            {user.isOnline ? "Online" : "Offline"}
                           </span>
                         </CardContent>
                       </Card>

@@ -35,8 +35,6 @@ export default function BulkImport() {
     { label: "State*", key: "state" },
     { label: "Zip Code*", key: "zipCode" },
     { label: "Country*", key: "country" },
-    { label: "Latitude", key: "latitude" },
-    { label: "Longitude", key: "longitude" },
     { label: "Additional Notes", key: "notes" },
     { label: "Primary Contact Name*", key: "primaryContactName" },
     { label: "Primary Contact Email*", key: "primaryContactEmail" },
@@ -63,8 +61,6 @@ export default function BulkImport() {
       state: "CA",
       zipCode: "94043",
       country: "USA",
-      latitude: "37.422",
-      longitude: "-122.084",
       notes: "A key account for Q3.",
       primaryContactName: "Jane Doe",
       primaryContactEmail: "jane.doe@innovate.com",
@@ -219,14 +215,24 @@ export default function BulkImport() {
 
           {/* Results (same as your code) */}
           {uploadResult && (
-            <Alert className={`bg-${uploadResult.errors?.length > 0 ? 'red': 'green'}-50 border-${uploadResult.errors?.length > 0 ? 'red': 'green'}-200`}>
-              <FileCheck2 className={`h-4 w-4 text-${uploadResult.errors?.length > 0 ? 'red': 'green'}-600`} />
-              <AlertTitle className={`text-${uploadResult.errors?.length > 0 ? 'red': 'green'}-800`}>
+            <Alert className={`bg-${uploadResult.errors?.length > 0 ? 'red': (uploadResult?.warnings?.length > 0 ? 'yellow' : 'green')}-50 border-${uploadResult.errors?.length > 0 ? 'red': (uploadResult?.warnings?.length > 0 ? 'yellow' : 'green')}-200`}>
+              <FileCheck2 className={`h-4 w-4 text-${uploadResult.errors?.length > 0 ? 'red': (uploadResult?.warnings?.length > 0 ? 'yellow' : 'green')}-600`} />
+              <AlertTitle className={`text-${uploadResult.errors?.length > 0 ? 'red': (uploadResult?.warnings?.length > 0 ? 'yellow' : 'green')}-800`}>
                 Upload Processed
               </AlertTitle>
-              <AlertDescription className={`text-${uploadResult.errors?.length > 0 ? 'red': 'green'}-700`}>
+              <AlertDescription className={`text-${uploadResult.errors?.length > 0 ? 'red': (uploadResult?.warnings?.length > 0 ? 'yellow' : 'green')}-700`}>
                 <p>Successfully imported: {uploadResult.successCount}</p>
                 <p>Failed rows: {uploadResult.errorCount}</p>
+                {uploadResult.warnings?.length > 0 && (
+                  <p>Warnings: {uploadResult.warningCount}</p>
+                )}
+                {uploadResult.warnings?.length > 0 && (
+                  <ul className="list-disc pl-5 mt-2 text-xs">
+                    {uploadResult.warnings.map((warn: string, i: number) => (
+                      <li key={i}>{warn}</li>
+                    ))}
+                  </ul>
+                )}
                 {uploadResult.errors?.length > 0 && (
                   <ul className="list-disc pl-5 mt-2 text-xs">
                     {uploadResult.errors.map((err: string, i: number) => (
