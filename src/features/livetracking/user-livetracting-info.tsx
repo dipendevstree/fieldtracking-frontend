@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { MapPin, Loader2, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { socket, socketForVisit } from "../../socket/socket";
@@ -68,6 +68,12 @@ const UserTrackingTimeline = ({
 
   const [liveUserSession, setLiveUserSession] = useState(userSession);
   const [liveVisits, setLiveVisits] = useState<any[]>([]);
+
+  // Ref to avoid stale closure on user.isOnline inside socket callbacks
+  const isOnlineRef = useRef(user?.isOnline);
+  useEffect(() => {
+    isOnlineRef.current = user?.isOnline;
+  }, [user?.isOnline]);
 
   const { analytics, isLoading: isAnalyticsLoading } = useVisitAnalytics(
     userId,
@@ -205,6 +211,15 @@ const UserTrackingTimeline = ({
   // MODIFIED: Socket effect now efficiently updates the distance.
   useEffect(() => {
     if (!socket || !userId) return;
+    const intervalTime = 6 * 60 * 1000;
+
+    let userStatusTimer: any;
+    if (isOnlineRef.current) {
+      // Set timeout if user is online — will refetch to check if they went offline
+      userStatusTimer = setTimeout(() => {
+        refetchUserDetails();
+      }, intervalTime);
+    }
 
     const handleLiveLocation = (event: any) => {
       if (
@@ -232,6 +247,17 @@ const UserTrackingTimeline = ({
           return [...prevPath, newPoint];
         });
 
+        // online the user
+        if (isOnlineRef.current === false) {
+          refetchUserDetails();
+        } else {
+          // Set interval because user is online
+          if (userStatusTimer) clearTimeout(userStatusTimer);
+          userStatusTimer = setTimeout(() => {
+            refetchUserDetails();
+          }, intervalTime);
+        }
+
         setCurrentPosition(newPoint);
         setMapCenter(newPoint);
       }
@@ -254,6 +280,7 @@ const UserTrackingTimeline = ({
       userTrackingSocket.off("connect", handleConnect);
       userTrackingSocket.off("live_location", handleLiveLocation);
       userTrackingSocket.disconnect();
+      if (userStatusTimer) clearTimeout(userStatusTimer);
     };
   }, [socket, userId, selectedDate]); // Added props to dependency array
 
