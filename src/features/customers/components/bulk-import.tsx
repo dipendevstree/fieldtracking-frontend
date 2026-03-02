@@ -88,7 +88,7 @@ export default function BulkImport() {
       setUploadResult(data);
       setSelectedFile(null);
     },
-    (_error) => {}
+    (_error) => { }
   );
 
   const handleFileChange = (file: File) => {
@@ -100,7 +100,7 @@ export default function BulkImport() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: { "text/csv": [".csv"] },
     multiple: false,
-    // noClick: true, // enbled div click to upload file
+    noClick: !!selectedFile, // Disable click to upload if a file is already selected
     onDrop: (acceptedFiles: any) => {
       if (acceptedFiles.length > 0) {
         handleFileChange(acceptedFiles[0]);
@@ -170,26 +170,10 @@ export default function BulkImport() {
                 <p className="text-sm mb-4 text-muted-foreground">
                   Drag & drop or choose a CSV
                 </p>
-                <label
-                  htmlFor="csv-upload"
-                  className="cursor-pointer inline-flex items-center border bg-background px-4 py-2 rounded-md text-sm font-medium hover:bg-accent"
-                  onClick={(e) => e.stopPropagation()} // prevent triggering dropzone
-                >
+                <Button type="button" variant="outline">
                   <Upload className="h-4 w-4 mr-2" />
                   Choose File
-                </label>
-                <input
-                  type="file"
-                  id="csv-upload"
-                  accept=".csv"
-                  onChange={(e) => {
-                    if (e.target.files?.[0]) {
-                      handleFileChange(e.target.files[0]);
-                      e.target.value = "";
-                    }
-                  }}
-                  className="hidden"
-                />
+                </Button>
               </>
             )}
           </div>
@@ -219,12 +203,12 @@ export default function BulkImport() {
 
           {/* Results (same as your code) */}
           {uploadResult && (
-            <Alert className={`bg-${uploadResult.errors?.length > 0 ? 'red': 'green'}-50 border-${uploadResult.errors?.length > 0 ? 'red': 'green'}-200`}>
-              <FileCheck2 className={`h-4 w-4 text-${uploadResult.errors?.length > 0 ? 'red': 'green'}-600`} />
-              <AlertTitle className={`text-${uploadResult.errors?.length > 0 ? 'red': 'green'}-800`}>
+            <Alert className={`bg-${uploadResult.errors?.length > 0 ? 'red' : 'green'}-50 border-${uploadResult.errors?.length > 0 ? 'red' : 'green'}-200`}>
+              <FileCheck2 className={`h-4 w-4 text-${uploadResult.errors?.length > 0 ? 'red' : 'green'}-600`} />
+              <AlertTitle className={`text-${uploadResult.errors?.length > 0 ? 'red' : 'green'}-800`}>
                 Upload Processed
               </AlertTitle>
-              <AlertDescription className={`text-${uploadResult.errors?.length > 0 ? 'red': 'green'}-700`}>
+              <AlertDescription className={`text-${uploadResult.errors?.length > 0 ? 'red' : 'green'}-700`}>
                 <p>Successfully imported: {uploadResult.successCount}</p>
                 <p>Failed rows: {uploadResult.errorCount}</p>
                 {uploadResult.errors?.length > 0 && (
