@@ -78,7 +78,7 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
           ? "Admin role cannot be edited"
           : isUserOwnRole
             ? "You cannot edit your own role"
-            : ""
+            : "",
       );
       navigate({ to: "/user-management/roles" });
       return;
@@ -191,7 +191,7 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
 
     return processMenuItems.map((menu) => {
       const permission = rolePermissions.find(
-        (p: Permission) => p.organizationMenuId === menu.organizationMenuId
+        (p: Permission) => p.organizationMenuId === menu.organizationMenuId,
       );
       return {
         id: menu.organizationMenuId,
@@ -281,7 +281,7 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
   // selectAllState
   const selectAllState = useMemo(() => {
     const relevantMenuItems = processMenuItems.filter(
-      (menu) => !(menu.isParent && menu.hasChildren)
+      (menu) => !(menu.isParent && menu.hasChildren),
     );
 
     if (relevantMenuItems.length === 0 || menuIds.length === 0) {
@@ -387,7 +387,7 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
   const updatePermission = (
     menuId: string,
     permissionType: PermissionKey,
-    value: boolean
+    value: boolean,
   ) => {
     const updatedMenuIds = [...menuIds];
     const permissionIndex = updatedMenuIds.findIndex((m) => m.id === menuId);
@@ -430,36 +430,40 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
 
     if (item?.id) {
       const currentMenu = organizationMenus.find(
-        (m: OrganizationMenu) => m.organizationMenuId === item?.id
+        (m: OrganizationMenu) => m.organizationMenuId === item?.id,
       );
 
       if (currentMenu?.parentMenuId) {
         const parentMenu = organizationMenus.find(
           (m: OrganizationMenu) =>
-            m.organizationMenuId === currentMenu?.parentMenuId
+            m.organizationMenuId === currentMenu?.parentMenuId,
         );
 
         if (parentMenu) {
           const parentPermission = updatedMenuIds.find(
-            (m) => m.id === parentMenu?.organizationMenuId
+            (m) => m.id === parentMenu?.organizationMenuId,
           );
 
           // find all children of this parent
           const childPermissionIds = organizationMenus
             .filter(
               (m: OrganizationMenu) =>
-                m.parentMenuId === parentMenu?.organizationMenuId
+                m.parentMenuId === parentMenu?.organizationMenuId,
             )
             .map((m: OrganizationMenu) => m.organizationMenuId);
 
           const childMenus = updatedMenuIds.filter((m) =>
-            childPermissionIds.includes(m.id)
+            childPermissionIds.includes(m.id),
           );
 
           // true if ALL child permissions are false
           const allChildFalse = childMenus.every(
             (m) =>
-              !m.add && !m.deleteValue && !m.edit && !m.viewGlobal && !m.viewOwn
+              !m.add &&
+              !m.deleteValue &&
+              !m.edit &&
+              !m.viewGlobal &&
+              !m.viewOwn,
           );
 
           if (parentPermission) {
@@ -491,7 +495,7 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
 
   const renderPermissionCheckbox = (
     menu: MenuItem,
-    permissionType: PermissionKey
+    permissionType: PermissionKey,
   ) => {
     if (menu.isParent && menu.hasChildren)
       return <div className="flex justify-center"></div>;
@@ -507,7 +511,7 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
             updatePermission(
               menu.organizationMenuId,
               permissionType,
-              Boolean(checked)
+              Boolean(checked),
             )
           }
         />
@@ -655,8 +659,8 @@ export function RoleActionForm({ currentRow, isEdit: propIsEdit }: Props) {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="overflow-hidden rounded-lg border">
-              <div className="grid grid-cols-6 gap-4 border-b bg-gray-50 p-3 text-sm font-medium text-gray-700">
+            <div className="rounded-lg border">
+              <div className="sticky top-16 z-10 grid grid-cols-6 gap-4 border-b bg-gray-50 p-3 text-sm font-medium text-gray-700 shadow-sm">
                 <div>Menu</div>
                 <div className="text-center">View (Own)</div>
                 <div className="text-center">View (Global)</div>
