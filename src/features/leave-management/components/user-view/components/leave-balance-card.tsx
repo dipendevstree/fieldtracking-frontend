@@ -10,6 +10,7 @@ interface LeaveBalanceCardProps {
   percentage: number;
   headerBg: string;
   titleColor: string;
+  currentYear: number;
 }
 
 export function LeaveBalanceCard({
@@ -20,6 +21,7 @@ export function LeaveBalanceCard({
   percentage,
   headerBg,
   titleColor,
+  currentYear,
 }: LeaveBalanceCardProps) {
   const indicatorColorClass = `[&>*]:${titleColor.replace("text-", "bg-")}`;
   return (
@@ -35,7 +37,7 @@ export function LeaveBalanceCard({
             {title}
           </CardTitle>
           <p className="text-[10px] text-slate-600 font-medium">
-            Balance for {new Date().getFullYear()}
+            Balance for {currentYear}
           </p>
         </div>
       </CardHeader>

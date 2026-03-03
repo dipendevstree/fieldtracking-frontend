@@ -166,13 +166,14 @@ export function LeaveBalanceDialog({
                   percentage={percentage}
                   headerBg={cardStyles[index % cardStyles.length].headerBg}
                   titleColor={cardStyles[index % cardStyles.length].titleColor}
+                  currentYear={currentYear}
                 />
               );
             })}
           </div>
         ) : (
           <p className="text-center text-base text-slate-500">
-            Leave balance for the {new Date().getFullYear()} year has not been
+            Leave balance for the {currentYear} year has not been
             generated. Please apply for leave or wait for the next accrual
             cycle.
           </p>

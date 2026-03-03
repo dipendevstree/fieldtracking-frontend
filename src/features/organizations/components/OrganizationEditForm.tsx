@@ -4,6 +4,7 @@ import { Controller, useForm } from "react-hook-form";
 import { DialogClose, DialogDescription } from "@radix-ui/react-dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle } from "lucide-react";
+import { SimpleDatePicker } from "@/components/ui/datepicker";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -51,7 +52,20 @@ const editFormSchema = z.object({
   city: z.string().optional(),
   zipCode: z.string().optional(),
   state: z.string().optional(),
-});
+  planStartDate: z.string().min(1, "Plan start date is required"),
+  planEndDate: z.string().min(1, "Plan end date is required"),
+}).refine(
+  (data) => {
+    if (data.planStartDate && data.planEndDate) {
+      return new Date(data.planEndDate) >= new Date(data.planStartDate);
+    }
+    return true;
+  },
+  {
+    message: "Plan end date must be on or after the plan start date.",
+    path: ["planEndDate"],
+  }
+);
 
 type TEditFormSchema = z.infer<typeof editFormSchema>;
 
@@ -96,6 +110,8 @@ export function OrganizationEditForm({
       city: "",
       zipCode: "",
       state: "",
+      planStartDate: "",
+      planEndDate: "",
     },
   });
   const { data: organizationTypesList } = useGetOrganizationTypes();
@@ -243,6 +259,8 @@ export function OrganizationEditForm({
         city: currentRow.city || "",
         zipCode: currentRow.zipCode || "",
         state: currentRow.state || "",
+        planStartDate: currentRow.planStartDate || "",
+        planEndDate: currentRow.planEndDate || "",
       };
 
       reset(editValues);
@@ -266,6 +284,8 @@ export function OrganizationEditForm({
         city: "",
         zipCode: "",
         state: "",
+        planStartDate: "",
+        planEndDate: "",
       });
     }
     onOpenChange(state);
@@ -601,6 +621,54 @@ export function OrganizationEditForm({
                       <p className="flex items-center gap-1 text-xs text-red-500">
                         <AlertCircle className="h-3 w-3" />
                         {errors.menuIds.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Plan Start Date */}
+                  <div className="space-y-2">
+                    <Label htmlFor="planStartDate">
+                      Plan Start Date <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="planStartDate"
+                      control={control}
+                      render={({ field }) => (
+                        <SimpleDatePicker
+                          date={field.value}
+                          setDate={field.onChange}
+                          className="w-full"
+                        />
+                      )}
+                    />
+                    {errors.planStartDate && (
+                      <p className="flex items-center gap-1 text-xs text-red-500">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.planStartDate.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Plan End Date */}
+                  <div className="space-y-2">
+                    <Label htmlFor="planEndDate">
+                      Plan End Date <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="planEndDate"
+                      control={control}
+                      render={({ field }) => (
+                        <SimpleDatePicker
+                          date={field.value}
+                          setDate={field.onChange}
+                          className="w-full"
+                        />
+                      )}
+                    />
+                    {errors.planEndDate && (
+                      <p className="flex items-center gap-1 text-xs text-red-500">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.planEndDate.message}
                       </p>
                     )}
                   </div>
