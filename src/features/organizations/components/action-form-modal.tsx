@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { format } from "date-fns";
 import { DeleteModal } from "@/components/shared/common-delete-modal";
 import {
   useCreateOrganization,
@@ -7,6 +8,12 @@ import {
 import { useUsersStore } from "../store/organizations.store";
 import { OrganizationEditForm } from "./OrganizationEditForm";
 import { OrganizationActionForm } from "./action-form";
+
+// Convert date from yyyy-MM-dd to dd-MM-yyyy for API
+const formatDateForApi = (dateStr: string): string => {
+  if (!dateStr) return "";
+  return format(new Date(dateStr), "dd-MM-yyyy");
+};
 
 export function OrganizationsActionModal() {
   const { open, setOpen, currentRow, setCurrentRow } = useUsersStore();
@@ -55,6 +62,8 @@ export function OrganizationsActionModal() {
       adminJobTitle: values.adminJobTitle,
       menuIds: values.menuIds, // array of selected module IDs
       adminPhoneCountryCode: values.adminPhoneCountryCode,
+      planStartDate: formatDateForApi(values.planStartDate),
+      planEndDate: formatDateForApi(values.planEndDate),
     };
     createOrganization(payload);
   };
@@ -76,6 +85,8 @@ export function OrganizationsActionModal() {
       state: values.state,
       isActive: values.isActive,
       menuIds: values.menuIds,
+      planStartDate: formatDateForApi(values.planStartDate),
+      planEndDate: formatDateForApi(values.planEndDate),
     };
 
     updateOrganization(payload);

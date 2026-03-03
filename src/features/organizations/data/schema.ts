@@ -23,6 +23,19 @@ export const formSchema = z.object({
 
   // .min(1, { message: 'At least one
   adminPhoneCountryCode: z.string().optional(),
-})
+  planStartDate: z.string().min(1, { message: 'Plan start date is required.' }),
+  planEndDate: z.string().min(1, { message: 'Plan end date is required.' }),
+}).refine(
+  (data) => {
+    if (data.planStartDate && data.planEndDate) {
+      return new Date(data.planEndDate) >= new Date(data.planStartDate)
+    }
+    return true
+  },
+  {
+    message: 'Plan end date must be on or after the plan start date.',
+    path: ['planEndDate'],
+  }
+)
 
 export type TFormSchema = z.infer<typeof formSchema>
