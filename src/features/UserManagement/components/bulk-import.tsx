@@ -56,7 +56,7 @@ export default function UserBulkImport() {
       accessType: "web",
       ...(allowTerritory ? { territoryName: "South Zone" } : {}),
     },
-   {
+    {
       firstName: "John1",
       lastName: "Doe",
       email: "john1.doe@example.com",
@@ -253,7 +253,10 @@ export default function UserBulkImport() {
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Upload Failed</AlertTitle>
             <AlertDescription>
-              {error?.message || "An unknown error occurred."}
+              {(error as any)?.response?.data?.errorMessage ||
+                (error as any)?.response?.data?.message ||
+                error?.message ||
+                "An unknown error occurred."}
             </AlertDescription>
           </Alert>
         )}
