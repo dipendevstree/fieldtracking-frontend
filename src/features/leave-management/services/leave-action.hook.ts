@@ -208,3 +208,20 @@ export const useExpireCarryForwardLeaveBalance = (onSuccess?: () => void) => {
     },
   });
 };
+
+export const useBulkImportLeaveBalance = (
+  onSuccess?: (data: any) => void,
+  onError?: (error: any) => void,
+) => {
+  return usePostData<any, FormData>({
+    url: API.leaveBalance.bulkUpload,
+    onSuccess,
+    mutationOptions: {
+      onError: (error: any) => {
+        if (onError) {
+          onError(error);
+        }
+      },
+    },
+  });
+};

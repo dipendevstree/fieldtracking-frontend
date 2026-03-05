@@ -359,6 +359,9 @@ const API = {
     processLeaveBalance: "task/process-leave-balance",
     expireCarryForwardLeaveBalance: "task/expire-carry-forward-leave-balance",
   },
+  leaveBalance: {
+    bulkUpload: "leaveBalance/bulk-upload",
+  },
 };
 
 Object.freeze(API);

@@ -26,6 +26,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import CalendarView from "./components/CalendarView";
 import CustomTooltip from "@/components/shared/custom-tooltip";
 import { IconEdit, IconX } from "@tabler/icons-react";
+import { FileUp as IconFileImport } from "lucide-react";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
 import { ApplyLeaveDialog } from "./components/apply-leave-dialog";
@@ -56,6 +57,8 @@ import { formatDropDownLabel } from "@/utils/commonFunction";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { LEAVE_STATUS } from "@/data/app.data";
 import { usePermission } from "@/permissions/hooks/use-permission";
+import ActionButton from "@/components/shared/table-primary-action-button";
+import { LeaveBalanceBulkImportModal } from "./components/LeaveBalanceBulkImportModal";
 
 // --- LOGIC HELPER ---
 export const getEventStatusKey = (
@@ -107,6 +110,7 @@ export default function MyLeaveBalance() {
     string | undefined
   >(undefined);
   const [leaveToCancel, setLeaveToCancel] = useState<any | null>(null);
+  const [openImportDialog, setOpenImportDialog] = useState<boolean>(false);
 
   // Services
   const { data: leaveTypesList = [] } = useGetAllLeaveTypes();
@@ -327,6 +331,27 @@ export default function MyLeaveBalance() {
           </Button>
         </PermissionGate>
       </div> */}
+
+      <div className="flex items-center justify-between">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-2xl font-bold tracking-tight text-slate-900">
+            Leave Dashboard
+          </h2>
+          <p className="text-slate-500">
+            Track leave, leave request and their status
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <PermissionGate requiredPermission="leave_management_dashboard" action="add">
+            <ActionButton
+              text="Import Leave Balance"
+              onAction={() => setOpenImportDialog(true)}
+              icon={IconFileImport}
+              className="flex items-center gap-2"
+            />
+          </PermissionGate>
+        </div>
+      </div>
 
       {/* Top Stats */}
       <div className="grid gap-4 md:grid-cols-3">
@@ -555,6 +580,12 @@ export default function MyLeaveBalance() {
       {canViewLeaveRequest && (
         <LeaveRequest calendarQueryParams={calendarQueryParams} dashboardView />
       )}
+
+      {/* --- LEAVE BALANCE IMPORT MODAL --- */}
+      <LeaveBalanceBulkImportModal
+        open={openImportDialog}
+        onOpenChange={setOpenImportDialog}
+      />
     </Main>
   );
 }
