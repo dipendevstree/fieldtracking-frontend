@@ -13,9 +13,9 @@ export const leaveEncashmentApprovalHistoryColumns: ColumnDef<any>[] = [
     cell: ({ row }) => {
       return (
         <div className="text-sm ">
-          {row.original.leaveEncashment?.user?.firstName +
+          {row.original.leaveEncashment?.user ? row.original.leaveEncashment?.user?.firstName +
             " " +
-            row.original.leaveEncashment?.user?.lastName}{" "}
+            row.original.leaveEncashment?.user?.lastName : "Unknown User"}{" "}
         </div>
       );
     },

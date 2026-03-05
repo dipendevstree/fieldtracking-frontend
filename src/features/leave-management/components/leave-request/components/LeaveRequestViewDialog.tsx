@@ -186,7 +186,7 @@ export default function LeaveRequestViewDialog({
             <Input
               className="text-gray-700 border p-2 rounded"
               value={
-                currentRow.user?.firstName + " " + currentRow.user?.lastName
+                currentRow.user ? currentRow.user?.firstName + " " + currentRow.user?.lastName : "Unknown User"
               }
               readOnly
             />

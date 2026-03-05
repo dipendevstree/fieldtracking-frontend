@@ -17,9 +17,9 @@ export const pendingLeaveEncashmentColumns = (
           cell: ({ row }: { row: any }) => {
             return (
               <div className="text-sm ">
-                {row.original.user?.firstName +
+                {row.original.user ? row.original.user?.firstName +
                   " " +
-                  row.original.user?.lastName}{" "}
+                  row.original.user?.lastName : "Unknown User"}{" "}
               </div>
             );
           },

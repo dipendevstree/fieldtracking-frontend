@@ -227,7 +227,7 @@ export default function MyLeaveBalance() {
             lr.leaveType?.name ||
             leaveTypesList.find((t: any) => t.id === lr.leaveTypeId)?.name ||
             "Leave";
-          const employeeName = lr.user?.firstName + " " + lr.user?.lastName;
+          const employeeName = lr.user ? lr.user?.firstName + " " + lr.user?.lastName: "Unknown User";
           const halfDayType = lr.halfDay ? lr.halfDayType : null;
           const canEdit = lr.userId === user?.id;
           let status = lr.status?.toLowerCase() || "pending";
@@ -269,7 +269,7 @@ export default function MyLeaveBalance() {
               `}
             >
               <span className="font-xs">
-                {(lr.user?.firstName)[0] + (lr.user?.lastName)[0]} ({typeName})
+                {lr.user ? ((lr.user?.firstName)[0] + (lr.user?.lastName)[0]) : "-"} ({typeName})
               </span>
             </div>
           );
