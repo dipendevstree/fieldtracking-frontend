@@ -39,7 +39,9 @@ export const useSearch = () => {
   const searchContext = React.useContext(SearchContext)
 
   if (!searchContext) {
-    throw new Error('useSearch has to be used within <SearchContext.Provider>')
+    // Return safe defaults during route transitions (e.g. logout redirects)
+    // where the component may briefly render outside SearchProvider
+    return { open: false, setOpen: (() => {}) as React.Dispatch<React.SetStateAction<boolean>> }
   }
 
   return searchContext

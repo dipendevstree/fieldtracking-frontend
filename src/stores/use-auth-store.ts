@@ -37,6 +37,7 @@ export const useAuthStore = create<AuthState>()(
             }
             // Store token in localStorage for API requests
             if (typeof window !== "undefined") {
+              localStorage.removeItem("was_super_admin");
               localStorage.setItem(
                 AUTH_STORAGE_KEYS.ACCESS_TOKEN,
                 data.access_token,
@@ -70,8 +71,14 @@ export const useAuthStore = create<AuthState>()(
       },
 
       logout: () => {
-        // Clear stored authentication data
+        // Save isSuperAdmin flag before clearing state, so redirect logic can use it
+        const currentUser = get().user;
         if (typeof window !== "undefined") {
+          localStorage.setItem(
+            "was_super_admin",
+            currentUser?.isSuperAdmin ? "true" : "false",
+          );
+          // Clear stored authentication data
           localStorage.removeItem(AUTH_STORAGE_KEYS.ACCESS_TOKEN);
           localStorage.removeItem(AUTH_STORAGE_KEYS.USER_DATA);
           localStorage.removeItem(AUTH_STORAGE_KEYS.FCM_TOKEN);

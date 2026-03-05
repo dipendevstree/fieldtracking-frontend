@@ -8,7 +8,7 @@ import { useAuth } from "@/stores/use-auth-store";
 import OverviewPage from "./overview/components/OverView";
 // import LiveTrackingPage from "./Live-Tracking/live-tracking-dashboard";
 // import ApprovalsPage from "./Approvals/components/approvals";
-import SuperAdminDashboard from "./super-admin";
+import { Navigate } from "@tanstack/react-router";
 
 // Define valid tab values with proper typing
 // export type DashboardTabValue =
@@ -41,7 +41,7 @@ export default function DashboardPage() {
 
   // If user is super admin, show super admin dashboard
   if (user?.isSuperAdmin) {
-    return <SuperAdminDashboard />;
+    return <Navigate to="/superadmin/dashboard" replace />;
   }
 
   // Initialize with first tab as default (overview)

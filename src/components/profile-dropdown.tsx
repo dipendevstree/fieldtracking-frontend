@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuthStore } from "@/stores/use-auth-store";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { LoginUser, ViewType } from "./layout/types";
 import { getProfileName } from "@/lib/utils";
 import { useViewType } from "@/context/view-type-context";
@@ -83,9 +83,11 @@ export function ProfileDropdown({
   className = "",
   avatarSize = "md",
 }: Readonly<ProfileDropdownProps>) {
+  const navigate = useNavigate();
   const { user, logout } = useAuthStore();
   const { mutate: logoutRequest } = useLogout(() => {
     logout();
+    navigate({ to: "/sign-in", replace: true });
   });
   const { hasAccess } = usePermission();
   const { viewType, setViewType, viewTypeToggle, setViewTypeToggle } =
@@ -94,6 +96,7 @@ export function ProfileDropdown({
   const handleLogout = () => {
     if (user && user.isSuperAdmin) {
       logout();
+      navigate({ to: "/superadmin-sign-in", replace: true });
       return;
     }
     let deviceId = localStorage.getItem("deviceId");
