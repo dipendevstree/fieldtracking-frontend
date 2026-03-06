@@ -109,6 +109,7 @@ const API = {
     delete: "users/delete",
     stats: "users/stats",
     bulkUpload: "users/bulk-upload",
+    exportCsv: "users/export/csv",
   },
   userDevice: {
     upsert: "userDevice/upsert",

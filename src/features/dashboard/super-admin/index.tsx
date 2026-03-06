@@ -2,6 +2,7 @@ import { Main } from "@/components/layout/main";
 import { cn } from "@/lib/utils";
 import { Shield } from "lucide-react";
 import { useAuth } from "@/stores/use-auth-store";
+import { Navigate } from "@tanstack/react-router";
 
 // // Define valid tab values for super admin dashboard
 export type SuperAdminTabValue = "/super-admin/organizations";
@@ -11,6 +12,7 @@ export default function SuperAdminDashboard() {
 
   // Redirect non-super admins
   if (!user?.isSuperAdmin) {
+    return <Navigate to="/" replace />;
     return (
       <Main className={cn("flex flex-col items-center justify-center p-8")}>
         <div className="text-center">

@@ -8,7 +8,7 @@ import {
   Calendar1Icon,
   ShieldCheck,
   ChartPie,
-  FileText,
+  // FileText,
   CalendarDays,
   Users,
 } from "lucide-react";
@@ -316,7 +316,7 @@ export const SUPER_ADMIN_SIDEBAR_DATA: SidebarData = {
       items: [
         {
           title: "Dashboard",
-          url: "/",
+          url: "/superadmin/dashboard",
           icon: Home,
           menuKey: "dashboard",
         },
@@ -328,17 +328,18 @@ export const SUPER_ADMIN_SIDEBAR_DATA: SidebarData = {
           items: [
             {
               title: "Organizations",
-              url: "/organizations",
+              url: "/superadmin/organizations",
               menuKey: "organizations",
             },
           ],
         },
-        {
-          title: "Terms & Conditions",
-          url: "/termsAndConditions",
-          icon: FileText,
-          menuKey: "termsAndConditions",
-        },
+        // Not in use
+        // {
+        //   title: "Terms & Conditions",
+        //   url: "/termsAndConditions",
+        //   icon: FileText,
+        //   menuKey: "termsAndConditions",
+        // },
       ],
     },
   ],

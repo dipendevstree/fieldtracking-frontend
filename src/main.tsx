@@ -66,7 +66,9 @@ const queryClient = new QueryClient({
               "Session expired or You were logged out from this device!",
             );
             const redirect = `${router.history.location.href}`;
-            router.navigate({ to: "/sign-in", search: { redirect } });
+            const wasSuperAdmin = localStorage.getItem("was_super_admin") === "true";
+            const signInPath = wasSuperAdmin ? "/superadmin-sign-in" : "/sign-in";
+            router.navigate({ to: signInPath, search: { redirect } });
           }
         }
         if (error.response?.status === 500) {

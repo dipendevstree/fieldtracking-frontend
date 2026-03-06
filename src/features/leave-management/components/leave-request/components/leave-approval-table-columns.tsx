@@ -22,9 +22,9 @@ export const leaveApprovalColumns: ColumnDef<any>[] = [
     cell: ({ row }) => {
       return (
         <div className="text-sm ">
-          {row.original.leave?.user?.firstName +
+          {row.original.leave?.user ? row.original.leave?.user?.firstName +
             " " +
-            row.original.leave?.user?.lastName}{" "}
+            row.original.leave?.user?.lastName : "Unknown User"}{" "}
         </div>
       );
     },

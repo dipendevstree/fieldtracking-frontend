@@ -17,7 +17,8 @@ export function ProtectedRoute({
   const { user, hasAccess, isAuthenticated } = usePermission();
 
   if (!isAuthenticated) {
-    return <Navigate to="/sign-in" replace />;
+    const wasSuperAdmin = localStorage.getItem("was_super_admin") === "true";
+    return <Navigate to={wasSuperAdmin ? "/superadmin-sign-in" : "/sign-in"} replace />;
   }
   const isSuperAdmin = user?.isSuperAdmin;
 

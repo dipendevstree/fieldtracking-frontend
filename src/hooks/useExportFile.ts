@@ -10,22 +10,9 @@ interface ExportFileParams {
   url: string;
   type: ExportType;
   queryParams?: Record<string, any>;
-  filename: string;
 }
 
-// Utility to download blob
-const downloadBlob = (
-  blob: Blob,
-  filename: string,
-  type: "csv" | "xlsx" | "pdf"
-) => {
-  // Ensure the filename has the correct extension
-  const ext = type;
-  if (!filename.toLowerCase().endsWith(`.${ext}`)) {
-    filename = `${filename}.${ext}`;
-  }
-
-  const url = window.URL.createObjectURL(blob);
+export const downloadFromUrl = (url: string, filename: string) => {
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
@@ -33,13 +20,29 @@ const downloadBlob = (
   window.URL.revokeObjectURL(url);
 };
 
+// Utility to download blob
+// const downloadBlob = (
+//   blob: Blob,
+//   filename: string,
+//   type: "csv" | "xlsx" | "pdf"
+// ) => {
+//   // Ensure the filename has the correct extension
+//   const ext = type;
+//   if (!filename.toLowerCase().endsWith(`.${ext}`)) {
+//     filename = `${filename}.${ext}`;
+//   }
+
+//   const url = window.URL.createObjectURL(blob);
+//   downloadFromUrl(url, filename);
+// };
+
 // Hook
 export const useExportFile = (options?: UseExportFileOptions) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const exportFile = useCallback(
-    async ({ url, type, queryParams = {}, filename }: ExportFileParams) => {
+    async ({ url, type, queryParams = {} }: ExportFileParams) => {
       setIsLoading(true);
       setError(null);
 
@@ -63,8 +66,10 @@ export const useExportFile = (options?: UseExportFileOptions) => {
           throw new Error(`Failed to export ${type}`);
         }
 
-        const blob = await response.blob();
-        downloadBlob(blob, filename, type);
+        const data = await response.json();
+        if (data?.data?.fileLink) downloadFromUrl(data?.data?.fileLink, URL.parse(data?.data?.fileLink)?.pathname.split("/").at(-1) as string);
+        // const blob = await response.blob();
+        // downloadBlob(blob, filename, type);
       } catch (err: any) {
         setError(err);
         console.error("Export failed", err);

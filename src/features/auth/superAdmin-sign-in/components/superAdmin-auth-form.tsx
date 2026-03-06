@@ -26,7 +26,7 @@ export function SuperAdminAuthForm({ className, ...props }: UserAuthFormProps) {
   const onSuccess = (data: any) => {
     login(data);
     setIsPasswordChanged(true); // Reset password changed state
-    navigate({ to: "/" });
+    navigate({ to: "/superadmin/dashboard" });
   };
   const { mutate: loginMutate, isPending: isLoading } = useLogin(onSuccess);
   const form = useForm<TFormSchema>({

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Plus, Download } from "lucide-react";
+import { Plus, Download, Loader2 } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
@@ -17,12 +17,12 @@ import { useSelectOptions } from "@/hooks/use-select-option";
 import { FilterConfig } from "@/components/global-filter-section";
 import debounce from "lodash.debounce";
 import GlobalFilterSection from "@/components/global-table-filter-section";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuTrigger,
+// } from "@/components/ui/dropdown-menu";
 import { useExportFile } from "@/hooks/useExportFile";
 import API from "@/config/api/api";
 import { Main } from "@/components/layout/main";
@@ -200,17 +200,26 @@ export const CustomerDirectoryPage = () => {
             </p>
           </div>
           <div className="flex items-center space-x-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            {/* <DropdownMenu> */}
+              {/* <DropdownMenuTrigger asChild> */}
                 <Button
                   variant="outline"
                   disabled={isExportLoading || isLoading || totalCount === 0}
+                  onClick={() =>
+                    exportFile({
+                      url: API.customerMain.exportCsv,
+                      type: "csv",
+                      queryParams: exportQueryParams,
+                    })
+                  }
                 >
-                  <Download className="h-4 w-4 mr-2" />
-                  Export Report
+                  {isExportLoading || isLoading ? 
+                    <Loader2 className="animate-spin"/>
+                  : <Download className="h-4 w-4 mr-2" />}
+                  Export Customers
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              {/* </DropdownMenuTrigger> */}
+              {/* <DropdownMenuContent align="end">
                 <DropdownMenuItem
                   onClick={() =>
                     exportFile({
@@ -237,8 +246,8 @@ export const CustomerDirectoryPage = () => {
                 >
                   Export Excel
                 </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              </DropdownMenuContent> */}
+            {/* </DropdownMenu> */}
             <PermissionGate
               requiredPermission="customer_directory"
               action="add"

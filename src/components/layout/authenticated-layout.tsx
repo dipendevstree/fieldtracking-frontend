@@ -114,7 +114,8 @@ export function AuthenticatedLayout({
   }
 
   if (!user || !isPasswordChanged) {
-    return <Navigate to="/sign-in" />;
+    const wasSuperAdmin = localStorage.getItem("was_super_admin") === "true";
+    return <Navigate to={wasSuperAdmin ? "/superadmin-sign-in" : "/sign-in"} />;
   }
 
   return (
