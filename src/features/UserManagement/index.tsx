@@ -22,7 +22,9 @@ import { toast } from "sonner";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import CustomTableHeader from "@/components/shared/custom-table-header";
 import ActionButton from "@/components/shared/table-primary-action-button";
-import { FileUp as IconFileImport } from "lucide-react";
+import { FileUp as IconFileImport, FileDown as IconFileExport, Loader2 } from "lucide-react";
+import { useExportFile } from "@/hooks/useExportFile";
+import API from "@/config/api/api";
 
 const AllUsers = () => {
   const [pagination, setPagination] = useState({
@@ -37,6 +39,7 @@ const AllUsers = () => {
   const maxEmployeeCount = match ? parseInt(match[1]) : 0;
   const allowTerritoryFilter =
     user?.organization?.allowAddUsersBasedOnTerritories;
+  const { exportFile, isLoading: isExportLoading } = useExportFile();
 
   const { filters, setFilters, setOpen, open } = useUsersStore();
   const { noAdmin } = useSearch({
@@ -174,6 +177,14 @@ const AllUsers = () => {
     };
   }, []);
 
+  // Show loading state
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center h-screen">
+        Loading...
+      </div>
+    );
+
   return (
     <Main className={cn("flex flex-col gap-2")}>
       <TablePageLayout
@@ -188,6 +199,17 @@ const AllUsers = () => {
             moduleAction="add"
             className="w-full"
           >
+            <ActionButton
+              text="Export Users"
+              onAction={() => exportFile({
+                url: API.users.exportCsv,
+                type: "csv",
+                queryParams: queryParams,
+              })}
+              icon={isExportLoading || isLoading ? Loader2 : IconFileExport}
+              disabled={isExportLoading || isLoading || totalCount === 0}
+              className="flex items-center gap-2"
+            />
             <PermissionGate requiredPermission="all_users" action="add">
               <ActionButton
                 text="Import Users"

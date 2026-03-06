@@ -1312,7 +1312,7 @@ export default function AddCustomerPage({
         </TabsContent>
 
         <TabsContent value="bulk" className="space-y-4">
-          <CardContent>
+          <CardContent className="px-0">
             <BulkImport />
           </CardContent>
         </TabsContent>
