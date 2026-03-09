@@ -7,7 +7,7 @@ import instance from "@/config/instance/instance";
 import { EnhancedError } from "@/types";
 import { toast } from "sonner";
 import { extractErrorInfo } from "@/utils/error-response";
-import { TOAST_CONFIG } from "@/data/app.data";
+import { TOAST_CONFIG } from "@/config/toastConfig";
 
 interface PatchDataOptions<TData, TVariables> {
   url: string;
