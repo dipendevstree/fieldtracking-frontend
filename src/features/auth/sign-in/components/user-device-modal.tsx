@@ -1,4 +1,4 @@
-import StatusBadge from "@/components/shared/common-status-badge";
+import StatusBadge from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

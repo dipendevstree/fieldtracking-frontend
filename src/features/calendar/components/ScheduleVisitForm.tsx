@@ -72,7 +72,7 @@ import { PermissionGate } from "@/permissions/components/PermissionGate";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import StatusBadge from "@/components/shared/common-status-badge";
+import StatusBadge from "@/components/ui/status-badge";
 
 function DeleteVisitDialog({
   visit,

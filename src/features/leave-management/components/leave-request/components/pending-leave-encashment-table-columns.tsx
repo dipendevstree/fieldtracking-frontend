@@ -2,7 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import { PendingLeaveEncashmentRowActions } from "./pending-leave-encashment-table-action-button";
 import moment from "moment";
-import StatusBadge from "@/components/shared/common-status-badge";
+import StatusBadge from "@/components/ui/status-badge";
 
 export const pendingLeaveEncashmentColumns = (
   hideUserColumn = false,

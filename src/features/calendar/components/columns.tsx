@@ -3,7 +3,7 @@ import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-he
 import { DataTableRowActions } from "./table-action-button";
 import { format } from "date-fns";
 import CustomTooltip from "@/components/shared/custom-tooltip";
-import StatusBadge from "@/components/shared/common-status-badge";
+import StatusBadge from "@/components/ui/status-badge";
 
 export const columns: ColumnDef<any>[] = [
   {

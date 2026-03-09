@@ -46,7 +46,7 @@ import {
 // ... (other imports)
 import StatusBadge, {
   statusColors,
-} from "@/components/shared/common-status-badge";
+} from "@/components/ui/status-badge";
 import { Main } from "@/components/layout/main";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import LeaveRequest from "../leave-request/LeaveRequest";

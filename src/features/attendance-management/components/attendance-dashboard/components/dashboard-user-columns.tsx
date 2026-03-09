@@ -2,7 +2,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
-import StatusBadge from "@/components/shared/common-status-badge";
+import StatusBadge from "@/components/ui/status-badge";
 import { formatWorkHours } from "@/utils/commonFunction";
 
 export const dashboardUserColumns: ColumnDef<any>[] = [

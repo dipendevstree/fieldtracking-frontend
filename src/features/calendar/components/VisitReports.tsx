@@ -38,7 +38,7 @@ import { format, subWeeks } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { Main } from "@/components/layout/main";
 import { formatName } from "@/utils/commonFunction";
-import StatusBadge from "@/components/shared/common-status-badge";
+import StatusBadge from "@/components/ui/status-badge";
 
 export interface FormData {
   salesRep: string;

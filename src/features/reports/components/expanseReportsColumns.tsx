@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
-import StatusBadge from "@/components/shared/common-status-badge";
+import StatusBadge from "@/components/ui/status-badge";
 
 export const expanseReportsColumns: ColumnDef<any>[] = [
   {

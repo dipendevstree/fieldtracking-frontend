@@ -17,14 +17,9 @@ import { useViewType } from "@/context/view-type-context";
 import { Switch } from "@/components/ui/switch";
 import { usePermission } from "@/permissions/hooks/use-permission";
 import { useEffect } from "react";
-import {
-  User,
-  Settings,
-  LogOut,
-  LucideIcon,
-} from "lucide-react";
+import { User, Settings, LogOut, LucideIcon } from "lucide-react";
 import moment from "moment";
-import StatusBadge from "./shared/common-status-badge";
+import StatusBadge from "@/components/ui/status-badge";
 import { useLogout } from "@/features/auth/sign-in/services/sign-in-services";
 
 interface MenuItem {

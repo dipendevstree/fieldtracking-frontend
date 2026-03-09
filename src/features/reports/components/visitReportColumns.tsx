@@ -1,6 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
-import StatusBadge from "@/components/shared/common-status-badge";
+import StatusBadge from "@/components/ui/status-badge";
 import LongText from "@/components/long-text";
 import { VisitReportRow } from "../types";
 import { Badge } from "@/components/ui/badge";

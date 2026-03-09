@@ -1,7 +1,7 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { CustomReportRow } from "../types";
 import { Button } from "@/components/ui/button";
-import StatusBadge from "@/components/shared/common-status-badge";
+import StatusBadge from "@/components/ui/status-badge";
 import {
   Download,
   FileBarChartIcon,
