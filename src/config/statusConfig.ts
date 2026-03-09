@@ -6,14 +6,14 @@
  */
 
 import {
-  THEMES,
-  FALLBACK_THEME,
-  type ThemeColors,
-  type ThemeName,
-} from "./badgeThemes";
+  BADGE_THEMES,
+  BADGE_FALLBACK_THEME,
+  type BadgeThemeColors,
+  type BadgeThemeName,
+} from "@/theme/badge-themes";
 
 interface StatusEntry {
-  theme: ThemeName;
+  theme: BadgeThemeName;
   label?: string;
 }
 
@@ -85,13 +85,14 @@ export const statusConfig: Record<string, StatusEntry> = {
   checkout: { theme: "slate", label: "Check Out" },
 };
 
-/** Pre-computed flat map: status key → ThemeColors (for direct usage outside StatusBadge). */
-export const statusColors: Record<string, ThemeColors> = Object.fromEntries(
-  Object.entries(statusConfig).map(([key, entry]) => [
-    key,
-    THEMES[entry.theme] ?? FALLBACK_THEME,
-  ]),
-);
+/** Pre-computed flat map: status key → BadgeThemeColors (for direct usage outside StatusBadge). */
+export const statusColors: Record<string, BadgeThemeColors> =
+  Object.fromEntries(
+    Object.entries(statusConfig).map(([key, entry]) => [
+      key,
+      BADGE_THEMES[entry.theme] ?? BADGE_FALLBACK_THEME,
+    ]),
+  );
 
 /** Values treated as invalid — renders a neutral "-" badge. */
 const INVALID_VALUES = new Set([
@@ -111,9 +112,9 @@ export const isInvalidOrPlaceholder = (val?: string | null): boolean => {
   return INVALID_VALUES.has(val.trim().toLowerCase());
 };
 
-/** Resolve ThemeColors for a normalised status. Falls back to gray. */
-export const resolveTheme = (normalized: string): ThemeColors =>
-  THEMES[statusConfig[normalized]?.theme] ?? FALLBACK_THEME;
+/** Resolve BadgeThemeColors for a normalised status. Falls back to gray. */
+export const resolveTheme = (normalized: string): BadgeThemeColors =>
+  BADGE_THEMES[statusConfig[normalized]?.theme] ?? BADGE_FALLBACK_THEME;
 
 /** Resolve label override. Returns undefined if no override exists. */
 export const resolveLabel = (normalized: string): string | undefined =>

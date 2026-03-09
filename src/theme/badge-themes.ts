@@ -6,13 +6,13 @@
  */
 
 /** Tailwind class triplet that styles one badge variant. */
-export type ThemeColors = {
+export type BadgeThemeColors = {
   text: string;
   bg: string;
   dot: string;
 };
 
-export const THEMES = {
+export const BADGE_THEMES = {
   orange: {
     text: "text-orange-600",
     bg: "bg-orange-100",
@@ -49,9 +49,9 @@ export const THEMES = {
   red: { text: "text-red-600", bg: "bg-red-100", dot: "bg-red-500" },
   gray: { text: "text-gray-600", bg: "bg-gray-100", dot: "bg-gray-500" },
   slate: { text: "text-slate-600", bg: "bg-slate-100", dot: "bg-slate-400" },
-} as const satisfies Record<string, ThemeColors>;
+} as const satisfies Record<string, BadgeThemeColors>;
 
-export type ThemeName = keyof typeof THEMES;
+export type BadgeThemeName = keyof typeof BADGE_THEMES;
 
 /** Fallback when a status has no matching config entry. */
-export const FALLBACK_THEME: ThemeColors = THEMES.gray;
+export const BADGE_FALLBACK_THEME: BadgeThemeColors = BADGE_THEMES.gray;
