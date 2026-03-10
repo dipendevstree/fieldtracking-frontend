@@ -3,7 +3,7 @@ import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-he
 import { PendingLeaveRowActions } from "./pending-leave-table-action-button";
 import moment from "moment";
 import { formatDropDownLabel } from "@/utils/commonFunction";
-import StatusBadge from "@/components/shared/common-status-badge";
+import StatusBadge from "@/components/ui/status-badge";
 import CustomTooltip from "@/components/shared/custom-tooltip";
 
 export const pendingLeaveColumns = (

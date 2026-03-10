@@ -1,6 +1,6 @@
 import { AxiosError } from "axios";
 import { toast } from "sonner";
-import { TOAST_CONFIG } from "@/data/app.data";
+import { TOAST_CONFIG } from "@/config/toastConfig";
 
 export function handleServerError(error: unknown) {
   // eslint-disable-next-line no-console

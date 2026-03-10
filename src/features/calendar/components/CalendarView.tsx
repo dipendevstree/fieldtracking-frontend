@@ -51,7 +51,7 @@ import {
   MappedVisit,
   Visit,
 } from "../type/type";
-import StatusBadge from "@/components/shared/common-status-badge";
+import StatusBadge from "@/components/ui/status-badge";
 
 function DeleteVisitDialog({ visit, isOpen, onClose }: DeleteVisitDialogProps) {
   // Important: guard first to avoid calling hook with undefined

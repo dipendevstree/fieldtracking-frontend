@@ -4,7 +4,7 @@ import { extractErrorInfo } from "@/utils/error-response";
 import { useMutation } from "@tanstack/react-query";
 import API from "@/config/api/api";
 import { toast } from "sonner";
-import { TOAST_CONFIG } from "@/data/app.data";
+import { TOAST_CONFIG } from "@/config/toastConfig";
 
 export const usePermissionData = ({
   onSuccess,

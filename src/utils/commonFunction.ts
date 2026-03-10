@@ -239,3 +239,12 @@ export const formatWorkHours = (hours?: number | string): string => {
 
   return `${hh}:${mm}`;
 };
+
+/**
+ * Safely formats a status string for UI display.
+ * Example: "in_progress" → "In Progress"
+ */
+export const formatStatus = (status?: string | null): string => {
+  if (!status) return "-";
+  return status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+};

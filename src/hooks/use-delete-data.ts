@@ -7,7 +7,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { TOAST_CONFIG } from "@/data/app.data";
+import { TOAST_CONFIG } from "@/config/toastConfig";
 
 interface DeleteDataOptions<TData, TVariables = void> {
   url: string;

@@ -1,5 +1,5 @@
 import LongText from "@/components/long-text";
-import StatusBadge from "@/components/shared/common-status-badge";
+import StatusBadge from "@/components/ui/status-badge";
 import { ColumnDef } from "@tanstack/react-table";
 
 export const scheduleColumns: ColumnDef<unknown>[] = [

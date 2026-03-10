@@ -3,7 +3,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { format } from "date-fns";
 import { formatAuditChanges } from "../../data/helperFunction";
 import LongText from "@/components/long-text";
-import StatusBadge from "@/components/shared/common-status-badge";
+import StatusBadge from "@/components/ui/status-badge";
 
 export const auditLogColumns: ColumnDef<any>[] = [
   {

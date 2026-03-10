@@ -8,7 +8,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Main } from "@/components/layout/main";
-import StatusBadge from "@/components/shared/common-status-badge";
+import StatusBadge from "@/components/ui/status-badge";
 import { Separator } from "@/components/ui/separator";
 // import { ScrollArea } from "@/components/ui/scroll-area";
 import { Detail } from "@/components/ui/detail";

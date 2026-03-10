@@ -132,10 +132,3 @@ export enum LEAVE_ENCASHMENT_STATUS {
   CANCEL = "cancel",
   PAID = "paid",
 }
-
-export const TOAST_CONFIG = {
-  duration: 3000,
-  position: "top-right" as const,
-  showCloseButton: true,
-  showIcons: false,
-};

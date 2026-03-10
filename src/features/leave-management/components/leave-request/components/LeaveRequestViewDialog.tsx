@@ -9,7 +9,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import StatusBadge from "@/components/shared/common-status-badge";
+import StatusBadge from "@/components/ui/status-badge";
 import { formatDropDownLabel, isImage } from "@/utils/commonFunction";
 import moment from "moment";
 import { Textarea } from "@/components/ui/textarea";
