@@ -11,7 +11,7 @@ export default function SuperAdminSignIn() {
   return (
     <div className="relative flex min-h-svh flex-col lg:grid lg:grid-cols-2 lg:px-0">
       <SignInLeftSection />
-      <div className="flex items-center justify-center p-4 md:p-8">
+      <div className="flex flex-1 items-center justify-center p-4 md:p-8">
         <SignInSection />
       </div>
     </div>
