@@ -39,6 +39,11 @@ import { DateRange } from "react-day-picker";
 import { Main } from "@/components/layout/main";
 import { formatName } from "@/utils/commonFunction";
 import StatusBadge from "@/components/ui/status-badge";
+import ActionButton from "@/components/shared/table-primary-action-button";
+import { FileDown } from "lucide-react";
+import { useExportFile } from "@/hooks/useExportFile";
+import API from "@/config/api/api";
+import { APP_MESSAGES } from "@/constants/messages.constants";
 
 export interface FormData {
   salesRep: string;
@@ -89,6 +94,7 @@ export default function VisitReports() {
   const { watch, setValue } = useForm<FormData>({
     defaultValues: { salesRep: "", search: "" },
   });
+  const { exportFile, isLoading: isExportLoading } = useExportFile();
   const completedVisits = useGetAllCompletedVisit(pagination);
 
   const visitReports = completedVisits.allData ?? [];
@@ -141,6 +147,16 @@ export default function VisitReports() {
     const searchValue = value ?? "";
     setValue("search", searchValue);
     debouncedSearch(searchValue);
+  };
+
+  const handleExport = () => {
+    const { page, limit, ...filters } = pagination;
+
+    exportFile({
+      url: API.calendar.exportCsv,
+      type: "csv",
+      queryParams: { ...filters, status: "completed" },
+    });
   };
 
   const selectedRep = watch("salesRep");
@@ -197,11 +213,26 @@ export default function VisitReports() {
     <Main className="flex flex-col gap-4">
       <GlobalFilterSection key={"calender-view-filters"} filters={filters} />
       <Card>
-        <CardHeader>
-          <CardTitle>Visit Reports</CardTitle>
-          <CardDescription>
-            Completed visit summaries and client feedback
-          </CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Visit Reports</CardTitle>
+            <CardDescription>
+              Completed visit summaries and client feedback
+            </CardDescription>
+          </div>
+          <ActionButton
+            text="Export Visits"
+            onAction={handleExport}
+            icon={FileDown}
+            loading={isExportLoading}
+            loadingText={APP_MESSAGES.EXPORT.EXPORTING}
+            disabled={
+              completedVisits.totalCount === 0 ||
+              completedVisits.isLoading ||
+              isExportLoading
+            }
+            disabledTooltip={APP_MESSAGES.EXPORT.NO_DATA_EXPORT}
+          />
         </CardHeader>
         <CardContent>
           <InfiniteScroll
