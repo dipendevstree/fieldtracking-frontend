@@ -149,6 +149,7 @@ const API = {
     delete: "visit/delete",
     visitFeedBack: "visit/visitFeedBack",
     visitEmployeeAnalytics: "visit/visitEmployeeAnalytics",
+    exportCsv: "visit/export/csv",
   },
   dailyExpenses: {
     list: "expenses/list",
@@ -286,6 +287,7 @@ const API = {
     delete: "holiday/delete",
     myHoliday: "holiday/my",
     stats: "holiday/stats",
+    exportCsv: "holiday/export/csv",
   },
   userTier: {
     list: "user-tiers/list",
@@ -305,6 +307,7 @@ const API = {
     delete: "leave/delete",
     stats: "leave/stats",
     applyStats: "leave/apply/stats",
+    exportCsv: "leave/export/csv",
   },
   holidayType: {
     list: "holidayType/list",

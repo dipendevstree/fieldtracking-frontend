@@ -20,6 +20,10 @@ import { useGetAllHolidayTypes } from "../../services/holiday-type.action.hook";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import HolidayListTable from "./components/holiday-list-table";
 import { useHolidayStore } from "../../store/holiday-type.store";
+import ActionButton from "@/components/shared/table-primary-action-button";
+import { FileDown } from "lucide-react";
+import { useExportFile } from "@/hooks/useExportFile";
+import API from "@/config/api/api";
 
 export default function HolidayManagement() {
   const { open, setOpen, currentRow, setCurrentRow } = useHolidayStore();
@@ -40,6 +44,7 @@ export default function HolidayManagement() {
     isLoading,
     totalCount = 0,
   } = useGetAllHolidays(pagination);
+  const { exportFile, isLoading: isExportLoading } = useExportFile();
   const isSpecialList = [
     { value: "true", label: "Special" },
     { value: "false", label: "Not Special" },
@@ -144,6 +149,16 @@ export default function HolidayManagement() {
     }));
   };
 
+  const handleExport = () => {
+    const { page, limit, ...filters } = pagination;
+
+    exportFile({
+      url: API.holiday.exportCsv,
+      type: "csv",
+      queryParams: filters,
+    });
+  };
+
   return (
     <Main className="space-y-6 pb-10">
       <div className="grid gap-4 md:grid-cols-3">
@@ -202,11 +217,22 @@ export default function HolidayManagement() {
         <h2 className="text-2xl font-bold tracking-tight text-slate-900">
           List of Holidays
         </h2>
-        <PermissionGate requiredPermission="list_of_holidays" action="add">
-          <Button onClick={openAddDialog}>
-            <Plus className="mr-2 h-4 w-4" /> Add Holiday
-          </Button>
-        </PermissionGate>
+        <div className="flex items-center gap-2">
+          <PermissionGate requiredPermission="list_of_holidays" action="add">
+            <Button onClick={openAddDialog}>
+              <Plus className="mr-2 h-4 w-4" /> Add Holiday
+            </Button>
+          </PermissionGate>
+          <ActionButton
+            text="Export Holidays"
+            onAction={handleExport}
+            icon={FileDown}
+            loading={isExportLoading}
+            loadingText="Exporting..."
+            disabled={totalCount === 0 || isLoading}
+            disabledTooltip="No holidays available to export"
+          />
+        </div>
       </div>
 
       <GlobalFilterSection key={"holiday-filters"} filters={filters} />
