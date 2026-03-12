@@ -15,7 +15,11 @@ import { PermissionGate } from "@/permissions/components/PermissionGate";
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import { FilterConfig, Option } from "@/components/global-filter-section";
 import { DateRange } from "react-day-picker";
-import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
+import {
+  DEFAULT_PAGE_NUMBER,
+  DEFAULT_PAGE_SIZE,
+  REPORT_FORMAT,
+} from "@/data/app.data";
 import { useGetAllHolidayTypes } from "../../services/holiday-type.action.hook";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import HolidayListTable from "./components/holiday-list-table";
@@ -24,6 +28,7 @@ import ActionButton from "@/components/shared/table-primary-action-button";
 import { FileDown } from "lucide-react";
 import { useExportFile } from "@/hooks/useExportFile";
 import API from "@/config/api/api";
+import { APP_MESSAGES } from "@/constants/messages.constants";
 
 export default function HolidayManagement() {
   const { open, setOpen, currentRow, setCurrentRow } = useHolidayStore();
@@ -154,7 +159,7 @@ export default function HolidayManagement() {
 
     exportFile({
       url: API.holiday.exportCsv,
-      type: "csv",
+      type: REPORT_FORMAT.CSV,
       queryParams: filters,
     });
   };
@@ -228,9 +233,9 @@ export default function HolidayManagement() {
             onAction={handleExport}
             icon={FileDown}
             loading={isExportLoading}
-            loadingText="Exporting..."
-            disabled={totalCount === 0 || isLoading}
-            disabledTooltip="No holidays available to export"
+            loadingText={APP_MESSAGES.EXPORT.EXPORTING}
+            disabled={totalCount === 0 || isLoading || isExportLoading}
+            disabledTooltip={APP_MESSAGES.EXPORT.NO_DATA_EXPORT}
           />
         </div>
       </div>

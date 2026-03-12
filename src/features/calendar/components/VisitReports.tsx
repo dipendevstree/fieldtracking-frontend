@@ -25,7 +25,11 @@ import {
 } from "../services/calendar-view.hook";
 import { VisitReport } from "../type/type";
 import { useCallback, useEffect, useState } from "react";
-import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
+import {
+  DEFAULT_PAGE_NUMBER,
+  DEFAULT_PAGE_SIZE,
+  REPORT_FORMAT,
+} from "@/data/app.data";
 import moment from "moment-timezone";
 import InfiniteScroll from "react-infinite-scroll-component";
 import GlobalFilterSection from "@/components/global-table-filter-section";
@@ -154,7 +158,7 @@ export default function VisitReports() {
 
     exportFile({
       url: API.calendar.exportCsv,
-      type: "csv",
+      type: REPORT_FORMAT.CSV,
       queryParams: { ...filters, status: "completed" },
     });
   };
