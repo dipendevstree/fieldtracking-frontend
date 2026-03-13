@@ -229,7 +229,7 @@ export function ProfileDropdown({
           </>
         )}
 
-        {user?.organization && (
+        {user?.organization && user?.role?.roleName === "Admin" && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
