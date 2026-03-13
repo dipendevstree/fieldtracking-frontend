@@ -99,6 +99,14 @@ export interface Organization {
   planEndDate?: string;
   employeeRang?: EmployeeRange;
   organizationType?: OrganizationType;
+  planStatus?: OrganizationPlanStatus;
+  currentPlan?: {
+    status: OrganizationPlanStatus;
+    gracePeriodEndDate: string;
+    planEndDate: string;
+    planStartDate: string;
+    planType: string;
+  };
 }
 
 export interface OrganizationType {
@@ -397,4 +405,12 @@ export const defaultAuthState: Omit<AuthState, keyof AuthActions> = {
 export enum ViewType {
   Admin = "Admin View",
   Self = "Self View",
+}
+
+export enum OrganizationPlanStatus {
+  TRIAL = "TRIAL",
+  ACTIVE = "ACTIVE",
+  GRACE_PERIOD = "GRACE_PERIOD",
+  EXPIRED = "EXPIRED",
+  SUSPENDED = "SUSPENDED",
 }

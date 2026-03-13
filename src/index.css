@@ -468,3 +468,13 @@
 [data-sonner-toast]:has([data-close-button]) [data-content] {
   padding-right: 2.5rem !important;
 }
+
+/* --- Top Banner Layout Adjustments --- */
+body.has-top-banner [data-slot="sidebar-container"] {
+  top: 37px !important;
+  height: calc(100svh - 37px) !important;
+}
+
+body.has-top-banner .header-fixed {
+  top: 37px !important;
+}
