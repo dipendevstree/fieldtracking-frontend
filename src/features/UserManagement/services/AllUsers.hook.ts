@@ -3,6 +3,7 @@ import useDeleteData from "@/hooks/use-delete-data";
 import useFetchData from "@/hooks/use-fetch-data";
 import usePatchData from "@/hooks/use-patch-data";
 import usePostData from "@/hooks/use-post-data";
+import { useDropdownFetch } from "@/hooks/use-dropdown-fetch";
 import { BulkImportResponse } from "../types";
 
 const USEALLUSERS_QUERY = "users-list";
@@ -107,4 +108,8 @@ export const useBulkImportUsers = (
       },
     },
   });
+};
+
+export const useGetUsersDropdown = (params?: any, enabled: boolean = true) => {
+  return useDropdownFetch(API.users.dropdown, params, enabled);
 };

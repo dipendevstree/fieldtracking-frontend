@@ -1,11 +1,8 @@
 import API from "@/config/api/api";
 import useFetchData from "@/hooks/use-fetch-data";
-import useFetchInfiniteData from "@/hooks/use-fetch-Infinite-data";
-export interface PaginatedResponse<T> {
-  list: T[];
-  totalCount: number;
-  unreadCount?: number;
-}
+import useInfiniteFetch, {
+  PaginatedResponse,
+} from "@/hooks/use-infinite-fetch";
 import { InfiniteData, UseInfiniteQueryResult } from "@tanstack/react-query";
 import { useCallback, useRef } from "react";
 import { Notification } from "../types";
@@ -26,9 +23,10 @@ export const useGetNotifications = (
   unreadCount: number;
   lastPostRef: (node: HTMLDivElement) => void;
 } => {
-  const query = useFetchInfiniteData<Notification>({
+  const query = useInfiniteFetch<Notification>({
     url: API.notifications.list,
     params,
+    queryKey: [API.notifications.list, params],
   });
   const observerElem = useRef<IntersectionObserver | null>(null);
 
@@ -53,10 +51,10 @@ export const useGetNotifications = (
   return {
     ...query,
     lastPostRef,
-    allData: infiniteData?.pages?.flatMap((page) => page.list) ?? [],
+    allData: infiniteData?.pages?.flatMap((page) => page.list || []) ?? [],
     totalCount: infiniteData?.pages[0]?.totalCount ?? 0,
     unreadCount: infiniteData?.pages[0]?.unreadCount ?? 0,
-  };
+  } as any;
 };
 
 export const useGetAllNotifications = (

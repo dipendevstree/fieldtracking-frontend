@@ -29,6 +29,11 @@ export interface FilterConfig {
   disablePastDates?: boolean;
   disableFutureDates?: boolean;
   allowClear?: boolean;
+  onFetchMore?: () => void;
+  hasNextPage?: boolean;
+  isFetchingNextPage?: boolean;
+  onSearchChange?: (search: string) => void;
+  isLoading?: boolean;
 }
 
 interface DataTableToolbarProps {
@@ -101,6 +106,11 @@ export function DataTableToolbarCompact({
                   onChange={filter.onChange ?? (() => {})}
                   disabled={false}
                   onCancelPress={filter.onCancelPress}
+                  onFetchMore={filter.onFetchMore}
+                  hasNextPage={filter.hasNextPage}
+                  isFetchingNextPage={filter.isFetchingNextPage}
+                  onSearchChange={filter.onSearchChange}
+                  isLoading={filter.isLoading}
                 />
               </div>
             );

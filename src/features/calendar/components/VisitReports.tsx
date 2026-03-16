@@ -19,10 +19,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  useGetAllCompletedVisit,
-  useGetAllCustomer,
-} from "../services/calendar-view.hook";
+import { useGetAllCompletedVisit } from "../services/calendar-view.hook";
+import { useGetCustomersDropdown } from "@/features/customers/services/Customers.hook";
 import { VisitReport } from "../type/type";
 import { useCallback, useEffect, useState } from "react";
 import {
@@ -36,8 +34,7 @@ import GlobalFilterSection from "@/components/global-table-filter-section";
 import { FilterConfig } from "@/components/global-filter-section";
 import { useForm } from "react-hook-form";
 import debounce from "lodash.debounce";
-import { useSelectOptions } from "@/hooks/use-select-option";
-import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
+import { useGetUsersDropdown } from "@/features/UserManagement/services/AllUsers.hook";
 import { format, subWeeks } from "date-fns";
 import { DateRange } from "react-day-picker";
 import { Main } from "@/components/layout/main";
@@ -95,6 +92,7 @@ export default function VisitReports() {
     from: oneWeekAgo,
     to: today,
   });
+
   const { watch, setValue } = useForm<FormData>({
     defaultValues: { salesRep: "", search: "" },
   });
@@ -103,30 +101,8 @@ export default function VisitReports() {
 
   const visitReports = completedVisits.allData ?? [];
 
-  const { data: userList = [] } = useGetUsersForDropdown({
-    enabled: true,
-  });
-
-  const enhancedUserList = userList.map((user: any) => ({
-    ...user,
-    fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
-  }));
-
-  const users = useSelectOptions({
-    listData: enhancedUserList,
-    labelKey: "fullName",
-    valueKey: "id",
-  }).map((option) => ({ ...option, value: String(option.value) }));
-
-  const { data: customers } = useGetAllCustomer();
-  const customerOptions = useSelectOptions({
-    listData: customers ?? [],
-    labelKey: "companyName",
-    valueKey: "customerId",
-  }).map((option) => ({
-    ...option,
-    value: String(option.value),
-  }));
+  const usersDropdown = useGetUsersDropdown();
+  const customersDropdown = useGetCustomersDropdown();
 
   const handleDateRangeChange = (range?: DateRange) => {
     setSelectedRange(range);
@@ -198,8 +174,8 @@ export default function VisitReports() {
       onCancelPress: () => setValue("salesRep", ""),
       placeholder: "Select SalesRep",
       value: selectedRep,
-      options: users,
       searchableSelectClassName: "w-full max-w-[180px]",
+      ...usersDropdown,
     },
     {
       key: "customerId",
@@ -208,8 +184,8 @@ export default function VisitReports() {
       onCancelPress: () => setValue("customerId", ""),
       placeholder: "Select Customer",
       value: customerId,
-      options: customerOptions,
       searchableSelectClassName: "w-full max-w-[180px]",
+      ...customersDropdown,
     },
   ];
 

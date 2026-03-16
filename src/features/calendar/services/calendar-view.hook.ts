@@ -2,9 +2,9 @@ import API from "@/config/api/api";
 import { VISIT_STATUS } from "@/data/app.data";
 import useDeleteData from "@/hooks/use-delete-data";
 import useFetchData from "@/hooks/use-fetch-data";
-import useFetchInfiniteData, {
+import useInfiniteFetch, {
   PaginatedResponse,
-} from "@/hooks/use-fetch-Infinite-data";
+} from "@/hooks/use-infinite-fetch";
 import usePatchData from "@/hooks/use-patch-data";
 import usePostData from "@/hooks/use-post-data";
 import { InfiniteData } from "@tanstack/react-query";
@@ -144,13 +144,14 @@ export const useGetAllCompletedVisit = (
   params: IListParams,
   options?: { enabled?: boolean },
 ): UseGetAllCompletedVisit => {
-  const query = useFetchInfiniteData<any>({
+  const query = useInfiniteFetch<any>({
     url: `${CALENDAR_QUERY}`,
     params: {
       status: VISIT_STATUS.COMPLETED,
       ...params,
     },
     enabled: options?.enabled ?? true,
+    queryKey: [CALENDAR_QUERY, VISIT_STATUS.COMPLETED, params],
   });
 
   const observerElem = useRef<IntersectionObserver | null>(null);

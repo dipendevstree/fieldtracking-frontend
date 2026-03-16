@@ -45,12 +45,14 @@ const API = {
   },
   customerType: {
     list: "customerType/list",
+    dropdown: "customerType/dropdown",
     create: "customerType/create",
     update: "customerType/patch",
     delete: "customerType/delete",
   },
   customerMain: {
     list: "customer/list",
+    dropdown: "customer/dropdown",
     getCustomerById: "customer",
     create: "customer/create",
     createSingle: "customer/create-single",
@@ -94,6 +96,7 @@ const API = {
   },
   industry: {
     list: "industry/list",
+    dropdown: "industry/dropdown",
     create: "industry/create",
     update: "industry/patch",
   },
@@ -104,6 +107,7 @@ const API = {
   },
   users: {
     list: "users/list",
+    dropdown: "users/dropdown",
     create: "users/create",
     update: "users/patch",
     delete: "users/delete",

@@ -20,6 +20,11 @@ export interface SearchableSelectProps {
   onCancelPress?: () => void;
   placeholder?: string;
   disabled?: boolean;
+  onFetchMore?: () => void;
+  hasNextPage?: boolean;
+  isFetchingNextPage?: boolean;
+  onSearchChange?: (search: string) => void;
+  isLoading?: boolean;
 }
 
 export function SearchableSelect({
@@ -29,6 +34,11 @@ export function SearchableSelect({
   onCancelPress,
   placeholder = "Select...",
   disabled = false,
+  onFetchMore,
+  hasNextPage,
+  isFetchingNextPage,
+  onSearchChange,
+  isLoading,
 }: SearchableSelectProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -36,17 +46,42 @@ export function SearchableSelect({
   const contentRef = useRef<HTMLDivElement>(null);
   const wheelHandlerRef = useRef<((e: WheelEvent) => void) | null>(null);
 
+  // Handle infinite scroll
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      if (!onFetchMore || !hasNextPage || isFetchingNextPage) return;
+
+      const { scrollTop, scrollHeight, clientHeight } = e.currentTarget;
+      // Trigger when user scrolls within 20px of the bottom
+      if (scrollHeight - scrollTop - clientHeight < 20) {
+        onFetchMore();
+      }
+    },
+    [onFetchMore, hasNextPage, isFetchingNextPage],
+  );
+
+  // Handle debounced search for API
+  useEffect(() => {
+    if (!onSearchChange) return;
+
+    const timer = setTimeout(() => {
+      onSearchChange(search);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [search, onSearchChange]);
+
   // Auto-close popup only when user scrolls outside the popover
   useEffect(() => {
     if (!open) return;
-    const handleScroll = (e: Event) => {
+    const handlePageScroll = (e: Event) => {
       if (contentRef.current?.contains(e.target as Node)) return;
       setOpen(false);
       setSearch("");
     };
 
-    window.addEventListener("scroll", handleScroll, true);
-    return () => window.removeEventListener("scroll", handleScroll, true);
+    window.addEventListener("scroll", handlePageScroll, true);
+    return () => window.removeEventListener("scroll", handlePageScroll, true);
   }, [open]);
 
   // Callback ref: attach native non-passive wheel listener directly on content element
@@ -115,16 +150,29 @@ export function SearchableSelect({
     [options, value],
   );
 
-  const filteredOptions = useMemo(
-    () =>
-      options.filter((opt) =>
-        opt.label.toLowerCase().includes(search.toLowerCase()),
-      ),
-    [options, search],
+  const filteredOptions = useMemo(() => {
+    if (onSearchChange) return options;
+    return options.filter((opt) =>
+      (opt.label ?? "").toLowerCase().includes(search.toLowerCase()),
+    );
+  }, [options, search, onSearchChange]);
+
+  // Handle popover open/close
+  const handleOpenChange = useCallback(
+    (newOpen: boolean) => {
+      setOpen(newOpen);
+      if (!newOpen) {
+        setSearch("");
+        if (onSearchChange) {
+          onSearchChange("");
+        }
+      }
+    },
+    [onSearchChange],
   );
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger
         disabled={disabled}
         className={cn(
@@ -176,27 +224,35 @@ export function SearchableSelect({
 
           <div
             data-scroll-list
+            onScroll={handleScroll}
             className="max-h-64 overflow-y-auto overscroll-contain"
           >
             {filteredOptions.length > 0 ? (
-              filteredOptions.map((opt) => (
-                <div
-                  key={opt.value}
-                  onClick={() => handleSelect(opt.value)}
-                  className={cn(
-                    "focus:bg-accent focus:text-accent-foreground hover:bg-accent hover:text-accent-foreground relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm select-none",
-                    value === opt.value && "bg-accent text-accent-foreground",
-                  )}
-                >
-                  <span className="flex-1">{opt.label}</span>
-                  {value === opt.value && (
-                    <CheckIcon className="size-4 shrink-0" />
-                  )}
-                </div>
-              ))
+              <>
+                {filteredOptions.map((opt) => (
+                  <div
+                    key={opt.value}
+                    onClick={() => handleSelect(opt.value)}
+                    className={cn(
+                      "focus:bg-accent focus:text-accent-foreground hover:bg-accent hover:text-accent-foreground relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm select-none",
+                      value === opt.value && "bg-accent text-accent-foreground",
+                    )}
+                  >
+                    <span className="flex-1">{opt.label}</span>
+                    {value === opt.value && (
+                      <CheckIcon className="size-4 shrink-0" />
+                    )}
+                  </div>
+                ))}
+                {(isFetchingNextPage || isLoading) && (
+                  <div className="text-muted-foreground py-2 text-xs text-center">
+                    {isLoading ? "Searching..." : "Loading more..."}
+                  </div>
+                )}
+              </>
             ) : (
               <div className="text-muted-foreground p-2 text-sm text-center">
-                No options found.
+                {isLoading ? "Searching..." : "No options found."}
               </div>
             )}
           </div>

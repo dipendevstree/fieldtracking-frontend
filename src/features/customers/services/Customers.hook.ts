@@ -3,6 +3,7 @@ import useFetchData from "@/hooks/use-fetch-data";
 import usePatchData from "@/hooks/use-patch-data";
 import usePostData from "@/hooks/use-post-data";
 import useDeleteData from "@/hooks/use-delete-data";
+import { useDropdownFetch } from "@/hooks/use-dropdown-fetch";
 import { Customer } from "../types";
 
 interface BulkImportResponse {
@@ -210,7 +211,7 @@ export const useGetCustomerById = (customerId: string, enabled: boolean) => {
 
 export const useUpdateCustomer = (
   customerId: string,
-  onSuccess?: () => void
+  onSuccess?: () => void,
 ) => {
   return usePatchData({
     url: `${API.customerMain.update}/${customerId}`,
@@ -225,7 +226,7 @@ export const useUpdateCustomer = (
 
 export const useDeleteCustomer = (
   customerId: string,
-  onSuccess?: () => void
+  onSuccess?: () => void,
 ) => {
   return useDeleteData({
     url: `${API.customerMain.delete}/${customerId}`,
@@ -240,7 +241,7 @@ export const useDeleteCustomer = (
 
 export const useBulkImportCustomers = (
   onSuccess?: (data: BulkImportResponse) => void,
-  onError?: (error: Error) => void
+  onError?: (error: Error) => void,
 ) => {
   return usePostData<BulkImportResponse, FormData>({
     url: API.customerMain.importCsv,
@@ -248,4 +249,11 @@ export const useBulkImportCustomers = (
     onSuccess,
     onError,
   });
+};
+
+export const useGetCustomersDropdown = (
+  params?: any,
+  enabled: boolean = true,
+) => {
+  return useDropdownFetch(API.customerMain.dropdown, params, enabled);
 };

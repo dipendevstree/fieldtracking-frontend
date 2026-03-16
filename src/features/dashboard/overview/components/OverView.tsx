@@ -2,22 +2,15 @@ import { useState, useCallback, useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, MapPin } from "lucide-react";
 import { SalesRep, DashboardKPI, AuditPagination } from "../type/type";
-import {
-  useGetCustomers,
-  useGetCustomerType,
-} from "@/features/customers/services/Customers.hook";
+import { useGetCustomers } from "@/features/customers/services/Customers.hook";
 import { useGetAllVisit } from "@/features/calendar/services/calendar-view.hook";
-import { useGetIndustry } from "@/features/customers/services/Customers.hook";
-import { useGetUsers } from "@/features/livetracking/services/live-tracking-services";
 import debounce from "lodash.debounce";
 import { CustomDataTable } from "@/components/shared/custom-data-table";
 import { useGetAuditLogs, useGetStats } from "../services/OverView.hook";
+import { useGetUsersDropdown } from "@/features/UserManagement/services/AllUsers.hook";
+import { useGetCustomersDropdown } from "@/features/customers/services/Customers.hook";
+import { useGetCustomerTypeDropdown } from "@/features/customer-type/services/CustomerType.hook";
 import { endOfDay, startOfDay } from "date-fns";
-import {
-  formatDropDownLabel,
-  formatName,
-  getFullName,
-} from "@/utils/commonFunction";
 import { DateRange } from "react-day-picker";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "@tanstack/react-router";
@@ -28,6 +21,7 @@ import { auditLogColumns } from "./columns/auditLogColumns";
 import { FilterConfig } from "@/components/global-filter-section";
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
+import { useGetIndustryDropdown } from "@/features/organizations/services/organization.hook";
 
 interface OverviewProps {
   salesReps: SalesRep[];
@@ -88,16 +82,6 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
     totalCount: scheduleTotalCount = 0,
   } = useGetAllVisit(schedulePagination);
 
-  // Get live tracking users data to count active users
-  const { listData: liveTrackingUsers = [] } = useGetUsers({
-    // page: 1,
-    // limit: 1000, // Get all users to count them
-    includeLatLong: true,
-  });
-
-  // Get customerType data for filter
-  const { data: customerTypeList = [] } = useGetCustomerType();
-
   // Get Audit logs data from API with proper parameters
   const {
     data: auditLogsResponse = {
@@ -110,6 +94,11 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
   } = useGetAuditLogs(auditPagination);
 
   const auditLogsList = auditLogsResponse.list || [];
+
+  const usersDropdown = useGetUsersDropdown();
+  const customersDropdown = useGetCustomersDropdown();
+  const customerTypeDropdown = useGetCustomerTypeDropdown();
+  const industryDropdown = useGetIndustryDropdown();
 
   // Debounced search for schedule
   const debouncedScheduleSearch = useCallback(
@@ -218,9 +207,6 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
     location: visit.streetAddress || visit.location || "N/A",
   }));
 
-  // Get industry data for filter
-  const { data: industryList = [] } = useGetIndustry();
-
   const debouncedAuditSearch = useCallback(
     debounce((value: string) => {
       setAuditPagination((prev) => ({
@@ -277,24 +263,6 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
     navigate({ to: path });
   };
 
-  const usersOptions = useMemo(
-    () =>
-      (liveTrackingUsers || []).map((user: any) => ({
-        label: formatName(getFullName(user.firstName, user.lastName)),
-        value: String(user.id),
-      })),
-    [liveTrackingUsers],
-  );
-
-  const customersOptions = useMemo(
-    () =>
-      (customers || []).map((c: any) => ({
-        label: c.companyName,
-        value: c.customerId,
-      })),
-    [customers],
-  );
-
   const statusOptions = useMemo(
     () => [
       { label: "Scheduled", value: "Scheduled" },
@@ -307,24 +275,6 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
   const priorityOptions = useMemo(
     () => Object.values(PRIORITY).map((p) => ({ label: p, value: p })),
     [],
-  );
-
-  const customerTypeOptions = useMemo(
-    () =>
-      (customerTypeList || []).map((t: any) => ({
-        label: formatDropDownLabel(t.typeName),
-        value: t.customerTypeId,
-      })),
-    [customerTypeList],
-  );
-
-  const industryOptions = useMemo(
-    () =>
-      (industryList || []).map((i: any) => ({
-        label: i.industryName,
-        value: i.industryId,
-      })),
-    [industryList],
   );
 
   const auditActionOptions = useMemo(
@@ -351,9 +301,9 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
         handleScheduleSalesRepFilterChange(String(value)),
       placeholder: "Select Sales Rep",
       value: schedulePagination.salesRepresentativeUserId,
-      options: usersOptions,
       onCancelPress: () => handleScheduleSalesRepFilterChange("All Sales Reps"),
       searchableSelectClassName: "w-full sm:w-[180px]",
+      ...usersDropdown,
     },
     {
       key: "customerId",
@@ -362,9 +312,9 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
         handleScheduleCustomerFilterChange(String(value)),
       placeholder: "Select Customer",
       value: schedulePagination.customerId,
-      options: customersOptions,
       onCancelPress: () => handleScheduleCustomerFilterChange("All Customers"),
       searchableSelectClassName: "w-full sm:w-[180px]",
+      ...customersDropdown,
     },
     {
       key: "status",
@@ -405,9 +355,9 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
       onChange: (value: any) => handleCustomerTypeFilterChange(String(value)),
       placeholder: "Select Customer Type",
       value: customerPagination.customerTypeId,
-      options: customerTypeOptions,
       onCancelPress: () => handleCustomerTypeFilterChange("All Customer Types"),
       searchableSelectClassName: "w-full sm:w-[180px]",
+      ...customerTypeDropdown,
     },
     {
       key: "industryId",
@@ -415,9 +365,9 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
       onChange: (value: any) => handleIndustryFilterChange(String(value)),
       placeholder: "Select Industry",
       value: customerPagination.industryId,
-      options: industryOptions,
       onCancelPress: () => handleIndustryFilterChange("All Industries"),
       searchableSelectClassName: "w-full sm:w-[180px]",
+      ...industryDropdown,
     },
   ];
 
@@ -444,9 +394,9 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
       onChange: (value: any) => handleUserFilterChange(String(value)),
       placeholder: "Select User",
       value: auditPagination.userId,
-      options: usersOptions,
       onCancelPress: () => handleUserFilterChange("ALL USERS"),
       searchableSelectClassName: "w-full sm:w-[180px]",
+      ...usersDropdown,
     },
     {
       key: "action",

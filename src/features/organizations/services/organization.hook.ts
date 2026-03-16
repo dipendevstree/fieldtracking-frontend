@@ -1,5 +1,6 @@
 import API from "@/config/api/api";
 import useFetchData from "@/hooks/use-fetch-data";
+import { useDropdownFetch } from "@/hooks/use-dropdown-fetch";
 import usePatchData from "@/hooks/use-patch-data";
 import usePostData from "@/hooks/use-post-data";
 
@@ -17,7 +18,7 @@ export interface IListParams {
 
 export const useGetOrganizations = (
   params: IListParams,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) => {
   const query = useFetchData<any>({
     url: ORGANIZATION_QUERY,
@@ -35,7 +36,7 @@ export const useGetOrganizations = (
 };
 export const useGetPendingUsers = (
   params: IListParams,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) => {
   const query = useFetchData<any>({
     url: USEPENDINGUSERS_QUERY,
@@ -54,7 +55,7 @@ export const useGetPendingUsers = (
 };
 export const useGetAllSchemaUsers = (
   params: IListParams,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) => {
   const query = useFetchData<any>({
     url: USEALLUSERS_QUERY,
@@ -138,9 +139,8 @@ export const useCreateOrganization = (onSuccess?: () => void) => {
 };
 export const useUpdateOrganization = (
   organizationID: string,
-  onSuccess?: () => void
+  onSuccess?: () => void,
 ) => {
-
   return usePatchData({
     url: `${API.organizations.update}/${organizationID}`,
     refetchQueries: [ORGANIZATION_QUERY],
@@ -162,4 +162,11 @@ export const useUpdateStatus = (onSuccess?: () => void) => {
       }
     },
   });
+};
+
+export const useGetIndustryDropdown = (
+  params?: any,
+  enabled: boolean = true,
+) => {
+  return useDropdownFetch(API.industry.dropdown, params, enabled);
 };
