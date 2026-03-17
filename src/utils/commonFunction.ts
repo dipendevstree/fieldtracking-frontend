@@ -248,3 +248,17 @@ export const formatStatus = (status?: string | null): string => {
   if (!status) return "-";
   return status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 };
+
+/**
+ * Converts an enum into dropdown options.
+ *
+ * @template T - Enum type
+ * @param enumObj - Enum object
+ * @returns Dropdown options array
+ */
+export const enumToOptions = <T extends Record<string, string>>(enumObj: T) => {
+  return Object.values(enumObj).map((value) => ({
+    label: formatDropDownLabel(value),
+    value,
+  }));
+};

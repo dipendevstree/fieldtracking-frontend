@@ -132,3 +132,12 @@ export enum LEAVE_ENCASHMENT_STATUS {
   CANCEL = "cancel",
   PAID = "paid",
 }
+
+export enum OrganizationPlanStatus {
+  TRIAL = "TRIAL",
+  ACTIVE = "ACTIVE",
+  UPCOMING = "UPCOMING",
+  GRACE_PERIOD = "GRACE_PERIOD",
+  EXPIRED = "EXPIRED",
+  SUSPENDED = "SUSPENDED",
+}
