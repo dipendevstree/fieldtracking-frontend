@@ -136,12 +136,14 @@ export function AuthenticatedLayout({
             <div className="ml-auto flex items-center space-x-2">
               {/* {user?.superAdminCreatedBy && <ProcessLeaveBalance />} */}
 
-              <PermissionGate
-                requiredPermission="attendance_management"
-                action="add"
-              >
-                <WorkDaySession />
-              </PermissionGate>
+              {user && !user.isSuperAdmin && (
+                <PermissionGate
+                  requiredPermission="attendance_management"
+                  action="add"
+                >
+                  <WorkDaySession />
+                </PermissionGate>
+              )}
 
               <Search />
               {!user?.isSuperAdmin && <NotificationList />}
