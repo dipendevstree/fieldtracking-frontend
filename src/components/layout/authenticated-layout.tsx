@@ -14,8 +14,8 @@ import { cn } from "@/lib/utils";
 import { useFcm } from "@/hooks/use-fcm";
 import { useFcmTokenUpdateUser } from "@/features/UserManagement/services/AllUsers.hook";
 import WorkDaySession from "@/features/attendance-management/components/attendance/components/WorkDaySession";
-import { usePermission } from "@/permissions/hooks/use-permission";
 import { usePermissionData } from "@/hooks/use-permission-data";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 // import ProcessLeaveBalance from "@/features/leave-management/components/leave-balance/ProcessLeaveBalance";
 
 export function AuthenticatedLayout({
@@ -102,9 +102,6 @@ export function AuthenticatedLayout({
     }
   }, [navigate]);
 
-  const { canPerformAction } = usePermission();
-  const canView = canPerformAction("attendance_management", "viewOwn");
-
   if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -138,7 +135,14 @@ export function AuthenticatedLayout({
           <Header fixed className="shadow">
             <div className="ml-auto flex items-center space-x-2">
               {/* {user?.superAdminCreatedBy && <ProcessLeaveBalance />} */}
-              {canView && <WorkDaySession />}
+
+              <PermissionGate
+                requiredPermission="attendance_management"
+                action="add"
+              >
+                <WorkDaySession />
+              </PermissionGate>
+
               <Search />
               {!user?.isSuperAdmin && <NotificationList />}
               {/* <ThemeSelector /> */}
