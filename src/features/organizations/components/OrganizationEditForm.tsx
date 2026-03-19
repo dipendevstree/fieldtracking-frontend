@@ -38,34 +38,36 @@ import type { ICountry, IState, ICity } from "country-state-city";
 import { SearchableSelect } from "@/components/ui/SearchableSelect";
 
 // Schema for edit form (organization details only)
-const editFormSchema = z.object({
-  organizationName: z.string().min(1, "Organization name is required"),
-  industryId: z.string().min(1, "Industry is required"),
-  organizationTypes: z.string().min(1, "organizationTypes is required"),
-  employeeRangeId: z.string().min(1, "Employee range is required"),
-  isSeparateSchema: z.boolean(),
-  menuIds: z.array(z.string()).min(1, "At least one module must be selected"),
-  website: z.string().optional(),
-  description: z.string().optional(),
-  address: z.string().optional(),
-  country: z.string().optional(),
-  city: z.string().optional(),
-  zipCode: z.string().optional(),
-  state: z.string().optional(),
-  planStartDate: z.string().min(1, "Plan start date is required"),
-  planEndDate: z.string().min(1, "Plan end date is required"),
-}).refine(
-  (data) => {
-    if (data.planStartDate && data.planEndDate) {
-      return new Date(data.planEndDate) >= new Date(data.planStartDate);
-    }
-    return true;
-  },
-  {
-    message: "Plan end date must be on or after the plan start date.",
-    path: ["planEndDate"],
-  }
-);
+const editFormSchema = z
+  .object({
+    organizationName: z.string().min(1, "Organization name is required"),
+    industryId: z.string().min(1, "Industry is required"),
+    organizationTypes: z.string().min(1, "organizationTypes is required"),
+    employeeRangeId: z.string().min(1, "Employee range is required"),
+    isSeparateSchema: z.boolean(),
+    menuIds: z.array(z.string()).min(1, "At least one module must be selected"),
+    website: z.string().optional(),
+    description: z.string().optional(),
+    address: z.string().optional(),
+    country: z.string().optional(),
+    city: z.string().optional(),
+    zipCode: z.string().optional(),
+    state: z.string().optional(),
+    planStartDate: z.string().min(1, "Plan start date is required"),
+    planEndDate: z.string().min(1, "Plan end date is required"),
+  })
+  .refine(
+    (data) => {
+      if (data.planStartDate && data.planEndDate) {
+        return new Date(data.planEndDate) >= new Date(data.planStartDate);
+      }
+      return true;
+    },
+    {
+      message: "Plan end date must be on or after the plan start date.",
+      path: ["planEndDate"],
+    },
+  );
 
 type TEditFormSchema = z.infer<typeof editFormSchema>;
 
@@ -703,12 +705,15 @@ export function OrganizationEditForm({
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline" className="w-full sm:w-fit h-10">
+              Cancel
+            </Button>
           </DialogClose>
           <CustomButton
             type="submit"
             loading={loading}
             form="edit-organization-form"
+            className="w-full sm:w-fit h-10"
           >
             Update Organization
           </CustomButton>
