@@ -14,14 +14,14 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import CustomTooltip from "@/components/shared/custom-tooltip";
 import { useUpdateStatus } from "../services/organization.hook";
-import { useUsersStore } from "../store/organizations.store";
+import { useOrganizationStore } from "../store/organizations.store";
 
 interface DataTableRowActionsProps {
   row: Row<any>;
 }
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
-  const { setCurrentRow } = useUsersStore();
+  const { setCurrentRow } = useOrganizationStore();
   // const navigate = useNavigate();
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;

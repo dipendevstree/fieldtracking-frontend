@@ -1,20 +1,29 @@
-import { create } from 'zustand'
+import { create } from "zustand";
 
-// Define the dialog types
-type DialogType = 'add' | 'edit' | 'delete' | null
+// Define all dialog types
+export type DialogType =
+  | "add"
+  | "edit"
+  | "delete"
+  | "activatePlan"
+  | "renewPlan"
+  | "suspendOrganization"
+  | "extendGracePeriod"
+  | "planHistory"
+  | null;
 
-// Define the generic store interface
+// Generic store interface
 interface StoreState<T> {
-  open: DialogType
-  setOpen: (open: DialogType) => void
-  currentRow: T | null
-  setCurrentRow: (row: T | null) => void
+  open: DialogType;
+  setOpen: (open: DialogType) => void;
+  currentRow: T | null;
+  setCurrentRow: (row: T | null) => void;
 }
 
-// Create the generic Zustand store
-export const useUsersStore = create<StoreState<any>>((set) => ({
+// Zustand store
+export const useOrganizationStore = create<StoreState<any>>((set) => ({
   open: null,
   setOpen: (open) => set({ open }),
   currentRow: null,
   setCurrentRow: (row) => set({ currentRow: row }),
-}))
+}));

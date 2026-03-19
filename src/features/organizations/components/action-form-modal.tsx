@@ -5,7 +5,7 @@ import {
   useCreateOrganization,
   useUpdateOrganization,
 } from "../services/organization.hook";
-import { useUsersStore } from "../store/organizations.store";
+import { useOrganizationStore } from "../store/organizations.store";
 import { OrganizationEditForm } from "./OrganizationEditForm";
 import { OrganizationActionForm } from "./action-form";
 
@@ -16,7 +16,7 @@ const formatDateForApi = (dateStr: string): string => {
 };
 
 export function OrganizationsActionModal() {
-  const { open, setOpen, currentRow, setCurrentRow } = useUsersStore();
+  const { open, setOpen, currentRow, setCurrentRow } = useOrganizationStore();
   const {
     mutate: updateOrganization,
     isPending: isUpdateLoading,

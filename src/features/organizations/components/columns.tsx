@@ -83,7 +83,7 @@ export const columns: ColumnDef<any>[] = [
     cell: ({ row }) => {
       const rawDate = row.original.createdDate;
       const formattedDate = format(rawDate, "dd-MM-yyyy");
-      return <div className="text-muted-foreground">{formattedDate}</div>;
+      return <div>{formattedDate}</div>;
     },
     enableHiding: false,
     enableSorting: false,

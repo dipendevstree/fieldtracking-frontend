@@ -16,7 +16,7 @@ export interface IListParams {
 }
 
 export const useGetOrganizations = (
-  params: IListParams,
+  params?: IListParams,
   options?: { enabled?: boolean }
 ) => {
   const query = useFetchData<any>({
