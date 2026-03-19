@@ -66,8 +66,15 @@ const customerFormSchema = z.object({
           .string()
           .email("Invalid email address")
           .min(1, "Email is required"),
-        phone: z.string().min(1, "Phone Number is required"),
-        designation: z.string().optional(),
+        phone: z
+          .string()
+          .min(1, "Phone Number is required")
+          .regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
+        designation: z
+          .string()
+          .regex(/^[a-zA-Z\s]*$/, "Designation must only contain characters")
+          .optional()
+          .or(z.literal("")),
         isPrimary: z.boolean(),
         userRole: z.string().optional(),
         assignedRep: z.string().optional(),
@@ -1153,6 +1160,13 @@ export default function AddCustomerPage({
                                       {...field}
                                       id={`contact-designation-${index}`}
                                       placeholder="Enter Designation"
+                                      onChange={(e) => {
+                                        const value = e.target.value.replace(
+                                          /[^a-zA-Z\s]/g,
+                                          "",
+                                        );
+                                        field.onChange(value);
+                                      }}
                                       aria-describedby={
                                         errors.contacts?.[index]?.designation
                                           ? `contact-designation-${index}-error`
@@ -1218,6 +1232,12 @@ export default function AddCustomerPage({
                                       id={`contact-phone-${index}`}
                                       type="tel"
                                       placeholder="Enter Phone Number"
+                                      onChange={(e) => {
+                                        const value = e.target.value
+                                          .replace(/\D/g, "")
+                                          .slice(0, 10);
+                                        field.onChange(value);
+                                      }}
                                       aria-describedby={
                                         errors.contacts?.[index]?.phone
                                           ? `contact-phone-${index}-error`
