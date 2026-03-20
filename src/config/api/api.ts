@@ -85,6 +85,14 @@ const API = {
     AllUsers: "users/all",
     updateStatus: "auth/activeDeactivateUserBySuperAdmin",
   },
+  plan: {
+    history: "plan/history",
+    dropdown: "plan/dropdown",
+    assign: "plan/assign",
+    renew: "plan/renew",
+    suspend: "plan/suspend",
+    extendGracePeriod: "plan/extend-grace-period",
+  },
 
   employeeRange: {
     list: "employeeRang/list",
