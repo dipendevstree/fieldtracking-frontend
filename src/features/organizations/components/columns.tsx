@@ -89,6 +89,17 @@ export const columns: ColumnDef<any>[] = [
     enableSorting: false,
   },
   {
+    accessorKey: "planStatus",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Plan Status" />
+    ),
+    cell: ({ row }) => {
+      return <StatusBadge status={row.original.planStatus ?? "-"} />;
+    },
+    enableHiding: false,
+    enableSorting: false,
+  },
+  {
     id: "actions",
     cell: ({ row }) => <DataTableRowActions row={row} />,
   },
