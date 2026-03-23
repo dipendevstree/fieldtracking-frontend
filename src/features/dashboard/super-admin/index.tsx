@@ -4,9 +4,17 @@ import { Shield } from "lucide-react";
 import { useAuth } from "@/stores/use-auth-store";
 import { Navigate } from "@tanstack/react-router";
 import { TopStatsCard } from "@/components/ui/TopStatsCard";
+import { useGetPlanStats } from "@/features/organizations/services/organization.hook";
 
 export default function SuperAdminDashboard() {
   const { user } = useAuth();
+
+  const { data: planStats } = useGetPlanStats();
+  const {
+    trialPlanOrganizations = 0,
+    paidPlanOrganizations = 0,
+    expiredPlanOrganizations = 0,
+  } = planStats || {};
 
   // Redirect non-super admins
   if (!user?.isSuperAdmin) {
@@ -28,7 +36,7 @@ export default function SuperAdminDashboard() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 mt-4">
         <TopStatsCard
           title="Trial Plan Organizations"
-          value={0}
+          value={trialPlanOrganizations}
           description="Organizations on trial plan"
           icon={Shield}
           href={{
@@ -38,7 +46,7 @@ export default function SuperAdminDashboard() {
 
         <TopStatsCard
           title="Paid Plan Organizations"
-          value={0}
+          value={paidPlanOrganizations}
           description="Organizations on paid plan"
           icon={Shield}
           href={{
@@ -48,7 +56,7 @@ export default function SuperAdminDashboard() {
 
         <TopStatsCard
           title="Expiring Plans"
-          value={0}
+          value={expiredPlanOrganizations}
           description="Organizations with expiring plans"
           icon={Shield}
           href={{
