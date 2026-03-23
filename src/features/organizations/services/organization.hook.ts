@@ -224,3 +224,15 @@ export const useExtendGracePeriod = (orgId: string, onSuccess?: () => void) => {
     },
   });
 };
+
+export const useGetPlanStats = () => {
+  const query = useFetchData<any>({
+    url: API.plan.planStats,
+  });
+  return {
+    ...query,
+    data: query.data,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
