@@ -92,6 +92,7 @@ const API = {
     renew: "plan/renew",
     suspend: "plan/suspend",
     extendGracePeriod: "plan/extend-grace-period",
+    planStats: "plan/stats",
   },
 
   employeeRange: {

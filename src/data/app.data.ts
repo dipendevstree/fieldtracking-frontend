@@ -141,3 +141,9 @@ export enum OrganizationPlanStatus {
   EXPIRED = "EXPIRED",
   SUSPENDED = "SUSPENDED",
 }
+
+export enum PlanFrequency {
+  MONTHLY = "MONTHLY",
+  QUARTERLY = "QUARTERLY",
+  YEARLY = "YEARLY",
+}

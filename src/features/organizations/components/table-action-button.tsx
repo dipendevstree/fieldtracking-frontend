@@ -20,6 +20,7 @@ import CustomButton from "@/components/shared/custom-button";
 import CustomTooltip from "@/components/shared/custom-tooltip";
 import { DialogType, useOrganizationStore } from "../store/organizations.store";
 import { useNavigate } from "@tanstack/react-router";
+import { OrganizationPlanStatus } from "@/components/layout/types";
 
 const ACTIONS: {
   label: string;
@@ -37,6 +38,33 @@ const ACTIONS: {
 export function DataTableRowActions({ row }: any) {
   const { setOpen, setCurrentRow } = useOrganizationStore();
   const navigate = useNavigate();
+
+  const planStatus = row.original.planStatus;
+
+  const filteredActions = ACTIONS.filter((action) => {
+    if (action.key === "edit" || action.key === "planHistory") return true;
+
+    if (planStatus === OrganizationPlanStatus.TRIAL) {
+      return action.key === "activatePlan";
+    }
+
+    if (
+      planStatus === OrganizationPlanStatus.ACTIVE ||
+      planStatus === OrganizationPlanStatus.GRACE_PERIOD
+    ) {
+      if (action.key === "renewPlan") return true;
+    }
+
+    if (planStatus === OrganizationPlanStatus.EXPIRED) {
+      return action.key === "suspendOrganization";
+    }
+
+    if (planStatus === OrganizationPlanStatus.GRACE_PERIOD) {
+      if (action.key === "extendGracePeriod") return true;
+    }
+
+    return false;
+  });
 
   const openAction = (type: DialogType) => {
     if (type === "planHistory") {
@@ -69,7 +97,7 @@ export function DataTableRowActions({ row }: any) {
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-[180px]">
-        {ACTIONS.map((action) => {
+        {filteredActions.map((action) => {
           const Icon = action.icon;
 
           return (

@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { DialogClose, DialogDescription } from "@radix-ui/react-dialog";
+import { DialogDescription } from "@radix-ui/react-dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { AlertCircle, Mail } from "lucide-react";
@@ -576,8 +576,6 @@ export function OrganizationActionForm({
                     )}
                   </div>
 
-                  
-
                   {/* Plan End Date */}
                   <div className="space-y-2">
                     <Label htmlFor="planEndDate">
@@ -618,10 +616,20 @@ export function OrganizationActionForm({
         </Form>
 
         <DialogFooter>
-          <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
-          </DialogClose>
-          <CustomButton type="submit" loading={loading} form="user-form">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => handleDialogOpenChange(false)}
+            className="w-full sm:w-fit h-10"
+          >
+            Cancel
+          </Button>
+          <CustomButton
+            type="submit"
+            loading={loading}
+            form="user-form"
+            className="w-full sm:w-fit h-10"
+          >
             {isEdit ? "Update Organization" : "Create Organization"}
           </CustomButton>
         </DialogFooter>

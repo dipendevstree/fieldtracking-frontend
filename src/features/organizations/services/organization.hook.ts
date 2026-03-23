@@ -17,7 +17,7 @@ export interface IListParams {
 
 export const useGetOrganizations = (
   params?: IListParams,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) => {
   const query = useFetchData<any>({
     url: ORGANIZATION_QUERY,
@@ -35,7 +35,7 @@ export const useGetOrganizations = (
 };
 export const useGetPendingUsers = (
   params: IListParams,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) => {
   const query = useFetchData<any>({
     url: USEPENDINGUSERS_QUERY,
@@ -54,7 +54,7 @@ export const useGetPendingUsers = (
 };
 export const useGetAllSchemaUsers = (
   params: IListParams,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) => {
   const query = useFetchData<any>({
     url: USEALLUSERS_QUERY,
@@ -138,9 +138,8 @@ export const useCreateOrganization = (onSuccess?: () => void) => {
 };
 export const useUpdateOrganization = (
   organizationID: string,
-  onSuccess?: () => void
+  onSuccess?: () => void,
 ) => {
-
   return usePatchData({
     url: `${API.organizations.update}/${organizationID}`,
     refetchQueries: [ORGANIZATION_QUERY],
@@ -156,6 +155,68 @@ export const useUpdateStatus = (onSuccess?: () => void) => {
   return usePostData({
     url: API.organizations.updateStatus,
     refetchQueries: [USEPENDINGUSERS_QUERY, useUserStatusCounts_QUERY],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};
+
+export const useGetPlans = (params?: any) => {
+  const query = useFetchData<any>({
+    url: API.plan.dropdown,
+    params,
+  });
+  return {
+    ...query,
+    plans: query.data?.list ?? [],
+  };
+};
+
+export const useAssignPlan = (orgId: string, onSuccess?: () => void) => {
+  return usePostData({
+    url: `${API.plan.assign}/${orgId}`,
+    refetchQueries: [ORGANIZATION_QUERY],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};
+
+export const useRenewPlan = (orgId: string, onSuccess?: () => void) => {
+  return usePostData({
+    url: `${API.plan.renew}/${orgId}`,
+    refetchQueries: [ORGANIZATION_QUERY],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};
+
+export const useSuspendOrganization = (
+  orgId: string,
+  onSuccess?: () => void,
+) => {
+  return usePatchData({
+    url: `${API.plan.suspend}/${orgId}`,
+    refetchQueries: [ORGANIZATION_QUERY],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};
+
+export const useExtendGracePeriod = (orgId: string, onSuccess?: () => void) => {
+  return usePatchData({
+    url: `${API.plan.extendGracePeriod}/${orgId}`,
+    refetchQueries: [ORGANIZATION_QUERY],
     onSuccess: () => {
       if (onSuccess) {
         onSuccess();
