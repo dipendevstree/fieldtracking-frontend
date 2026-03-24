@@ -3,6 +3,7 @@ import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-he
 import { format } from "date-fns";
 import StatusBadge from "@/components/ui/status-badge";
 import { PlanHistory } from "../type/type";
+import { formatDropDownLabel } from "@/utils/commonFunction";
 
 export const columns: ColumnDef<PlanHistory>[] = [
   {
@@ -70,6 +71,58 @@ export const columns: ColumnDef<PlanHistory>[] = [
       const status = row.original.status || "-";
       return <StatusBadge status={status} />;
     },
+    enableSorting: false,
+  },
+  {
+    accessorKey: "frequency",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Frequency" />
+    ),
+    cell: ({ row }) => (
+      <div className="text-sm">
+        {formatDropDownLabel(row.original.frequency) || "-"}
+      </div>
+    ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: "pricePerUser",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Price/User" />
+    ),
+    cell: ({ row }) => (
+      <div className="text-sm">{row.original.pricePerUser || "0"}</div>
+    ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: "gstPercent",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="GST %" />
+    ),
+    cell: ({ row }) => (
+      <div className="text-sm">{row.original.gstPercent || "0"}</div>
+    ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: "baseAmount",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Base Amount" />
+    ),
+    cell: ({ row }) => (
+      <div className="text-sm">{row.original.baseAmount || "0"}</div>
+    ),
+    enableSorting: false,
+  },
+  {
+    accessorKey: "gstAmount",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="GST Amount" />
+    ),
+    cell: ({ row }) => (
+      <div className="text-sm">{row.original.gstAmount || "0"}</div>
+    ),
     enableSorting: false,
   },
   {
