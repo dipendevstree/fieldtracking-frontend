@@ -1,6 +1,6 @@
 import { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
+import StatusBadge from "@/components/ui/status-badge";
 export const columns: ColumnDef<any>[] = [
   {
     accessorKey: "user",
@@ -75,33 +75,9 @@ export const columns: ColumnDef<any>[] = [
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Status" />
     ),
-    cell: ({ row }) => {
-      const status =
-        row.original.status || (row.original.isActive ? "active" : "inactive");
-      const getStatusColor = (status: string) => {
-        switch (status.toLowerCase()) {
-          case "active":
-            return "bg-green-100 text-green-800 border-green-200";
-          case "inactive":
-            return "bg-gray-100 text-gray-800 border-gray-200";
-          case "complete":
-            return "bg-blue-100 text-blue-800 border-blue-200";
-          case "pending":
-            return "bg-yellow-100 text-yellow-800 border-yellow-200";
-          default:
-            return "bg-gray-100 text-gray-800 border-gray-200";
-        }
-      };
-
-      return (
-        <Badge
-          variant="outline"
-          className={`capitalize ${getStatusColor(status)}`}
-        >
-          ● {status}
-        </Badge>
-      );
-    },
+    cell: ({ row }) => (
+      <StatusBadge status={row.original?.status || "-"} />
+    ),
     enableSorting: false,
   },
 ];
