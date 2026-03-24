@@ -107,8 +107,7 @@ export function OrganizationsActionModal() {
       adminJobTitle: values.adminJobTitle,
       menuIds: values.menuIds, // array of selected module IDs
       adminPhoneCountryCode: values.adminPhoneCountryCode,
-      planStartDate: formatDateForApi(values.planStartDate),
-      planEndDate: formatDateForApi(values.planEndDate),
+      maxUsers: values.maxUsers,
     };
     createOrganization(payload);
   };
@@ -130,8 +129,7 @@ export function OrganizationsActionModal() {
       state: values.state,
       isActive: values.isActive,
       menuIds: values.menuIds,
-      planStartDate: formatDateForApi(values.planStartDate),
-      planEndDate: formatDateForApi(values.planEndDate),
+      maxUsers: values.maxUsers,
     };
 
     updateOrganization(payload);

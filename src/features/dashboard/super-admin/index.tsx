@@ -55,9 +55,9 @@ export default function SuperAdminDashboard() {
         />
 
         <TopStatsCard
-          title="Expiring Plans"
+          title="Expired Organization"
           value={expiredPlanOrganizations}
-          description="Organizations with expiring plans"
+          description="Organizations with expired plans"
           icon={Shield}
           href={{
             to: "/superadmin/organizations",

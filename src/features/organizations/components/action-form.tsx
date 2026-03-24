@@ -6,7 +6,6 @@ import { parsePhoneNumberFromString } from "libphonenumber-js";
 import { AlertCircle, Mail } from "lucide-react";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
-import { SimpleDatePicker } from "@/components/ui/datepicker";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -73,8 +72,7 @@ export function OrganizationActionForm({
       adminJobTitle: "",
       adminPhoneCountryCode: "",
       menuIds: [],
-      planStartDate: "",
-      planEndDate: "",
+      maxUsers: 1,
     },
   });
 
@@ -188,6 +186,7 @@ export function OrganizationActionForm({
         jobTitle: currentRow.jobTitle || "",
         adminPhoneCountryCode: currentRow.adminPhoneCountryCode || "",
         menuIds: currentRow.menuIds || [],
+        maxUsers: currentRow.maxUsers || 1,
       };
 
       reset(editValues);
@@ -204,8 +203,7 @@ export function OrganizationActionForm({
         adminJobTitle: "",
         adminPhoneCountryCode: "",
         menuIds: [],
-        planStartDate: "",
-        planEndDate: "",
+        maxUsers: 1,
       });
     }
   }, [isEdit, currentRow, open, reset]);
@@ -246,8 +244,7 @@ export function OrganizationActionForm({
         adminJobTitle: "",
         adminPhoneCountryCode: "",
         menuIds: [],
-        planStartDate: "",
-        planEndDate: "",
+        maxUsers: 1,
       });
     }
     onOpenChange(state);
@@ -406,26 +403,32 @@ export function OrganizationActionForm({
                     )}
                   </div>
 
-                  {/* Plan Start Date */}
+                  {/* Max Users */}
                   <div className="space-y-2">
-                    <Label htmlFor="planStartDate">
-                      Plan Start Date <span className="text-red-500">*</span>
+                    <Label htmlFor="maxUsers">
+                      Max Users <span className="text-red-500">*</span>
                     </Label>
                     <Controller
-                      name="planStartDate"
+                      name="maxUsers"
                       control={control}
                       render={({ field }) => (
-                        <SimpleDatePicker
-                          date={field.value}
-                          setDate={field.onChange}
-                          className="w-full"
+                        <Input
+                          {...field}
+                          id="maxUsers"
+                          type="number"
+                          placeholder="Enter max users"
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.valueAsNumber || e.target.value,
+                            )
+                          }
                         />
                       )}
                     />
-                    {errors.planStartDate && (
+                    {errors.maxUsers && (
                       <p className="flex items-center gap-1 text-xs text-red-500">
                         <AlertCircle className="h-3 w-3" />
-                        {errors.planStartDate.message}
+                        {errors.maxUsers.message}
                       </p>
                     )}
                   </div>
@@ -572,30 +575,6 @@ export function OrganizationActionForm({
                       <p className="flex items-center gap-1 text-xs text-red-500">
                         <AlertCircle className="h-3 w-3" />
                         {errors.adminJobTitle.message}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Plan End Date */}
-                  <div className="space-y-2">
-                    <Label htmlFor="planEndDate">
-                      Plan End Date <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="planEndDate"
-                      control={control}
-                      render={({ field }) => (
-                        <SimpleDatePicker
-                          date={field.value}
-                          setDate={field.onChange}
-                          className="w-full"
-                        />
-                      )}
-                    />
-                    {errors.planEndDate && (
-                      <p className="flex items-center gap-1 text-xs text-red-500">
-                        <AlertCircle className="h-3 w-3" />
-                        {errors.planEndDate.message}
                       </p>
                     )}
                   </div>
