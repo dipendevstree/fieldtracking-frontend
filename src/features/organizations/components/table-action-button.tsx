@@ -42,25 +42,34 @@ export function DataTableRowActions({ row }: any) {
   const planStatus = row.original.planStatus;
 
   const filteredActions = ACTIONS.filter((action) => {
-    if (action.key === "edit" || action.key === "planHistory") return true;
+    if (action.key === "edit") return true;
 
-    if (planStatus === OrganizationPlanStatus.TRIAL) {
-      return action.key === "activatePlan";
+    if (action.key === "activatePlan") {
+      return (
+        planStatus === OrganizationPlanStatus.TRIAL ||
+        planStatus === OrganizationPlanStatus.EXPIRED
+      );
     }
 
-    if (
-      planStatus === OrganizationPlanStatus.ACTIVE ||
-      planStatus === OrganizationPlanStatus.GRACE_PERIOD
-    ) {
-      if (action.key === "renewPlan") return true;
+    if (action.key === "renewPlan") {
+      return !!row.original.showRenewButton;
     }
 
-    if (planStatus === OrganizationPlanStatus.EXPIRED) {
-      return action.key === "suspendOrganization";
+    if (action.key === "suspendOrganization") {
+      return [
+        OrganizationPlanStatus.TRIAL,
+        OrganizationPlanStatus.ACTIVE,
+        OrganizationPlanStatus.UPCOMING,
+        OrganizationPlanStatus.GRACE_PERIOD,
+      ].includes(planStatus);
     }
 
-    if (planStatus === OrganizationPlanStatus.GRACE_PERIOD) {
-      if (action.key === "extendGracePeriod") return true;
+    if (action.key === "extendGracePeriod") {
+      return planStatus === OrganizationPlanStatus.GRACE_PERIOD;
+    }
+
+    if (action.key === "planHistory") {
+      return planStatus !== OrganizationPlanStatus.TRIAL;
     }
 
     return false;
