@@ -26,6 +26,7 @@ export interface PlanHistory {
   baseAmount: string;
   gstAmount: string;
   totalAmount: string;
+  frequency: string;
   planStartDate: string;
   planEndDate: string;
   gracePeriodEndDate: string;
