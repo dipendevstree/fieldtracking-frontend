@@ -22,7 +22,11 @@ import { toast } from "sonner";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import CustomTableHeader from "@/components/shared/custom-table-header";
 import ActionButton from "@/components/shared/table-primary-action-button";
-import { FileUp as IconFileImport, FileDown as IconFileExport, Loader2 } from "lucide-react";
+import {
+  FileUp as IconFileImport,
+  FileDown as IconFileExport,
+  Loader2,
+} from "lucide-react";
 import { useExportFile } from "@/hooks/useExportFile";
 import API from "@/config/api/api";
 
@@ -196,25 +200,36 @@ const AllUsers = () => {
             onAddButtonClick={handleAddUser}
             addButtonText="Add User"
             modulePermission="all_users"
-            moduleAction="add"
+            showActionButton={false}
             className="w-full"
           >
-            <ActionButton
-              text="Export Users"
-              onAction={() => exportFile({
-                url: API.users.exportCsv,
-                type: "csv",
-                queryParams: queryParams,
-              })}
-              icon={isExportLoading || isLoading ? Loader2 : IconFileExport}
-              disabled={isExportLoading || isLoading || totalCount === 0}
-              className="flex items-center gap-2"
-            />
+            <PermissionGate requiredPermission="all_users" action="viewGlobal">
+              <ActionButton
+                text="Export Users"
+                onAction={() =>
+                  exportFile({
+                    url: API.users.exportCsv,
+                    type: "csv",
+                    queryParams: queryParams,
+                  })
+                }
+                icon={isExportLoading || isLoading ? Loader2 : IconFileExport}
+                disabled={isExportLoading || isLoading || totalCount === 0}
+                className="flex items-center gap-2"
+              />
+            </PermissionGate>
             <PermissionGate requiredPermission="all_users" action="add">
               <ActionButton
                 text="Import Users"
                 onAction={() => setOpen("import")}
                 icon={IconFileImport}
+                className="flex items-center gap-2"
+              />
+            </PermissionGate>
+            <PermissionGate requiredPermission="all_users" action="add">
+              <ActionButton
+                text="Add User"
+                onAction={handleAddUser}
                 className="flex items-center gap-2"
               />
             </PermissionGate>

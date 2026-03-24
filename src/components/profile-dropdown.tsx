@@ -18,9 +18,9 @@ import { Switch } from "@/components/ui/switch";
 import { usePermission } from "@/permissions/hooks/use-permission";
 import { useEffect } from "react";
 import { User, Settings, LogOut, LucideIcon } from "lucide-react";
-import moment from "moment";
-import StatusBadge from "@/components/ui/status-badge";
 import { useLogout } from "@/features/auth/sign-in/services/sign-in-services";
+import StatusBadge from "./ui/status-badge";
+import moment from "moment";
 
 interface MenuItem {
   label: string;
@@ -229,24 +229,20 @@ export function ProfileDropdown({
           </>
         )}
 
-        {user?.organization && user?.role?.roleName === "Admin" && (
+        {user?.organization && user?.role?.roleName.toLowerCase() === "admin" && (
           <>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <div className="flex flex-col p-2 gap-2">
                 <p className="flex justify-between text-[14px]">
                   Plan Status{" "}
-                  <StatusBadge
-                    status={
-                      user?.organization?.isActive ? "Active" : "Inactive"
-                    }
-                  />
+                  <StatusBadge status={user?.organization?.planStatus} />
                 </p>
                 <p className="flex justify-between text-[14px]">
                   Expiry Date
                   <span className="text-red-500 font-medium">
-                    {user?.organization?.planEndDate
-                      ? moment(user?.organization?.planEndDate).format(
+                    {user?.organization?.currentPlan?.planEndDate
+                      ? moment(user?.organization?.currentPlan?.planEndDate).format(
                           "DD MMM YYYY",
                         )
                       : "N/A"}

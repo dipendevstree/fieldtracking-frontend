@@ -4,7 +4,7 @@ import { Controller, useForm } from "react-hook-form";
 import { DialogClose, DialogDescription } from "@radix-ui/react-dialog";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle } from "lucide-react";
-import { SimpleDatePicker } from "@/components/ui/datepicker";
+
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -52,20 +52,8 @@ const editFormSchema = z.object({
   city: z.string().optional(),
   zipCode: z.string().optional(),
   state: z.string().optional(),
-  planStartDate: z.string().min(1, "Plan start date is required"),
-  planEndDate: z.string().min(1, "Plan end date is required"),
-}).refine(
-  (data) => {
-    if (data.planStartDate && data.planEndDate) {
-      return new Date(data.planEndDate) >= new Date(data.planStartDate);
-    }
-    return true;
-  },
-  {
-    message: "Plan end date must be on or after the plan start date.",
-    path: ["planEndDate"],
-  }
-);
+  maxUsers: z.coerce.number().min(1, "Max users must be at least 1"),
+});
 
 type TEditFormSchema = z.infer<typeof editFormSchema>;
 
@@ -110,8 +98,7 @@ export function OrganizationEditForm({
       city: "",
       zipCode: "",
       state: "",
-      planStartDate: "",
-      planEndDate: "",
+      maxUsers: 1,
     },
   });
   const { data: organizationTypesList } = useGetOrganizationTypes();
@@ -259,8 +246,7 @@ export function OrganizationEditForm({
         city: currentRow.city || "",
         zipCode: currentRow.zipCode || "",
         state: currentRow.state || "",
-        planStartDate: currentRow.planStartDate || "",
-        planEndDate: currentRow.planEndDate || "",
+        maxUsers: currentRow.maxUsers || 1,
       };
 
       reset(editValues);
@@ -284,8 +270,7 @@ export function OrganizationEditForm({
         city: "",
         zipCode: "",
         state: "",
-        planStartDate: "",
-        planEndDate: "",
+        maxUsers: 1,
       });
     }
     onOpenChange(state);
@@ -625,50 +610,32 @@ export function OrganizationEditForm({
                     )}
                   </div>
 
-                  {/* Plan Start Date */}
+                  {/* Max Users */}
                   <div className="space-y-2">
-                    <Label htmlFor="planStartDate">
-                      Plan Start Date <span className="text-red-500">*</span>
+                    <Label htmlFor="maxUsers">
+                      Max Users <span className="text-red-500">*</span>
                     </Label>
                     <Controller
-                      name="planStartDate"
+                      name="maxUsers"
                       control={control}
                       render={({ field }) => (
-                        <SimpleDatePicker
-                          date={field.value}
-                          setDate={field.onChange}
-                          className="w-full"
+                        <Input
+                          {...field}
+                          id="maxUsers"
+                          type="number"
+                          placeholder="Enter max users"
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.valueAsNumber || e.target.value,
+                            )
+                          }
                         />
                       )}
                     />
-                    {errors.planStartDate && (
+                    {errors.maxUsers && (
                       <p className="flex items-center gap-1 text-xs text-red-500">
                         <AlertCircle className="h-3 w-3" />
-                        {errors.planStartDate.message}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Plan End Date */}
-                  <div className="space-y-2">
-                    <Label htmlFor="planEndDate">
-                      Plan End Date <span className="text-red-500">*</span>
-                    </Label>
-                    <Controller
-                      name="planEndDate"
-                      control={control}
-                      render={({ field }) => (
-                        <SimpleDatePicker
-                          date={field.value}
-                          setDate={field.onChange}
-                          className="w-full"
-                        />
-                      )}
-                    />
-                    {errors.planEndDate && (
-                      <p className="flex items-center gap-1 text-xs text-red-500">
-                        <AlertCircle className="h-3 w-3" />
-                        {errors.planEndDate.message}
+                        {errors.maxUsers.message}
                       </p>
                     )}
                   </div>
@@ -703,12 +670,15 @@ export function OrganizationEditForm({
 
         <DialogFooter>
           <DialogClose asChild>
-            <Button variant="outline">Cancel</Button>
+            <Button variant="outline" className="w-full sm:w-fit h-10">
+              Cancel
+            </Button>
           </DialogClose>
           <CustomButton
             type="submit"
             loading={loading}
             form="edit-organization-form"
+            className="w-full sm:w-fit h-10"
           >
             Update Organization
           </CustomButton>

@@ -1,5 +1,13 @@
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { IconEdit } from "@tabler/icons-react";
+import {
+  IconEdit,
+  IconPlayerPlay,
+  IconRefresh,
+  IconBan,
+  IconHistory,
+  IconClock,
+} from "@tabler/icons-react";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,22 +15,79 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
 import CustomButton from "@/components/shared/custom-button";
 import CustomTooltip from "@/components/shared/custom-tooltip";
-import { useUsersStore } from "../store/organizations.store";
+import { DialogType, useOrganizationStore } from "../store/organizations.store";
+import { useNavigate } from "@tanstack/react-router";
+import { OrganizationPlanStatus } from "@/components/layout/types";
+
+const ACTIONS: {
+  label: string;
+  key: DialogType;
+  icon: React.ElementType;
+}[] = [
+  { label: "Edit", key: "edit", icon: IconEdit },
+  { label: "Activate Plan", key: "activatePlan", icon: IconPlayerPlay },
+  { label: "Renew Plan", key: "renewPlan", icon: IconRefresh },
+  { label: "Suspend Organization", key: "suspendOrganization", icon: IconBan },
+  { label: "Extend Grace Period", key: "extendGracePeriod", icon: IconClock },
+  { label: "Plan History", key: "planHistory", icon: IconHistory },
+];
 
 export function DataTableRowActions({ row }: any) {
-  const { setOpen, setCurrentRow } = useUsersStore();
+  const { setOpen, setCurrentRow } = useOrganizationStore();
+  const navigate = useNavigate();
 
-  const handleEdit = (row: any) => {
-    setOpen("edit");
+  const planStatus = row.original.planStatus;
+
+  const filteredActions = ACTIONS.filter((action) => {
+    if (action.key === "edit") return true;
+
+    if (action.key === "activatePlan") {
+      return (
+        planStatus === OrganizationPlanStatus.TRIAL ||
+        planStatus === OrganizationPlanStatus.EXPIRED
+      );
+    }
+
+    if (action.key === "renewPlan") {
+      return !!row.original.showRenewButton;
+    }
+
+    if (action.key === "suspendOrganization") {
+      return [
+        OrganizationPlanStatus.TRIAL,
+        OrganizationPlanStatus.ACTIVE,
+        OrganizationPlanStatus.UPCOMING,
+        OrganizationPlanStatus.GRACE_PERIOD,
+      ].includes(planStatus);
+    }
+
+    if (action.key === "extendGracePeriod") {
+      return planStatus === OrganizationPlanStatus.GRACE_PERIOD;
+    }
+
+    if (action.key === "planHistory") {
+      return planStatus !== OrganizationPlanStatus.TRIAL;
+    }
+
+    return false;
+  });
+
+  const openAction = (type: DialogType) => {
+    if (type === "planHistory") {
+      navigate({
+        to: "/superadmin/plan-history",
+        search: {
+          organizationId: row.original.organizationID || row.original.id,
+        },
+      });
+      return;
+    }
     setCurrentRow(row.original);
+    setOpen(type);
   };
-
-  // const handleDelete = (row: Row<User>) => {
-  //     setOpen('delete')
-  //     setCurrentRow(row.original)
-  // }
 
   return (
     <DropdownMenu modal={false}>
@@ -39,23 +104,23 @@ export function DataTableRowActions({ row }: any) {
           </CustomTooltip>
         </CustomButton>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[160px]">
-        <DropdownMenuItem onClick={() => handleEdit(row)}>
-          Edit
-          <DropdownMenuShortcut>
-            <IconEdit size={16} />
-          </DropdownMenuShortcut>
-        </DropdownMenuItem>
-        {/* <DropdownMenuSeparator /> */}
-        {/* <DropdownMenuItem
-                    onClick={() => handleDelete(row)}
-                    className='text-red-500!'
-                >
-                    Delete
-                    <DropdownMenuShortcut>
-                        <IconTrash size={16} />
-                    </DropdownMenuShortcut>
-                </DropdownMenuItem> */}
+
+      <DropdownMenuContent align="end" className="w-[180px]">
+        {filteredActions.map((action) => {
+          const Icon = action.icon;
+
+          return (
+            <DropdownMenuItem
+              key={action.key}
+              onClick={() => openAction(action.key)}
+            >
+              {action.label}
+              <DropdownMenuShortcut>
+                <Icon size={16} />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+          );
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
   );

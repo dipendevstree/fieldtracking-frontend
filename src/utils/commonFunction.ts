@@ -85,7 +85,9 @@ export const getFormattedAddress = (
  * @param input - The string to be formatted (usually from enum keys)
  * @returns A human-readable, title-cased string
  */
-export function formatDropDownLabel(input: string): string {
+export function formatDropDownLabel(input?: string | null): string {
+  if (!input?.trim()) return "";
+
   return input
     .replace(/[^a-zA-Z0-9 ]/g, " ")
     .replace(/\s+/g, " ")
@@ -247,4 +249,18 @@ export const formatWorkHours = (hours?: number | string): string => {
 export const formatStatus = (status?: string | null): string => {
   if (!status) return "-";
   return status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+};
+
+/**
+ * Converts an enum into dropdown options.
+ *
+ * @template T - Enum type
+ * @param enumObj - Enum object
+ * @returns Dropdown options array
+ */
+export const enumToOptions = <T extends Record<string, string>>(enumObj: T) => {
+  return Object.values(enumObj).map((value) => ({
+    label: formatDropDownLabel(value),
+    value,
+  }));
 };

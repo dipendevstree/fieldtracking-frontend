@@ -7,6 +7,9 @@ import { socketForVisit as socket } from "../../socket/socket";
 import { useAuth } from "@/stores/use-auth-store";
 import { usePermissionData } from "@/hooks/use-permission-data";
 import { useSEO } from "@/config/seo";
+import { TopContactBanner } from "./top-contact-banner";
+import { OrganizationPlanStatus } from "./types";
+import { useEffect } from "react";
 
 interface HeaderProps extends React.HTMLAttributes<HTMLElement> {
   fixed?: boolean;
@@ -85,21 +88,55 @@ export const Header = ({
 
   useSEO(pathName);
 
+  const showRenewBanner = user?.role?.roleName.toLowerCase() === "admin" && user?.organization?.planStatus && ![OrganizationPlanStatus.ACTIVE, OrganizationPlanStatus.TRIAL].includes(user?.organization?.planStatus as OrganizationPlanStatus);
+
+  const planText = (() => {
+    if ([OrganizationPlanStatus.EXPIRED, OrganizationPlanStatus.GRACE_PERIOD].includes(user?.organization?.planStatus as OrganizationPlanStatus)) {
+      return "Renew Plan";
+    } else if (user?.organization?.planStatus === OrganizationPlanStatus.SUSPENDED) {
+      return "Activate Plan";
+    }
+    return "";
+  })();
+
+  useEffect(() => {
+    if (showRenewBanner) {
+      document.body.classList.add('has-top-banner');
+    } else {
+      document.body.classList.remove('has-top-banner');
+    }
+
+    return () => document.body.classList.remove('has-top-banner');
+  }, [showRenewBanner]);
+
   return (
-    <header
-      className={cn(
-        "bg-background flex h-16 items-center gap-3 p-4 sm:gap-4",
-        fixed && "header-fixed peer/header fixed z-50 w-[inherit] rounded-md",
+    <>
+      {/* Top Contact Banner - Escapes layout container constraints to be full width */}
+      {showRenewBanner && (
+        <div className="fixed top-0 left-0 right-0 z-[100] w-full">
+          <TopContactBanner planText={planText} />
+        </div>
+      )}
+      
+      <header
+        className={cn(
+          "bg-background flex flex-col w-[inherit]",
+          fixed && "header-fixed peer/header fixed z-50",
+          showRenewBanner ? "rounded-none" : "rounded-md",
         offset > 10 && fixed ? "shadow-sm" : "shadow-none",
+        showRenewBanner ? "has-banner" : "",
         className,
       )}
       {...props}
     >
-      <SidebarTrigger variant="outline" className="scale-125 sm:scale-100" />
-      <Separator orientation="vertical" className="h-6" />
-      <p className="font-medium">{pathName}</p>
-      {children}
+      <div className="flex h-16 w-full items-center gap-3 p-4 sm:gap-4 border-b border-border/40">
+        <SidebarTrigger variant="outline" className="scale-125 sm:scale-100" />
+        <Separator orientation="vertical" className="h-6" />
+        <p className="font-medium">{pathName}</p>
+        {children}
+      </div>
     </header>
+    </>
   );
 };
 

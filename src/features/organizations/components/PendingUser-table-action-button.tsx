@@ -1,5 +1,4 @@
 import { useState } from "react";
-// import { useNavigate } from "@tanstack/react-router";
 import { Row } from "@tanstack/react-table";
 import { IconCheck, IconX } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
@@ -13,15 +12,22 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import CustomTooltip from "@/components/shared/custom-tooltip";
-import { useUpdateStatus } from "../services/organization.hook";
-import { useUsersStore } from "../store/organizations.store";
+import { SimpleDatePicker } from "@/components/ui/datepicker";
+import { Label } from "@/components/ui/label";
+import { useGetPlans, useUpdateStatus } from "../services/organization.hook";
+import { useOrganizationStore } from "../store/organizations.store";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { PlanFrequency } from "@/data/app.data";
+import { enumToOptions } from "@/utils/commonFunction";
+import { useSelectOptions } from "@/hooks/use-select-option";
+import { useMemo } from "react";
 
 interface DataTableRowActionsProps {
   row: Row<any>;
 }
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
-  const { setCurrentRow } = useUsersStore();
+  const { setCurrentRow } = useOrganizationStore();
   // const navigate = useNavigate();
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
@@ -36,14 +42,29 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   });
 
   const [reason, setReason] = useState("");
+  const [selectedPlanId, setSelectedPlanId] = useState("");
+  const [planStartDate, setPlanStartDate] = useState("");
+  const [selectedFrequency, setSelectedFrequency] = useState("");
 
   const { mutate: updateStatus } = useUpdateStatus();
+  const { plans } = useGetPlans();
+
+  const planOptions = useSelectOptions({
+    listData: plans,
+    labelKey: "name",
+    valueKey: "id",
+  }) as { label: string; value: string }[];
+
+  const frequencyOptions = useMemo(() => enumToOptions(PlanFrequency), []);
 
   const handleUpdateStatus = (values: any) => {
     const payload = {
       userId: values.userId,
       status: values.status,
       reason: values.reason || undefined,
+      planId: values.planId,
+      planStartDate: values.planStartDate,
+      frequency: values.frequency,
     };
     updateStatus(payload);
   };
@@ -57,6 +78,9 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         "Are you sure you want to verify this request? This action cannot be undone.",
     });
     setReason("");
+    setSelectedPlanId("");
+    setPlanStartDate("");
+    setSelectedFrequency("");
   };
 
   const handleReject = () => {
@@ -68,13 +92,23 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         "Please provide a reason for rejecting this request. This action cannot be undone.",
     });
     setReason("");
+    setSelectedPlanId("");
+    setPlanStartDate("");
+    setSelectedFrequency("");
   };
 
   const handleConfirm = () => {
     setCurrentRow(row.original);
 
     if (confirmDialog.type === "verified") {
-      handleUpdateStatus({ userId: row.original.id, status: "verified" });
+      handleUpdateStatus({
+        userId: row.original.id,
+        status: "verified",
+        planId: selectedPlanId,
+        planStartDate,
+        frequency: selectedFrequency,
+        reason: reason || undefined,
+      });
     } else if (confirmDialog.type === "rejected") {
       handleUpdateStatus({
         userId: row.original.id,
@@ -89,12 +123,10 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
   const handleCancel = () => {
     setConfirmDialog({ isOpen: false, type: null, title: "", description: "" });
     setReason("");
+    setSelectedPlanId("");
+    setPlanStartDate("");
+    setSelectedFrequency("");
   };
-
-  // const gotoLivetrackingPage = () => {
-  //   const userId = row.original.id // update if userId key is different
-  //   navigate({ to: `/livetracking?userId=${userId}` })
-  // }
 
   return (
     <>
@@ -120,17 +152,6 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
             <IconX size={16} />
           </Button>
         </CustomTooltip>
-
-        {/* <CustomTooltip title='Live Tracking'>
-          <Button
-            variant='outline'
-            size='sm'
-            className='h-8 w-8 p-0 text-blue-600 hover:bg-blue-50 hover:text-blue-700'
-            onClick={gotoLivetrackingPage}
-          >
-            <IconMapPin size={16} />
-          </Button>
-        </CustomTooltip> */}
       </div>
 
       {/* Confirmation Dialog */}
@@ -151,6 +172,49 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
               rows={3}
             />
           )}
+          {confirmDialog.type === "verified" && (
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label>Select Plan</Label>
+                <SearchableSelect
+                  options={planOptions}
+                  value={selectedPlanId}
+                  onChange={setSelectedPlanId}
+                  placeholder="Select a plan"
+                />
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <Label>Plan Start Date</Label>
+                <SimpleDatePicker
+                  date={planStartDate}
+                  setDate={setPlanStartDate}
+                  className="w-full"
+                  disablePast
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Frequency</Label>
+                <SearchableSelect
+                  options={frequencyOptions}
+                  value={selectedFrequency}
+                  onChange={setSelectedFrequency}
+                  placeholder="Select frequency"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Reason (Optional)</Label>
+                <Textarea
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  placeholder="Enter reason..."
+                  rows={2}
+                />
+              </div>
+            </div>
+          )}
 
           <DialogFooter className="flex gap-2">
             <Button variant="outline" onClick={handleCancel}>
@@ -162,7 +226,10 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
                 confirmDialog.type === "verified" ? "default" : "destructive"
               }
               disabled={
-                confirmDialog.type === "rejected" && reason.trim().length === 0
+                (confirmDialog.type === "rejected" &&
+                  reason.trim().length === 0) ||
+                (confirmDialog.type === "verified" &&
+                  (!selectedPlanId || !planStartDate || !selectedFrequency))
               }
             >
               {confirmDialog.type === "verified" ? "Verify" : "Reject"}

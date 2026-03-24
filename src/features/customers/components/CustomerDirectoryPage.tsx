@@ -203,7 +203,6 @@ export const CustomerDirectoryPage = () => {
             {/* <DropdownMenu> */}
               {/* <DropdownMenuTrigger asChild> */}
                 <Button
-                  variant="outline"
                   disabled={isExportLoading || isLoading || totalCount === 0}
                   onClick={() =>
                     exportFile({

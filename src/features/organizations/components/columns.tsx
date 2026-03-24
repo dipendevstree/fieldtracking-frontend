@@ -24,6 +24,19 @@ export const columns: ColumnDef<any>[] = [
     enableSorting: false,
   },
   {
+    accessorKey: "isActive",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Status" />
+    ),
+    cell: ({ row }) => {
+      let status = row.original.isActive ? "active" : "inactive";
+
+      return <StatusBadge status={status} />;
+    },
+    enableHiding: false,
+    enableSorting: false,
+  },
+  {
     accessorKey: "adminUserId",
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Admin Contact" />
@@ -39,6 +52,17 @@ export const columns: ColumnDef<any>[] = [
         </div>
       );
     },
+    enableHiding: false,
+    enableSorting: false,
+  },
+  {
+    accessorKey: "adminData.status",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Admin Status" />
+    ),
+    cell: ({ row }) => (
+      <StatusBadge status={row.original.adminData?.status || "-"} />
+    ),
     enableHiding: false,
     enableSorting: false,
   },
@@ -63,19 +87,6 @@ export const columns: ColumnDef<any>[] = [
     enableSorting: false,
   },
   {
-    accessorKey: "adminData.status",
-    header: ({ column }) => (
-      <CustomDataTableColumnHeader column={column} title="Status" />
-    ),
-    cell: ({ row }) => {
-      let status = row.original.adminData?.status || "-";
-      if (status?.toLowerCase() === "created") status = "pending";
-      return <StatusBadge status={status} />;
-    },
-    enableHiding: false,
-    enableSorting: false,
-  },
-  {
     accessorKey: "createdDate",
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Created" />
@@ -83,7 +94,18 @@ export const columns: ColumnDef<any>[] = [
     cell: ({ row }) => {
       const rawDate = row.original.createdDate;
       const formattedDate = format(rawDate, "dd-MM-yyyy");
-      return <div className="text-muted-foreground">{formattedDate}</div>;
+      return <div>{formattedDate}</div>;
+    },
+    enableHiding: false,
+    enableSorting: false,
+  },
+  {
+    accessorKey: "planStatus",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Plan Status" />
+    ),
+    cell: ({ row }) => {
+      return <StatusBadge status={row.original.planStatus ?? "-"} />;
     },
     enableHiding: false,
     enableSorting: false,

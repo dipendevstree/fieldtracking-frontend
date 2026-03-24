@@ -25,12 +25,15 @@ export const statusConfig: Record<string, StatusEntry> = {
   weekend: { theme: "orange" },
   leave: { theme: "orange" },
   partial_completed: { theme: "orange", label: "Partial Completed" },
+  expired: { theme: "red", label: "Expired" },
+  suspended: { theme: "red", label: "Suspended" },
 
   // 🟡 Yellow — Partial / Caution
   partially_approved: { theme: "yellow" },
   work_from_home: { theme: "yellow" },
   late: { theme: "yellowDark" },
   medium: { theme: "yellowDark" },
+  grace_period: { theme: "yellowDark", label: "Grace Period" },
 
   // 🟢 Green — Success / Positive
   approved: { theme: "green" },
@@ -45,6 +48,7 @@ export const statusConfig: Record<string, StatusEntry> = {
   credit: { theme: "green" },
   confirmed: { theme: "green", label: "Confirmed" },
   low: { theme: "green" },
+  trial: { theme: "green", label: "Trial" },
 
   // 🔵 Blue — Informational
   national: { theme: "blue" },

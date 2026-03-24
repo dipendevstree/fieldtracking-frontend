@@ -47,12 +47,12 @@ const colorMap = {
     icon: "text-purple-600",
     border: "border-purple-100",
   },
-  amber:{
+  amber: {
     bg: "bg-amber-50",
     text: "text-amber-700",
     icon: "text-amber-600",
     border: "border-amber-100",
-  }
+  },
 };
 
 export type StatCardTheme = keyof typeof colorMap;
@@ -65,6 +65,7 @@ interface StatsCardProps {
   className?: string;
   themeColor?: StatCardTheme;
   href?: NavigateOptions;
+  headerClassName?: string;
 }
 
 export function TopStatsCard({
@@ -75,6 +76,7 @@ export function TopStatsCard({
   className,
   themeColor = "default",
   href,
+  headerClassName = "py-3",
 }: StatsCardProps) {
   const styles = colorMap[themeColor];
   const navigate = useNavigate();
@@ -89,9 +91,10 @@ export function TopStatsCard({
     >
       <CardHeader
         className={cn(
-          "flex flex-row items-center justify-between py-3",
+          "flex flex-row items-center justify-between",
           styles.bg,
           styles.border,
+          headerClassName,
         )}
       >
         <CardTitle className={cn("text-sm font-semibold", styles.text)}>

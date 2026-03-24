@@ -20,7 +20,7 @@ import {
   useGetPendingUsers,
   useUserStatusCounts,
 } from "./services/organization.hook";
-import { useUsersStore } from "./store/organizations.store";
+import { useOrganizationStore } from "./store/organizations.store";
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import { FilterConfig } from "@/components/global-filter-section";
 import debounce from "lodash.debounce";
@@ -91,7 +91,7 @@ const Organizations = () => {
     totalOrganizations: 0,
   };
 
-  const { setOpen, open } = useUsersStore();
+  const { open, setOpen } = useOrganizationStore();
 
   const { data: industryList = [] } = useGetIndustry();
   const industryOptions = useSelectOptions({
@@ -157,7 +157,7 @@ const Organizations = () => {
         searchFor: value ?? "",
       }));
     }, 800),
-    []
+    [],
   );
 
   useEffect(() => {
