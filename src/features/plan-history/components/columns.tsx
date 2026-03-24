@@ -80,7 +80,7 @@ export const columns: ColumnDef<PlanHistory>[] = [
     ),
     cell: ({ row }) => (
       <div className="text-sm">
-        {formatDropDownLabel(row.original.frequency) || "-"}
+        {formatDropDownLabel(row.original.frequency ?? "") || "-"}
       </div>
     ),
     enableSorting: false,

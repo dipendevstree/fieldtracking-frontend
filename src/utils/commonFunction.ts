@@ -85,7 +85,9 @@ export const getFormattedAddress = (
  * @param input - The string to be formatted (usually from enum keys)
  * @returns A human-readable, title-cased string
  */
-export function formatDropDownLabel(input: string): string {
+export function formatDropDownLabel(input?: string | null): string {
+  if (!input?.trim()) return "";
+
   return input
     .replace(/[^a-zA-Z0-9 ]/g, " ")
     .replace(/\s+/g, " ")
