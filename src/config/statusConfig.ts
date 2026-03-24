@@ -54,6 +54,7 @@ export const statusConfig: Record<string, StatusEntry> = {
   national: { theme: "blue" },
   "half day": { theme: "blue", label: "Half Day" },
   half_day: { theme: "blue", label: "Half Day" },
+  upcoming: { theme: "blue" },
 
   // 🟣 Purple — Special / Event
   festival: { theme: "purple" },

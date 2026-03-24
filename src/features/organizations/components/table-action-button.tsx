@@ -40,19 +40,34 @@ export function DataTableRowActions({ row }: any) {
   const navigate = useNavigate();
 
   const planStatus = row.original.planStatus;
+  const showRenewButton: boolean = !!row.original.showRenewButton;
+  const isTrialGracePeriod =
+      planStatus === OrganizationPlanStatus.GRACE_PERIOD && !showRenewButton;
 
   const filteredActions = ACTIONS.filter((action) => {
+    // Always visible
     if (action.key === "edit") return true;
 
+    // Show when org has no paid plan yet:
+    // - Still on trial
+    // - Trial entered grace period (inferred via !showRenewButton)
+    // - Paid plan fully expired with no renewal
     if (action.key === "activatePlan") {
       return (
         planStatus === OrganizationPlanStatus.TRIAL ||
-        planStatus === OrganizationPlanStatus.EXPIRED
+        planStatus === OrganizationPlanStatus.EXPIRED ||
+        isTrialGracePeriod
       );
     }
 
+    // Show when org has or had a paid plan on record (backend-confirmed via showRenewButton)
+    // Exclude TRIAL and trial grace period — those orgs should use Activate Paid Plan instead
     if (action.key === "renewPlan") {
-      return !!row.original.showRenewButton;
+      return (
+        planStatus !== OrganizationPlanStatus.TRIAL &&
+        !isTrialGracePeriod &&
+        showRenewButton
+      );
     }
 
     if (action.key === "suspendOrganization") {
