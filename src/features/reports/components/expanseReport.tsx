@@ -31,6 +31,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 const last7Start = format(subDays(new Date(), 6), "yyyy-MM-dd");
 const last7End = format(new Date(), "yyyy-MM-dd");
@@ -89,7 +90,7 @@ const ExpanseReport: React.FC = () => {
     ([key, value]) => ({
       label: formatDropDownLabel(key),
       value,
-    })
+    }),
   );
 
   const filtersGlob: FilterConfig[] = [
@@ -155,7 +156,7 @@ const ExpanseReport: React.FC = () => {
   // Handle date range change
   const handleDateRangeChange = (
     key: "expanse" | "created",
-    range: { from?: Date; to?: Date } | undefined
+    range: { from?: Date; to?: Date } | undefined,
   ) => {
     setFilters((prev) => ({
       ...prev,
@@ -186,7 +187,7 @@ const ExpanseReport: React.FC = () => {
   // Handle other filters
   const handleFilterChange = (
     key: keyof ExpanseReportFilterState,
-    value?: string
+    value?: string,
   ) => {
     setFilters((prev) => ({ ...prev, [key]: value }));
     setCurrentPage(1);
@@ -248,35 +249,40 @@ const ExpanseReport: React.FC = () => {
         )}
 
         <div className="flex justify-end">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                disabled={
-                  isGenerating || isLoading || !reports || reports.length === 0
-                }
-                className="min-w-[150px]"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  <>Generate Report</>
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {formatOptions.map((opt) => (
-                <DropdownMenuItem
-                  key={opt.value}
-                  onClick={() => handleGenerateReport(opt.value)}
+          <PermissionGate requiredPermission="expense_reports" action="add">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  disabled={
+                    isGenerating ||
+                    isLoading ||
+                    !reports ||
+                    reports.length === 0
+                  }
+                  className="min-w-[150px]"
                 >
-                  {opt.label}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    <>Generate Report</>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {formatOptions.map((opt) => (
+                  <DropdownMenuItem
+                    key={opt.value}
+                    onClick={() => handleGenerateReport(opt.value)}
+                  >
+                    {opt.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </PermissionGate>
         </div>
       </Card>
 

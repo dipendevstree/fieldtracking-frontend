@@ -570,7 +570,10 @@ export default function LeaveRulesConfiguration() {
                           onCheckedChange={(checked) => {
                             field.onChange(checked);
                             if (checked) {
-                              form.setValue("leaveCarryForwardRuleActive", false);
+                              form.setValue(
+                                "leaveCarryForwardRuleActive",
+                                false,
+                              );
                             }
                           }}
                           disabled={!canEdit}
@@ -648,8 +651,8 @@ export default function LeaveRulesConfiguration() {
             )}
           </Card>
 
-          <PermissionGate requiredPermission="leave_rules" action="edit">
-            <div className="flex gap-4 justify-end">
+          <div className="flex gap-4 justify-end">
+            <PermissionGate requiredPermission="leave_rules" action="edit">
               <Button
                 type="submit"
                 size="lg"
@@ -664,8 +667,8 @@ export default function LeaveRulesConfiguration() {
                   "Save All Rules"
                 )}
               </Button>
-            </div>
-          </PermissionGate>
+            </PermissionGate>
+          </div>
         </form>
       </Form>
     </Main>
