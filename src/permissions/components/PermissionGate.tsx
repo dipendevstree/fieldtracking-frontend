@@ -58,7 +58,7 @@ export function PermissionGate({
 
     return (
       <CustomTooltip title={tooltipMessage}>
-        <div className="opacity-50 cursor-not-allowed inline-block">
+        <div className="opacity-50 cursor-not-allowed">
           <div className="pointer-events-none">{children}</div>
         </div>
       </CustomTooltip>

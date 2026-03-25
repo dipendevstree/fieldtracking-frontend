@@ -60,7 +60,7 @@ export default function Notifications() {
   useEffect(() => {
     if (data && Object.keys(data).length > 0) {
       const values = activityNotificationsApiKeys.map(
-        (key: any) => data[key] ?? false
+        (key: any) => data[key] ?? false,
       );
       form.reset({ notifications: values });
     } else {
@@ -77,7 +77,7 @@ export default function Notifications() {
         acc[key] = values.notifications[idx];
         return acc;
       },
-      {} as Record<(typeof activityNotificationsApiKeys)[number], boolean>
+      {} as Record<(typeof activityNotificationsApiKeys)[number], boolean>,
     );
 
     const finalPayload = {
@@ -131,16 +131,16 @@ export default function Notifications() {
           </div>
         </Card>
 
-        <PermissionGate
-          requiredPermission="notification-settings"
-          action={data && Object.keys(data).length > 0 ? "edit" : "add"}
-        >
-          <div className="flex justify-end">
+        <div className="flex justify-end">
+          <PermissionGate
+            requiredPermission="notification-settings"
+            action={data && Object.keys(data).length > 0 ? "edit" : "add"}
+          >
             <Button type="submit" disabled={isPending || !isDirty}>
               {isPending ? "Saving..." : "Save"}
             </Button>
-          </div>
-        </PermissionGate>
+          </PermissionGate>
+        </div>
       </form>
     </>
   );

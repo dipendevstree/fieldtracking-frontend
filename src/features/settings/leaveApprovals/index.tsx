@@ -485,8 +485,8 @@ export default function LeaveApprovals() {
           </div>
 
           {/* Save Button */}
-          <PermissionGate requiredPermission="leave_approvals" action="edit">
-            <div className="flex justify-end mt-4">
+          <div className="flex justify-end mt-4">
+            <PermissionGate requiredPermission="leave_approvals" action="edit">
               <Button
                 type="submit"
                 disabled={
@@ -495,8 +495,8 @@ export default function LeaveApprovals() {
               >
                 Save Configuration
               </Button>
-            </div>
-          </PermissionGate>
+            </PermissionGate>
+          </div>
         </form>
       </Form>
       <ConfirmDialog

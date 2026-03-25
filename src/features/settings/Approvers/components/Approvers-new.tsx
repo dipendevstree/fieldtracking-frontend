@@ -24,6 +24,7 @@ import { useAuthStore } from "@/stores/use-auth-store";
 import { useDirtyTracker } from "../../store/use-unsaved-changes-store";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 // ------------------- ZOD Schema -------------------------
 const tierSchema = z
@@ -902,15 +903,17 @@ export function ApproverFormNew() {
 
         {/* ------------------------- FOOTER ------------------------- */}
         <div className="border-t bg-card p-4 flex justify-end">
-          <Button
-            type="submit"
-            size="lg"
-            disabled={isCreating || isUpdating || isDeleting || !isFormDirty}
-          >
-            {isCreating || isUpdating || isDeleting
-              ? "Saving..."
-              : "Save Configuration"}
-          </Button>
+          <PermissionGate requiredPermission="approvers" action="edit">
+            <Button
+              type="submit"
+              size="lg"
+              disabled={isCreating || isUpdating || isDeleting || !isFormDirty}
+            >
+              {isCreating || isUpdating || isDeleting
+                ? "Saving..."
+                : "Save Configuration"}
+            </Button>
+          </PermissionGate>
         </div>
         <DeleteModal
           open={!!deletionState}

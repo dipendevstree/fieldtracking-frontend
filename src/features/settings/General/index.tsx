@@ -8,6 +8,7 @@ import { useUpdateGeneralSettings } from "./services/Generalhook";
 import { useAuth } from "@/stores/use-auth-store";
 import { Card } from "@/components/ui/card";
 import { usePermissionData } from "@/hooks/use-permission-data";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 const GeneralSettingsPage = () => {
   const { user, updateUser } = useAuth();
@@ -229,15 +230,17 @@ const GeneralSettingsPage = () => {
 
       {/* Action Buttons */}
       <div className="flex justify-end gap-4">
-        <button
-          onClick={handleSaveSettings}
-          disabled={
-            isLoading || /*!isFixedExpenseDirty ||*/ !currentSettingsData
-          }
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? "Saving..." : "Save Settings"}
-        </button>
+        <PermissionGate requiredPermission="general-settings" action="edit">
+          <button
+            onClick={handleSaveSettings}
+            disabled={
+              isLoading || /*!isFixedExpenseDirty ||*/ !currentSettingsData
+            }
+            className="px-4 py-2 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? "Saving..." : "Save Settings"}
+          </button>
+        </PermissionGate>
       </div>
 
       <GeneralSettingsActionModal key={"general-settings-action-modal"} />

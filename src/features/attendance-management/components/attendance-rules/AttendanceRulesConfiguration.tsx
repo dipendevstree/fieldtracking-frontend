@@ -842,8 +842,8 @@ export default function AttendanceRulesConfiguration() {
             </CardContent>
           </Card>
 
-          <PermissionGate requiredPermission="attendance_rules" action="edit">
-            <div className="flex gap-4 justify-end">
+          <div className="flex gap-4 justify-end">
+            <PermissionGate requiredPermission="attendance_rules" action="edit">
               <Button
                 type="submit"
                 size="lg"
@@ -858,8 +858,8 @@ export default function AttendanceRulesConfiguration() {
                   "Save All Rules"
                 )}
               </Button>
-            </div>
-          </PermissionGate>
+            </PermissionGate>
+          </div>
         </form>
       </Form>
     </Main>
