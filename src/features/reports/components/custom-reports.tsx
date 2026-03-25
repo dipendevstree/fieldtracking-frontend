@@ -38,6 +38,7 @@ import { ProductivityReportsColumns } from "./productivityReportsColumns";
 import { CustomerReportColumns } from "./CustomerReportColumns";
 import { VisitReportColumns } from "./visitReportColumns";
 import { Main } from "@/components/layout/main";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
 
 const normalizeOptions = (options: any[]) =>
   options.map((o) => ({ ...o, value: String(o.value) }));
@@ -74,7 +75,7 @@ const CustomReport: React.FC = () => {
       listData: userListDropDownList,
       labelKey: "fullName",
       valueKey: "id",
-    })
+    }),
   );
 
   const expenseCategoryOptions = normalizeOptions(
@@ -82,7 +83,7 @@ const CustomReport: React.FC = () => {
       listData: expenseCategoriesData || [],
       labelKey: "categoryName",
       valueKey: "expensesCategoryId",
-    })
+    }),
   );
 
   const customerOptions = normalizeOptions(
@@ -90,7 +91,7 @@ const CustomReport: React.FC = () => {
       listData: customers ?? [],
       labelKey: "companyName",
       valueKey: "customerId",
-    })
+    }),
   );
 
   const reportTypeOptions = Object.entries(REPORT_TYPE).map(([key, value]) => ({
@@ -102,7 +103,7 @@ const CustomReport: React.FC = () => {
     ([key, value]) => ({
       label: formatDropDownLabel(key),
       value,
-    })
+    }),
   );
 
   // -------------------- Filters & API Params --------------------
@@ -301,7 +302,7 @@ const CustomReport: React.FC = () => {
         searchableSelectClassName: "w-full max-w-[180px]",
       },
     ],
-    [filters, usersOptions, expenseCategoryOptions, customerOptions]
+    [filters, usersOptions, expenseCategoryOptions, customerOptions],
   );
 
   const filterVisibilityMap: Record<string, string[]> = {
@@ -322,7 +323,7 @@ const CustomReport: React.FC = () => {
     filterVisibilityMap[filters.reportType as REPORT_TYPE] || [];
 
   const visibleFilters = filtersGlob.filter((f) =>
-    visibleFilterKeys.includes(f.key)
+    visibleFilterKeys.includes(f.key),
   );
 
   const visibleFiltersWithReportType = useMemo(
@@ -330,7 +331,7 @@ const CustomReport: React.FC = () => {
       filtersGlob.find((f) => f.key === "report-type")!,
       ...visibleFilters,
     ],
-    [filters.reportType, visibleFilters]
+    [filters.reportType, visibleFilters],
   );
 
   //---------------------columns --------------------
@@ -368,37 +369,42 @@ const CustomReport: React.FC = () => {
         )}
 
         <div className="flex justify-end">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                disabled={
-                  isGenerating || isLoading || !reports || reports.length === 0
-                }
-                className="min-w-[150px]"
-              >
-                {isGenerating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Generating...
-                  </>
-                ) : (
-                  "Generate Report"
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {Object.entries(REPORT_FORMAT).map(([key, value]) => (
-                <DropdownMenuItem
-                  key={key}
-                  onClick={() => {
-                    handleGenerateReport(value);
-                  }}
+          <PermissionGate requiredPermission="custom_reports" action="add">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  disabled={
+                    isGenerating ||
+                    isLoading ||
+                    !reports ||
+                    reports.length === 0
+                  }
+                  className="min-w-[150px]"
                 >
-                  {formatDropDownLabel(key)}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  {isGenerating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Generating...
+                    </>
+                  ) : (
+                    "Generate Report"
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {Object.entries(REPORT_FORMAT).map(([key, value]) => (
+                  <DropdownMenuItem
+                    key={key}
+                    onClick={() => {
+                      handleGenerateReport(value);
+                    }}
+                  >
+                    {formatDropDownLabel(key)}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </PermissionGate>
         </div>
       </Card>
 
