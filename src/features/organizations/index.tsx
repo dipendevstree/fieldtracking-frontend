@@ -1,5 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
-import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearch } from "@tanstack/react-router";
+import {
+  DEFAULT_PAGE_NUMBER,
+  DEFAULT_PAGE_SIZE,
+  OrganizationPlanStatus,
+} from "@/data/app.data";
 import { Building2, Clock, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +31,7 @@ import { FilterConfig } from "@/components/global-filter-section";
 import debounce from "lodash.debounce";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import AllUsersTable from "./components/all-user-table";
+import { enumToOptions } from "@/utils/commonFunction";
 
 const Organizations = () => {
   const [selectedTab, setSelectedTab] = useState("organizations");
@@ -36,12 +42,17 @@ const Organizations = () => {
     description: "Manage all organizations in the system",
   });
 
+  const { planStatus: initialPlanStatus } = useSearch({
+    from: "/_authenticated/superadmin/organizations/",
+  }) as { planStatus?: string };
+
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
     searchFor: "",
     industryId: "",
     isActive: "",
+    planStatus: initialPlanStatus ?? "",
   });
 
   const [userPagination, setUserPagination] = useState({
@@ -174,6 +185,11 @@ const Organizations = () => {
     }));
   };
 
+  const planStatusOptions = useMemo(
+    () => enumToOptions(OrganizationPlanStatus),
+    [],
+  );
+
   const filters: FilterConfig[] = [
     {
       key: "search",
@@ -203,6 +219,16 @@ const Organizations = () => {
       value: pagination.isActive,
       onChange: (value) => handleFilterChange("isActive", value ?? ""),
       onCancelPress: () => handleFilterChange("isActive", ""),
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+    {
+      key: "planStatus",
+      type: "searchable-select",
+      placeholder: "Plan Status",
+      options: planStatusOptions,
+      value: pagination.planStatus,
+      onChange: (value) => handleFilterChange("planStatus", value ?? ""),
+      onCancelPress: () => handleFilterChange("planStatus", ""),
       searchableSelectClassName: "w-full max-w-[180px]",
     },
   ];

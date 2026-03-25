@@ -5,6 +5,7 @@ import { useAuth } from "@/stores/use-auth-store";
 import { Navigate } from "@tanstack/react-router";
 import { TopStatsCard } from "@/components/ui/TopStatsCard";
 import { useGetPlanStats } from "@/features/organizations/services/organization.hook";
+import { OrganizationPlanStatus } from "@/data/app.data";
 
 export default function SuperAdminDashboard() {
   const { user } = useAuth();
@@ -41,6 +42,7 @@ export default function SuperAdminDashboard() {
           icon={Shield}
           href={{
             to: "/superadmin/organizations",
+            search: { planStatus: OrganizationPlanStatus.TRIAL },
           }}
         />
 
@@ -51,6 +53,7 @@ export default function SuperAdminDashboard() {
           icon={Shield}
           href={{
             to: "/superadmin/organizations",
+            search: { planStatus: OrganizationPlanStatus.ACTIVE },
           }}
         />
 
@@ -61,6 +64,7 @@ export default function SuperAdminDashboard() {
           icon={Shield}
           href={{
             to: "/superadmin/organizations",
+            search: { planStatus: OrganizationPlanStatus.EXPIRED },
           }}
         />
       </div>
