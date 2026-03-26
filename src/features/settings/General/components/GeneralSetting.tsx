@@ -43,6 +43,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import moment from "moment-timezone";
+import { Button } from "@/components/ui/button";
+import { useExportZip } from "../services/Generalhook";
 
 interface GeneralApplicationSettingsProps {
   onDataChange?: (data: any) => void;
@@ -58,6 +60,8 @@ export default function GeneralApplicationSettings({
   setIsFixedExpenseDirty,
 }: GeneralApplicationSettingsProps) {
   const { user } = useAuth();
+  const { mutateAsync: exportZip, isPending: isExportZipLoading } =
+    useExportZip();
   const [autoExpenseApproval, setAutoExpenseApproval] = useState(false);
   const [fixedDayExpense, setFixedDayExpense] = useState<boolean>(false);
   const [allowAddUsersBasedOnTerritories, setAllowAddUsersBasedOnTerritories] =
@@ -468,6 +472,15 @@ export default function GeneralApplicationSettings({
 
   const { showExitPrompt, confirmExit, cancelExit } =
     useUnsavedChanges(isDirty);
+
+  const handleExport = async () => {
+    try {
+      const data = await exportZip({});
+      console.log("Export zip response data:", data);
+    } catch (error) {
+      console.error("Export zip error caught in handleExport:", error);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -1229,6 +1242,21 @@ export default function GeneralApplicationSettings({
                     </div>
                   </div>
                 </div>
+              </div>
+
+              <Separator className="my-6" />
+
+              <div className="flex items-center justify-between">
+                <Label className="text-lg font-medium text-gray-900">
+                  Click to download all organization data in ZIP format
+                </Label>
+                <Button
+                  onClick={handleExport}
+                  variant="outline"
+                  disabled={isExportZipLoading}
+                >
+                  {isExportZipLoading ? "Preparing ZIP..." : "Download ZIP"}
+                </Button>
               </div>
 
               <Separator className="my-8" />

@@ -48,7 +48,8 @@ export const extractErrorInfo = (error: EnhancedError) => {
 
       case 429:
         title = "Too Many Requests";
-        description = "Please wait a moment before trying again";
+        description =
+          "Too many requests. Please wait a moment before trying again.";
         duration = 3000;
         break;
 

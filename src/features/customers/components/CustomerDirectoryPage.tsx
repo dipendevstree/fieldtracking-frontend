@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Plus, Download, Loader2 } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
@@ -23,8 +23,8 @@ import GlobalFilterSection from "@/components/global-table-filter-section";
 //   DropdownMenuItem,
 //   DropdownMenuTrigger,
 // } from "@/components/ui/dropdown-menu";
-import { useExportFile } from "@/hooks/useExportFile";
-import API from "@/config/api/api";
+// import { useExportFile } from "@/hooks/useExportFile";
+// import API from "@/config/api/api";
 import { Main } from "@/components/layout/main";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 
@@ -57,15 +57,15 @@ export const CustomerDirectoryPage = () => {
     [pagination, filters],
   );
 
-  const exportQueryParams = useMemo(
-    () => ({
-      searchFor: filters.search || "",
-      industryId: filters.industryId || "",
-      customerTypeId: filters.customerTypeId || "",
-      sort: "desc",
-    }),
-    [filters],
-  );
+  // const exportQueryParams = useMemo(
+  //   () => ({
+  //     searchFor: filters.search || "",
+  //     industryId: filters.industryId || "",
+  //     customerTypeId: filters.customerTypeId || "",
+  //     sort: "desc",
+  //   }),
+  //   [filters],
+  // );
 
   // Get customer data
   const {
@@ -77,7 +77,7 @@ export const CustomerDirectoryPage = () => {
 
   const { data: industryList = [] } = useGetIndustry();
   const { data: customerList = [] } = useGetCustomerFilter();
-  const { exportFile, isLoading: isExportLoading } = useExportFile();
+  // const { exportFile, isLoading: isExportLoading } = useExportFile();
 
   const industryOptions = useSelectOptions({
     listData: industryList ?? [],
@@ -201,8 +201,8 @@ export const CustomerDirectoryPage = () => {
           </div>
           <div className="flex items-center space-x-2">
             {/* <DropdownMenu> */}
-              {/* <DropdownMenuTrigger asChild> */}
-                <Button
+            {/* <DropdownMenuTrigger asChild> */}
+            {/* <Button
                   disabled={isExportLoading || isLoading || totalCount === 0}
                   onClick={() =>
                     exportFile({
@@ -216,9 +216,9 @@ export const CustomerDirectoryPage = () => {
                     <Loader2 className="animate-spin"/>
                   : <Download className="h-4 w-4 mr-2" />}
                   Export Customers
-                </Button>
-              {/* </DropdownMenuTrigger> */}
-              {/* <DropdownMenuContent align="end">
+                </Button> */}
+            {/* </DropdownMenuTrigger> */}
+            {/* <DropdownMenuContent align="end">
                 <DropdownMenuItem
                   onClick={() =>
                     exportFile({

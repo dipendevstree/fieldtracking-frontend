@@ -52,14 +52,14 @@ import { ViewType } from "@/components/layout/types";
 import { useNavigate } from "@tanstack/react-router";
 import { formatDropDownLabel } from "@/utils/commonFunction";
 import { useAuthStore } from "@/stores/use-auth-store";
-import { LEAVE_STATUS, REPORT_FORMAT } from "@/data/app.data";
+import { LEAVE_STATUS } from "@/data/app.data";
 import { usePermission } from "@/permissions/hooks/use-permission";
 import ActionButton from "@/components/shared/table-primary-action-button";
 import { LeaveBalanceBulkImportModal } from "./components/LeaveBalanceBulkImportModal";
-import { FileDown as IconFileExport, Loader2 } from "lucide-react";
-import { useExportFile } from "@/hooks/useExportFile";
-import API from "@/config/api/api";
-import { APP_MESSAGES } from "@/constants/messages.constants";
+import { Loader2 } from "lucide-react";
+// import { useExportFile } from "@/hooks/useExportFile";
+// import API from "@/config/api/api";
+// import { APP_MESSAGES } from "@/constants/messages.constants";
 
 // --- LOGIC HELPER ---
 export const getEventStatusKey = (
@@ -143,17 +143,17 @@ export default function MyLeaveBalance() {
     data: allLeavesList,
     isLoading: isLoadingLeaves,
     weekOffDays,
-    totalCount,
+    // totalCount,
   } = useGetAllLeaves(calendarQueryParams);
-  const { exportFile, isLoading: isExportLoading } = useExportFile();
+  // const { exportFile, isLoading: isExportLoading } = useExportFile();
 
-  const handleExport = () => {
-    exportFile({
-      url: API.leave.exportCsv,
-      type: REPORT_FORMAT.CSV,
-      queryParams: calendarQueryParams,
-    });
-  };
+  // const handleExport = () => {
+  //   exportFile({
+  //     url: API.leave.exportCsv,
+  //     type: REPORT_FORMAT.CSV,
+  //     queryParams: calendarQueryParams,
+  //   });
+  // };
 
   const cancelLeaveId = leaveToCancel?.id || "";
 
@@ -369,7 +369,7 @@ export default function MyLeaveBalance() {
               className="flex items-center gap-2"
             />
           </PermissionGate>
-          <ActionButton
+          {/* <ActionButton
             text="Export Leaves"
             onAction={handleExport}
             icon={IconFileExport}
@@ -377,7 +377,7 @@ export default function MyLeaveBalance() {
             loadingText={APP_MESSAGES.EXPORT.EXPORTING}
             disabled={totalCount === 0 || isLoadingLeaves || isExportLoading}
             disabledTooltip={APP_MESSAGES.EXPORT.NO_DATA_EXPORT}
-          />
+          /> */}
         </div>
       </div>
 
