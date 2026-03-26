@@ -24,11 +24,11 @@ import CustomTableHeader from "@/components/shared/custom-table-header";
 import ActionButton from "@/components/shared/table-primary-action-button";
 import {
   FileUp as IconFileImport,
-  FileDown as IconFileExport,
-  Loader2,
+  // FileDown as IconFileExport,
+  // Loader2,
 } from "lucide-react";
-import { useExportFile } from "@/hooks/useExportFile";
-import API from "@/config/api/api";
+// import { useExportFile } from "@/hooks/useExportFile";
+// import API from "@/config/api/api";
 
 const AllUsers = () => {
   const [pagination, setPagination] = useState({
@@ -43,7 +43,7 @@ const AllUsers = () => {
   const maxEmployeeCount = match ? parseInt(match[1]) : 0;
   const allowTerritoryFilter =
     user?.organization?.allowAddUsersBasedOnTerritories;
-  const { exportFile, isLoading: isExportLoading } = useExportFile();
+  // const { exportFile, isLoading: isExportLoading } = useExportFile();
 
   const { filters, setFilters, setOpen, open } = useUsersStore();
   const { noAdmin } = useSearch({
@@ -203,7 +203,7 @@ const AllUsers = () => {
             showActionButton={false}
             className="w-full"
           >
-            <PermissionGate requiredPermission="all_users" action="viewGlobal">
+            {/* <PermissionGate requiredPermission="all_users" action="viewGlobal">
               <ActionButton
                 text="Export Users"
                 onAction={() =>
@@ -217,7 +217,7 @@ const AllUsers = () => {
                 disabled={isExportLoading || isLoading || totalCount === 0}
                 className="flex items-center gap-2"
               />
-            </PermissionGate>
+            </PermissionGate> */}
             <PermissionGate requiredPermission="all_users" action="add">
               <ActionButton
                 text="Import Users"

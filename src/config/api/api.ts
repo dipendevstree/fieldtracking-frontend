@@ -84,6 +84,7 @@ const API = {
     pendingAdmins: "users/all",
     AllUsers: "users/all",
     updateStatus: "auth/activeDeactivateUserBySuperAdmin",
+    exportData: "organization/export-data",
   },
   plan: {
     history: "plan/history",

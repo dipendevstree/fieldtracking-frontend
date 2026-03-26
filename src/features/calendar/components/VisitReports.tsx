@@ -28,7 +28,7 @@ import { useCallback, useEffect, useState } from "react";
 import {
   DEFAULT_PAGE_NUMBER,
   DEFAULT_PAGE_SIZE,
-  REPORT_FORMAT,
+  // REPORT_FORMAT,
 } from "@/data/app.data";
 import moment from "moment-timezone";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -43,11 +43,11 @@ import { DateRange } from "react-day-picker";
 import { Main } from "@/components/layout/main";
 import { formatName } from "@/utils/commonFunction";
 import StatusBadge from "@/components/ui/status-badge";
-import ActionButton from "@/components/shared/table-primary-action-button";
-import { FileDown } from "lucide-react";
-import { useExportFile } from "@/hooks/useExportFile";
-import API from "@/config/api/api";
-import { APP_MESSAGES } from "@/constants/messages.constants";
+// import ActionButton from "@/components/shared/table-primary-action-button";
+// import { FileDown } from "lucide-react";
+// import { useExportFile } from "@/hooks/useExportFile";
+// import API from "@/config/api/api";
+// import { APP_MESSAGES } from "@/constants/messages.constants";
 
 export interface FormData {
   salesRep: string;
@@ -98,7 +98,7 @@ export default function VisitReports() {
   const { watch, setValue } = useForm<FormData>({
     defaultValues: { salesRep: "", search: "" },
   });
-  const { exportFile, isLoading: isExportLoading } = useExportFile();
+  // const { exportFile, isLoading: isExportLoading } = useExportFile();
   const completedVisits = useGetAllCompletedVisit(pagination);
 
   const visitReports = completedVisits.allData ?? [];
@@ -153,15 +153,15 @@ export default function VisitReports() {
     debouncedSearch(searchValue);
   };
 
-  const handleExport = () => {
-    const { page, limit, ...filters } = pagination;
+  // const handleExport = () => {
+  //   const { page, limit, ...filters } = pagination;
 
-    exportFile({
-      url: API.calendar.exportCsv,
-      type: REPORT_FORMAT.CSV,
-      queryParams: { ...filters, status: "completed" },
-    });
-  };
+  //   exportFile({
+  //     url: API.calendar.exportCsv,
+  //     type: REPORT_FORMAT.CSV,
+  //     queryParams: { ...filters, status: "completed" },
+  //   });
+  // };
 
   const selectedRep = watch("salesRep");
   const customerId = watch("customerId");
@@ -224,7 +224,7 @@ export default function VisitReports() {
               Completed visit summaries and client feedback
             </CardDescription>
           </div>
-          <ActionButton
+          {/* <ActionButton
             text="Export Visits"
             onAction={handleExport}
             icon={FileDown}
@@ -236,7 +236,7 @@ export default function VisitReports() {
               isExportLoading
             }
             disabledTooltip={APP_MESSAGES.EXPORT.NO_DATA_EXPORT}
-          />
+          /> */}
         </CardHeader>
         <CardContent>
           <InfiniteScroll
