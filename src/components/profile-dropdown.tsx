@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,10 +18,9 @@ import { useViewType } from "@/context/view-type-context";
 import { Switch } from "@/components/ui/switch";
 import { usePermission } from "@/permissions/hooks/use-permission";
 import { useEffect } from "react";
-import { User, Settings, LogOut, LucideIcon } from "lucide-react";
+import { User, Settings, LogOut, LucideIcon, Package } from "lucide-react";
 import { useLogout } from "@/features/auth/sign-in/services/sign-in-services";
-import StatusBadge from "./ui/status-badge";
-import moment from "moment";
+import { PlanDetailsModal } from "@/components/plan-details-modal";
 
 interface MenuItem {
   label: string;
@@ -87,6 +87,7 @@ export function ProfileDropdown({
   const { hasAccess } = usePermission();
   const { viewType, setViewType, viewTypeToggle, setViewTypeToggle } =
     useViewType();
+  const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
 
   const handleLogout = () => {
     if (user && user.isSuperAdmin) {
@@ -103,6 +104,7 @@ export function ProfileDropdown({
 
   const avatarSizeClass = AVATAR_SIZES[avatarSize];
   const userName = getProfileName(user?.firstName || user?.userName || "");
+  const currentOrgId = user?.organizationID;
 
   useEffect(() => {
     const showViewTypeToggle = permissionForViewTypeToggle.some((item) => {
@@ -112,148 +114,155 @@ export function ProfileDropdown({
   }, [user?.role?.permissions]);
 
   return (
-    <DropdownMenu modal={false}>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className={`relative ${avatarSizeClass} rounded-full ${className}`}
-        >
-          <Avatar className={`${avatarSizeClass} cursor-pointer`}>
-            <AvatarImage
-              src={user?.profileUrl || userName}
-              alt={`@${user?.name}`}
-            />
-            <AvatarFallback>{userName}</AvatarFallback>
-          </Avatar>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-60" align="end" forceMount>
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-row space-x-2">
-            <div>
-              <Avatar className={`${avatarSizeClass} cursor-pointer`}>
-                <AvatarImage
-                  src={user?.profileUrl || userName}
-                  alt={`@${user?.name}`}
-                />
-                <AvatarFallback>{userName}</AvatarFallback>
-              </Avatar>
-            </div>
-            <div className="flex flex-col justify-center">
-              <p className="text-sm leading-none font-medium mb-1">
-                {user?.isSuperAdmin
-                  ? user?.name?.replace(/^./, (c) => c.toUpperCase())
-                  : user?.firstName + " " + user?.lastName}
-              </p>
-              <p className="text-muted-foreground text-xs leading-none break-all max-w-[180px]">
-                {user?.email}
-              </p>
-            </div>
-          </div>
-        </DropdownMenuLabel>
-
-        {viewTypeToggle && (
-          <>
-            <DropdownMenuSeparator />
-            {/* View Type Toggle */}
-            <div className="p-2">
-              <div className="flex items-center justify-between gap-3">
-                <span
-                  className={`text-sm font-medium ${
-                    viewType === ViewType.Admin ? "text-black" : "text-gray-400"
-                  }`}
-                >
-                  Admin View
-                </span>
-                <Switch
-                  checked={viewType === ViewType.Self}
-                  onCheckedChange={(checked) =>
-                    setViewType(checked ? ViewType.Self : ViewType.Admin)
-                  }
-                  className="data-[state=unchecked]:bg-black data-[state=checked]:bg-black"
-                />
-                <span
-                  className={`text-sm font-medium ${
-                    viewType === ViewType.Self ? "text-black" : "text-gray-400"
-                  }`}
-                >
-                  Self View
-                </span>
+    <>
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            className={`relative ${avatarSizeClass} rounded-full ${className}`}
+          >
+            <Avatar className={`${avatarSizeClass} cursor-pointer`}>
+              <AvatarImage
+                src={user?.profileUrl || userName}
+                alt={`@${user?.name}`}
+              />
+              <AvatarFallback>{userName}</AvatarFallback>
+            </Avatar>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-60" align="end" forceMount>
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-row space-x-2">
+              <div>
+                <Avatar className={`${avatarSizeClass} cursor-pointer`}>
+                  <AvatarImage
+                    src={user?.profileUrl || userName}
+                    alt={`@${user?.name}`}
+                  />
+                  <AvatarFallback>{userName}</AvatarFallback>
+                </Avatar>
+              </div>
+              <div className="flex flex-col justify-center">
+                <p className="text-sm leading-none font-medium mb-1">
+                  {user?.isSuperAdmin
+                    ? user?.name?.replace(/^./, (c) => c.toUpperCase())
+                    : user?.firstName + " " + user?.lastName}
+                </p>
+                <p className="text-muted-foreground text-xs leading-none break-all max-w-[180px]">
+                  {user?.email}
+                </p>
               </div>
             </div>
-          </>
-        )}
+          </DropdownMenuLabel>
 
-        {!user?.isSuperAdmin && menuItems.length > 0 && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              {menuItems.map((item, index) => {
-                if (item.label === "Settings" && !user?.superAdminCreatedBy) {
-                  return;
-                }
-                const Icon = item.icon;
-                return (
-                  <DropdownMenuItem
-                    key={index}
-                    asChild={!!item.href}
-                    onClick={item.onClick}
-                    disabled={item.disabled}
-                    className={item.onClick ? "cursor-pointer" : ""}
+          {viewTypeToggle && (
+            <>
+              <DropdownMenuSeparator />
+              {/* View Type Toggle */}
+              <div className="p-2">
+                <div className="flex items-center justify-between gap-3">
+                  <span
+                    className={`text-sm font-medium ${
+                      viewType === ViewType.Admin
+                        ? "text-black"
+                        : "text-gray-400"
+                    }`}
                   >
-                    {item.href ? (
-                      <Link to={item.href} className="flex items-center">
-                        {Icon && <Icon className="mr-2 h-4 w-4" />}
-                        <span>{item.label}</span>
-                      </Link>
-                    ) : (
-                      <>
-                        {Icon && <Icon className="mr-2 h-4 w-4" />}
-                        <span>{item.label}</span>
-                      </>
-                    )}
-                  </DropdownMenuItem>
-                );
-              })}
-            </DropdownMenuGroup>
-          </>
-        )}
-
-        {showLogout && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
-            </DropdownMenuItem>
-          </>
-        )}
-
-        {user?.organization && user?.role?.roleName.toLowerCase() === "admin" && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <div className="flex flex-col p-2 gap-2">
-                <p className="flex justify-between text-[14px]">
-                  Plan Status{" "}
-                  <StatusBadge status={user?.organization?.planStatus} />
-                </p>
-                <p className="flex justify-between text-[14px]">
-                  Expiry Date
-                  <span className="text-red-500 font-medium">
-                    {user?.organization?.currentPlan?.planEndDate
-                      ? moment(user?.organization?.currentPlan?.planEndDate).format(
-                          "DD MMM YYYY",
-                        )
-                      : "N/A"}
+                    Admin View
                   </span>
-                </p>
+                  <Switch
+                    checked={viewType === ViewType.Self}
+                    onCheckedChange={(checked) =>
+                      setViewType(checked ? ViewType.Self : ViewType.Admin)
+                    }
+                    className="data-[state=unchecked]:bg-black data-[state=checked]:bg-black"
+                  />
+                  <span
+                    className={`text-sm font-medium ${
+                      viewType === ViewType.Self
+                        ? "text-black"
+                        : "text-gray-400"
+                    }`}
+                  >
+                    Self View
+                  </span>
+                </div>
               </div>
-            </DropdownMenuGroup>
-          </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+            </>
+          )}
+
+          {!user?.isSuperAdmin && menuItems.length > 0 && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuGroup>
+                {menuItems.map((item, index) => {
+                  if (item.label === "Settings" && !user?.superAdminCreatedBy) {
+                    return;
+                  }
+                  const Icon = item.icon;
+                  return (
+                    <DropdownMenuItem
+                      key={index}
+                      asChild={!!item.href}
+                      onClick={item.onClick}
+                      disabled={item.disabled}
+                      className={item.onClick ? "cursor-pointer" : ""}
+                    >
+                      {item.href ? (
+                        <Link to={item.href} className="flex items-center">
+                          {Icon && <Icon className="mr-2 h-4 w-4" />}
+                          <span>{item.label}</span>
+                        </Link>
+                      ) : (
+                        <>
+                          {Icon && <Icon className="mr-2 h-4 w-4" />}
+                          <span>{item.label}</span>
+                        </>
+                      )}
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuGroup>
+            </>
+          )}
+
+          {user?.organization &&
+            user?.role?.roleName.toLowerCase() === "admin" && (
+              <>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuItem
+                    onClick={() => setIsPlanModalOpen(true)}
+                    className="cursor-pointer"
+                  >
+                    <Package className="mr-2 h-4 w-4" />
+                    <span>Plan Details</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </>
+            )}
+
+          {showLogout && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="cursor-pointer"
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Log out</span>
+              </DropdownMenuItem>
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <PlanDetailsModal
+        isOpen={isPlanModalOpen}
+        onClose={() => setIsPlanModalOpen(false)}
+        orgId={currentOrgId}
+      />
+    </>
   );
 }
 
