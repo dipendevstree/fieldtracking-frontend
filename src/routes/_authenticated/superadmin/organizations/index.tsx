@@ -5,7 +5,7 @@ export const Route = createFileRoute(
   "/_authenticated/superadmin/organizations/",
 )({
   validateSearch: (search: Record<string, unknown>) => ({
-    planStatus: (search.planStatus as string) ?? "",
+    planStatus: search.planStatus ? String(search.planStatus) : undefined,
   }),
   component: RouteComponent,
 });
