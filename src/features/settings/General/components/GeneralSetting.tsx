@@ -28,6 +28,7 @@ import "react-phone-number-input/style.css";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import parsePhoneNumberFromString from "libphonenumber-js";
 import FixedDayExpenses from "./FixedDayExpenses";
+import VehicleCategoryRates from "./VehicleCategoryRates";
 import { Country, State, City } from "country-state-city";
 import type { ICountry, IState, ICity } from "country-state-city";
 import { CircleX } from "lucide-react";
@@ -51,6 +52,9 @@ interface GeneralApplicationSettingsProps {
   setSubmitFixedExpenseForm: Function;
   isFixedExpenseDirty: boolean;
   setIsFixedExpenseDirty: (isDirty: boolean) => void;
+  setSubmitVehicleCategoryForm: Function;
+  isVehicleCategoryDirty: boolean;
+  setIsVehicleCategoryDirty: (isDirty: boolean) => void;
 }
 
 export default function GeneralApplicationSettings({
@@ -58,6 +62,9 @@ export default function GeneralApplicationSettings({
   setSubmitFixedExpenseForm,
   isFixedExpenseDirty,
   setIsFixedExpenseDirty,
+  setSubmitVehicleCategoryForm,
+  isVehicleCategoryDirty,
+  setIsVehicleCategoryDirty,
 }: GeneralApplicationSettingsProps) {
   const { user } = useAuth();
   const { mutateAsync: exportZip, isPending: isExportZipLoading } =
@@ -90,7 +97,6 @@ export default function GeneralApplicationSettings({
     country: "",
     dateFormat: "",
     distanceUnit: "",
-    ratePerKm: "30",
     orgIcon: null,
     profileImage: null,
     userFirstName: "",
@@ -167,7 +173,6 @@ export default function GeneralApplicationSettings({
         country: org.country || "",
         dateFormat: "dd-mm-yyyy",
         distanceUnit: "kilometers",
-        ratePerKm: org.rsPerKm?.toString() || "",
         orgIcon: null,
         profileImage: null,
         userFirstName: user?.firstName || "",
@@ -283,6 +288,7 @@ export default function GeneralApplicationSettings({
         addLeaveAfterProbationValue,
         addLeaveAfterProbationUnit,
         isFixedExpenseDirty,
+        isVehicleCategoryDirty,
       });
     }
   }, [
@@ -296,6 +302,7 @@ export default function GeneralApplicationSettings({
     addLeaveAfterProbationUnit,
     onDataChange,
     isFixedExpenseDirty,
+    isVehicleCategoryDirty,
   ]);
 
   const toggleApprovalCheckBox = (name: string, value: boolean) => {
@@ -405,6 +412,7 @@ export default function GeneralApplicationSettings({
 
     // 1. Check Child Component (FixedDayExpenses)
     if (isFixedExpenseDirty) return true;
+    if (isVehicleCategoryDirty) return true;
 
     // 2. Check Toggles & Values
     if (autoExpenseApproval !== initialState.autoExpenseApproval) return true;
@@ -1409,25 +1417,10 @@ export default function GeneralApplicationSettings({
                 </div>
 
                 {autoExpenseApproval && (
-                  <div className="space-y-2 mt-4">
-                    <Label
-                      htmlFor="rate-per-km"
-                      className="text-sm font-medium text-gray-700"
-                    >
-                      Rate Per KM ({user?.organization?.currency || "₹"})
-                      <span className="text-red-500">*</span>
-                    </Label>
-                    <Input
-                      id="rate-per-km"
-                      value={formData.ratePerKm}
-                      onChange={(e) =>
-                        handleInputChange("ratePerKm", e.target.value)
-                      }
-                      placeholder="30"
-                      className="w-32 h-10"
-                      type="number"
-                    />
-                  </div>
+                  <VehicleCategoryRates
+                    setSubmitVehicleCategoryForm={setSubmitVehicleCategoryForm}
+                    onDirtyStateChange={setIsVehicleCategoryDirty}
+                  />
                 )}
               </div>
 
