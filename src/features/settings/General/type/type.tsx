@@ -68,3 +68,25 @@ export type FixedDayExpense = {
   tierKey: string;
   dailyExpense: string;
 };
+
+export type VehicleCategoryRatesProps = {
+  setSubmitVehicleCategoryForm: Function;
+  onDirtyStateChange: (isDirty: boolean) => void;
+};
+
+export type VehicleCategoryRateRowProps = {
+  levelIdx: number;
+  removeVehicleCategoryRate: (index: number) => void;
+  canDelete: boolean;
+  isDeleting: boolean;
+  initiateDelete: (state: DeletionState) => void;
+  deleteVehicleCategoryRate: any;
+  isFirstLevel: boolean;
+  refreshPermissionData: () => void;
+};
+
+export type VehicleCategoryRate = {
+  id: string;
+  vehicleCategory: string;
+  ratePerKm: string;
+};

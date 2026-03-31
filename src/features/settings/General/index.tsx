@@ -18,6 +18,8 @@ const GeneralSettingsPage = () => {
   });
   const [submitFixedExpenseForm, setSubmitFixedExpenseForm] =
     useState<Function | null>();
+  const [submitVehicleCategoryForm, setSubmitVehicleCategoryForm] =
+    useState<Function | null>();
   const [currentSettingsData, setCurrentSettingsData] = useState<any>(null);
   const { mutate } = usePermissionData({
     onSuccess(data) {
@@ -36,6 +38,7 @@ const GeneralSettingsPage = () => {
     },
   });
   const [isFixedExpenseDirty, setIsFixedExpenseDirty] = useState(false);
+  const [isVehicleCategoryDirty, setIsVehicleCategoryDirty] = useState(false);
   // API hooks for updating data
   const organizationId = user?.organization?.organizationID;
   const { mutate: updateGeneralSettings, isPending: isGeneralSettingsLoading } =
@@ -46,7 +49,6 @@ const GeneralSettingsPage = () => {
   // Handle data changes from the component
   const handleDataChange = useCallback((data: any) => {
     setCurrentSettingsData(data);
-    setIsFixedExpenseDirty(isFixedExpenseDirty);
   }, []);
 
   const handleSaveSettings = async () => {
@@ -83,20 +85,13 @@ const GeneralSettingsPage = () => {
       return;
     }
 
-    // Validate rate per KM when auto-expense is enabled
-    if (
-      currentSettingsData.autoExpenseApproval &&
-      (!currentSettingsData.ratePerKm ||
-        parseFloat(currentSettingsData.ratePerKm) <= 0)
-    ) {
-      toast.error(
-        "Rate per KM is required when auto-expense approval is enabled",
-      );
-      return;
-    }
-
     if (currentSettingsData?.fixedDayExpense && submitFixedExpenseForm) {
       const result = await submitFixedExpenseForm();
+      if (!result) return;
+    }
+
+    if (currentSettingsData?.autoExpenseApproval && submitVehicleCategoryForm) {
+      const result = await submitVehicleCategoryForm();
       if (!result) return;
     }
 
@@ -126,12 +121,7 @@ const GeneralSettingsPage = () => {
         "isFixedDayExpense",
         currentSettingsData.fixedDayExpense ? "true" : "",
       );
-      formData.append(
-        "rsPerKm",
-        currentSettingsData.autoExpenseApproval
-          ? currentSettingsData.ratePerKm || 0
-          : 0,
-      );
+
       formData.append(
         "allowAddUsersBasedOnTerritories",
         currentSettingsData.allowAddUsersBasedOnTerritories ? "true" : "",
@@ -225,6 +215,9 @@ const GeneralSettingsPage = () => {
           setSubmitFixedExpenseForm={setSubmitFixedExpenseForm}
           isFixedExpenseDirty={isFixedExpenseDirty}
           setIsFixedExpenseDirty={setIsFixedExpenseDirty}
+          setSubmitVehicleCategoryForm={setSubmitVehicleCategoryForm}
+          isVehicleCategoryDirty={isVehicleCategoryDirty}
+          setIsVehicleCategoryDirty={setIsVehicleCategoryDirty}
         />
       </div>
 

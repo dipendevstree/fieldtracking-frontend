@@ -267,6 +267,51 @@ export const useDeleteFixedDayExpense = (
   });
 };
 
+export const useCreateVehicleCategoryRates = (
+  onSuccess?: () => void,
+  skipToast?: boolean,
+) => {
+  return usePostData({
+    url: API.vehicleCategoryRate.create,
+    skipToast: skipToast,
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};
+
+export const useUpdateVehicleCategoryRates = (
+  onSuccess?: () => void,
+  skipToast?: boolean,
+) => {
+  return usePatchData({
+    url: API.vehicleCategoryRate.update,
+    skipToast: skipToast,
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};
+
+export const useDeleteVehicleCategoryRates = (
+  onSuccess?: () => void,
+  skipToast?: boolean,
+) => {
+  return useDeleteData({
+    url: API.vehicleCategoryRate.delete,
+    skipToast: skipToast,
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+  });
+};
+
 export const useExportZip = (
   onSuccess?: (data: ExportDataResponse) => void,
 ) => {

@@ -229,6 +229,11 @@ const API = {
     update: "fixedDayExpense/update-multiple",
     delete: "fixedDayExpense/delete-multiple",
   },
+  vehicleCategoryRate: {
+    create: "vehicle-category/create-multiple",
+    update: "vehicle-category/update-multiple",
+    delete: "vehicle-category/delete-multiple",
+  },
   generalSettings: {
     list: "generalSettings/list",
     get: "generalSettings/get",
