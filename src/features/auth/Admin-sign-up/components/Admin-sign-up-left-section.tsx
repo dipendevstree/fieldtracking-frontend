@@ -1,4 +1,4 @@
-import appIcon from "../../../../assets/app.png";
+import appIcon from "../../../../assets/app.svg";
 
 const SignInLeftSection = () => {
   return (
