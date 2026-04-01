@@ -27,6 +27,7 @@ import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { enumToOptions } from "@/utils/commonFunction";
 import { PlanFrequency } from "@/data/app.data";
 import { useSelectOptions } from "@/hooks/use-select-option";
+import { checkIfPaidPlan } from "@/permissions/hooks/use-plan-status";
 
 interface Props {
   open: boolean;
@@ -62,7 +63,20 @@ export function PlanActionForm({
     },
   });
 
-  const { reset, handleSubmit } = form;
+  const { reset, handleSubmit, watch, setValue } = form;
+
+  const selectedPlanId = watch("planId");
+
+  const isPaidPlan = useMemo(
+    () => checkIfPaidPlan(plans, selectedPlanId),
+    [plans, selectedPlanId],
+  );
+
+  useEffect(() => {
+    if (selectedPlanId && !isPaidPlan) {
+      setValue("frequency", undefined);
+    }
+  }, [isPaidPlan, selectedPlanId, setValue]);
 
   useEffect(() => {
     if (open) {
@@ -149,26 +163,28 @@ export function PlanActionForm({
             />
 
             {/* Frequency */}
-            <FormField
-              control={form.control}
-              name="frequency"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    Frequency <span className="text-red-500">*</span>
-                  </FormLabel>
-                  <FormControl>
-                    <SearchableSelect
-                      options={frequencyOptions}
-                      value={field.value}
-                      onChange={field.onChange}
-                      placeholder="Select frequency"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {isPaidPlan && (
+              <FormField
+                control={form.control}
+                name="frequency"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      Frequency <span className="text-red-500">*</span>
+                    </FormLabel>
+                    <FormControl>
+                      <SearchableSelect
+                        options={frequencyOptions}
+                        value={field.value}
+                        onChange={field.onChange}
+                        placeholder="Select frequency"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             {/* Notes */}
             <FormField

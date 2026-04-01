@@ -51,7 +51,7 @@ const Organizations = () => {
     limit: DEFAULT_PAGE_SIZE,
     searchFor: "",
     industryId: "",
-    isActive: "",
+    // isActive: "",
     planStatus: initialPlanStatus ?? "",
   });
 
@@ -208,19 +208,19 @@ const Organizations = () => {
       onCancelPress: () => handleFilterChange("industryId", ""),
       searchableSelectClassName: "w-full max-w-[180px]",
     },
-    {
-      key: "isActive",
-      type: "searchable-select",
-      placeholder: "Status",
-      options: [
-        { label: "Active", value: "true" },
-        { label: "Inactive", value: "false" },
-      ],
-      value: pagination.isActive,
-      onChange: (value) => handleFilterChange("isActive", value ?? ""),
-      onCancelPress: () => handleFilterChange("isActive", ""),
-      searchableSelectClassName: "w-full max-w-[180px]",
-    },
+    // {
+    //   key: "isActive",
+    //   type: "searchable-select",
+    //   placeholder: "Status",
+    //   options: [
+    //     { label: "Active", value: "true" },
+    //     { label: "Inactive", value: "false" },
+    //   ],
+    //   value: pagination.isActive,
+    //   onChange: (value) => handleFilterChange("isActive", value ?? ""),
+    //   onCancelPress: () => handleFilterChange("isActive", ""),
+    //   searchableSelectClassName: "w-full max-w-[180px]",
+    // },
     {
       key: "planStatus",
       type: "searchable-select",
@@ -259,7 +259,10 @@ const Organizations = () => {
       </div> */}
 
       <div className="mt-2 grid gap-4 md:grid-cols-3 lg:grid-cols-3">
-        <Card>
+        <Card
+          className="cursor-pointer"
+          onClick={() => setSelectedTab("organizations")}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Total Organizations
@@ -271,7 +274,10 @@ const Organizations = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card
+          className="cursor-pointer"
+          onClick={() => setSelectedTab("pending-admins")}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
               Pending Approvals
@@ -288,7 +294,10 @@ const Organizations = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card
+          className="cursor-pointer"
+          onClick={() => setSelectedTab("system-logs")}
+        >
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Users</CardTitle>
             <Users className="text-muted-foreground h-4 w-4" />

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Row } from "@tanstack/react-table";
 import { IconCheck, IconX } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
@@ -20,8 +20,7 @@ import { SearchableSelect } from "@/components/ui/SearchableSelect";
 import { PlanFrequency } from "@/data/app.data";
 import { enumToOptions } from "@/utils/commonFunction";
 import { useSelectOptions } from "@/hooks/use-select-option";
-import { useMemo } from "react";
-
+import { checkIfPaidPlan } from "@/permissions/hooks/use-plan-status";
 interface DataTableRowActionsProps {
   row: Row<any>;
 }
@@ -97,6 +96,17 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
     setSelectedFrequency("");
   };
 
+  const isPaidPlan = useMemo(
+    () => checkIfPaidPlan(plans || [], selectedPlanId),
+    [plans, selectedPlanId],
+  );
+
+  useEffect(() => {
+    if (selectedPlanId && !isPaidPlan) {
+      setSelectedFrequency("");
+    }
+  }, [isPaidPlan, selectedPlanId]);
+
   const handleConfirm = () => {
     setCurrentRow(row.original);
 
@@ -106,7 +116,7 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         status: "verified",
         planId: selectedPlanId,
         planStartDate,
-        frequency: selectedFrequency,
+        frequency: isPaidPlan ? selectedFrequency : undefined,
         reason: reason || undefined,
       });
     } else if (confirmDialog.type === "rejected") {
@@ -194,15 +204,17 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label>Frequency</Label>
-                <SearchableSelect
-                  options={frequencyOptions}
-                  value={selectedFrequency}
-                  onChange={setSelectedFrequency}
-                  placeholder="Select frequency"
-                />
-              </div>
+              {isPaidPlan && (
+                <div className="space-y-2">
+                  <Label>Frequency</Label>
+                  <SearchableSelect
+                    options={frequencyOptions}
+                    value={selectedFrequency}
+                    onChange={setSelectedFrequency}
+                    placeholder="Select frequency"
+                  />
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label>Reason (Optional)</Label>
@@ -229,7 +241,9 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
                 (confirmDialog.type === "rejected" &&
                   reason.trim().length === 0) ||
                 (confirmDialog.type === "verified" &&
-                  (!selectedPlanId || !planStartDate || !selectedFrequency))
+                  (!selectedPlanId ||
+                    !planStartDate ||
+                    (isPaidPlan && !selectedFrequency)))
               }
             >
               {confirmDialog.type === "verified" ? "Verify" : "Reject"}

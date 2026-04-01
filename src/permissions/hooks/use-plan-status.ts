@@ -61,6 +61,22 @@ export function usePlanStatus() {
     isActive:
       planStatus === OrganizationPlanStatus.ACTIVE ||
       planStatus === OrganizationPlanStatus.TRIAL,
+    isTrial: planStatus === OrganizationPlanStatus.TRIAL,
+    isPaid:
+      planStatus !== OrganizationPlanStatus.TRIAL &&
+      planStatus !== OrganizationPlanStatus.SUSPENDED,
     canPerformPlanAction,
   };
 }
+
+/**
+ * Utility to check if a plan (found by ID in a list) is a paid plan.
+ * A plan is considered "paid" if its name doesn't contain the word "trial" (case-insensitive).
+ */
+export const checkIfPaidPlan = (plans: any[], planId: string): boolean => {
+  if (!planId || !plans) return false;
+  const selectedPlan = plans.find((p: any) => p.id === planId);
+  return !!(
+    selectedPlan && !selectedPlan.name?.toLowerCase().includes("trial")
+  );
+};
