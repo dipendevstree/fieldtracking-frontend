@@ -132,7 +132,7 @@ export const useDeleteVisits = (id: string, onSuccess?: () => void) => {
 };
 
 type UseGetAllCompletedVisit = UseInfiniteQueryResult<
-  PaginatedResponse<any>,
+  InfiniteData<PaginatedResponse<any>, number>,
   Error
 > & {
   allData: any[];

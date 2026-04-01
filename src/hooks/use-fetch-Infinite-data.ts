@@ -1,6 +1,7 @@
 import {
   useInfiniteQuery,
   UseInfiniteQueryOptions,
+  InfiniteData,
 } from '@tanstack/react-query'
 import instance from '@/config/instance/instance'
 import { buildQueryString } from '@/utils/storage'
@@ -25,7 +26,8 @@ export interface FetchInfiniteDataOptions<
     UseInfiniteQueryOptions<
       PaginatedResponse<TData>, // TQueryFnData
       Error,                    // TError
-      PaginatedResponse<TData>, // TData
+      InfiniteData<PaginatedResponse<TData>, number>, // TData
+      PaginatedResponse<TData>, // TQueryData
       DefaultQueryKey,          // TQueryKey
       number                    // TPageParam
     >,
@@ -47,7 +49,7 @@ const useFetchInfiniteData = <
   return useInfiniteQuery<
     PaginatedResponse<TData>, // TQueryFnData
     Error,                    // TError
-    PaginatedResponse<TData>, // TData
+    InfiniteData<PaginatedResponse<TData>, number>, // TData
     DefaultQueryKey,          // TQueryKey
     number                    // TPageParam
   >({

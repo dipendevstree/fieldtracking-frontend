@@ -20,7 +20,10 @@ export interface IListParams {
 
 export const useGetNotifications = (
   params: IListParams,
-): UseInfiniteQueryResult<PaginatedResponse<Notification>, Error> & {
+): UseInfiniteQueryResult<
+  InfiniteData<PaginatedResponse<Notification>, number>,
+  Error
+> & {
   allData: Notification[];
   totalCount: number;
   unreadCount: number;
