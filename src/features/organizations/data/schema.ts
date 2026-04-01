@@ -34,9 +34,7 @@ export type TFormSchema = z.infer<typeof formSchema>;
 export const planAssignmentSchema = z.object({
   planId: z.string().min(1, { message: "Plan is required." }),
   planStartDate: z.string().min(1, { message: "Plan start date is required." }),
-  frequency: z.nativeEnum(PlanFrequency, {
-    errorMap: () => ({ message: "Frequency is required." }),
-  }),
+  frequency: z.nativeEnum(PlanFrequency).optional(),
   notes: z.string().optional(),
 });
 
