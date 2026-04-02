@@ -70,7 +70,13 @@ export type TSystemPreferencesFormSchema = z.infer<
 const singleVehicleCategoryRateSchema = z.object({
   id: z.string().optional(),
   vehicleCategory: z.string().min(1, "Vehicle category is required."),
-  ratePerKm: z.string().min(1, "Rate per KM is required."),
+  ratePerKm: z
+    .string()
+    .min(1, "Rate per KM is required.")
+    .refine((value) => {
+      const numericValue = Number(value);
+      return Number.isFinite(numericValue) && numericValue >= 1;
+    }, "Rate per KM must be greater than 0"),
 });
 
 export const vehicleCategoryRateSchema = z.object({

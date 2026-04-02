@@ -174,7 +174,7 @@ export default function VehicleCategoryRates({
                 onClick={() => {
                   addVehicleCategoryRate({
                     vehicleCategory: "",
-                    ratePerKm: "0",
+                    ratePerKm: "1",
                   });
                 }}
               >
@@ -291,7 +291,8 @@ const VehicleCategoryRateRow = ({
             <Label>Rate Per KM</Label>
             <Controller
               name={`vehicleCategoryRateList.${levelIdx}.ratePerKm`}
-              render={({ field }) => <Input type="number" {...field} />}
+              control={control}
+              render={({ field }) => <Input type="number" min={1} {...field} />}
             />
           </div>
           <FieldError
