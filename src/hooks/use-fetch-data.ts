@@ -39,8 +39,8 @@ const useFetchData = <TData = unknown, TParams = Record<string, unknown>>({
     },
     enabled,
     retry: 1,
-    refetchOnWindowFocus: false,
-    staleTime: 0,
+    // refetchOnWindowFocus: false,
+    // staleTime: 0,
     placeholderData: (prevData) => prevData,
     ...queryOptions,
   })
