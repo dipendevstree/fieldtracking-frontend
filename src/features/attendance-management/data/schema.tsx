@@ -33,9 +33,7 @@ export const AttendanceRulesSchema = z.object({
   leaveDeductionCount: z.coerce
     .number()
     .min(0, "Leave deduction count must be 0 or greater"),
-  weekOffDays: z
-    .array(z.coerce.number().min(0).max(6))
-    .min(1, "At least one week off day is required"),
+  weekOffDays: z.array(z.coerce.number().min(0).max(6)).optional(),
   latemarkApplicableTiers: z.array(z.string()).optional(),
   frequency: z.nativeEnum(ATTENDANCE_RULE_FREQUENCY).optional(),
   // --- Enhanced Validation for Hours Based Rules ---

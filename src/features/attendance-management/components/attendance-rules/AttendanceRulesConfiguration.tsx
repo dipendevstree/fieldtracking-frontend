@@ -102,7 +102,7 @@ export default function AttendanceRulesConfiguration() {
       enableLateMarkRule: true,
       lateMarkLimit: 1,
       leaveDeductionCount: 0,
-      weekOffDays: [0], // Default to Sunday
+      weekOffDays: [], // Default to no week off days
       latemarkApplicableTiers: [],
       enableHoursBasedDeduction: false,
       frequency: ATTENDANCE_RULE_FREQUENCY.WEEKLY,
@@ -122,8 +122,9 @@ export default function AttendanceRulesConfiguration() {
         enableLateMarkRule: rulesData.enableLateMarkRule ?? true,
         lateMarkLimit: rulesData.lateMarkLimit ?? 1,
         leaveDeductionCount: rulesData.leaveDeductionCount ?? 0,
-        weekOffDays: (rulesData.weekOffDays ?? [0]).map((day: any) =>
-          typeof day === "string" ? parseInt(day, 10) : day,
+        weekOffDays: (rulesData.weekOffDays ?? []).map(
+          (day: any) =>
+            (typeof day === "string" ? parseInt(day, 10) : day) as number,
         ),
         latemarkApplicableTiers: rulesData.latemarkApplicableTiers ?? [],
         enableHoursBasedDeduction: rulesData.enableHoursBasedDeduction ?? false,
