@@ -467,21 +467,19 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
         <PermissionGate requiredPermission="all_users">
           <Card
             className="gap-2 cursor-pointer flex-1 w-full"
-            onClick={() => navigate({ to: "/calendar" })}
+            onClick={() => navigate({ to: "/user-management" })}
           >
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-sm font-medium">
-                Total Sales Reps
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
               <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold mb-1">
                 {isStatsLoading ? "..." : stats?.totalUsers}
               </div>
-              <p className="text-xs text-muted-foreground">
+              {/* <p className="text-xs text-muted-foreground">
                 From Today's Schedule
-              </p>
+              </p> */}
             </CardContent>
           </Card>
         </PermissionGate>
@@ -493,7 +491,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
           >
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-sm font-medium">
-                Active In Field
+                Today's Active Users
               </CardTitle>
               <MapPin className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
@@ -501,7 +499,7 @@ export default function Overview({ salesReps: _salesReps }: OverviewProps) {
               <div className="text-2xl font-bold mb-1">
                 {isStatsLoading ? "..." : stats?.onlineUsers}
               </div>
-              <p className="text-xs text-muted-foreground">Currently Online</p>
+              {/* <p className="text-xs text-muted-foreground">Currently Online</p> */}
             </CardContent>
           </Card>
         </PermissionGate>
