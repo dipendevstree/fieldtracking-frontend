@@ -499,10 +499,11 @@ export default function Livetracking() {
                   key={selectedUserId}
                   mapContainerStyle={containerStyle}
                   center={mapCenter}
-                  zoom={17}
+                  zoom={15}
                   onLoad={(map) => {
                     mapRef.current = map;
                   }}
+                  options={{ minZoom: 10, maxZoom: 15 }}
                 >
                   {selectedUserId !== undefined && selectedUserId !== "" ? (
                     <UserPolylineMap
