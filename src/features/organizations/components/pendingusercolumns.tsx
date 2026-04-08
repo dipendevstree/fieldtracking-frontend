@@ -29,7 +29,7 @@ export const pendingusercolumns: ColumnDef<any>[] = [
             <div className="font-semibold">
               {firstName} {lastName}
             </div>
-            <div className="text-muted-foreground mt-1 text-xs">{jobTitle}</div>
+            <div className="text-muted-foreground  text-xs">{jobTitle}</div>
             <StatusBadge
               status={
                 isSelfRegister ? "register_via_app" : "created_via_super_admin"

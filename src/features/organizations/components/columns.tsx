@@ -24,7 +24,6 @@ export const columns: ColumnDef<any>[] = [
             status={
               isSelfRegister ? "register_via_app" : "created_via_super_admin"
             }
-            className="mt-1"
             showDot={false}
           />
         </div>
