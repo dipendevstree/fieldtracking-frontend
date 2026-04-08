@@ -1,60 +1,142 @@
-import { DotsHorizontalIcon } from '@radix-ui/react-icons'
-import { IconEdit } from '@tabler/icons-react'
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import {
+  IconEdit,
+  IconPlayerPlay,
+  IconRefresh,
+  IconBan,
+  IconHistory,
+  IconClock,
+} from "@tabler/icons-react";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuShortcut,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import CustomButton from '@/components/shared/custom-button'
-import CustomTooltip from '@/components/shared/custom-tooltip'
-import { useUsersStore } from '../store/organizations.store'
+} from "@/components/ui/dropdown-menu";
+
+import CustomButton from "@/components/shared/custom-button";
+import CustomTooltip from "@/components/shared/custom-tooltip";
+import { DialogType, useOrganizationStore } from "../store/organizations.store";
+import { useNavigate } from "@tanstack/react-router";
+import { OrganizationPlanStatus } from "@/components/layout/types";
+
+const ACTIONS: {
+  label: string;
+  key: DialogType;
+  icon: React.ElementType;
+}[] = [
+  { label: "Edit", key: "edit", icon: IconEdit },
+  { label: "Activate Plan", key: "activatePlan", icon: IconPlayerPlay },
+  { label: "Renew Plan", key: "renewPlan", icon: IconRefresh },
+  { label: "Suspend Organization", key: "suspendOrganization", icon: IconBan },
+  { label: "Extend Grace Period", key: "extendGracePeriod", icon: IconClock },
+  { label: "Plan History", key: "planHistory", icon: IconHistory },
+];
 
 export function DataTableRowActions({ row }: any) {
-  const { setOpen, setCurrentRow } = useUsersStore()
+  const { setOpen, setCurrentRow } = useOrganizationStore();
+  const navigate = useNavigate();
 
-  const handleEdit = (row: any) => {
-    setOpen('edit')
-    setCurrentRow(row.original)
-  }
+  const planStatus = row.original.planStatus;
+  const showRenewButton: boolean = !!row.original.showRenewButton;
+  const isTrialGracePeriod =
+      planStatus === OrganizationPlanStatus.GRACE_PERIOD && !showRenewButton;
 
-  // const handleDelete = (row: Row<User>) => {
-  //     setOpen('delete')
-  //     setCurrentRow(row.original)
-  // }
+  const filteredActions = ACTIONS.filter((action) => {
+    // Always visible
+    if (action.key === "edit") return true;
+
+    // Show when org has no paid plan yet:
+    // - Still on trial
+    // - Trial entered grace period (inferred via !showRenewButton)
+    // - Paid plan fully expired with no renewal
+    if (action.key === "activatePlan") {
+      return (
+        planStatus === OrganizationPlanStatus.TRIAL ||
+        planStatus === OrganizationPlanStatus.EXPIRED ||
+        isTrialGracePeriod
+      );
+    }
+
+    // Show when org has or had a paid plan on record (backend-confirmed via showRenewButton)
+    // Exclude TRIAL and trial grace period — those orgs should use Activate Paid Plan instead
+    if (action.key === "renewPlan") {
+      return (
+        planStatus !== OrganizationPlanStatus.TRIAL &&
+        !isTrialGracePeriod &&
+        showRenewButton
+      );
+    }
+
+    if (action.key === "suspendOrganization") {
+      return [
+        OrganizationPlanStatus.TRIAL,
+        OrganizationPlanStatus.ACTIVE,
+        OrganizationPlanStatus.UPCOMING,
+        OrganizationPlanStatus.GRACE_PERIOD,
+      ].includes(planStatus);
+    }
+
+    if (action.key === "extendGracePeriod") {
+      return planStatus === OrganizationPlanStatus.GRACE_PERIOD;
+    }
+
+    if (action.key === "planHistory") {
+      return planStatus !== OrganizationPlanStatus.TRIAL;
+    }
+
+    return false;
+  });
+
+  const openAction = (type: DialogType) => {
+    if (type === "planHistory") {
+      navigate({
+        to: "/superadmin/plan-history",
+        search: {
+          organizationId: row.original.organizationID || row.original.id,
+        },
+      });
+      return;
+    }
+    setCurrentRow(row.original);
+    setOpen(type);
+  };
 
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <CustomButton
-          variant='ghost'
-          className='data-[state=open]:bg-muted flex h-8 w-8 cursor-pointer p-0'
+          variant="ghost"
+          className="data-[state=open]:bg-muted flex h-8 w-8 cursor-pointer p-0"
         >
-          <CustomTooltip title='Actions'>
-            <DotsHorizontalIcon className='h-4 w-4' />
-            <span className='sr-only'>Open menu</span>
+          <CustomTooltip title="Actions">
+            <div>
+              <DotsHorizontalIcon className="h-4 w-4" />
+              <span className="sr-only">Open menu</span>
+            </div>
           </CustomTooltip>
         </CustomButton>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align='end' className='w-[160px]'>
-        <DropdownMenuItem onClick={() => handleEdit(row)}>
-          Edit
-          <DropdownMenuShortcut>
-            <IconEdit size={16} />
-          </DropdownMenuShortcut>
-        </DropdownMenuItem>
-        {/* <DropdownMenuSeparator /> */}
-        {/* <DropdownMenuItem
-                    onClick={() => handleDelete(row)}
-                    className='text-red-500!'
-                >
-                    Delete
-                    <DropdownMenuShortcut>
-                        <IconTrash size={16} />
-                    </DropdownMenuShortcut>
-                </DropdownMenuItem> */}
+
+      <DropdownMenuContent align="end" className="w-[180px]">
+        {filteredActions.map((action) => {
+          const Icon = action.icon;
+
+          return (
+            <DropdownMenuItem
+              key={action.key}
+              onClick={() => openAction(action.key)}
+            >
+              {action.label}
+              <DropdownMenuShortcut>
+                <Icon size={16} />
+              </DropdownMenuShortcut>
+            </DropdownMenuItem>
+          );
+        })}
       </DropdownMenuContent>
     </DropdownMenu>
-  )
+  );
 }

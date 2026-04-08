@@ -33,6 +33,7 @@ interface SelectProps
   value: string | undefined
   onValueChange: (value: string | undefined) => void
   clearable?: boolean
+  onCancelPress?: any
 }
 
 const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
@@ -90,6 +91,7 @@ const Select = React.forwardRef<HTMLButtonElement, SelectProps>(
             onClick={() => {
               // onValueChange(undefined)
               onValueChange('')
+              props?.onCancelPress && props?.onCancelPress()
             }}
             className='text-muted-foreground hover:text-foreground absolute top-1/2 right-2 -translate-y-1/2'
           >

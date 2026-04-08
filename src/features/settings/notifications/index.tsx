@@ -1,13 +1,23 @@
-import ContentSection from '../components/content-section'
-import { NotificationsForm } from './notifications-form'
+import { cn } from "@/lib/utils";
+import { Main } from "@/components/layout/main";
+import Notifications from "./components/Notifications";
+import { NotificationsActionModal } from "./components/action-form-modal";
+import TablePageLayout from "@/components/layout/table-page-layout";
 
-export default function SettingsNotifications() {
+const NotificationsPage = () => {
   return (
-    <ContentSection
-      title='Notifications'
-      desc='Configure how you receive notifications.'
-    >
-      <NotificationsForm />
-    </ContentSection>
-  )
-}
+    <Main className={cn("flex flex-col gap-2 p-4")}>
+      <TablePageLayout
+        title="Notification Configuration"
+        description="Configure alerts, reminders, and notification preferences for various events."
+        className="p-0"
+        showActionButton={false}
+      >
+        <Notifications />
+      </TablePageLayout>
+      <NotificationsActionModal key={"notifications-action-modal"} />
+    </Main>
+  );
+};
+
+export default NotificationsPage;

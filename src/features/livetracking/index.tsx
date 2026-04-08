@@ -1,287 +1,548 @@
-import { useState, useEffect, useRef } from 'react'
-import { GoogleMap, Polyline, Marker } from '@react-google-maps/api'
-import { cn } from '@/lib/utils'
-import { Card, CardContent } from '@/components/ui/card'
+import { useEffect, useMemo, useRef, useState } from "react";
+import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from "@/data/app.data";
+
+import { cn } from "@/lib/utils";
+import { useSelectOptions } from "@/hooks/use-select-option";
+import { Card, CardContent } from "@/components/ui/card";
+import { FilterConfig, Option } from "@/components/global-filter-section";
+import GlobalFilterSection from "@/components/global-table-filter-section";
+import { Main } from "@/components/layout/main";
+import { useGetAllRolesForDropdown } from "../UserManagement/services/Roles.hook";
+import { useGetAllTerritoriesForDropdown } from "../userterritory/services/user-territory.hook";
+import UserTrackingTimeline from "./user-livetracting-info";
+import UserPolylineMap, { VisitMarker } from "./components/UserPolylineMap";
+import UserListMap from "./components/UserListMap";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Main } from '@/components/layout/main'
-import { useGetUserTrackingByUserId } from './services/live-tracking-services'
+  useGetUsers,
+  userDetailsById,
+} from "./services/live-tracking-services";
+import { GoogleMap } from "@react-google-maps/api";
+import { useSearch } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
+import { socket, socketForVisit } from "@/socket/socket";
+import { useAuthStore } from "@/stores/use-auth-store";
+
+// Assuming you have a Button component
+const AHMEDABAD_CENTER = { lat: 23.0225, lng: 72.5714 };
 
 const containerStyle = {
-  width: '100%',
-  height: '60vh',
-}
+  width: "100%",
+  height: "100%",
+  borderRadius: "7px",
+  overflow: "hidden",
+};
+
+const STATUS_OPTIONS_DATA = [
+  { status: "online", label: "Online" },
+  { status: "offline", label: "Offline" },
+];
 
 export default function Livetracking() {
+  const [pagination, setPagination] = useState({
+    page: DEFAULT_PAGE_NUMBER,
+    limit: DEFAULT_PAGE_SIZE,
+    startDate: new Date().toISOString().split("T")[0],
+    endDate: new Date().toISOString().split("T")[0],
+    searchFor: "",
+    roleId: "",
+    territoryId: "",
+    includeLatLong: true,
+    sortField: "isOnline",
+    status: "",
+    onlyTeamMembers: true,
+  });
+
+  const { user: userAuth } = useAuthStore();
+  const { userId }: any = useSearch({ from: "/_authenticated/livetracking/" });
+  const socketForLiveTracking = useMemo(() => socket(), []);
   const [currentPosition, setCurrentPosition] = useState<{
-    lat: number
-    lng: number
-  } | null>(null)
-  const [path, setPath] = useState<{ lat: number; lng: number }[]>([])
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const [path, setPath] = useState<{ lat: number; lng: number }[]>([]);
+  const [visitMarkers, setVisitMarkers] = useState<VisitMarker[]>([]);
   const [mapCenter, setMapCenter] = useState<{
-    lat: number
-    lng: number
-  } | null>(null)
-  const [idsSet, setIdsSet] = useState<Set<string>>(new Set())
-  const mapRef = useRef<google.maps.Map | null>(null)
+    lat: number;
+    lng: number;
+  } | null>(null);
+  const mapRef = useRef<google.maps.Map | null>(null);
 
-  // Get userId from query
-  const params = new URLSearchParams(window.location.search)
-  const userId = params.get('userId')
+  const { data, isLoading, totalCount } = useGetUsers(pagination);
+  const [userStatusMap, setUserStatusMap] = useState<Record<string, boolean>>(
+    {},
+  );
 
-  const { data, refetch, isFetched } = useGetUserTrackingByUserId(userId ?? '')
+  const [selectedUserId, setSelectedUserId] = useState(userId);
+  const { data: allRoles } = useGetAllRolesForDropdown();
+  const roles = useSelectOptions({
+    listData: allRoles,
+    labelKey: "roleName",
+    valueKey: "roleId",
+  });
+
+  const { listData: userListDropDownData = [] } = useGetUsers({
+    onlyTeamMembers: true,
+    roleId: pagination.roleId,
+    territoryId: pagination.territoryId,
+  });
+
+  const userListDropDownList = userListDropDownData?.map((user: any) => ({
+    ...user,
+    fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+  }));
+
+  const statusOptions = useSelectOptions<any>({
+    listData: STATUS_OPTIONS_DATA,
+    labelKey: "label",
+    valueKey: "status",
+  });
+
+  const usersOptions = useSelectOptions<any>({
+    listData: userListDropDownList,
+    labelKey: "fullName",
+    valueKey: "id",
+  }).map((option) => ({ ...option, value: String(option.value) }));
+
+  const hasFiltersSelected =
+    pagination.roleId ||
+    pagination.territoryId ||
+    pagination.searchFor ||
+    pagination.status;
+  const { user } = userDetailsById(userId);
+
+  const enhanceUser = (user: any) => ({
+    ...user,
+    fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+    latLong: user.latLongDetails
+      ? { lat: user.latLongDetails.lat, lng: user.latLongDetails.long }
+      : null,
+  });
+  const enhancedSingleUser = user ? enhanceUser(user) : null;
+
+  const enhancedUserList = (data?.list ?? [])
+    .map(enhanceUser)
+    .sort((a: any, b: any) =>
+      a.isOnline === b.isOnline ? 0 : a.isOnline ? -1 : 1,
+    );
+
+  const { data: territoriesList } = useGetAllTerritoriesForDropdown();
+  const territories = useSelectOptions<any>({
+    listData: territoriesList,
+    labelKey: "name",
+    valueKey: "id",
+  });
+
+  const handleFilterChange = (key: string, value: string | undefined) => {
+    setPagination((prev: any) => {
+      const updates: any = {
+        ...prev,
+        [key]: value ?? "",
+        page: DEFAULT_PAGE_NUMBER,
+      };
+
+      // Cascading Resets
+      if (key === "territoryId") {
+        updates.roleId = "";
+        updates.searchFor = "";
+        handleBackToList();
+      } else if (key === "roleId") {
+        updates.searchFor = "";
+        handleBackToList();
+      } else if (key === "status" && !value) {
+        updates.status = "";
+      }
+
+      return updates;
+    });
+  };
+
+  const handleUserClick = (userId: string) => {
+    setSelectedUserId(userId);
+    const newParams = new URLSearchParams(window.location.search);
+    newParams.set("userId", userId);
+    window.history.pushState({}, "", `?${newParams}`);
+  };
+
+  const handleBackToList = () => {
+    if (socketForLiveTracking) {
+      socketForLiveTracking.emit("untrack_user", { selectedUserId });
+    }
+    setSelectedUserId("");
+    setPath([]);
+    setVisitMarkers([]);
+    setCurrentPosition(null);
+    updateMapCenterFromUserList(enhancedUserList);
+    const newParams = new URLSearchParams(window.location.search);
+    newParams.delete("userId");
+    window.history.pushState({}, "", `?${newParams}`);
+  };
+
+  const updateMapCenterFromUserList = (userList: any[]) => {
+    const validCoords = userList
+      .map((item: any) => item.latLong)
+      .filter(
+        (coord: any) =>
+          coord &&
+          typeof coord.lat === "number" &&
+          typeof coord.lng === "number" &&
+          !isNaN(coord.lat) &&
+          !isNaN(coord.lng),
+      );
+
+    const firstValidCoord = validCoords[0] || AHMEDABAD_CENTER;
+    setMapCenter((prev) => {
+      if (
+        prev &&
+        prev.lat === firstValidCoord.lat &&
+        prev.lng === firstValidCoord.lng
+      ) {
+        return prev;
+      }
+      return firstValidCoord;
+    });
+  };
 
   useEffect(() => {
-    if (data && isFetched && idsSet.size === 0) {
-      const newIds = new Set<string>()
-      const initialPath = data.map((item: any) => {
-        newIds.add(item.liveTrackingId)
-        return {
-          lat: parseFloat(item.lat),
-          lng: parseFloat(item.long),
-        }
-      })
+    window.addEventListener("popstate", handlePopState);
+    updateMapCenterFromUserList(enhancedUserListWithStatus);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, []);
 
-      setPath(initialPath)
-      setIdsSet(newIds)
+  useEffect(() => {
+    setSelectedUserId(userId);
+  }, [userId]);
 
-      if (initialPath.length > 0) {
-        setMapCenter(initialPath[0]) // ✅ Set initial center
-        setCurrentPosition(initialPath[initialPath.length - 1])
+  useEffect(() => {
+    return () => {
+      if (socketForLiveTracking.connected) {
+        socketForLiveTracking.disconnect();
       }
+    };
+  }, [socketForLiveTracking]);
+
+  const handlePopState = () => {
+    const params = new URLSearchParams(window.location.search);
+    const userIdFromUrl = params.get("userId");
+
+    if (!userIdFromUrl) {
+      // If userId was removed (i.e. back to list view)
+      if (socketForLiveTracking) {
+        socketForLiveTracking.emit("untrack_user", { userId });
+      }
+      setSelectedUserId("");
+      setPath([]);
+      setVisitMarkers([]);
+      setCurrentPosition(null);
+    } else {
+      // If userId is present in URL, update selectedUserId
+      setSelectedUserId(userIdFromUrl);
     }
-  }, [data, isFetched])
+  };
 
-  // Poll every 5 seconds to add only new entries
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     refetch().then((res) => {
-  //       const newItems =
-  //         res.data?.filter((item: any) => !idsSet.has(item.liveTrackingId)) ||
-  //         []
+  const filters: FilterConfig[] = useMemo(() => {
+    const configs: FilterConfig[] = [
+      {
+        key: "role",
+        type: "searchable-select",
+        onChange: (value) => handleFilterChange("roleId", value),
+        placeholder: "Select Role",
+        searchableSelectClassName: "w-[200px]",
+        onCancelPress: () => handleFilterChange("roleId", ""),
+        value: pagination.roleId,
+        options: roles as Option[],
+      },
+      {
+        type: "searchable-select",
+        key: "userSelect",
+        placeholder: "Select User",
+        searchableSelectClassName: "w-[200px]",
+        value: selectedUserId,
+        options: usersOptions,
+        onChange: (value) => {
+          if (value) {
+            handleUserClick(value);
+          }
+        },
+        onCancelPress: () => {
+          handleBackToList();
+        },
+      },
+      {
+        type: "searchable-select",
+        key: "status",
+        placeholder: "User Status",
+        searchableSelectClassName: "w-[200px]",
+        value: pagination.status,
+        options: statusOptions as Option[],
+        onChange: (value) => handleFilterChange("status", value),
+        onCancelPress: () => handleFilterChange("status", ""),
+      },
+    ];
 
-  //       if (newItems.length > 0) {
-  //         const newIds = new Set(idsSet)
-  //         newItems.forEach((item: any) => newIds.add(item.liveTrackingId))
+    if (userAuth?.organization?.allowAddUsersBasedOnTerritories) {
+      configs.unshift({
+        key: "UserTerritory",
+        type: "searchable-select",
+        onChange: (value) => handleFilterChange("territoryId", value),
+        placeholder: "Select User Territory",
+        searchableSelectClassName: "w-[200px]",
+        onCancelPress: () => handleFilterChange("territoryId", ""),
+        value: pagination.territoryId,
+        options: territories as Option[],
+      });
+    }
 
-  //         setIdsSet(newIds)
+    return configs;
+  }, [
+    pagination.territoryId,
+    territories,
+    pagination.roleId,
+    roles,
+    selectedUserId,
+    usersOptions,
+    pagination.status,
+    statusOptions,
+    userAuth?.organization?.allowAddUsersBasedOnTerritories,
+  ]);
 
-  //         const newPoints = newItems.map((item: any) => ({
-  //           lat: parseFloat(item.lat),
-  //           lng: parseFloat(item.long),
-  //         }))
-
-  //         setPath((prev) => [...prev, ...newPoints])
-  //         setCurrentPosition(newPoints[newPoints.length - 1])
-  //       }
-  //     })
-  //   }, 5000)
-
-  //   return () => clearInterval(interval)
-  // }, [idsSet, refetch])
-
-  // Auto-pan to current marker
   useEffect(() => {
     if (
       mapRef.current &&
       currentPosition &&
-      typeof currentPosition.lat === 'number' &&
-      typeof currentPosition.lng === 'number'
+      typeof currentPosition.lat === "number" &&
+      typeof currentPosition.lng === "number"
     ) {
-      mapRef.current.panTo(currentPosition)
+      mapRef.current.panTo(currentPosition);
     }
-  }, [currentPosition])
+  }, [currentPosition]);
 
-  const polylineOptions = {
-    strokeColor: '#FF0000',
-    strokeOpacity: 1,
-    strokeWeight: 3,
-  }
+  const handleNextPage = () => {
+    if (pagination.page * pagination.limit < totalCount) {
+      setPagination((prev) => ({
+        ...prev,
+        page: prev.page + 1,
+      }));
+    }
+  };
+
+  const handlePreviousPage = () => {
+    if (pagination.page > 1) {
+      setPagination((prev) => ({
+        ...prev,
+        page: prev.page - 1,
+      }));
+    }
+  };
+
+  // Socket listeners
+  useEffect(() => {
+    const userId = userAuth?.id;
+    const socketForVisitOrignal = socketForVisit(userAuth?.access_token);
+    if (!socketForVisitOrignal || !userId) return;
+
+    const handleConnect = () => {
+      socketForVisitOrignal.emit("track_user", { userId });
+    };
+
+    const handleUserStatus = (event: { userId: string; online: boolean }) => {
+      setUserStatusMap((prev) => ({
+        ...prev,
+        [event.userId]: event.online,
+      }));
+    };
+
+    if (socketForVisitOrignal.connected) {
+      handleConnect();
+    } else {
+      socketForVisitOrignal.on("connect", handleConnect);
+    }
+
+    socketForVisitOrignal.on("user_online", handleUserStatus);
+    socketForVisitOrignal.on("user_online_status", handleUserStatus);
+
+    return () => {
+      socketForVisitOrignal.off("user_online", handleUserStatus);
+      socketForVisitOrignal.off("user_online_status", handleUserStatus);
+      socketForVisitOrignal.disconnect();
+    };
+  }, [socketForVisit]);
+
+  const enhancedUserListWithStatus = enhancedUserList
+    .map((user: any) => ({
+      ...user,
+      isOnline: userStatusMap[user.id] ?? user.isOnline,
+    }))
+    .sort((a: any, b: any) =>
+      a.isOnline === b.isOnline ? 0 : a.isOnline ? -1 : 1,
+    );
+
+  const selectedUser = enhancedUserListWithStatus.find(
+    (u: any) => u.id === selectedUserId,
+  );
 
   return (
-    <Main className={cn('flex flex-col gap-2 p-4')}>
-      <div className='mt-2 flex items-center justify-between space-y-2'>
-        <div>
-          <h2 className='text-3xl font-bold tracking-tight'>Live Tracking</h2>
-          <p className='text-muted-foreground'>
-            Track real-time activity and manage admin approvals.
-          </p>
-        </div>
-      </div>
-      <div className='grid w-full grid-cols-1 gap-4 md:grid-cols-3'>
-        {/* Select Zone */}
-        <div className='w-full'>
-          <label className='mb-1 block text-sm font-medium'>Select Zone</label>
-          <Select>
-            <SelectTrigger className='w-full'>
-              <SelectValue placeholder='Select Zone' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='north'>North</SelectItem>
-              <SelectItem value='south'>South</SelectItem>
-              <SelectItem value='east'>East</SelectItem>
-              <SelectItem value='west'>West</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+    <Main className={cn("flex flex-col p-4")}>
+      <GlobalFilterSection
+        key="calendar-view-filters"
+        filters={filters}
+        onCancelPress={() => {
+          setSelectedUserId("");
+          setPagination({
+            page: DEFAULT_PAGE_NUMBER,
+            limit: 15,
+            startDate: new Date().toISOString().split("T")[0],
+            endDate: new Date().toISOString().split("T")[0],
+            searchFor: "",
+            roleId: "",
+            territoryId: "",
+            includeLatLong: true,
+            status: "",
+            sortField: "isOnline",
+            onlyTeamMembers: true,
+          });
+        }}
+      />
 
-        {/* Select Reps */}
-        <div className='w-full'>
-          <label className='mb-1 block text-sm font-medium'>Select Reps</label>
-          <Select>
-            <SelectTrigger className='w-full'>
-              <SelectValue placeholder='Select Reps' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='rep1'>Rep 1</SelectItem>
-              <SelectItem value='rep2'>Rep 2</SelectItem>
-              <SelectItem value='rep3'>Rep 3</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Select Status */}
-        <div className='w-full'>
-          <label className='mb-1 block text-sm font-medium'>
-            Select Status
-          </label>
-          <Select>
-            <SelectTrigger className='w-full'>
-              <SelectValue placeholder='Select Status' />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value='active'>Active</SelectItem>
-              <SelectItem value='inactive'>Inactive</SelectItem>
-              <SelectItem value='pending'>Pending</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      {/* <div className='mt-2 grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+      {isLoading && (
         <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>Total Reps</CardTitle>
-            <Building2 className='text-muted-foreground h-4 w-4' />
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>{1 || 0}</div>
+          <CardContent className="flex items-center justify-center p-4">
+            <div className="text-center">
+              <div className="text-muted-foreground text-lg font-medium">
+                Loading users...
+              </div>
+            </div>
           </CardContent>
         </Card>
-
+      )}
+      {!isLoading && enhancedUserListWithStatus.length > 0 && (
         <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
-              Total Active Reps Today
-            </CardTitle>
-            <Clock className='text-muted-foreground h-4 w-4' />
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>{2}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
-              Total Scheduled Visits Today
-            </CardTitle>
-            <Users className='text-muted-foreground h-4 w-4' />
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>{2}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
-              Total Completed Visits Today
-            </CardTitle>
-            <Users className='text-muted-foreground h-4 w-4' />
-          </CardHeader>
-          <CardContent>
-            <div className='text-2xl font-bold'>{6}</div>
-          </CardContent>
-        </Card>
-      </div> */}
-
-      <Card>
-        <CardContent className=''>
-          <h2 className='mb-2'>Interactive Map View</h2>
-          {mapCenter && (
-            <GoogleMap
-              mapContainerStyle={containerStyle}
-              center={mapCenter}
-              zoom={17}
-              onLoad={(map) => {
-                mapRef.current = map
-              }}
-            >
-              {/* ✅ Route line */}
-              {path.length > 1 && (
-                <Polyline path={path} options={polylineOptions} />
-              )}
-
-              {/* ✅ Trail markers */}
-              {path.slice(0, -1).map(
-                (pos, idx) =>
-                  isValidLatLng(pos) && (
-                    <Marker
-                      key={idx}
-                      position={pos}
-                      icon={getSmallDotIcon()}
-                      onClick={() => {
-                        console.log('posfafasfafafafa', pos)
-                      }}
-                    />
-                  )
-              )}
-
-              {/* ✅ Moving marker */}
-              {currentPosition && isValidLatLng(currentPosition) && (
-                <Marker
-                  position={currentPosition}
-                  icon={getBikeIcon()}
-                  title='Live Position'
+          <CardContent className="flex gap-4 p-0">
+            <div className="w-100 space-y-2 overflow-y-auto px-2">
+              {selectedUserId && (selectedUser || enhancedSingleUser) ? (
+                <UserTrackingTimeline
+                  key={selectedUserId}
+                  userId={selectedUserId}
+                  setPath={setPath}
+                  setCurrentPosition={setCurrentPosition}
+                  setMapCenter={setMapCenter}
+                  setVisitMarkers={setVisitMarkers}
+                  onBack={handleBackToList}
                 />
+              ) : (
+                <>
+                  <div className="max-h-[60vh] min-h-[50vh] overflow-auto">
+                    {enhancedUserListWithStatus.map((user: any) => (
+                      <Card
+                        key={user.id}
+                        className={`cursor-pointer p-2 transition-all hover:shadow-md mb-2`}
+                        onClick={() => handleUserClick(user.id)}
+                      >
+                        <CardContent className="flex items-center gap-2 p-0">
+                          <img
+                            src={
+                              user.profileUrl ||
+                              `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                                user.fullName,
+                              )}`
+                            }
+                            alt={user.fullName}
+                            className="h-10 w-10 rounded-full object-cover"
+                          />
+                          <div className="flex-1">
+                            <div className="font-medium">{user.fullName}</div>
+                            <div className="text-xs text-gray-500">
+                              {user.phoneNumber || "No Role"}
+                            </div>
+                          </div>
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-xs ${
+                              user.isOnline
+                                ? "bg-green-100 text-green-600"
+                                : "bg-red-100 text-red-600"
+                            }`}
+                          >
+                            {user.isOnline ? "Online" : "Offline"}
+                          </span>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                  <div className="flex justify-end p-2 pb-0 gap-2">
+                    <Button
+                      onClick={handlePreviousPage}
+                      disabled={pagination.page === 1}
+                      variant={"outline"}
+                      className="w-[50%]"
+                    >
+                      Prev
+                    </Button>
+                    <Button
+                      className="w-[50%]"
+                      variant={"outline"}
+                      onClick={handleNextPage}
+                      disabled={
+                        pagination.page * pagination.limit >= totalCount
+                      }
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </>
               )}
-            </GoogleMap>
-          )}
-        </CardContent>
-      </Card>
+            </div>
+
+            <div className="flex-1 pr-4  maxHeight: 60vh">
+              {mapCenter && (
+                <GoogleMap
+                  key={selectedUserId}
+                  mapContainerStyle={containerStyle}
+                  center={mapCenter}
+                  zoom={15}
+                  onLoad={(map) => {
+                    mapRef.current = map;
+                  }}
+                  options={{ minZoom: 10, maxZoom: 15 }}
+                >
+                  {selectedUserId !== undefined && selectedUserId !== "" ? (
+                    <UserPolylineMap
+                      key={selectedUserId}
+                      path={path}
+                      currentPosition={currentPosition}
+                      selectedUser={selectedUser || enhancedSingleUser}
+                      mapRef={mapRef}
+                      visitMarkers={visitMarkers}
+                    />
+                  ) : (
+                    <UserListMap
+                      enhancedUserList={enhancedUserListWithStatus}
+                      mapRef={mapRef}
+                      onMarkerClick={handleUserClick}
+                    />
+                  )}
+                </GoogleMap>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      {!isLoading && enhancedUserListWithStatus.length === 0 && (
+        <Card>
+          <CardContent className="flex items-center justify-center p-8">
+            <div className="text-center">
+              <div className="text-muted-foreground mb-2 text-lg font-medium">
+                {hasFiltersSelected ? "No users found" : "No users assigned"}
+              </div>
+              <p className="text-muted-foreground text-sm">
+                {hasFiltersSelected
+                  ? "Try adjusting your filters to find users"
+                  : "You don't have any users assigned for live tracking yet."}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </Main>
-  )
+  );
 }
-
-// ✅ Validate coordinates
-function isValidLatLng(point: any): point is { lat: number; lng: number } {
-  return (
-    point &&
-    typeof point === 'object' &&
-    typeof point.lat === 'number' &&
-    typeof point.lng === 'number' &&
-    isFinite(point.lat) &&
-    isFinite(point.lng)
-  )
-}
-
-// 🛵 Bike icon
-const getBikeIcon = () => ({
-  url: 'https://maps.google.com/mapfiles/kml/shapes/motorcycling.png',
-  scaledSize: new window.google.maps.Size(30, 30),
-})
-
-// 🔵 Trail dot icon
-const getSmallDotIcon = () => ({
-  path: window.google?.maps?.SymbolPath?.CIRCLE || 0,
-  scale: 5,
-  fillColor: '#0000FF',
-  fillOpacity: 1,
-  strokeWeight: 1,
-  strokeColor: '#fff',
-})

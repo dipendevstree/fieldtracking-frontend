@@ -1,0 +1,22 @@
+export interface ExpenseLimit {
+  expenseLimitId: string;
+  typeName: string;
+  tierKey: string;
+  expenseCategoryId: string;
+  dailyLimit: number;
+  monthlyLimit: number;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+  expenseCategory?:{
+    categoryName: string;
+  }
+
+}
+
+export interface LimitsControlsConfig {
+  configId: string;
+  expenseLimits: ExpenseLimit[];
+  createdAt?: string;
+  updatedAt?: string;
+}

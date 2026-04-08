@@ -1,8 +1,7 @@
-import { useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
-import { Row } from '@tanstack/react-table'
-import { IconCheck, IconX, IconMapPin } from '@tabler/icons-react'
-import { Button } from '@/components/ui/button'
+import { useState, useMemo, useEffect } from "react";
+import { Row } from "@tanstack/react-table";
+import { IconCheck, IconX } from "@tabler/icons-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,116 +9,157 @@ import {
   DialogTitle,
   DialogHeader,
   DialogFooter,
-} from '@/components/ui/dialog'
-import CustomTooltip from '@/components/shared/custom-tooltip'
-import { useUpdateStatus } from '../services/organization.hook'
-import { useUsersStore } from '../store/organizations.store'
-
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import CustomTooltip from "@/components/shared/custom-tooltip";
+import { SimpleDatePicker } from "@/components/ui/datepicker";
+import { Label } from "@/components/ui/label";
+import { useGetPlans, useUpdateStatus } from "../services/organization.hook";
+import { useOrganizationStore } from "../store/organizations.store";
+import { SearchableSelect } from "@/components/ui/SearchableSelect";
+import { PlanFrequency } from "@/data/app.data";
+import { enumToOptions } from "@/utils/commonFunction";
+import { useSelectOptions } from "@/hooks/use-select-option";
+import { checkIfPaidPlan } from "@/permissions/hooks/use-plan-status";
 interface DataTableRowActionsProps {
-  row: Row<any>
+  row: Row<any>;
 }
 
 export function DataTableRowActions({ row }: DataTableRowActionsProps) {
-  const { setCurrentRow } = useUsersStore()
-  const navigate = useNavigate()
+  const { setCurrentRow } = useOrganizationStore();
+  // const navigate = useNavigate();
   const [confirmDialog, setConfirmDialog] = useState<{
-    isOpen: boolean
-    type: 'verified' | 'rejected' | null
-    title: string
-    description: string
+    isOpen: boolean;
+    type: "verified" | "rejected" | null;
+    title: string;
+    description: string;
   }>({
     isOpen: false,
     type: null,
-    title: '',
-    description: '',
-  })
+    title: "",
+    description: "",
+  });
 
-  const { mutate: updateStatus } = useUpdateStatus()
+  const [reason, setReason] = useState("");
+  const [selectedPlanId, setSelectedPlanId] = useState("");
+  const [planStartDate, setPlanStartDate] = useState("");
+  const [selectedFrequency, setSelectedFrequency] = useState("");
+
+  const { mutate: updateStatus } = useUpdateStatus();
+  const { plans } = useGetPlans();
+
+  const planOptions = useSelectOptions({
+    listData: plans,
+    labelKey: "name",
+    valueKey: "id",
+  }) as { label: string; value: string }[];
+
+  const frequencyOptions = useMemo(() => enumToOptions(PlanFrequency), []);
 
   const handleUpdateStatus = (values: any) => {
     const payload = {
       userId: values.userId,
       status: values.status,
-    }
-    updateStatus(payload)
-  }
+      reason: values.reason || undefined,
+      planId: values.planId,
+      planStartDate: values.planStartDate,
+      frequency: values.frequency,
+    };
+    updateStatus(payload);
+  };
 
   const handleApprove = () => {
     setConfirmDialog({
       isOpen: true,
-      type: 'verified',
-      title: 'verified Item',
+      type: "verified",
+      title: "Verify Item",
       description:
-        'Are you sure you want to verified this item? This action cannot be undone.',
-    })
-  }
+        "Are you sure you want to verify this request? This action cannot be undone.",
+    });
+    setReason("");
+    setSelectedPlanId("");
+    setPlanStartDate("");
+    setSelectedFrequency("");
+  };
 
   const handleReject = () => {
     setConfirmDialog({
       isOpen: true,
-      type: 'rejected',
-      title: 'Reject Item',
+      type: "rejected",
+      title: "Reject Item",
       description:
-        'Are you sure you want to reject this item? This action cannot be undone.',
-    })
-  }
+        "Please provide a reason for rejecting this request. This action cannot be undone.",
+    });
+    setReason("");
+    setSelectedPlanId("");
+    setPlanStartDate("");
+    setSelectedFrequency("");
+  };
+
+  const isPaidPlan = useMemo(
+    () => checkIfPaidPlan(plans || [], selectedPlanId),
+    [plans, selectedPlanId],
+  );
+
+  useEffect(() => {
+    if (selectedPlanId && !isPaidPlan) {
+      setSelectedFrequency("");
+    }
+  }, [isPaidPlan, selectedPlanId]);
 
   const handleConfirm = () => {
-    setCurrentRow(row.original)
+    setCurrentRow(row.original);
 
-    if (confirmDialog.type === 'verified') {
-      handleUpdateStatus({ userId: row.original.id, status: 'verified' })
-      console.log('Approving row:', row.original)
-    } else if (confirmDialog.type === 'rejected') {
-      handleUpdateStatus({ userId: row.original.id, status: 'rejected' })
-      console.log('Rejecting row:', row.original)
+    if (confirmDialog.type === "verified") {
+      handleUpdateStatus({
+        userId: row.original.id,
+        status: "verified",
+        planId: selectedPlanId,
+        planStartDate,
+        frequency: isPaidPlan ? selectedFrequency : undefined,
+        reason: reason || undefined,
+      });
+    } else if (confirmDialog.type === "rejected") {
+      handleUpdateStatus({
+        userId: row.original.id,
+        status: "rejected",
+        reason,
+      });
     }
 
-    setConfirmDialog({ isOpen: false, type: null, title: '', description: '' })
-  }
+    setConfirmDialog({ isOpen: false, type: null, title: "", description: "" });
+  };
 
   const handleCancel = () => {
-    setConfirmDialog({ isOpen: false, type: null, title: '', description: '' })
-  }
-
-  const gotoLivetrackingPage = () => {
-    const userId = row.original.id // update if userId key is different
-    navigate({ to: `/livetracking?userId=${userId}` })
-  }
+    setConfirmDialog({ isOpen: false, type: null, title: "", description: "" });
+    setReason("");
+    setSelectedPlanId("");
+    setPlanStartDate("");
+    setSelectedFrequency("");
+  };
 
   return (
     <>
-      <div className='flex items-center gap-2'>
-        <CustomTooltip title='Verified'>
+      <div className="flex items-center gap-2">
+        <CustomTooltip title="Verify">
           <Button
-            variant='outline'
-            size='sm'
-            className='h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700'
+            variant="outline"
+            size="sm"
+            className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
             onClick={handleApprove}
           >
             <IconCheck size={16} />
           </Button>
         </CustomTooltip>
 
-        <CustomTooltip title='Reject'>
+        <CustomTooltip title="Reject">
           <Button
-            variant='outline'
-            size='sm'
-            className='h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700'
+            variant="outline"
+            size="sm"
+            className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
             onClick={handleReject}
           >
             <IconX size={16} />
-          </Button>
-        </CustomTooltip>
-
-        <CustomTooltip title='Live Tracking'>
-          <Button
-            variant='outline'
-            size='sm'
-            className='h-8 w-8 p-0 text-blue-600 hover:bg-blue-50 hover:text-blue-700'
-            onClick={gotoLivetrackingPage}
-          >
-            <IconMapPin size={16} />
           </Button>
         </CustomTooltip>
       </div>
@@ -129,26 +169,88 @@ export function DataTableRowActions({ row }: DataTableRowActionsProps) {
         open={confirmDialog.isOpen}
         onOpenChange={(open) => !open && handleCancel()}
       >
-        <DialogContent className='sm:max-w-[425px]'>
+        <DialogContent className="sm:max-w-[425px] space-y-2">
           <DialogHeader>
             <DialogTitle>{confirmDialog.title}</DialogTitle>
             <DialogDescription>{confirmDialog.description}</DialogDescription>
           </DialogHeader>
-          <DialogFooter className='flex gap-2'>
-            <Button variant='outline' onClick={handleCancel}>
+          {confirmDialog.type === "rejected" && (
+            <Textarea
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="Enter reason..."
+              rows={3}
+            />
+          )}
+          {confirmDialog.type === "verified" && (
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label>Select Plan</Label>
+                <SearchableSelect
+                  options={planOptions}
+                  value={selectedPlanId}
+                  onChange={setSelectedPlanId}
+                  placeholder="Select a plan"
+                />
+              </div>
+
+              <div className="flex flex-col space-y-2">
+                <Label>Plan Start Date</Label>
+                <SimpleDatePicker
+                  date={planStartDate}
+                  setDate={setPlanStartDate}
+                  className="w-full"
+                  disablePast
+                />
+              </div>
+
+              {isPaidPlan && (
+                <div className="space-y-2">
+                  <Label>Frequency</Label>
+                  <SearchableSelect
+                    options={frequencyOptions}
+                    value={selectedFrequency}
+                    onChange={setSelectedFrequency}
+                    placeholder="Select frequency"
+                  />
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label>Reason (Optional)</Label>
+                <Textarea
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  placeholder="Enter reason..."
+                  rows={2}
+                />
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="flex gap-2">
+            <Button variant="outline" onClick={handleCancel}>
               Cancel
             </Button>
             <Button
               onClick={handleConfirm}
               variant={
-                confirmDialog.type === 'verified' ? 'default' : 'destructive'
+                confirmDialog.type === "verified" ? "default" : "destructive"
+              }
+              disabled={
+                (confirmDialog.type === "rejected" &&
+                  reason.trim().length === 0) ||
+                (confirmDialog.type === "verified" &&
+                  (!selectedPlanId ||
+                    !planStartDate ||
+                    (isPaidPlan && !selectedFrequency)))
               }
             >
-              {confirmDialog.type === 'verified' ? 'verified' : 'Reject'}
+              {confirmDialog.type === "verified" ? "Verify" : "Reject"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

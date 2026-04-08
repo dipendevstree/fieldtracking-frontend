@@ -1,28 +1,61 @@
-import { useMemo } from 'react'
-import { sidebarData as fullSidebarData } from '@/components/layout/data/sidebar-data'
-import { filterSidebarByPermissions } from '../utils/sidebar-filter'
-import { usePermission } from './use-permission'
+import { useMemo } from "react";
+import { sidebarData as fullSidebarData } from "@/components/layout/data/sidebar-data";
+import { filterSidebarByPermissions } from "../utils/sidebar-filter";
+import { usePermission } from "./use-permission";
+import { ViewType } from "@/components/layout/types";
 
-export function useRoleBasedNavigation(backendPermissions: any) {
-  console.log('backendPermissions', backendPermissions)
-  const { hasAccess, canPerformAction, isAuthenticated } = usePermission()
+export function useRoleBasedNavigation(
+  backendPermissions: any,
+  options?: {
+    allowAddUsersBasedOnTerritories?: boolean;
+    viewType?: ViewType | null;
+    viewTypeToggle?: boolean;
+  }
+) {
+  const { hasAccess, canPerformAction, isAuthenticated, user } =
+    usePermission();
 
   const sidebarData = useMemo(() => {
     if (!isAuthenticated) {
-      return { ...fullSidebarData, navGroups: [] }
+      return { ...fullSidebarData, navGroups: [] };
     }
 
-    return filterSidebarByPermissions(
+    let filteredSidebar = filterSidebarByPermissions(
       fullSidebarData,
       hasAccess,
-      backendPermissions?.permissions
-    )
-  }, [hasAccess, isAuthenticated, backendPermissions])
+      backendPermissions?.permissions,
+      user,
+      options?.viewType || null,
+      options?.viewTypeToggle || false
+    );
+
+    // ✅ Extra filtering based on org settings flags
+    if (!options?.allowAddUsersBasedOnTerritories) {
+      filteredSidebar = {
+        ...filteredSidebar,
+        navGroups: filteredSidebar.navGroups.map((group) => ({
+          ...group,
+          items: group.items.map((item) =>
+            item.menuKey === "User_Management"
+              ? {
+                  ...item,
+                  items: item.items?.filter(
+                    (sub) => sub.menuKey !== "user_territory"
+                  ),
+                }
+              : item
+          ),
+        })),
+      };
+    }
+
+    return filteredSidebar;
+  }, [hasAccess, isAuthenticated, backendPermissions, options?.viewType]);
 
   return {
     sidebarData,
     hasAccess,
     canPerformAction,
     isAuthenticated,
-  }
+  };
 }

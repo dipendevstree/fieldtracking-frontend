@@ -1,7 +1,6 @@
+import { format } from "date-fns";
+
 export const formatDate = (dateString: string): string => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
+  if (!dateString) return "-";
+  return format(new Date(dateString), "dd-MM-yyyy");
 };

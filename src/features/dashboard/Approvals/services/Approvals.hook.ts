@@ -1,0 +1,186 @@
+import API from "@/config/api/api";
+import useFetchData from "@/hooks/use-fetch-data";
+import usePostData from "@/hooks/use-post-data";
+import useDeleteData from "@/hooks/use-delete-data";
+import usePatchData from "@/hooks/use-patch-data";
+import { Approval, ApprovalWorkflow, ApprovalStats } from "../type/type";
+
+const APPROVALS_QUERY = API.approvals?.list || "/api/approvals";
+const APPROVAL_WORKFLOWS_QUERY = API.approvals?.workflows || "/api/approval-workflows";
+
+export interface IListParams {
+  sort?: string;
+  limit: number;
+  page: number;
+  startDate?: string;
+  endDate?: string;
+  employeeId?: string;
+  approvalType?: string;
+  status?: string;
+  priority?: string;
+  [key: string]: unknown;
+}
+
+export interface ApprovalActionPayload {
+  approvalId: string;
+  action: "approve" | "reject";
+  comment?: string;
+  rejectionReason?: string;
+}
+
+export interface ApprovalResponse {
+  data: Approval;
+  message: string;
+  statusCode: number;
+}
+
+export interface ApprovalWorkflowPayload {
+  name: string;
+  description?: string;
+  type: "expense" | "allowance" | "travel" | "general";
+  steps: Array<{
+    order: number;
+    approverType: "individual" | "role" | "hierarchy";
+    approverId?: string;
+    roleId?: string;
+    minAmount?: number;
+    maxAmount?: number;
+    isRequired: boolean;
+  }>;
+  isActive: boolean;
+}
+
+export interface ApprovalWorkflowResponse {
+  data: ApprovalWorkflow;
+  message: string;
+  statusCode: number;
+}
+
+// Approval Actions
+export const useApproveRejectApproval = (onSuccess?: () => void) => {
+  return usePostData<ApprovalResponse, ApprovalActionPayload>({
+    url: API.approvals?.action || "/api/approvals/action",
+    refetchQueries: [APPROVALS_QUERY],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+    onError: (error) => {
+      console.error('Error processing approval action:', error);
+    },
+  });
+};
+
+// Get All Approvals
+export interface ApprovalsListResponse {
+  list: Approval[];
+  totalCount: number;
+  stats: ApprovalStats;
+}
+
+export const useGetAllApprovals = (
+  params: IListParams,
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<ApprovalsListResponse>({
+    url: APPROVALS_QUERY,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    data: query.data?.list,
+    allApprovals: query.data?.list ?? [],
+    totalCount: query.data?.totalCount ?? 0,
+    stats: query.data?.stats,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
+// Get Approval Stats
+export const useGetApprovalStats = (options?: { enabled?: boolean }) => {
+  return useFetchData<ApprovalStats>({
+    url: API.approvals?.stats || "/api/approvals/stats",
+    enabled: options?.enabled ?? true,
+  });
+};
+
+// Workflow Management
+export const useCreateApprovalWorkflow = (onSuccess?: () => void) => {
+  return usePostData<ApprovalWorkflowResponse, ApprovalWorkflowPayload>({
+    url: APPROVAL_WORKFLOWS_QUERY,
+    refetchQueries: [APPROVAL_WORKFLOWS_QUERY],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+    onError: (error) => {
+      console.error('Error creating approval workflow:', error);
+    },
+  });
+};
+
+export const useUpdateApprovalWorkflow = (
+  id: string,
+  onSuccess?: () => void
+) => {
+  return usePatchData<ApprovalWorkflowResponse, ApprovalWorkflowPayload>({
+    url: `${APPROVAL_WORKFLOWS_QUERY}/${id}`,
+    refetchQueries: [APPROVAL_WORKFLOWS_QUERY],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+    onError: (error) => {
+      console.error('Error updating approval workflow:', error);
+    },
+  });
+};
+
+export const useDeleteApprovalWorkflow = (
+  id: string,
+  onSuccess?: () => void
+) => {
+  return useDeleteData({
+    url: `${APPROVAL_WORKFLOWS_QUERY}/${id}`,
+    refetchQueries: [APPROVAL_WORKFLOWS_QUERY],
+    onSuccess: () => {
+      if (onSuccess) {
+        onSuccess();
+      }
+    },
+    onError: (error) => {
+      console.error('Error deleting approval workflow:', error);
+    },
+  });
+};
+
+export interface ApprovalWorkflowsListResponse {
+  list: ApprovalWorkflow[];
+  totalCount: number;
+}
+
+export const useGetAllApprovalWorkflows = (
+  params: IListParams,
+  options?: { enabled?: boolean }
+) => {
+  const query = useFetchData<ApprovalWorkflowsListResponse>({
+    url: APPROVAL_WORKFLOWS_QUERY,
+    params,
+    enabled: options?.enabled ?? true,
+  });
+
+  return {
+    ...query,
+    data: query.data?.list,
+    allWorkflows: query.data?.list ?? [],
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};

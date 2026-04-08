@@ -34,14 +34,9 @@ const TerritoryWiseUser = () => {
 
   return (
     <Main className={cn('flex flex-col gap-2 p-4')}>
-      <div className='mt-6'>
-        <Button
-          onClick={() => navigate({ to: '/user-territory' })}
-          className='ml-6'
-        >
-          Back to list
-        </Button>
+      <div className="">
         <TablePageLayout
+          className="p-0 py-2"
           title={`Users in ${territoryName}`}
           description='View and manage sales reps within this territory'
           modulePermission='user_territory'
@@ -56,6 +51,12 @@ const TerritoryWiseUser = () => {
             paginationCallbacks={{ onPaginationChange }}
           />
         </TablePageLayout>
+        <Button
+          onClick={() => navigate({ to: '/user-territory' })}
+          className="block ml-auto"
+        >
+          Back to list
+        </Button>
       </div>
     </Main>
   )

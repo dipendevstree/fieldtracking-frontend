@@ -1,26 +1,31 @@
-import { useRoleBasedNavigation } from '@/permissions/hooks/use-role-base-navigation'
-import { useAuthStore } from '@/stores/use-auth-store'
+import { useRoleBasedNavigation } from "@/permissions/hooks/use-role-base-navigation";
+import { useAuthStore } from "@/stores/use-auth-store";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from '@/components/ui/sidebar'
-import { NavGroup } from '@/components/layout/nav-group'
-import { NavUser } from '@/components/layout/nav-user'
-import { TeamSwitcher } from '@/components/layout/team-switcher'
-import { SUPER_ADMIN_SIDEBAR_DATA } from './data/sidebar-data'
+} from "@/components/ui/sidebar";
+import { NavGroup } from "@/components/layout/nav-group";
+import { NavUser } from "@/components/layout/nav-user";
+import { TeamSwitcher } from "@/components/layout/team-switcher";
+import { SUPER_ADMIN_SIDEBAR_DATA } from "./data/sidebar-data";
+import { useViewType } from "@/context/view-type-context";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { user } = useAuthStore()
-
-  const { sidebarData } = useRoleBasedNavigation(user?.role)
-  const isSuperAdmin = user?.isSuperAdmin
-  console.log('SUPER_ADMIN_SIDEBAR_DATA', isSuperAdmin)
-  const SIDEBAR_DATA = isSuperAdmin ? SUPER_ADMIN_SIDEBAR_DATA : sidebarData
+  const { user } = useAuthStore();
+  const { viewType, viewTypeToggle } = useViewType();
+  const { sidebarData } = useRoleBasedNavigation(user?.role, {
+    allowAddUsersBasedOnTerritories:
+      user?.organization?.allowAddUsersBasedOnTerritories,
+    viewType,
+    viewTypeToggle,
+  });
+  const isSuperAdmin = user?.isSuperAdmin;
+  const SIDEBAR_DATA = isSuperAdmin ? SUPER_ADMIN_SIDEBAR_DATA : sidebarData;
   return (
-    <Sidebar collapsible='icon' variant='floating' {...props}>
+    <Sidebar collapsible="icon" variant="floating" {...props}>
       <SidebarHeader>
         <TeamSwitcher teams={SIDEBAR_DATA.teams} />
       </SidebarHeader>
@@ -39,5 +44,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

@@ -1,13 +1,13 @@
-
-import instance from '@/config/instance/instance';
-import { EnhancedError } from '@/types';
-import { extractErrorInfo } from '@/utils/error-response';
+import instance from "@/config/instance/instance";
+import { EnhancedError } from "@/types";
+import { extractErrorInfo } from "@/utils/error-response";
 import {
   UseMutationOptions,
   useMutation,
-  useQueryClient
-} from '@tanstack/react-query';
-import { toast } from 'sonner';
+  useQueryClient,
+} from "@tanstack/react-query";
+import { toast } from "sonner";
+import { TOAST_CONFIG } from "@/config/toastConfig";
 
 interface PatchDataOptions<TData, TVariables> {
   url: string;
@@ -16,6 +16,14 @@ interface PatchDataOptions<TData, TVariables> {
   onSuccess?: (data: TData) => void;
   onError?: (error: EnhancedError) => void;
   mutationOptions?: UseMutationOptions<TData, Error, TVariables>;
+  toastDuration?: number;
+  toastPosition?:
+    | "top-center"
+    | "top-right"
+    | "top-left"
+    | "bottom-center"
+    | "bottom-right"
+    | "bottom-left";
 }
 
 const usePutData = <TData = unknown, TVariables = unknown>({
@@ -24,7 +32,9 @@ const usePutData = <TData = unknown, TVariables = unknown>({
   headers,
   mutationOptions,
   onSuccess,
-  onError
+  onError,
+  toastDuration = TOAST_CONFIG.duration,
+  toastPosition = TOAST_CONFIG.position,
 }: PatchDataOptions<TData, TVariables>) => {
   const queryClient = useQueryClient();
 
@@ -36,7 +46,7 @@ const usePutData = <TData = unknown, TVariables = unknown>({
         return response.data as TData;
       }
 
-      const errorMessage = response?.message || 'Failed to update data';
+      const errorMessage = response?.message || "Failed to update data";
       const error = new Error(errorMessage);
 
       if (response?.statusCode === 400) {
@@ -45,7 +55,7 @@ const usePutData = <TData = unknown, TVariables = unknown>({
       if (response?.statusCode === 401) {
         throw Object.assign(error, {
           statusCode: 401,
-          message: 'Unauthorized'
+          message: "Unauthorized",
         });
       }
 
@@ -53,19 +63,22 @@ const usePutData = <TData = unknown, TVariables = unknown>({
     },
     onSuccess: (data: TData) => {
       refetchQueries.forEach((query) =>
-        queryClient.invalidateQueries({ queryKey: [query] })
+        queryClient.invalidateQueries({ queryKey: [query] }),
       );
       if (onSuccess) {
-        onSuccess(data)
+        onSuccess(data);
       }
-      toast.success('Data updated successfully');
+      toast.success("Data updated successfully", {
+        position: toastPosition,
+        duration: toastDuration,
+      });
     },
     onError: (error: EnhancedError) => {
       const errorInfo = extractErrorInfo(error);
       // Display user-friendly toast notification
-      toast.error(errorInfo.title, {
-        description: errorInfo.description,
-        duration: errorInfo.duration
+      toast.error(errorInfo.message, {
+        position: toastPosition,
+        duration: toastDuration,
       });
 
       // Call additional error handler if provided
@@ -73,7 +86,7 @@ const usePutData = <TData = unknown, TVariables = unknown>({
         onError(error);
       }
     },
-    ...mutationOptions
+    ...mutationOptions,
   });
 };
 

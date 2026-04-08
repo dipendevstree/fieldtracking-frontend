@@ -1,24 +1,53 @@
 import { useNavigate } from '@tanstack/react-router'
 import { IconEdit, IconTrash } from '@tabler/icons-react'
 import { PermissionGate } from '@/permissions/components/PermissionGate'
+import { DeleteModal } from '@/components/shared/common-delete-modal'
 import Button from '@/components/shared/custom-button'
 import CustomTooltip from '@/components/shared/custom-tooltip'
+import { useDeleteVisits } from '../services/calendar-view.hook'
 import { userUpcomingVisitStoreState } from '../store/upcoming-visits.store'
 
-export function DataTableRowActions({ row }: any) {
-  const { setOpen, setCurrentRow } = userUpcomingVisitStoreState()
+type RowProps = {
+  row: {
+    original: {
+      visitId: string
+      purpose?: string
+      [key: string]: any
+    }
+  }
+}
+
+export function DataTableRowActions({ row }: RowProps) {
+  const { open, setOpen, currentRow, setCurrentRow } =
+    userUpcomingVisitStoreState()
   const navigate = useNavigate()
-  console.log('row', row)
-  const handleEdit = (row: any) => {
-    console.log('row.original', row.original)
+
+  const closeModal = () => {
+    setOpen(null)
+    setTimeout(() => setCurrentRow(null), 300)
+  }
+
+  const { mutate: deleteUpcomingVisits } = useDeleteVisits(
+    row.original.visitId,
+    closeModal
+  )
+
+  const handleEdit = () => {
     setCurrentRow(row.original)
     navigate({ to: `/calendar/schedule-visit/${row.original.visitId}` })
   }
 
-  const handleDelete = (row: any) => {
-    setOpen('delete')
-    console.log('row.original', row.original)
+  const handleDelete = () => {
     setCurrentRow(row.original)
+    setOpen('delete')
+  }
+
+  const handleDeleteUpcomingVisits = () => {
+    if (currentRow?.visitId) {
+      deleteUpcomingVisits()
+    } else {
+      closeModal()
+    }
   }
 
   return (
@@ -28,7 +57,7 @@ export function DataTableRowActions({ row }: any) {
           <Button
             variant='ghost'
             className='h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700'
-            onClick={() => handleEdit(row)}
+            onClick={handleEdit}
           >
             <IconEdit size={16} />
           </Button>
@@ -39,23 +68,28 @@ export function DataTableRowActions({ row }: any) {
         <CustomTooltip title='Delete'>
           <Button
             variant='ghost'
-            onClick={() => handleDelete(row)}
-            className='h-8 w-8 p-0 text-red-600 hover:bg-green-50 hover:text-red-700'
+            className='h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700'
+            onClick={handleDelete}
           >
             <IconTrash size={16} />
           </Button>
         </CustomTooltip>
       </PermissionGate>
 
-      {/* {row.original.userCount > 0 && (
-        <PermissionGate requiredPermission='user_territory' action='viewOwn'>
-          <CustomTooltip title='View Users'>
-            <Button variant='ghost' onClick={() => handleViewUsers(row)}>
-              <IconUser size={16} />
-            </Button>
-          </CustomTooltip>
-        </PermissionGate>
-      )} */}
+      {currentRow && (
+        <DeleteModal
+          key='delete-upcoming'
+          open={open === 'delete'}
+          currentRow={currentRow ?? {}}
+          itemName='Upcoming Visit'
+          itemIdentifier={'purpose' as keyof typeof currentRow}
+          onDelete={handleDeleteUpcomingVisits}
+          onOpenChange={(value) => {
+            if (!value) closeModal()
+            else setOpen('delete')
+          }}
+        />
+      )}
     </div>
   )
 }

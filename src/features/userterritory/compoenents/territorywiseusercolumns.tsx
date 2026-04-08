@@ -11,7 +11,7 @@ export const columns: ColumnDef<any>[] = [
       const firstName = row.original.firstName || ''
       const lastName = row.original.lastName || ''
       const fullName = `${firstName} ${lastName}`.trim() || '-'
-      const avatar = row.original.avatar || row.original.profileImage
+      const avatar = row.original.avatar || row.original.profileUrl
 
       return (
         <div className='flex items-center gap-2'>
@@ -33,6 +33,7 @@ export const columns: ColumnDef<any>[] = [
       )
     },
     enableHiding: false,
+    enableSorting: false,
   },
   {
     accessorKey: 'userRole',
@@ -44,6 +45,8 @@ export const columns: ColumnDef<any>[] = [
         row.original.role?.roleName || row.original.jobTitle || 'Manager'
       return <div className='text-sm'>{role}</div>
     },
+    enableHiding: false,
+    enableSorting: false,
   },
   {
     accessorKey: 'emailId',
@@ -54,6 +57,8 @@ export const columns: ColumnDef<any>[] = [
       const email = row.original.email || '-'
       return <div className='text-muted-foreground text-sm'>{email}</div>
     },
+    enableHiding: false,
+    enableSorting: false,
   },
   {
     accessorKey: 'phoneNumber',
@@ -66,5 +71,7 @@ export const columns: ColumnDef<any>[] = [
       const fullPhone = phone ? `${countryCode} ${phone}` : '-'
       return <div className='text-muted-foreground text-sm'>{fullPhone}</div>
     },
+    enableHiding: false,
+    enableSorting: false,
   },
 ]

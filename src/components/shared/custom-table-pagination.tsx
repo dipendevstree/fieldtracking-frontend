@@ -143,16 +143,6 @@ export function GlobalPagination<TData>({
         between: 'justify-between'
     };
 
-    // console.log('GlobalPagination Debug:', {
-    //     pageSize,
-    //     pageIndex,
-    //     currentPage,
-    //     totalRows,
-    //     totalPages,
-    //     canPreviousPage,
-    //     canNextPage,
-    // });
-
     return (
         <div className={`flex items-center overflow-clip px-2 ${positionClasses[position]}`}>
             {showSelectedRowsCount && manualPagination && totalCount && (

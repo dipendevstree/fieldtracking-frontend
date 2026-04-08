@@ -1,44 +1,50 @@
-import { useEffect, useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
-import { DialogClose, DialogDescription } from '@radix-ui/react-dialog'
-import { zodResolver } from '@hookform/resolvers/zod'
-import parsePhoneNumberFromString from 'libphonenumber-js'
-import { AlertCircle } from 'lucide-react'
-import PhoneInput from 'react-phone-number-input'
-import 'react-phone-number-input/style.css'
-import { useSelectOptions } from '@/hooks/use-select-option'
-import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
+import { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { DialogClose, DialogDescription } from "@radix-ui/react-dialog";
+import { zodResolver } from "@hookform/resolvers/zod";
+import parsePhoneNumberFromString from "libphonenumber-js";
+import { AlertCircle } from "lucide-react";
+import PhoneInput from "react-phone-number-input";
+import "react-phone-number-input/style.css";
+import { useSelectOptions } from "@/hooks/use-select-option";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
-import { Form } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+} from "@/components/ui/dialog";
+import { Form } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import CustomButton from '@/components/shared/custom-button'
-import { useGetDepartment } from '@/features/auth/Admin-sign-up/services/sign-up-services'
-import { useGetUsersForDropdown } from '@/features/buyers/services/users.hook'
-import { useGetAllTerritoriesForDropdown } from '@/features/userterritory/services/user-territory.hook'
-import { formSchema, TFormSchema } from '../data/schema'
-import { useGetAllRolesForDropdown } from '../services/Roles.hook'
+} from "@/components/ui/select";
+import CustomButton from "@/components/shared/custom-button";
+import { useGetDepartment } from "@/features/auth/Admin-sign-up/services/sign-up-services";
+import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
+import { useGetAllTerritoriesForDropdown } from "@/features/userterritory/services/user-territory.hook";
+import { useGetAllShifts } from "@/features/attendance-management/services/shift.action.hook";
+import { formSchemaConditional, TFormSchemaConditional } from "../data/schema";
+import { useGetAllRolesForDropdown } from "../services/Roles.hook";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
+import { SimpleDatePicker } from "@/components/ui/datepicker";
+import { formatDropDownLabel } from "@/utils/commonFunction";
 
 interface Props {
-  currentRow?: any
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  loading?: boolean
-  onSubmit: (values: TFormSchema) => void
+  currentRow?: any;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  loading?: boolean;
+  onSubmit: (values: TFormSchemaConditional) => void;
+  allowTerritoryFilter?: boolean;
 }
 
 export function UserActionForm({
@@ -47,191 +53,297 @@ export function UserActionForm({
   onOpenChange,
   onSubmit: onSubmitValues,
   loading,
+  allowTerritoryFilter,
 }: Props) {
-  const isEdit = !!currentRow
-
-  const { data: rolesList } = useGetAllRolesForDropdown()
-
+  const isEdit = !!currentRow;
+  const [hideReportingToField, setHideReportingToField] = useState(false);
+  const [showLocalWarning, setShowLocalWarning] = useState(false);
+  const { data: rolesList } = useGetAllRolesForDropdown();
   // Initialize selectedRoleId with current row's reportingToRoleId for edit mode
   const [selectedRoleId, setSelectedRoleId] = useState<string>(
-    currentRow?.reportingToRoleId || ''
-  )
+    currentRow?.reportingToRoleId || "",
+  );
 
   const { data: userList = [] } = useGetUsersForDropdown({
     roleId: selectedRoleId,
     enabled: !!selectedRoleId,
-  })
+  });
 
   // Filter out current user from the user list to prevent self-reporting
   const filteredUserList = userList.filter((user: any) =>
-    currentRow?.id ? String(user.id) !== String(currentRow.id) : true
-  )
+    currentRow?.id ? String(user.id) !== String(currentRow.id) : true,
+  );
 
   const enhancedUserList = filteredUserList.map((user: any) => ({
     ...user,
     fullName: `${user.firstName} ${user.lastName}`,
-  }))
+  }));
 
   const roles = useSelectOptions<any>({
     listData: rolesList ?? [],
-    labelKey: 'roleName',
-    valueKey: 'roleId',
-  })
+    labelKey: "roleName",
+    valueKey: "roleId",
+  });
 
   const users = useSelectOptions<any>({
     listData: enhancedUserList,
-    labelKey: 'fullName',
-    valueKey: 'id',
-  })
+    labelKey: "fullName",
+    valueKey: "id",
+  });
 
-  const { data: territoriesList } = useGetAllTerritoriesForDropdown()
+  const { data: territoriesList } = useGetAllTerritoriesForDropdown();
   const territories = useSelectOptions<any>({
     listData: territoriesList ?? [],
-    labelKey: 'name',
-    valueKey: 'id',
-  })
-  const { data: departmentList } = useGetDepartment()
+    labelKey: "name",
+    valueKey: "id",
+  });
+  const { data: departmentList } = useGetDepartment();
   const department = useSelectOptions<any>({
     listData: departmentList ?? [],
-    labelKey: 'departmentName',
-    valueKey: 'departmentId',
-  })
-  const tiers = [
-    { label: 'Tier 1', value: 'tier_1' },
-    { label: 'Tier 2', value: 'tier_2' },
-    { label: 'Tier 3', value: 'tier_3' },
-    { label: 'Tier 4', value: 'tier_4' },
-    { label: 'Tier 5', value: 'tier_5' },
-    { label: 'Tier 6', value: 'tier_6' },
-    { label: 'Tier 7', value: 'tier_7' },
-    { label: 'Tier 8', value: 'tier_8' },
-    { label: 'Tier 9', value: 'tier_9' },
-    { label: 'Tier 10', value: 'tier_10' },
-  ]
+    labelKey: "departmentName",
+    valueKey: "departmentId",
+  });
+
+  const { data: shiftsList = [] } = useGetAllShifts();
+  const shifts = useSelectOptions<any>({
+    listData: shiftsList ?? [],
+    labelKey: "name",
+    valueKey: "id",
+  });
+
   const formatPhoneToE164 = (phone: string, countryCode: string) => {
-    if (!phone) return ''
+    if (!phone) return "";
 
     // If phone already includes country code, return as is
-    if (phone.startsWith('+')) return phone
+    if (phone.startsWith("+")) return phone;
 
     // Remove any non-digit characters
-    const cleanPhone = phone.replace(/\D/g, '')
+    const cleanPhone = phone.replace(/\D/g, "");
 
     // If no country code provided, default to +1
-    const defaultCountryCode = countryCode || '+1'
+    const defaultCountryCode = countryCode || "+1";
 
     // Combine country code with phone number
-    return `${defaultCountryCode}${cleanPhone}`
-  }
-  const form = useForm<TFormSchema>({
-    resolver: zodResolver(formSchema),
+    return `${defaultCountryCode}${cleanPhone}`;
+  };
+  const form = useForm<TFormSchemaConditional>({
+    // use the conditional schema which performs the extra checks based on the
+    // `hideReportingToField` flag that we pass into the form values.
+    // zodResolver typing can conflict when schema is a union; cast to any to avoid
+    // an unrelated type-instantiation mismatch between resolver types.
+    resolver: zodResolver(formSchemaConditional) as unknown as any,
     defaultValues: {
-      id: currentRow?.id ?? '',
-      firstName: currentRow?.firstName ?? '',
-      lastName: currentRow?.lastName ?? '',
-      email: currentRow?.email ?? '',
+      id: currentRow?.id ?? "",
+      firstName: currentRow?.firstName ?? "",
+      lastName: currentRow?.lastName ?? "",
+      email: currentRow?.email ?? "",
       phoneNumber: formatPhoneToE164(
-        currentRow?.phoneNumber || '',
-        currentRow?.countryCode || '+91'
+        currentRow?.phoneNumber || "",
+        currentRow?.countryCode || "+91",
       ),
-      territoryId: currentRow?.territoryId ?? '',
-      roleId: currentRow?.roleId ?? '',
-      countryCode: currentRow?.countryCode ?? '+91',
+      territoryId: currentRow?.territoryId ?? "",
+      roleId: currentRow?.roleId ?? "",
+      countryCode: currentRow?.countryCode ?? "+91",
       permissions: currentRow?.permissions ?? [],
       isWebUser: currentRow?.isWebUser ?? false,
       departmentId: currentRow?.departmentId,
       reportingToRoleId: currentRow?.reportingToRoleId,
-      tierkey: currentRow?.tierkey,
-      reportingToIds:
-        currentRow?.reportingToIds?.map((user: any) => String(user.id)) ?? [],
+      reportingToIds: [],
+      shiftId: currentRow?.shiftId ?? "",
+      joiningDate: currentRow?.joiningDate ?? "",
+      // include the hide flag so the resolver can see it and validate conditionally
+      hideReportingToField: hideReportingToField,
+      // include the territory filter flag for conditional validation
+      allowTerritoryFilter: allowTerritoryFilter,
     },
-  })
+  });
 
   const onError = (error: any) => {
-    console.log('Form validation error:', error)
-  }
+    console.log("Form validation error:", error);
+  };
 
   const {
     control,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
     setValue,
-  } = form
+    getValues,
+  } = form;
 
   useEffect(() => {
     if (currentRow && open) {
-      const reportingRoleId = currentRow.reportingToRoleId
+      const reportingRoleId = currentRow.reportingToRoleId;
       if (reportingRoleId) {
-        setSelectedRoleId(reportingRoleId)
+        setSelectedRoleId(reportingRoleId);
+      }
+      const hideField =
+        currentRow.superAdminCreatedBy &&
+        currentRow.superAdminCreatedBy !== null;
+      if (hideField) {
+        setHideReportingToField(true);
+        // inform form that the reporting field is hidden and clear the values
+        setValue("hideReportingToField", true, { shouldValidate: true });
+        setValue("reportingToRoleId", "");
+        setValue("reportingToIds", []);
+      } else {
+        setHideReportingToField(false);
+        setValue("hideReportingToField", false, { shouldValidate: true });
       }
 
+      // Set the territory filter flag for validation
+      setValue("allowTerritoryFilter", allowTerritoryFilter, {
+        shouldValidate: true,
+      });
+
       const formattedPhone = formatPhoneToE164(
-        currentRow.phoneNumber || '',
-        currentRow.countryCode || '+91'
-      )
+        currentRow.phoneNumber || "",
+        currentRow.countryCode || "+91",
+      );
+
+      // Process reportingToIds properly for the form
+      let processedReportingToIds = [];
+
+      if (Array.isArray(currentRow.reportingToIds)) {
+        // If it's already an array, check if it contains user objects or just IDs
+        if (
+          currentRow.reportingToIds.length > 0 &&
+          typeof currentRow.reportingToIds[0] === "object"
+        ) {
+          // Extract IDs from user objects
+          processedReportingToIds = currentRow.reportingToIds.map((user: any) =>
+            String(user.id || user.userId || user.userID),
+          );
+        } else {
+          // It's already an array of IDs
+          processedReportingToIds = currentRow.reportingToIds.map(String);
+        }
+      } else if (currentRow.reportingToIds) {
+        // If it's a single ID
+        processedReportingToIds = [String(currentRow.reportingToIds)];
+      } else if (Array.isArray(currentRow.reportingTo)) {
+        // If we have reportingTo objects, extract IDs
+        processedReportingToIds = currentRow.reportingTo.map((user: any) =>
+          String(user.id || user.userId || user.userID),
+        );
+      } else if (
+        currentRow.reportingTo &&
+        typeof currentRow.reportingTo === "object"
+      ) {
+        // If it's a single reportingTo object
+        processedReportingToIds = [
+          String(
+            currentRow.reportingTo.id ||
+              currentRow.reportingTo.userId ||
+              currentRow.reportingTo.userID,
+          ),
+        ];
+      }
 
       reset({
-        id: currentRow.id ?? '',
-        firstName: currentRow.firstName ?? '',
-        lastName: currentRow.lastName ?? '',
-        email: currentRow.email ?? '',
+        id: currentRow.id ?? "",
+        firstName: currentRow.firstName ?? "",
+        lastName: currentRow.lastName ?? "",
+        email: currentRow.email ?? "",
         phoneNumber: formattedPhone,
-        territoryId: currentRow.territoryId ?? '',
-        roleId: currentRow.roleId ?? '',
-        countryCode: currentRow.countryCode ?? '+91',
+        territoryId: currentRow.territoryId ?? "",
+        roleId: currentRow.roleId ?? "",
+        countryCode: currentRow.countryCode ?? "+91",
         permissions: currentRow.permissions ?? [],
         isWebUser: currentRow.isWebUser ?? false,
         departmentId: currentRow.departmentId,
         reportingToRoleId: currentRow.reportingToRoleId,
-        tierkey: currentRow.tierkey,
-        reportingToIds:
-          currentRow.reportingTo?.map((user: any) => String(user.id)) ?? [],
-      })
+        reportingToIds: processedReportingToIds,
+        shiftId: currentRow.shiftId ?? "",
+        joiningDate: currentRow.joiningDate ?? "",
+        hideReportingToField: hideField,
+        allowTerritoryFilter: allowTerritoryFilter,
+      });
     }
-  }, [currentRow, open, reset])
+  }, [currentRow, open, reset]);
 
   const onSubmit = (values: any) => {
-    onSubmitValues(values)
-  }
-
-  const handleDialogChange = (state: boolean) => {
-    if (!state) {
-      reset()
-      setSelectedRoleId('') // Reset selected role ID
-    }
-    onOpenChange(state)
-  }
+    onSubmitValues(values);
+  };
 
   const getFieldValue = (value: any): string => {
-    if (typeof value === 'string' || typeof value === 'number') {
-      return String(value)
+    if (typeof value === "string" || typeof value === "number") {
+      return String(value);
     }
     if (value instanceof Date) {
-      return value.toISOString()
+      return value.toISOString();
     }
     if (Array.isArray(value)) {
-      return value.join(', ')
+      return value.join(", ");
     }
-    if (typeof value === 'boolean') {
-      return value ? 'true' : 'false'
+    if (typeof value === "boolean") {
+      return value ? "true" : "false";
     }
-    return ''
-  }
+    return "";
+  };
 
-  // console.log('selectedValues', selectedValues)
+  const roleId = form.watch("roleId");
+
+  const { showExitPrompt, confirmExit, cancelExit } =
+    useUnsavedChanges(isDirty);
+
+  const actualClose = () => {
+    reset();
+    setSelectedRoleId("");
+    setHideReportingToField(false);
+    setValue("hideReportingToField", false);
+    onOpenChange(false);
+  };
+
+  //handle both Open and Close events
+  const handleManualCloseAttempt = (newOpenState: boolean) => {
+    if (newOpenState) {
+      onOpenChange(true);
+      return;
+    }
+    if (isDirty) {
+      setShowLocalWarning(true);
+    } else {
+      actualClose();
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    reset(getValues());
+    setShowLocalWarning(false);
+    onOpenChange(false);
+
+    if (showExitPrompt) {
+      setTimeout(() => {
+        confirmExit();
+      }, 0);
+    }
+  };
+
+  const handleCancelDiscard = (isOpen: boolean) => {
+    if (!isOpen) {
+      setShowLocalWarning(false);
+      if (showExitPrompt) cancelExit();
+    }
+  };
+
+  const isWarningOpen = showLocalWarning || showExitPrompt;
 
   return (
-    <Dialog open={open} onOpenChange={handleDialogChange}>
-      <DialogContent className='max-h-[80vh] !max-w-4xl overflow-y-auto'>
-        <DialogHeader className='flex flex-row items-center justify-between space-y-0 pb-4'>
+    <Dialog open={open} onOpenChange={handleManualCloseAttempt}>
+      <DialogContent
+        className="max-h-[80vh] !max-w-4xl overflow-y-auto"
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onEscapeKeyDown={(e) => e.preventDefault()}
+      >
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
           <div>
-            <DialogTitle className='text-xl font-semibold'>
-              {isEdit ? 'Edit User' : 'Add New User / Sales Rep'}
+            <DialogTitle className="text-xl font-semibold">
+              {isEdit ? "Edit User" : "Add New User / Sales Rep"}
             </DialogTitle>
-            <DialogDescription className='text-muted-foreground mt-1 text-sm'>
+            <DialogDescription className="text-muted-foreground mt-1 text-sm">
               {isEdit
-                ? 'Update user information and territory assignment.'
-                : 'Create a new user account with appropriate permissions and territory assignment.'}
+                ? "Update user information and territory assignment."
+                : "Create a new user account with appropriate permissions and territory assignment."}
             </DialogDescription>
           </div>
           <DialogClose asChild></DialogClose>
@@ -239,61 +351,61 @@ export function UserActionForm({
 
         <Form {...form}>
           <form
-            id='user-form'
+            id="user-form"
             onSubmit={form.handleSubmit(onSubmit, onError)}
-            className='space-y-6'
+            className="space-y-6"
           >
             {/* Personal Information Section */}
-            <div className='space-y-4'>
-              <h3 className='border-b pb-2 text-lg font-medium'>
+            <div className="space-y-4">
+              <h3 className="border-b pb-2 text-lg font-medium">
                 Personal Information
               </h3>
 
               {/* Row 1: First Name & Last Name */}
-              <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-                <div className='space-y-2'>
-                  <Label htmlFor='firstName'>
-                    First Name <span className='text-red-500'>*</span>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">
+                    First Name <span className="text-red-500">*</span>
                   </Label>
                   <Controller
-                    name='firstName'
+                    name="firstName"
                     control={control}
                     render={({ field }) => (
                       <Input
                         {...field}
-                        id='firstName'
-                        placeholder='Enter first name'
+                        id="firstName"
+                        placeholder="Enter First Name"
                         value={getFieldValue(field.value)}
                       />
                     )}
                   />
                   {errors.firstName && (
-                    <p className='flex items-center gap-1 text-xs text-red-500'>
-                      <AlertCircle className='h-3 w-3' />
+                    <p className="flex items-center gap-1 text-xs text-red-500">
+                      <AlertCircle className="h-3 w-3" />
                       {errors.firstName.message}
                     </p>
                   )}
                 </div>
 
-                <div className='space-y-2'>
-                  <Label htmlFor='lastName'>
-                    Last Name <span className='text-red-500'>*</span>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">
+                    Last Name <span className="text-red-500">*</span>
                   </Label>
                   <Controller
-                    name='lastName'
+                    name="lastName"
                     control={control}
                     render={({ field }) => (
                       <Input
                         {...field}
-                        id='lastName'
-                        placeholder='Enter last name'
+                        id="lastName"
+                        placeholder="Enter Last Name"
                         value={getFieldValue(field.value)}
                       />
                     )}
                   />
                   {errors.lastName && (
-                    <p className='flex items-center gap-1 text-xs text-red-500'>
-                      <AlertCircle className='h-3 w-3' />
+                    <p className="flex items-center gap-1 text-xs text-red-500">
+                      <AlertCircle className="h-3 w-3" />
                       {errors.lastName.message}
                     </p>
                   )}
@@ -301,72 +413,74 @@ export function UserActionForm({
               </div>
 
               {/* Row 2: Email Address & Phone Number */}
-              <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-                <div className='space-y-2'>
-                  <Label htmlFor='email'>
-                    Email Address <span className='text-red-500'>*</span>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="email">
+                    Email Address <span className="text-red-500">*</span>
                   </Label>
                   <Controller
-                    name='email'
+                    name="email"
                     control={control}
                     render={({ field }) => (
                       <Input
                         {...field}
-                        id='email'
-                        placeholder='user@company.com'
-                        type='email'
+                        id="email"
+                        placeholder="Enter Email Address"
+                        type="email"
                         value={getFieldValue(field.value)}
                       />
                     )}
                   />
                   {errors.email && (
-                    <p className='flex items-center gap-1 text-xs text-red-500'>
-                      <AlertCircle className='h-3 w-3' />
+                    <p className="flex items-center gap-1 text-xs text-red-500">
+                      <AlertCircle className="h-3 w-3" />
                       {errors.email.message}
                     </p>
                   )}
                 </div>
 
-                <div className='space-y-2'>
-                  <Label htmlFor='phoneNumber'>Phone</Label>
+                <div className="space-y-2">
+                  <Label htmlFor="phoneNumber">
+                    Phone <span className="text-red-500">*</span>
+                  </Label>
                   <Controller
-                    name='phoneNumber'
+                    name="phoneNumber"
                     control={control}
                     render={({ field }) => (
                       <PhoneInput
                         {...field}
                         international
                         countryCallingCodeEditable={false}
-                        defaultCountry='IN'
-                        value={field.value || ''}
+                        defaultCountry="IN"
+                        value={field.value || ""}
                         onChange={(value) => {
-                          field.onChange(value || '')
+                          field.onChange(value || "");
                           const phoneNumber = parsePhoneNumberFromString(
-                            value || ''
-                          )
+                            value || "",
+                          );
                           if (phoneNumber) {
                             setValue(
-                              'countryCode',
+                              "countryCode",
                               `+${phoneNumber.countryCallingCode}`,
                               {
                                 shouldValidate: true,
                                 shouldDirty: true,
-                              }
-                            )
+                              },
+                            );
                           } else {
-                            setValue('countryCode', '+91', {
+                            setValue("countryCode", "+91", {
                               shouldValidate: true,
                               shouldDirty: true,
-                            })
+                            });
                           }
                         }}
-                        className='w-full rounded-md border border-gray-300 px-3 py-2'
+                        className="w-full rounded-md border border-gray-300 px-3 py-2"
                       />
                     )}
                   />
                   {errors.phoneNumber && (
-                    <p className='flex items-center gap-1 text-xs text-red-500'>
-                      <AlertCircle className='h-3 w-3' />
+                    <p className="flex items-center gap-1 text-xs text-red-500">
+                      <AlertCircle className="h-3 w-3" />
                       {errors.phoneNumber.message}
                     </p>
                   )}
@@ -375,23 +489,25 @@ export function UserActionForm({
             </div>
 
             {/* Work Information Section */}
-            <div className='space-y-4'>
+            <div className="space-y-4">
               {/* Row 3: Department & User Role */}
-              <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-                <div className='space-y-2'>
-                  <Label htmlFor='departmentId'>Department</Label>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="departmentId">
+                    Department<span className="text-red-500">*</span>
+                  </Label>
                   <Controller
-                    name='departmentId'
+                    name="departmentId"
                     control={control}
                     render={({ field }) => (
                       <Select
                         value={getFieldValue(field.value)}
                         onValueChange={field.onChange}
                       >
-                        <SelectTrigger className='w-full'>
-                          <SelectValue placeholder='Select department...' />
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select Department..." />
                         </SelectTrigger>
-                        <SelectContent className='!w-full'>
+                        <SelectContent className="!w-full">
                           {department.map((option) => (
                             <SelectItem
                               key={option.value}
@@ -405,29 +521,29 @@ export function UserActionForm({
                     )}
                   />
                   {errors.departmentId && (
-                    <p className='flex items-center gap-1 text-xs text-red-500'>
-                      <AlertCircle className='h-3 w-3' />
+                    <p className="flex items-center gap-1 text-xs text-red-500">
+                      <AlertCircle className="h-3 w-3" />
                       {errors.departmentId.message}
                     </p>
                   )}
                 </div>
 
-                <div className='space-y-2'>
-                  <Label htmlFor='roleId'>
-                    User Role <span className='text-red-500'>*</span>
+                <div className="space-y-2">
+                  <Label htmlFor="roleId">
+                    User Role <span className="text-red-500">*</span>
                   </Label>
                   <Controller
-                    name='roleId'
+                    name="roleId"
                     control={control}
                     render={({ field }) => (
                       <Select
                         value={getFieldValue(field.value)}
                         onValueChange={field.onChange}
                       >
-                        <SelectTrigger className='w-full'>
-                          <SelectValue placeholder='Select role...' />
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select Role..." />
                         </SelectTrigger>
-                        <SelectContent className='!w-full'>
+                        <SelectContent className="!w-full">
                           {roles.map((option) => (
                             <SelectItem
                               key={option.value}
@@ -441,84 +557,108 @@ export function UserActionForm({
                     )}
                   />
                   {errors.roleId && (
-                    <p className='flex items-center gap-1 text-xs text-red-500'>
-                      <AlertCircle className='h-3 w-3' />
+                    <p className="flex items-center gap-1 text-xs text-red-500">
+                      <AlertCircle className="h-3 w-3" />
                       {errors.roleId.message}
                     </p>
                   )}
                 </div>
               </div>
 
-              {/* Row 4: Territory & User Tier */}
-              <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-                <div className='space-y-2'>
-                  <Label htmlFor='territoryId'>
-                    Territory <span className='text-red-500'>*</span>
+              {/* Row 4: Territory, Shift ID & Joining Date */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                {allowTerritoryFilter && (
+                  <div className="space-y-2">
+                    <Label htmlFor="territoryId">
+                      Territory <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="territoryId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={getFieldValue(field.value)}
+                          onValueChange={field.onChange}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select Territories..." />
+                          </SelectTrigger>
+                          <SelectContent className="!w-full">
+                            {territories.map((option) => (
+                              <SelectItem
+                                key={option.value}
+                                value={String(option.value)}
+                              >
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.territoryId && (
+                      <p className="flex items-center gap-1 text-xs text-red-500">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.territoryId.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+                <div className="space-y-2">
+                  <Label htmlFor="shiftId">
+                    Shift <span className="text-red-500">*</span>
                   </Label>
                   <Controller
-                    name='territoryId'
+                    name="shiftId"
                     control={control}
                     render={({ field }) => (
                       <Select
                         value={getFieldValue(field.value)}
                         onValueChange={field.onChange}
                       >
-                        <SelectTrigger className='w-full'>
-                          <SelectValue placeholder='Select territories...' />
+                        <SelectTrigger className="w-full">
+                          <SelectValue placeholder="Select Shift" />
                         </SelectTrigger>
-                        <SelectContent className='!w-full'>
-                          {territories.map((option) => (
+                        <SelectContent className="!w-full">
+                          {shifts.map((option) => (
                             <SelectItem
                               key={option.value}
                               value={String(option.value)}
                             >
-                              {option.label}
+                              {formatDropDownLabel(option.label)}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     )}
                   />
-                  {errors.territoryId && (
-                    <p className='flex items-center gap-1 text-xs text-red-500'>
-                      <AlertCircle className='h-3 w-3' />
-                      {errors.territoryId.message}
+                  {errors.shiftId && (
+                    <p className="flex items-center gap-1 text-xs text-red-500">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.shiftId.message}
                     </p>
                   )}
                 </div>
-
-                <div className='space-y-2'>
-                  <Label htmlFor='tierkey'>
-                    User Tier <span className='text-red-500'>*</span>
+                <div className="space-y-2">
+                  <Label htmlFor="joiningDate">
+                    Joining Date <span className="text-red-500">*</span>
                   </Label>
                   <Controller
-                    name='tierkey'
+                    name="joiningDate"
                     control={control}
                     render={({ field }) => (
-                      <Select
-                        value={getFieldValue(field.value)}
-                        onValueChange={field.onChange}
-                      >
-                        <SelectTrigger className='w-full'>
-                          <SelectValue placeholder='Select User Tier...' />
-                        </SelectTrigger>
-                        <SelectContent className='!w-full'>
-                          {tiers.map((option) => (
-                            <SelectItem
-                              key={option.value}
-                              value={String(option.value)}
-                            >
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <SimpleDatePicker
+                        date={field.value ?? ""}
+                        setDate={field.onChange}
+                        className="w-full"
+                        disableFuture={false}
+                      />
                     )}
                   />
-                  {errors.tierkey && (
-                    <p className='flex items-center gap-1 text-xs text-red-500'>
-                      <AlertCircle className='h-3 w-3' />
-                      {errors.tierkey.message}
+                  {errors.joiningDate && (
+                    <p className="flex items-center gap-1 text-xs text-red-500">
+                      <AlertCircle className="h-3 w-3" />
+                      {errors.joiningDate.message}
                     </p>
                   )}
                 </div>
@@ -526,185 +666,120 @@ export function UserActionForm({
             </div>
 
             {/* Reporting Structure Section */}
-            <div className='space-y-4'>
-              {/* Row 5: Reporting To Role & Reporting To Users */}
-              <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-                <div className='space-y-2'>
-                  <Label htmlFor='reportingToRoleId'>
-                    Reporting To Role <span className='text-red-500'>*</span>
-                  </Label>
-                  <Controller
-                    name='reportingToRoleId'
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        value={getFieldValue(field.value)}
-                        onValueChange={(value) => {
-                          field.onChange(value)
-                          setSelectedRoleId(value)
-                        }}
-                      >
-                        <SelectTrigger className='w-full'>
-                          <SelectValue placeholder='Select role...' />
-                        </SelectTrigger>
-                        <SelectContent className='!w-full'>
-                          {roles.map((option) => (
-                            <SelectItem
-                              key={option.value}
-                              value={String(option.value)}
-                            >
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+            {!hideReportingToField && (
+              <div className="space-y-4">
+                {/* Row 5: Reporting To Role & Reporting To Users */}
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="reportingToRoleId">
+                      Reporting To Role <span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="reportingToRoleId"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          value={getFieldValue(field.value)}
+                          onValueChange={(value) => {
+                            field.onChange(value);
+                            setSelectedRoleId(value);
+                          }}
+                        >
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select Role..." />
+                          </SelectTrigger>
+                          <SelectContent className="!w-full">
+                            {roles
+                              .filter((role) => role.value !== roleId)
+                              .map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={String(option.value)}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                    {errors.reportingToRoleId && (
+                      <p className="flex items-center gap-1 text-xs text-red-500">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.reportingToRoleId.message}
+                      </p>
                     )}
-                  />
-                  {errors.reportingToRoleId && (
-                    <p className='flex items-center gap-1 text-xs text-red-500'>
-                      <AlertCircle className='h-3 w-3' />
-                      {errors.reportingToRoleId.message}
-                    </p>
-                  )}
-                </div>
-                <div className='space-y-2'>
-                  <Label htmlFor='reportingToIds'>
-                    Reporting To User(s) <span className='text-red-500'>*</span>
-                  </Label>
-                  <Controller
-                    name='reportingToIds'
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        value={getFieldValue(field.value)}
-                        onValueChange={(value) => {
-                          field.onChange(value)
-                        }}
-                      >
-                        <SelectTrigger className='w-full'>
-                          <SelectValue placeholder='Select user(s)...' />
-                        </SelectTrigger>
-                        <SelectContent className='!w-full'>
-                          {users.map((option) => (
-                            <SelectItem
-                              key={option.value}
-                              value={String(option.value)}
-                            >
-                              {option.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="reportingToIds">
+                      Reporting To User<span className="text-red-500">*</span>
+                    </Label>
+                    <Controller
+                      name="reportingToIds"
+                      control={control}
+                      render={({ field }) => {
+                        const currentValue = Array.isArray(field.value)
+                          ? field.value[0]
+                          : field.value;
+                        const displayValue = currentValue
+                          ? String(currentValue)
+                          : "";
+
+                        return (
+                          <Select
+                            value={displayValue}
+                            onValueChange={(value) => {
+                              field.onChange([value]); // Always store as array
+                            }}
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue placeholder="Select User..." />
+                            </SelectTrigger>
+                            <SelectContent className="!w-full">
+                              {users.map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={String(option.value)}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        );
+                      }}
+                    />
+                    {errors.reportingToIds && (
+                      <p className="flex items-center gap-1 text-xs text-red-500">
+                        <AlertCircle className="h-3 w-3" />
+                        {errors.reportingToIds.message}
+                      </p>
                     )}
-                  />
-                  {errors.reportingToIds && (
-                    <p className='flex items-center gap-1 text-xs text-red-500'>
-                      <AlertCircle className='h-3 w-3' />
-                      {errors.reportingToIds.message}
-                    </p>
-                  )}
+                  </div>
                 </div>
-
-                {/* <div className='space-y-2'>
-                  <Label htmlFor='reportingToIds'>
-                    Reporting To <span className='text-red-500'>*</span>
-                  </Label>
-                  <Controller
-                    name='reportingToIds'
-                    control={control}
-                    render={({ field }) => {
-                      console.log('field', field)
-                      const [open, setOpen] = useState(false)
-                      const selectedValues: string[] = (field.value || []).map(
-                        String
-                      )
-                      console.log('selectedValues', selectedValues)
-
-                      const toggleSelection = (value: any) => {
-                        const stringValue = String(value)
-                        const newSelection = selectedValues.includes(
-                          stringValue
-                        )
-                          ? selectedValues.filter(
-                              (item: string) => item !== stringValue
-                            )
-                          : [...selectedValues, stringValue]
-                        field.onChange(newSelection)
-                      }
-
-                      const removeSelection = (valueToRemove: any) => {
-                        const stringValueToRemove = String(valueToRemove)
-                        field.onChange(
-                          selectedValues.filter(
-                            (item: string) => item !== stringValueToRemove
-                          )
-                        )
-                      }
-
-                      const selectedOptions = users
-                        .filter((option) =>
-                          selectedValues.includes(String(option.value))
-                        )
-                        .map((option) => ({
-                          value: String(option.value),
-                          label: option.label,
-                        }))
-
-                      return (
-                        <MultiSelect open={open} onOpenChange={setOpen}>
-                          <MultiSelectTrigger className='w-full'>
-                            <MultiSelectValue
-                              placeholder='Select users...'
-                              selectedItems={selectedOptions}
-                              onRemove={removeSelection}
-                            />
-                          </MultiSelectTrigger>
-                          <MultiSelectContent>
-                            {users.map((option) => (
-                              <MultiSelectItem
-                                key={option.value}
-                                selected={selectedValues.includes(
-                                  String(option.value)
-                                )}
-                                onSelect={() => toggleSelection(option.value)}
-                              >
-                                {option.label}
-                              </MultiSelectItem>
-                            ))}
-                          </MultiSelectContent>
-                        </MultiSelect>
-                      )
-                    }}
-                  />
-                  {errors.reportingToIds && (
-                    <p className='flex items-center gap-1 text-xs text-red-500'>
-                      <AlertCircle className='h-3 w-3' />
-                      {errors.reportingToIds.message}
-                    </p>
-                  )}
-                </div> */}
               </div>
-            </div>
+            )}
 
             {/* Settings Section */}
-            <div className='space-y-4'>
+            <div className="space-y-4">
               {/* Row 6: Active Role Checkbox (takes full width or can be paired with another field) */}
-              <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-                <div className='space-y-2'>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="space-y-2">
                   <Controller
-                    name='isWebUser'
+                    name="isWebUser"
                     control={control}
                     render={({ field }) => (
-                      <div className='flex items-center space-x-2'>
+                      <div className="flex items-center space-x-2">
                         <Checkbox
-                          className='border'
-                          id='isWebUser'
+                          className="border"
+                          id="isWebUser"
                           checked={field.value ?? false}
                           onCheckedChange={field.onChange}
+                          disabled={isEdit}
                         />
                         <Label
-                          htmlFor='isWebUser'
-                          className='cursor-pointer text-sm'
+                          htmlFor="isWebUser"
+                          className="cursor-pointer text-sm"
                         >
                           Is web user
                         </Label>
@@ -718,15 +793,31 @@ export function UserActionForm({
           </form>
         </Form>
 
-        <DialogFooter className='flex gap-2 border-t pt-4'>
+        <DialogFooter className="flex gap-2 border-t pt-4">
           <DialogClose asChild>
-            <Button variant='outline'>Cancel</Button>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => handleManualCloseAttempt(false)}
+            >
+              Cancel
+            </Button>
           </DialogClose>
-          <CustomButton type='submit' loading={loading} form='user-form'>
-            {isEdit ? 'Update User' : 'Create User'}
+          <CustomButton type="submit" loading={loading} form="user-form">
+            {isEdit ? "Update User" : "Create User"}
           </CustomButton>
         </DialogFooter>
       </DialogContent>
+      <ConfirmDialog
+        open={isWarningOpen}
+        onOpenChange={handleCancelDiscard}
+        handleConfirm={handleConfirmDiscard}
+        title="Unsaved Changes"
+        desc="You have unsaved changes. Are you sure you want to discard them? Your changes will be lost."
+        confirmText="Discard Changes"
+        cancelBtnText="Keep Editing"
+        destructive={true}
+      />
     </Dialog>
-  )
+  );
 }

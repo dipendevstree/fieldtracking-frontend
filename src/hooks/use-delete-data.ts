@@ -1,74 +1,91 @@
-
-import instance from '@/config/instance/instance';
-import { EnhancedError } from '@/types';
-import { extractErrorInfo } from '@/utils/error-response';
+import instance from "@/config/instance/instance";
+import { EnhancedError } from "@/types";
+import { extractErrorInfo } from "@/utils/error-response";
 import {
   UseMutationOptions,
   useMutation,
-  useQueryClient
-} from '@tanstack/react-query';
-import { toast } from 'sonner';
+  useQueryClient,
+} from "@tanstack/react-query";
+import { toast } from "sonner";
+import { TOAST_CONFIG } from "@/config/toastConfig";
 
-interface DeleteDataOptions<TData> {
+interface DeleteDataOptions<TData, TVariables = void> {
   url: string;
   refetchQueries?: string[];
-  onSuccess?: () => void;
+  onSuccess?: (data: TData) => void;
   onError?: (error: EnhancedError) => void;
-  mutationOptions?: UseMutationOptions<TData, Error, void>;
+  mutationOptions?: UseMutationOptions<TData, Error, TVariables>;
+  skipToast?: boolean;
+  toastDuration?: number;
+  toastPosition?:
+    | "top-center"
+    | "top-right"
+    | "top-left"
+    | "bottom-center"
+    | "bottom-right"
+    | "bottom-left";
 }
 
-const useDeleteData = <TData = unknown>({
+const useDeleteData = <TData = unknown, TVariables = void>({
   url,
   refetchQueries = [],
   mutationOptions,
   onSuccess,
-  onError
-
-}: DeleteDataOptions<TData>) => {
+  onError,
+  skipToast = false,
+  toastDuration = TOAST_CONFIG.duration,
+  toastPosition = TOAST_CONFIG.position,
+}: DeleteDataOptions<TData, TVariables>) => {
   const queryClient = useQueryClient();
 
-  return useMutation<TData, Error, void>({
-    mutationFn: async (): Promise<TData> => {
-      const response = await instance.delete({ url });
+  return useMutation<TData, Error, TVariables>({
+    mutationFn: async (variables?: TVariables): Promise<TData> => {
+      const response = await instance.delete({
+        url,
+        data: variables,
+      });
 
       if (response?.statusCode === 200) {
+        if (!skipToast)
+          toast.success(response.message || "Deleted successfully", {
+            position: toastPosition,
+            duration: toastDuration,
+          });
         return response.data as TData;
       }
 
-      const errorMessage = response?.message || 'Failed to delete data';
+      const errorMessage = response?.message || "Failed to delete data";
       if (response?.statusCode === 400) {
         throw Object.assign(new Error(errorMessage), { statusCode: 400 });
       }
       if (response?.statusCode === 401) {
-        throw Object.assign(new Error('Unauthorized'), { statusCode: 401 });
+        throw Object.assign(new Error("Unauthorized"), { statusCode: 401 });
       }
 
       throw new Error(errorMessage);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       refetchQueries.forEach((query) =>
-        queryClient.invalidateQueries({ queryKey: [query] })
+        queryClient.invalidateQueries({ queryKey: [query] }),
       );
       if (onSuccess) {
-        onSuccess();
+        onSuccess(data);
       }
     },
     onError: (error: EnhancedError) => {
       const errorInfo = extractErrorInfo(error);
-      // Display user-friendly toast notification
-      toast.error(errorInfo.title, {
-        description: errorInfo.description,
-        duration: errorInfo.duration
-      });
+      if (!skipToast)
+        toast.error(errorInfo.message, {
+          position: toastPosition,
+          duration: toastDuration,
+        });
 
-      // Call additional error handler if provided
       if (onError) {
         onError(error);
       }
     },
-    ...mutationOptions
+    ...mutationOptions,
   });
-
 };
 
 export default useDeleteData;

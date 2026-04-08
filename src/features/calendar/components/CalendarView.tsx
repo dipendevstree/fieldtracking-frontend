@@ -1,11 +1,17 @@
-import { useCallback, useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { useNavigate } from '@tanstack/react-router'
-import { DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE } from '@/data/app.data'
-import { PermissionGate } from '@/permissions/components/PermissionGate'
-import debounce from 'lodash.debounce'
-import { CalendarIcon, Clock, Edit, Eye, Trash } from 'lucide-react'
-import { useSelectOptions } from '@/hooks/use-select-option'
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "@tanstack/react-router";
+import {
+  DEFAULT_PAGE_NUMBER,
+  DEFAULT_PAGE_SIZE,
+  Priority,
+} from "@/data/app.data";
+import { PermissionGate } from "@/permissions/components/PermissionGate";
+import debounce from "lodash.debounce";
+import { CalendarIcon, Edit, Trash2 } from "lucide-react";
+import { useSelectOptions } from "@/hooks/use-select-option";
+import { DateRange } from "react-day-picker";
+import moment from "moment";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,91 +21,46 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '@/components/ui/card'
+} from "@/components/ui/card";
 // UI and Data Imports
-import { FilterConfig } from '@/components/global-filter-section'
-import GlobalFilterSection from '@/components/global-table-filter-section'
+import { FilterConfig } from "@/components/global-filter-section";
+import GlobalFilterSection from "@/components/global-table-filter-section";
 // Feature-specific Hooks and Services
-import { useGetAllRolesForDropdown } from '@/features/UserManagement/services/Roles.hook'
-import { useGetUsersForDropdown } from '@/features/buyers/services/users.hook'
+import { useGetAllRolesForDropdown } from "@/features/UserManagement/services/Roles.hook";
+import { useGetUsersForDropdown } from "@/features/buyers/services/users.hook";
 import {
   useDeleteVisits,
+  useGetAllCustomer,
   useGetAllVisit,
   useGetAnalytics,
-} from '../services/calendar-view.hook'
-
-interface Visit {
-  id: string
-  visitId?: string
-  salesRepresentativeUser: {
-    id: string
-    firstName: string
-    lastName: string
-    roleId?: string
-  }
-  customer: { companyName: string } | string
-  contact: string
-  date: string
-  time: string
-  purpose: string
-  location: string
-  status: string
-  priority: string
-}
-
-interface Analytics {
-  totalVisits: number
-  pending: number
-  completed: number
-  cancel: number
-}
-
-export interface FormData {
-  roleId: string
-  salesRep: string
-  search: string
-}
-
-type MappedVisit = {
-  id: string
-  rep: string
-  salesRepId: string
-  roleId?: string
-  customer: string
-  contact: string
-  date: string
-  time: string
-  purpose: string
-  location: string
-  status: string
-  priority: string
-  originalVisit: Visit
-}
-
-interface DeleteVisitDialogProps {
-  visit: MappedVisit | null
-  isOpen: boolean
-  onClose: () => void
-}
+} from "../services/calendar-view.hook";
+import { formatDropDownLabel } from "@/utils/commonFunction";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Analytics,
+  DeleteVisitDialogProps,
+  FormData,
+  MappedVisit,
+  Visit,
+} from "../type/type";
+import StatusBadge from "@/components/ui/status-badge";
 
 function DeleteVisitDialog({ visit, isOpen, onClose }: DeleteVisitDialogProps) {
   // Important: guard first to avoid calling hook with undefined
-  console.log('visit11', visit)
-  if (!visit) return null
+  if (!visit) return null;
 
   const { mutate: deleteVisit, isPending: isLoading } = useDeleteVisits(
     visit.id,
-    onClose
-  )
+    onClose,
+  );
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
@@ -116,337 +77,451 @@ function DeleteVisitDialog({ visit, isOpen, onClose }: DeleteVisitDialogProps) {
           <AlertDialogAction
             onClick={() => deleteVisit()}
             disabled={isLoading}
-            className='bg-red-600 text-white hover:bg-red-700 focus:ring-red-500'
+            className="bg-red-600 text-white hover:bg-red-700 focus:ring-red-500"
           >
-            {isLoading ? 'Deleting...' : 'Confirm Delete'}
+            {isLoading ? "Deleting..." : "Confirm Delete"}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  )
+  );
 }
 
 export default function CalendarView() {
-  const navigate = useNavigate()
-  const [selectedDate, setSelectedDate] = useState<string>(
-    new Date().toISOString().split('T')[0]
-  )
+  const navigate = useNavigate();
+  const initialTodayDate = moment().format("YYYY-MM-DD");
+  const [dateRange, setDateRange] = useState<DateRange | undefined>({
+    from: new Date(),
+    to: new Date(),
+  });
+
+  // Calculate isToday dynamically to ensure fresh comparison
+  const isToday = useMemo(() => {
+    const todayDate = moment().format("YYYY-MM-DD");
+    const fromDate = dateRange?.from
+      ? moment(dateRange.from).format("YYYY-MM-DD")
+      : null;
+    const toDate = dateRange?.to
+      ? moment(dateRange.to).format("YYYY-MM-DD")
+      : null;
+    return fromDate === todayDate && toDate === todayDate;
+  }, [dateRange]);
   const [pagination, setPagination] = useState({
     page: DEFAULT_PAGE_NUMBER,
     limit: DEFAULT_PAGE_SIZE,
-    startDate: new Date().toISOString().split('T')[0],
-    endDate: new Date().toISOString().split('T')[0],
-    searchFor: '',
-    roleId: '',
-    salesRepId: '',
-  })
+    startDate: initialTodayDate,
+    endDate: initialTodayDate,
+    searchFor: "",
+    roleId: "",
+    salesRepresentativeUserId: "",
+    customerId: "",
+    status: "",
+  });
 
   // State to manage which visit is targeted for deletion
-  const [visitToDelete, setVisitToDelete] = useState<MappedVisit | null>(null)
-
-  const [analyticsPagination] = useState({
-    startDate: new Date().toISOString().split('T')[0],
-    endDate: new Date().toISOString().split('T')[0],
-    byOrganization: true,
-  })
+  const [visitToDelete, setVisitToDelete] = useState<MappedVisit | null>(null);
 
   const { watch, setValue } = useForm<FormData>({
-    defaultValues: { roleId: '', salesRep: '', search: '' },
-  })
+    defaultValues: { roleId: "", salesRep: "", search: "", status: "" },
+  });
 
-  const roleId = watch('roleId')
-  const selectedRep = watch('salesRep')
+  const roleId = watch("roleId");
+  const selectedRep = watch("salesRep");
+  const customerId = watch("customerId");
+  const priority = watch("priority");
+  const status = watch("status");
 
   useEffect(() => {
-    setPagination((prev) => ({ ...prev, roleId, salesRepId: selectedRep }))
-  }, [roleId, selectedRep])
+    setPagination((prev) => ({
+      ...prev,
+      roleId,
+      salesRepresentativeUserId: selectedRep,
+      customerId,
+      priority,
+      status,
+    }));
+  }, [roleId, selectedRep, customerId, priority, status]);
 
-  const { data: analytics } = useGetAnalytics(analyticsPagination) as {
-    data: Analytics | undefined
-  }
-  const { data: visits, isLoading, error } = useGetAllVisit(pagination)
-  console.log('visits', visits)
+  const { data: analytics } = useGetAnalytics({
+    startDate: pagination.startDate,
+    endDate: pagination.endDate,
+    byOrganization: true,
+  }) as {
+    data: Analytics | undefined;
+  };
+
+  const { data: visits, isLoading, error } = useGetAllVisit(pagination);
+
   const upcomingVisits: MappedVisit[] =
     visits?.map((visit: Visit) => ({
-      id: visit.id || visit.visitId || '',
+      id: visit.id || visit.visitId || "",
       rep:
         `${visit.salesRepresentativeUser.firstName} ${visit.salesRepresentativeUser.lastName}`.trim() ||
-        'Unknown',
-      salesRepId: visit.salesRepresentativeUser.id || '',
-      roleId: visit.salesRepresentativeUser.roleId || '',
+        "Unknown",
+      firstName: visit.salesRepresentativeUser.firstName,
+      lastName: visit.salesRepresentativeUser.lastName,
+      salesRepId: visit.salesRepresentativeUser.id || "",
+      roleId: visit.salesRepresentativeUser.roleId || "",
       customer:
-        typeof visit.customer === 'string'
+        typeof visit.customer === "string"
           ? visit.customer
-          : visit.customer?.companyName || 'Unknown',
-      contact: visit.contact || 'N/A',
-      date: new Date(visit.date).toISOString().split('T')[0],
+          : visit.customer?.companyName || "Unknown",
+      contact: visit.contact || "N/A",
+      date: new Date(visit.date).toISOString().split("T")[0],
       time: visit.time,
       purpose: visit.purpose,
-      location: visit.location || 'N/A',
+      location: visit.location || "N/A",
       status:
         visit.status.charAt(0).toUpperCase() +
         visit.status.slice(1).toLowerCase(),
       priority: visit.priority,
       originalVisit: visit,
-    })) || []
+      checkInImageUrl: visit.checkInImageUrl || "",
+      profileUrl: visit.salesRepresentativeUser.profileUrl,
+    })) || [];
 
-  const getStatusBadge = (status: string) => {
-    const variants: Record<string, string> = {
-      Confirmed: 'bg-green-100 text-green-800',
-      Pending: 'bg-yellow-100 text-yellow-800',
-      Cancelled: 'bg-red-100 text-red-800',
-      Completed: 'bg-blue-100 text-blue-800',
-      'In-progress': 'bg-purple-100 text-purple-800',
+  const handleDateRangeChange = (range: DateRange | undefined) => {
+    setDateRange(range);
+    if (range?.from && range?.to) {
+      setPagination((prev) => ({
+        ...prev,
+        startDate: moment(range.from).format("YYYY-MM-DD"),
+        endDate: moment(range.to).format("YYYY-MM-DD"),
+      }));
+    } else if (range?.from) {
+      // If only 'from' is selected, use it for both start and end
+      const dateStr = moment(range.from).format("YYYY-MM-DD");
+      setPagination((prev) => ({
+        ...prev,
+        startDate: dateStr,
+        endDate: dateStr,
+      }));
+    } else {
+      // If range is cleared, reset to today
+      const today = moment().format("YYYY-MM-DD");
+      setPagination((prev) => ({
+        ...prev,
+        startDate: today,
+        endDate: today,
+      }));
     }
-    return variants[status] || 'bg-gray-100 text-gray-800'
-  }
-
-  const getPriorityBadge = (priority: string) => {
-    const variants: Record<string, string> = {
-      High: 'bg-red-100 text-red-800',
-      Medium: 'bg-yellow-100 text-yellow-800',
-      Low: 'bg-green-100 text-green-800',
-    }
-    return variants[priority] || 'bg-gray-100 text-gray-800'
-  }
-
-  const handleDateChange = (newDate?: string) => {
-    const value = newDate ?? new Date().toISOString().split('T')[0]
-    setSelectedDate(value)
-    setPagination((prev) => ({ ...prev, startDate: value, endDate: value }))
-  }
+  };
 
   const debouncedSearch = useCallback(
     debounce((value: string) => {
       setPagination((prev) => ({
         ...prev,
         searchFor: value,
-      }))
+      }));
     }, 800),
-    []
-  )
+    [],
+  );
 
   const handleGlobalSearchChange = (value: string | undefined) => {
-    const searchValue = value ?? ''
-    setValue('search', searchValue)
-    debouncedSearch(searchValue)
-  }
+    const searchValue = value ?? "";
+    setValue("search", searchValue);
+    debouncedSearch(searchValue);
+  };
 
-  const { data: allRoles } = useGetAllRolesForDropdown()
+  const { data: allRoles } = useGetAllRolesForDropdown();
   const roles = useSelectOptions({
     listData: allRoles ?? [],
-    labelKey: 'roleName',
-    valueKey: 'roleId',
+    labelKey: "roleName",
+    valueKey: "roleId",
   }).map((option) => ({
     ...option,
     value: String(option.value),
-  }))
+  }));
 
   const { data: userList = [] } = useGetUsersForDropdown({
     roleId,
     enabled: true,
-  })
+  });
   const enhancedUserList = userList.map((user: any) => ({
     ...user,
-    fullName: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
-  }))
+    fullName: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+  }));
   const users = useSelectOptions({
     listData: enhancedUserList,
-    labelKey: 'fullName',
-    valueKey: 'id',
-  }).map((option) => ({ ...option, value: String(option.value) }))
+    labelKey: "fullName",
+    valueKey: "id",
+  }).map((option) => ({ ...option, value: String(option.value) }));
+
+  const { data: customers } = useGetAllCustomer();
+  const customerOptions = useSelectOptions({
+    listData: customers ?? [],
+    labelKey: "companyName",
+    valueKey: "customerId",
+  }).map((option) => ({
+    ...option,
+    value: String(option.value),
+  }));
+
+  const priorityOptions = Object.entries(Priority).map(([key, value]) => ({
+    label: formatDropDownLabel(key),
+    value,
+  }));
+
+  const Status = {
+    PENDING: "pending",
+    CHECKIN: "checkin",
+    COMPLETED: "completed",
+    CANCEL: "cancel",
+    PARTIAL_COMPLETED: "partial_completed",
+  };
+
+  const statusOptions = Object.entries(Status).map(([key, value]) => ({
+    label: formatDropDownLabel(key),
+    value,
+  }));
 
   const filters: FilterConfig[] = [
     {
-      key: 'date',
-      type: 'date',
-      onChange: handleDateChange,
-      placeholder: 'Select date',
-      value: selectedDate,
+      key: "date",
+      type: "date-range",
+      dateRangeValue: dateRange,
+      onDateRangeChange: handleDateRangeChange,
+      placeholder: "Select Date Range",
+      allowClear: false,
+      dataRangeClassName: "w-full max-w-[350px]",
     },
     {
-      key: 'search',
-      type: 'search',
+      key: "search",
+      type: "search",
       onChange: handleGlobalSearchChange,
-      placeholder: 'Search visits...',
-      value: watch('search'),
+      placeholder: "Search Visits...",
+      value: watch("search"),
     },
     {
-      key: 'role',
-      type: 'select',
-      onChange: (value) => setValue('roleId', value ?? ''),
-      placeholder: 'Select role',
+      key: "role",
+      type: "searchable-select",
+      onChange: (value) => setValue("roleId", value ?? ""),
+      onCancelPress: () => setValue("roleId", ""),
+      placeholder: "Select Role",
       value: roleId,
       options: roles,
+      searchableSelectClassName: "w-full max-w-[180px]",
     },
     {
-      key: 'salesRep',
-      type: 'select',
-      onChange: (value) => setValue('salesRep', value ?? ''),
-      placeholder: 'Select salesRep',
+      key: "salesRep",
+      type: "searchable-select",
+      onChange: (value) => setValue("salesRep", value ?? ""),
+      onCancelPress: () => setValue("salesRep", ""),
+      placeholder: "Select Sales Rep",
       value: selectedRep,
       options: users,
+      searchableSelectClassName: "w-full max-w-[180px]",
     },
-  ]
+    {
+      key: "customerId",
+      type: "searchable-select",
+      onChange: (value) => setValue("customerId", value ?? ""),
+      onCancelPress: () => setValue("customerId", ""),
+      placeholder: "Select Customer",
+      value: customerId,
+      options: customerOptions,
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+    {
+      key: "priority",
+      type: "searchable-select",
+      onChange: (value) => setValue("priority", value ?? ""),
+      onCancelPress: () => setValue("priority", ""),
+      placeholder: "Select Priority",
+      value: priority,
+      options: priorityOptions,
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+    {
+      key: "status",
+      type: "searchable-select",
+      onChange: (value) => setValue("status", value ?? ""),
+      onCancelPress: () => setValue("status", ""),
+      placeholder: "Select Status",
+      value: status,
+      options: statusOptions,
+      searchableSelectClassName: "w-full max-w-[180px]",
+    },
+  ];
 
   return (
     <>
-      <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
+      <div className="grid gap-4 mb-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
-              Today's Visits
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              {isToday ? "Today's" : ""} Total Visits
             </CardTitle>
-            <CalendarIcon className='text-muted-foreground h-4 w-4' />
+            <CalendarIcon className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>
+            <div className="text-2xl font-bold">
               {analytics?.totalVisits || 0}
             </div>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
-              Today's Pending Visits
+        <Card
+          className="cursor-pointer"
+          onClick={() => navigate({ to: "/calendar/upcoming-visit" })}
+        >
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              {isToday ? "Today's" : ""} Pending Visits
             </CardTitle>
-            <CalendarIcon className='text-muted-foreground h-4 w-4' />
+            <CalendarIcon className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{analytics?.pending || 0}</div>
+            <div className="text-2xl font-bold">{analytics?.pending || 0}</div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
-              Today's Completed Visits
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              {isToday ? "Today's" : ""} Completed Visits
             </CardTitle>
-            <CalendarIcon className='text-muted-foreground h-4 w-4' />
+            <CalendarIcon className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>
+            <div className="text-2xl font-bold">
               {analytics?.completed || 0}
             </div>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
-            <CardTitle className='text-sm font-medium'>
-              Today's Cancelled Visits
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              {isToday ? "Today's" : ""} Cancelled Visits
             </CardTitle>
-            <CalendarIcon className='text-muted-foreground h-4 w-4' />
+            <CalendarIcon className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{analytics?.cancel || 0}</div>
+            <div className="text-2xl font-bold">{analytics?.cancel || 0}</div>
           </CardContent>
         </Card>
       </div>
 
-      <GlobalFilterSection key={'calender-view-filters'} filters={filters} />
-      <Card className='md:col-span-2'>
-        <CardHeader className='flex flex-row items-center justify-between'>
+      <GlobalFilterSection key={"calender-view-filters"} filters={filters} />
+      <Card className="md:col-span-2">
+        <CardHeader className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>Daily Schedule - {selectedDate}</CardTitle>
-            <CardDescription>
-              Visits scheduled for the selected date
-            </CardDescription>
+            <CardTitle>
+              {isToday ? "Today's" : "Visits"} Schedule{isToday ? "" : "d"}
+            </CardTitle>
+            {isToday && (
+              <CardDescription>Visits scheduled for today</CardDescription>
+            )}
           </div>
-          <PermissionGate requiredPermission='calender_view' action='add'>
+          <PermissionGate requiredPermission="calender_view" action="add">
             <Button
-              variant='outline'
-              onClick={() => navigate({ to: '/calendar/schedule-visit' })}
+              onClick={() => navigate({ to: "/calendar/schedule-visit" })}
             >
-              Schedule Visit
+              Schedule New Visit
             </Button>
           </PermissionGate>
         </CardHeader>
         <CardContent>
           {isLoading && <p>Loading visits...</p>}
           {error && (
-            <p className='text-red-500'>
+            <p className="text-red-500">
               Error fetching visits: {error.message}
             </p>
           )}
           {!isLoading && !error && upcomingVisits.length === 0 && (
             <p>No visits scheduled for this date.</p>
           )}
-          <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             {upcomingVisits
               .filter(
                 (visit) =>
-                  visit.date === selectedDate &&
                   (!roleId || visit.roleId === roleId) &&
-                  (!selectedRep || visit.salesRepId === selectedRep)
+                  (!selectedRep || visit.salesRepId === selectedRep),
               )
               .map((visit) => (
                 <div
                   key={visit.id}
-                  className='flex items-center space-x-4 rounded-lg border p-2'
+                  className="flex items-center space-x-4 rounded-lg border p-2"
                 >
-                  <div className='flex-shrink-0'>
-                    <Clock className='text-muted-foreground h-4 w-4' />
+                  <div className="flex-shrink-0">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage
+                        src={visit.checkInImageUrl || visit.profileUrl || ""}
+                        alt="Visit Image"
+                        className="object-cover"
+                      />
+                      <AvatarFallback>
+                        {visit.firstName?.[0]}
+                        {visit.lastName?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
                   </div>
-                  <div className='min-w-0 flex-1'>
-                    <div className='flex items-center space-x-2'>
-                      <p className='text-sm font-medium'>{visit.time}</p>
-                      <Badge className={getPriorityBadge(visit.priority)}>
-                        {visit.priority}
-                      </Badge>
-                      <Badge className={getStatusBadge(visit.status)}>
-                        {visit.status}
-                      </Badge>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center space-x-2">
+                      <p className="text-sm font-medium">{visit.time}</p>
+                      <StatusBadge status={visit.status} />
                     </div>
-                    <p className='text-muted-foreground text-sm'>
+                    <p className="text-muted-foreground text-sm">
                       {visit.customer} - {visit.purpose}
                     </p>
-                    <p className='text-muted-foreground text-xs'>
+                    <p className="text-muted-foreground text-xs">
                       Rep: {visit.rep}
                     </p>
+                    <div>
+                      <span className="text-muted-foreground text-sm">
+                        Priority:{" "}
+                      </span>
+                      <StatusBadge status={visit.priority} showDot={false} />
+                    </div>
                   </div>
-                  <div className='flex space-x-1'>
-                    <PermissionGate
-                      requiredPermission='calender_view'
-                      action='viewOwn'
+                  {visit.status === "Pending" && (
+                    <div className="flex space-x-2">
+                      {/* <PermissionGate
+                      requiredPermission="calender_view"
+                      action="viewOwn"
                     >
                       <Button
-                        variant='outline'
-                        size='sm'
+                        className="h-8 w-8 p-0"
+                        variant="outline"
+                        size="sm"
                         aria-label={`View details for visit ${visit.id}`}
                       >
-                        <Eye className='h-3 w-3' />
+                        <Eye className="h-3 w-3" />
                       </Button>
-                    </PermissionGate>
-                    <PermissionGate
-                      requiredPermission='calender_view'
-                      action='edit'
-                    >
-                      <Button
-                        variant='outline'
-                        size='sm'
-                        onClick={() =>
-                          navigate({
-                            to: `/calendar/schedule-visit/${visit.id}`,
-                          })
-                        }
-                        aria-label={`Edit visit ${visit.id}`}
+                    </PermissionGate> */}
+                      <PermissionGate
+                        requiredPermission="calender_view"
+                        action="edit"
                       >
-                        <Edit className='h-3 w-3' />
-                      </Button>
-                    </PermissionGate>
-                    <PermissionGate
-                      requiredPermission='calender_view'
-                      action='delete'
-                    >
-                      <Button
-                        variant='outline'
-                        size='sm'
-                        onClick={() => setVisitToDelete(visit)}
-                        aria-label={`Delete visit ${visit.id}`}
+                        <Button
+                          variant="outline"
+                          className="h-8 w-8 p-0 text-green-600 hover:bg-green-50 hover:text-green-700"
+                          size="sm"
+                          onClick={() =>
+                            navigate({
+                              to: `/calendar/schedule-visit/${visit.id}`,
+                            })
+                          }
+                          aria-label={`Edit visit ${visit.id}`}
+                        >
+                          <Edit className="h-3 w-3" />
+                        </Button>
+                      </PermissionGate>
+                      <PermissionGate
+                        requiredPermission="calender_view"
+                        action="delete"
                       >
-                        <Trash className='h-3 w-3' />
-                      </Button>
-                    </PermissionGate>
-                  </div>
+                        <Button
+                          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50 hover:text-red-700"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setVisitToDelete(visit)}
+                          aria-label={`Delete visit ${visit.id}`}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </PermissionGate>
+                    </div>
+                  )}
                 </div>
               ))}
           </div>
@@ -458,5 +533,5 @@ export default function CalendarView() {
         onClose={() => setVisitToDelete(null)}
       />
     </>
-  )
+  );
 }

@@ -1,9 +1,11 @@
 import { useNavigate, useRouter } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
+import { useSEO } from '@/config/seo'
 
 export default function UnauthorisedError() {
   const navigate = useNavigate()
   const { history } = useRouter()
+  useSEO("401 Unauthorized");
   return (
     <div className='h-svh'>
       <div className='m-auto flex h-full w-full flex-col items-center justify-center gap-2'>
