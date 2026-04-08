@@ -1409,7 +1409,7 @@ const RegistrationForm = () => {
                                 onClick={
                                   () =>
                                     window.open(
-                                      "https://www.fieldtrack360.com/terms-and-conditions.html",
+                                      "https://www.fieldtrack360.com/terms-and-conditions/",
                                       "_blank",
                                     )
                                   // setActiveDialog("terms_of_service")
@@ -1449,7 +1449,7 @@ const RegistrationForm = () => {
                                 onClick={
                                   () =>
                                     window.open(
-                                      "https://www.fieldtrack360.com/privacy-policy.html",
+                                      "https://www.fieldtrack360.com/privacy-policy/",
                                       "_blank",
                                     )
                                   // setActiveDialog("privacy_policy")
