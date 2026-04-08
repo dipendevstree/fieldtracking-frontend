@@ -13,19 +13,10 @@ export const columns: ColumnDef<any>[] = [
     cell: ({ row }) => {
       const orgName = row.original.organizationName;
       const empRange = row.original.employeeRang?.employeeRange ?? "-";
-      const adminData = row.original.adminData;
-      const isSelfRegister = adminData?.active_token === null;
-
       return (
         <div className="font-medium">
           <div>{orgName}</div>
           <div className="text-muted-foreground text-xs">{empRange}</div>
-          <StatusBadge
-            status={
-              isSelfRegister ? "register_via_app" : "created_via_super_admin"
-            }
-            showDot={false}
-          />
         </div>
       );
     },
