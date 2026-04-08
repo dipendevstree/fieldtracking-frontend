@@ -4,6 +4,7 @@ import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-he
 import { DataTableRowActions } from "./PendingUser-table-action-button";
 import LongText from "@/components/long-text";
 import { format } from "date-fns";
+import StatusBadge from "@/components/ui/status-badge";
 
 export const pendingusercolumns: ColumnDef<any>[] = [
   {
@@ -16,7 +17,9 @@ export const pendingusercolumns: ColumnDef<any>[] = [
       const lastName = row.original.lastName;
       const jobTitle = row.original.jobTitle;
       const initials = `${firstName?.charAt(0) || ""}${lastName?.charAt(0) || ""}`;
+      const isSelfRegister = row.original.active_token === null;
       // const userID = row.original.id;
+
       return (
         <div className="flex items-center space-x-3">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-sm font-medium">
@@ -26,7 +29,14 @@ export const pendingusercolumns: ColumnDef<any>[] = [
             <div className="font-semibold">
               {firstName} {lastName}
             </div>
-            <div className="text-muted-foreground text-xs">{jobTitle}</div>
+            <div className="text-muted-foreground mt-1 text-xs">{jobTitle}</div>
+            <StatusBadge
+              status={
+                isSelfRegister ? "register_via_app" : "created_via_super_admin"
+              }
+              className="mt-1"
+              showDot={false}
+            />
             {/* <div className="text-muted-foreground text-xs">{userID}</div> */}
           </div>
         </div>
