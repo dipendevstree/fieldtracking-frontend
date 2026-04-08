@@ -55,11 +55,16 @@ export const statusConfig: Record<string, StatusEntry> = {
   "half day": { theme: "blue", label: "Half Day" },
   half_day: { theme: "blue", label: "Half Day" },
   upcoming: { theme: "blue" },
+  register_via_app: { theme: "blue", label: "Register via App" },
 
   // 🟣 Purple — Special / Event
   festival: { theme: "purple" },
   regional: { theme: "purple" },
   "in-progress": { theme: "purple", label: "In-progress" },
+  created_via_super_admin: {
+    theme: "purple",
+    label: "Created via Super Admin",
+  },
 
   // 🔴 Red — Rejected / Negative
   rejected: { theme: "red" },
