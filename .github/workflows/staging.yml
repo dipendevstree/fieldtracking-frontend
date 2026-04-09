@@ -1,4 +1,4 @@
-name:Field tracking frontend deploy to staging
+name: Field tracking frontend deploy to staging
 
 on:
   push:
