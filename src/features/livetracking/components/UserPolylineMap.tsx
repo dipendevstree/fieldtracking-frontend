@@ -1,5 +1,7 @@
+import { Fragment, useState } from "react";
 import { Marker, Polyline, Circle } from "@react-google-maps/api";
 import {
+  DEFAULT_COLORS,
   getStartPointMarkerIcon,
   getUserIconMarker,
   isValidLatLng,
@@ -20,11 +22,28 @@ interface UserPolylineMapProps {
   visitMarkers?: VisitMarker[];
 }
 
-const polylineOptions = {
-  strokeColor: "#00AD34",
+const getPolylineOptions = (isHighlighted: boolean) => ({
+  strokeColor: isHighlighted ? DEFAULT_COLORS.active : DEFAULT_COLORS.normal,
   strokeOpacity: 1,
-  strokeWeight: 3,
-};
+  strokeWeight: isHighlighted ? 6 : 3,
+  geodesic: true,
+  icons: [
+    {
+      icon: {
+        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+        fillColor: isHighlighted
+          ? DEFAULT_COLORS.active
+          : DEFAULT_COLORS.normal,
+        fillOpacity: 1,
+        strokeWeight: 1,
+        strokeColor: "#FFFFFF",
+        scale: 3,
+      },
+      offset: "0",
+      repeat: "100px",
+    },
+  ],
+});
 
 const circleOptions = {
   fillColor: "#0096FF33",
@@ -42,12 +61,20 @@ export default function UserPolylineMap({
   selectedUser,
   visitMarkers = [],
 }: UserPolylineMapProps) {
+  const [isHighlighted, setIsHighlighted] = useState(false);
+  const activeColor = isHighlighted
+    ? DEFAULT_COLORS.active
+    : DEFAULT_COLORS.normal;
+
   return (
     <>
       {path[0] && (
         <Marker
           position={path[0]}
-          icon={getStartPointMarkerIcon(selectedUser?.fullName || "")}
+          icon={getStartPointMarkerIcon(
+            selectedUser?.fullName || "",
+            activeColor,
+          )}
           title={selectedUser?.fullName || ""}
         />
       )}
@@ -55,27 +82,27 @@ export default function UserPolylineMap({
       {currentPosition && isValidLatLng(currentPosition) && (
         <Marker
           position={currentPosition}
-          icon={getUserIconMarker()}
+          icon={getUserIconMarker(activeColor)}
           title="Live Position"
         />
       )}
 
       {/* 🟣 Visit Markers and Geofence Radius */}
-      {visitMarkers.map((visit) => (
-        <div key={`visit_group_${visit.visitId}`}>
-          <Circle
-            center={{ lat: visit.lat, lng: visit.lng }}
-            radius={200}
-            options={circleOptions}
-          />
-          <Marker
-            position={{ lat: visit.lat, lng: visit.lng }}
-            title={`Visit - ${visit.purpose}`}
-          />
-        </div>
-      ))}
+      {visitMarkers.map((visit) => {
+        const position = { lat: visit.lat, lng: visit.lng };
+        return (
+          <Fragment key={visit.visitId}>
+            <Circle center={position} radius={200} options={circleOptions} />
+            <Marker position={position} title={`Visit - ${visit.purpose}`} />
+          </Fragment>
+        );
+      })}
 
-      <Polyline path={path} options={polylineOptions} />
+      <Polyline
+        path={path}
+        options={getPolylineOptions(isHighlighted)}
+        onClick={() => setIsHighlighted(!isHighlighted)}
+      />
     </>
   );
 }
