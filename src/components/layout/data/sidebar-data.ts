@@ -305,7 +305,7 @@ export const SUPER_ADMIN_SIDEBAR_DATA: SidebarData = {
   },
   teams: [
     {
-      name: "FieldTrack Pro",
+      name: "FieldTrack360",
       logo: Building2,
       plan: "Enterprise",
     },

@@ -264,3 +264,30 @@ export const enumToOptions = <T extends Record<string, string>>(enumObj: T) => {
     value,
   }));
 };
+
+/**
+ * Formats travel distance into a human readable KM string
+ *
+ * @param distance - distance value (number or string)
+ * @param precision - decimal precision (default: 2)
+ * @returns formatted distance string (e.g. "5.91 Km")
+ */
+export function formatDistanceKm(
+  distance?: number | string | null,
+  precision: number = 2,
+): string {
+  if (distance === null || distance === undefined || distance === "") {
+    return "-";
+  }
+
+  const numericDistance =
+    typeof distance === "string"
+      ? parseFloat(distance.replace(/[^0-9.]/g, ""))
+      : distance;
+
+  if (isNaN(numericDistance)) {
+    return "-";
+  }
+
+  return `${numericDistance.toFixed(precision)} Km`;
+}

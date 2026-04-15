@@ -1,5 +1,12 @@
-export function getPingMarkerIcon(name: string) {
+export const DEFAULT_COLORS = {
+  active: "#007BFF",
+  normal: "#00AD34",
+  danger: "#FF7979",
+};
+
+export function getPingMarkerIcon(name: string, color = DEFAULT_COLORS.danger) {
   const initials = name
+    .trim()
     .split(" ")
     .map((n) => n[0])
     .join("")
@@ -8,21 +15,25 @@ export function getPingMarkerIcon(name: string) {
 
   const svg = `
     <svg width="30" height="42" viewBox="0 0 50 70" xmlns="http://www.w3.org/2000/svg">
-      <path d="M25 0C11.2 0 0 11.2 0 25c0 15 21.5 42.7 23.1 44.9a2.5 2.5 0 0 0 3.8 0C28.5 67.7 50 40 50 25 50 11.2 38.8 0 25 0z" fill="#FF7979"/>
+      <path d="M25 0C11.2 0 0 11.2 0 25c0 15 21.5 42.7 23.1 44.9a2.5 2.5 0 0 0 3.8 0C28.5 67.7 50 40 50 25 50 11.2 38.8 0 25 0z" fill="${color}"/>
       <circle cx="25" cy="25" r="13" fill="#ffffff"/>
       <text x="25" y="31" text-anchor="middle" font-size="14" font-family="Arial, sans-serif" fill="#000000" font-weight="900">${initials}</text>
     </svg>`;
 
   return {
     url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-    scaledSize: new window.google.maps.Size(30, 42),
-    anchor: new window.google.maps.Point(15, 42),
+    scaledSize: (window.google
+      ? new window.google.maps.Size(30, 42)
+      : ({ width: 30, height: 42 } as any)) as any,
+    anchor: (window.google
+      ? new window.google.maps.Point(15, 42)
+      : ({ x: 15, y: 42 } as any)) as any,
   };
 }
 
 // Validate coordinates
 export function isValidLatLng(
-  point: any
+  point: any,
 ): point is { lat: number; lng: number } {
   return (
     point &&
@@ -35,11 +46,11 @@ export function isValidLatLng(
 }
 
 // user icon
-export function getUserIconMarker() {
+export function getUserIconMarker(color = DEFAULT_COLORS.normal) {
   const svg = `
     <svg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" fill="none">
-       <!-- Green circular background -->
-       <circle cx="30" cy="30" r="30" fill="#00AD34"/>
+       <!-- Dynamic circular background -->
+       <circle cx="30" cy="30" r="30" fill="${color}"/>
       
       <!-- Inner translucent ring -->
       <circle cx="30" cy="30" r="24" fill="#ffffff" fill-opacity="0.2"/>
@@ -52,11 +63,14 @@ export function getUserIconMarker() {
 
   return {
     url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-    scaledSize: new window.google.maps.Size(30, 30),
-    anchor: new window.google.maps.Point(20, 20),
+    scaledSize: (window.google
+      ? new window.google.maps.Size(30, 30)
+      : ({ width: 30, height: 30 } as any)) as any,
+    anchor: (window.google
+      ? new window.google.maps.Point(15, 15)
+      : ({ x: 15, y: 15 } as any)) as any,
   };
 }
-
 
 // Trail dot icon
 export const getSmallDotIcon = () => ({
@@ -68,29 +82,12 @@ export const getSmallDotIcon = () => ({
   strokeColor: "#fff",
 });
 
-export function getStartPointMarkerIcon(name: string) {
-  const initials = name
-    .trim()
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-
-  const svg = `
-    <svg width="30" height="42" viewBox="0 0 50 70" xmlns="http://www.w3.org/2000/svg">
-      <path d="M25 0C11.2 0 0 11.2 0 25c0 15 21.5 42.7 23.1 44.9a2.5 2.5 0 0 0 3.8 0C28.5 67.7 50 40 50 25 50 11.2 38.8 0 25 0z" fill="#00AD34"/>
-      <circle cx="25" cy="25" r="13" fill="#ffffff"/>
-      <text x="25" y="31" text-anchor="middle" font-size="14" font-family="Arial, sans-serif" fill="#000000" font-weight="900">${initials}</text>
-    </svg>`;
-
-  return {
-    url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`,
-    scaledSize: new window.google.maps.Size(30, 42),
-    anchor: new window.google.maps.Point(15, 42),
-  };
+export function getStartPointMarkerIcon(
+  name: string,
+  color = DEFAULT_COLORS.normal,
+) {
+  return getPingMarkerIcon(name, color);
 }
-
 
 /**
  * Calculates the great-circle distance between two points on the Earth using the Haversine formula.
@@ -104,7 +101,7 @@ export function getHaversineDistance(
   lat1: number,
   lon1: number,
   lat2: number,
-  lon2: number
+  lon2: number,
 ): number {
   if (isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)) {
     return 0;

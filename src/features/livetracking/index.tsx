@@ -503,7 +503,7 @@ export default function Livetracking() {
                   onLoad={(map) => {
                     mapRef.current = map;
                   }}
-                  options={{ minZoom: 10, maxZoom: 15 }}
+                  // options={{ minZoom: 10, maxZoom: 15 }}
                 >
                   {selectedUserId !== undefined && selectedUserId !== "" ? (
                     <UserPolylineMap
