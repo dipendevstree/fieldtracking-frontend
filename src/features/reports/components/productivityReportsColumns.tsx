@@ -3,6 +3,7 @@ import StatusBadge from "@/components/ui/status-badge";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import LongText from "@/components/long-text";
 import { ProductivityReportRow } from "../types";
+import { formatDistanceKm } from "@/utils/commonFunction";
 
 export const ProductivityReportsColumns: ColumnDef<ProductivityReportRow>[] = [
   {
@@ -50,7 +51,7 @@ export const ProductivityReportsColumns: ColumnDef<ProductivityReportRow>[] = [
   {
     header: "Travel Distance",
     accessorKey: "totalDistance",
-    cell: ({ row }) => row.original.totalDistance || "-",
+    cell: ({ row }) => formatDistanceKm(row.original.totalDistance),
   },
   {
     header: "Start Address",
