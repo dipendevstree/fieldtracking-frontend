@@ -21,7 +21,9 @@ import { useAuthStore } from "@/stores/use-auth-store";
 
 interface UserTrackingTimelineProps {
   userId: any;
-  setPath: React.Dispatch<React.SetStateAction<{ lat: number; lng: number }[]>>;
+  setPath: React.Dispatch<
+    React.SetStateAction<{ lat: number; lng: number; rawData?: any }[]>
+  >;
   setCurrentPosition: React.Dispatch<
     React.SetStateAction<{ lat: number; lng: number } | null>
   >;
@@ -130,6 +132,7 @@ const UserTrackingTimeline = ({
         const path = [...trackingData].reverse().map((item: any) => ({
           lat: parseFloat(item.lat),
           lng: parseFloat(item.long),
+          rawData: item,
         }));
         setPath(path);
         setCurrentPosition(path[path.length - 1]);
@@ -231,6 +234,7 @@ const UserTrackingTimeline = ({
         const newPoint = {
           lat: parseFloat(event.lat),
           lng: parseFloat(event.long),
+          rawData: event,
         };
         // This updater function ensures we always have the latest path and distance
         setPath((prevPath) => {
