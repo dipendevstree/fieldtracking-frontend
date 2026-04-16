@@ -5,6 +5,7 @@ import {
   getStartPointMarkerIcon,
   getUserIconMarker,
   isValidLatLng,
+  getSmallDotIcon,
 } from "../data/commonFunction";
 
 export interface VisitMarker {
@@ -15,7 +16,7 @@ export interface VisitMarker {
 }
 
 interface UserPolylineMapProps {
-  path: { lat: number; lng: number }[];
+  path: { lat: number; lng: number; rawData?: any }[];
   currentPosition: { lat: number; lng: number } | null;
   selectedUser: any;
   mapRef: React.MutableRefObject<google.maps.Map | null>;
@@ -103,6 +104,15 @@ export default function UserPolylineMap({
         options={getPolylineOptions(isHighlighted)}
         onClick={() => setIsHighlighted(!isHighlighted)}
       />
+
+      {path.map((point, index) => (
+        <Marker
+          key={`path_dot_${index}_${point?.rawData?._id}`}
+          position={point}
+          icon={getSmallDotIcon()}
+          title={`ID: ${point?.rawData?._id}`}
+        />
+      ))}
     </>
   );
 }
