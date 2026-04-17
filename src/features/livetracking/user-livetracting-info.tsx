@@ -398,14 +398,14 @@ const UserTrackingTimeline = ({
       refetchUserDetails();
     };
 
-    socketForVisitOrignal.on("user_online", handleUserStatus);
+    // socketForVisitOrignal.on("user_online", handleUserStatus);
     socketForVisitOrignal.on("user_online_status", handleUserStatus);
     socketForVisitOrignal.on("work_session", handleWorkSession);
     socketForVisitOrignal.on("break_session", handleBreakSession);
     socketForVisitOrignal.on("in_visit", handleVisit);
 
     return () => {
-      socketForVisitOrignal.off("user_online", handleUserStatus);
+      // socketForVisitOrignal.off("user_online", handleUserStatus);
       socketForVisitOrignal.off("user_online_status", handleUserStatus);
       socketForVisitOrignal.off("work_session", handleWorkSession);
       socketForVisitOrignal.off("break_session", handleBreakSession);
