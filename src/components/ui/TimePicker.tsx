@@ -23,13 +23,13 @@ interface TimePickerProps {
 }
 
 const hours12 = Array.from({ length: 12 }, (_, i) =>
-  String(i + 1).padStart(2, "0")
+  String(i + 1).padStart(2, "0"),
 );
 const hours24 = Array.from({ length: 24 }, (_, i) =>
-  String(i).padStart(2, "0")
+  String(i).padStart(2, "0"),
 );
 const minutes = Array.from({ length: 60 }, (_, i) =>
-  String(i).padStart(2, "0")
+  String(i).padStart(2, "0"),
 );
 const periods = ["AM", "PM"];
 
@@ -57,6 +57,14 @@ export function TimePicker({
   const minuteRef = useRef<HTMLButtonElement>(null);
   const periodRef = useRef<HTMLButtonElement>(null);
 
+  // System time (used for disablePast)
+  const [currentHour24, setCurrentHour24] = useState<number>(
+    new Date().getHours(),
+  );
+  const [currentMinute, setCurrentMinute] = useState<number>(
+    new Date().getMinutes(),
+  );
+
   // Parse incoming value into confirmed state
   useEffect(() => {
     if (value) {
@@ -81,9 +89,13 @@ export function TimePicker({
     }
   }, [value, format]);
 
-  // Initialize pending state when popover opens
+  // Initialize pending state and refresh system time when popover opens
   useEffect(() => {
     if (isOpen) {
+      const now = new Date();
+      setCurrentHour24(now.getHours());
+      setCurrentMinute(now.getMinutes());
+
       setPendingHour(hour);
       setPendingMinute(minute);
       setPendingPeriod(period);
@@ -91,28 +103,18 @@ export function TimePicker({
       // Scroll to active value after state is set
       setTimeout(
         () => hourRef.current?.scrollIntoView({ block: "center" }),
-        50
+        50,
       );
       setTimeout(
         () => minuteRef.current?.scrollIntoView({ block: "center" }),
-        50
+        50,
       );
       setTimeout(
         () => periodRef.current?.scrollIntoView({ block: "center" }),
-        50
+        50,
       );
     }
   }, [isOpen, hour, minute, period]);
-
-  // System time (used for disablePast)
-  const { currentHour24, currentMinute } = useMemo(() => {
-    const now = new Date();
-    return {
-      currentHour24: now.getHours(),
-      currentMinute: now.getMinutes(),
-    };
-  }, []);
-
   const handleApply = () => {
     if (pendingHour && pendingMinute) {
       let hour24 = parseInt(pendingHour, 10);
@@ -165,7 +167,7 @@ export function TimePicker({
           className={cn(
             "w-[200px] justify-start text-left font-normal",
             !value && "text-muted-foreground",
-            className
+            className,
           )}
         >
           <Clock className="mr-2 h-4 w-4" />

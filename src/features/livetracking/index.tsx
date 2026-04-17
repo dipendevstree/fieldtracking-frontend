@@ -359,11 +359,11 @@ export default function Livetracking() {
       socketForVisitOrignal.on("connect", handleConnect);
     }
 
-    socketForVisitOrignal.on("user_online", handleUserStatus);
+    // socketForVisitOrignal.on("user_online", handleUserStatus);
     socketForVisitOrignal.on("user_online_status", handleUserStatus);
 
     return () => {
-      socketForVisitOrignal.off("user_online", handleUserStatus);
+      // socketForVisitOrignal.off("user_online", handleUserStatus);
       socketForVisitOrignal.off("user_online_status", handleUserStatus);
       socketForVisitOrignal.disconnect();
     };
