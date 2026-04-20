@@ -291,3 +291,60 @@ export function formatDistanceKm(
 
   return `${numericDistance.toFixed(precision)} Km`;
 }
+
+/**
+ * Recursively removes empty values from payload.
+ *
+ * Removes:
+ * - undefined
+ * - null
+ * - ""
+ *
+ * Keeps valid values:
+ * - 0
+ * - false
+ * - Date
+ * - File
+ * - Blob
+ *
+ * Immutable: does NOT mutate original object
+ */
+export function sanitizePayload<T>(payload: T): T {
+  if (Array.isArray(payload)) {
+    return payload
+      .map((item) => sanitizePayload(item))
+      .filter(
+        (item) =>
+          item !== undefined &&
+          item !== null &&
+          item !== "" &&
+          !(
+            typeof item === "object" &&
+            !Array.isArray(item) &&
+            Object.keys(item).length === 0
+          ),
+      ) as unknown as T;
+  }
+
+  if (
+    typeof payload === "object" &&
+    payload !== null &&
+    !(payload instanceof Date) &&
+    !(payload instanceof File) &&
+    !(payload instanceof Blob)
+  ) {
+    const result: Record<string, any> = {};
+
+    Object.entries(payload).forEach(([key, value]) => {
+      const cleaned = sanitizePayload(value);
+
+      if (cleaned !== undefined && cleaned !== null && cleaned !== "") {
+        result[key] = cleaned;
+      }
+    });
+
+    return result as T;
+  }
+
+  return payload;
+}
