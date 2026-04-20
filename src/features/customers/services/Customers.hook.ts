@@ -17,7 +17,7 @@ const CUSTOMER_STATUS_COUNTS_QUERY = API.customerMain.statusCounts;
 // Define create customer payload type
 export interface CreateCustomerPayload {
   companyName: string;
-  phoneNumber: string;
+  phoneNumber?: string;
   industryId?: string;
   customerTypeId?: string;
   streetAddress?: string;
@@ -32,7 +32,7 @@ export interface CreateCustomerPayload {
     customerName: string;
     email: string;
     designation?: string;
-    phoneNumber: string;
+    phoneNumber?: string;
     isPrimary: boolean;
     assignUserId?: string | null;
   }>;
@@ -210,7 +210,7 @@ export const useGetCustomerById = (customerId: string, enabled: boolean) => {
 
 export const useUpdateCustomer = (
   customerId: string,
-  onSuccess?: () => void
+  onSuccess?: () => void,
 ) => {
   return usePatchData({
     url: `${API.customerMain.update}/${customerId}`,
@@ -225,7 +225,7 @@ export const useUpdateCustomer = (
 
 export const useDeleteCustomer = (
   customerId: string,
-  onSuccess?: () => void
+  onSuccess?: () => void,
 ) => {
   return useDeleteData({
     url: `${API.customerMain.delete}/${customerId}`,
@@ -240,7 +240,7 @@ export const useDeleteCustomer = (
 
 export const useBulkImportCustomers = (
   onSuccess?: (data: BulkImportResponse) => void,
-  onError?: (error: Error) => void
+  onError?: (error: Error) => void,
 ) => {
   return usePostData<BulkImportResponse, FormData>({
     url: API.customerMain.importCsv,
