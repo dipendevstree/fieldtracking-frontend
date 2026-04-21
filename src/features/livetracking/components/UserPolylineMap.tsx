@@ -15,7 +15,7 @@ export interface VisitMarker {
 }
 
 interface UserPolylineMapProps {
-  path: { lat: number; lng: number }[];
+  path: { lat: number; lng: number; row?: any }[];
   currentPosition: { lat: number; lng: number } | null;
   selectedUser: any;
   mapRef: React.MutableRefObject<google.maps.Map | null>;
@@ -86,6 +86,26 @@ export default function UserPolylineMap({
           title="Live Position"
         />
       )}
+
+      {/* 🟢 Path Points Markers (Debug info) - Visible only when highlighted */}
+      {isHighlighted &&
+        path.map((point, index) => (
+          <Marker
+            key={`point-${index}`}
+            position={point}
+            title={`ID: ${point.row?._id ?? index}${
+              point.row?.speed ? ` | Speed: ${point.row?.speed}` : ""
+            }${point.row?.date ? ` | Time: ${point.row?.date}` : ""}`}
+            icon={{
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 4,
+              fillColor: "#3b82f6",
+              fillOpacity: 1,
+              strokeWeight: 1,
+              strokeColor: "#ffffff",
+            }}
+          />
+        ))}
 
       {/* 🟣 Visit Markers and Geofence Radius */}
       {visitMarkers.map((visit) => {
