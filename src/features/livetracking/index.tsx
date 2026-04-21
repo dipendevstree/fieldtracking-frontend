@@ -59,7 +59,9 @@ export default function Livetracking() {
     lat: number;
     lng: number;
   } | null>(null);
-  const [path, setPath] = useState<{ lat: number; lng: number }[]>([]);
+  const [path, setPath] = useState<
+    ({ lat: number; lng: number; row?: any })[]
+  >([]);
   const [visitMarkers, setVisitMarkers] = useState<VisitMarker[]>([]);
   const [mapCenter, setMapCenter] = useState<{
     lat: number;
