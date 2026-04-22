@@ -229,17 +229,17 @@ export default function AddCustomerPage({
     if (isEditMode && customer) {
       // a. Map the API data to the form's schema
       const formValues: TCustomerFormSchema = {
-        companyName: customer.companyName,
-        industry: customer.industryId,
-        customerType: customer.customerTypeId,
-        address: customer.streetAddress,
-        city: customer.city,
-        state: customer.state,
-        country: customer.country,
+        companyName: customer.companyName || "",
+        industry: customer.industryId || "",
+        customerType: customer.customerTypeId || "",
+        address: customer.streetAddress || "",
+        city: customer.city || "",
+        state: customer.state || "",
+        country: customer.country || "",
         zipCode: String(customer.zipCode || ""), // Zod schema expects string
         notes: customer.additionalNotes || "",
-        latitude: customer.latitude,
-        longitude: customer.longitude,
+        latitude: customer.latitude ?? undefined,
+        longitude: customer.longitude ?? undefined,
         contacts:
           customer.customerContacts?.map((contact: any) => {
             const contactId = contact.customerContactId || Date.now(); // Use real ID or generate one
@@ -252,11 +252,11 @@ export default function AddCustomerPage({
             }
             return {
               id: contactId, // useFieldArray needs a unique id
-              name: contact.customerName,
-              email: contact.email,
-              phone: contact.phoneNumber,
+              name: contact.customerName || "",
+              email: contact.email || "",
+              phone: contact.phoneNumber || "",
               designation: contact.designation || "",
-              isPrimary: contact.isPrimary,
+              isPrimary: !!contact.isPrimary,
               userRole: contact.assignUser?.roleId || "",
               assignedRep: contact.assignUserId || "",
             };

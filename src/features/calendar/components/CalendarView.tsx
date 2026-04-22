@@ -8,7 +8,7 @@ import {
 } from "@/data/app.data";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
 import debounce from "lodash.debounce";
-import { CalendarIcon, Edit, Trash2 } from "lucide-react";
+import { Calendar, CalendarIcon, Clock, Edit, Trash2 } from "lucide-react";
 import { useSelectOptions } from "@/hooks/use-select-option";
 import { DateRange } from "react-day-picker";
 import moment from "moment";
@@ -457,7 +457,21 @@ export default function CalendarView() {
 
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center space-x-2">
-                      <p className="text-sm font-medium">{visit.time}</p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        {/* Date */}
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4" />
+                          <span>
+                            {moment(visit.date).format("DD MMM YYYY")}
+                          </span>
+                        </div>
+
+                        {/* Time */}
+                        <div className="flex items-center gap-1">
+                          <Clock className="h-4 w-4" />
+                          <span>{visit.time}</span>
+                        </div>
+                      </div>
                       <StatusBadge status={visit.status} />
                     </div>
                     <p className="text-muted-foreground text-sm">
