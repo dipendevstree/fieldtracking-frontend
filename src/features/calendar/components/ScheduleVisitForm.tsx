@@ -120,7 +120,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
   const visitId = params.id;
   const isEditMode = !!visitId;
   const navigate = useNavigate();
-  const { salesRepId }: any = useSearch({
+  const { salesRepId, customerId: prefilledCustomerId }: any = useSearch({
     from: "/_authenticated/calendar/schedule-visit",
   });
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
@@ -367,6 +367,34 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
       latLng: "",
     })),
   );
+
+  useEffect(() => {
+    if (!isEditMode && prefilledCustomerId && customerList.length > 0) {
+      const selectedCustomer = customerList.find(
+        (c: any) => c.customerId === prefilledCustomerId,
+      );
+      if (selectedCustomer) {
+        const fullAddress = [
+          selectedCustomer.streetAddress,
+          selectedCustomer.city,
+          selectedCustomer.state,
+          selectedCustomer.country,
+        ]
+          .filter(Boolean)
+          .join(", ");
+
+        setValue("visits.0.customer", prefilledCustomerId);
+        setValue("visits.0.location", fullAddress);
+        setValue("visits.0.address", selectedCustomer.streetAddress || "");
+        setValue("visits.0.city", selectedCustomer.city || "");
+        setValue("visits.0.state", selectedCustomer.state || "");
+        setValue("visits.0.zipCode", String(selectedCustomer.zipCode || ""));
+        setValue("visits.0.country", selectedCustomer.country || "");
+        setValue("visits.0.latitude", selectedCustomer.latitude);
+        setValue("visits.0.longitude", selectedCustomer.longitude);
+      }
+    }
+  }, [prefilledCustomerId, customerList, isEditMode, setValue]);
 
   useEffect(() => {
     setLocationStates(
@@ -1050,7 +1078,7 @@ export function ScheduleVisitForm({ onClose }: ScheduleVisitFormProps) {
                       </div>
                     ))}
 
-                    {!isEditMode && (
+                    {!isEditMode && !prefilledCustomerId && (
                       <TooltipProvider>
                         <Tooltip delayDuration={100}>
                           <TooltipTrigger asChild>

@@ -182,13 +182,13 @@ export const useGetUsersByRole = (roleId: string, enabled: boolean = false) => {
   };
 };
 
-export const useCreateCustomer = (onSuccess?: () => void) => {
-  return usePostData<CreateCustomerPayload, any>({
+export const useCreateCustomer = (onSuccess?: (data: any) => void) => {
+  return usePostData<any, CreateCustomerPayload>({
     url: API.customerMain.create,
     refetchQueries: [CUSTOMERS_QUERY, CUSTOMER_STATUS_COUNTS_QUERY],
-    onSuccess: () => {
+    onSuccess: (data) => {
       if (onSuccess) {
-        onSuccess();
+        onSuccess(data);
       }
     },
   });

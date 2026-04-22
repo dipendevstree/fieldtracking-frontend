@@ -108,6 +108,8 @@ export default function AddCustomerPage({
   const [latLng, setLatLng] = useState("");
   const [messageType, setMessageType] = useState<"draft" | "final">("final");
   const formRef = useRef<HTMLFormElement>(null);
+  const [showVisitPrompt, setShowVisitPrompt] = useState(false);
+  const [createdCustomerId, setCreatedCustomerId] = useState("");
   const { customerId } = useParams({ strict: false });
   const isEditMode = !!customerId;
 
@@ -126,11 +128,16 @@ export default function AddCustomerPage({
 
   // Add create customer mutation
   const { mutate: createCustomer, isPending: createPending } =
-    useCreateCustomer(() => {
+    useCreateCustomer((data) => {
       form.reset(form.getValues());
-      setTimeout(() => {
-        navigate({ to: "/customers" });
-      }, 0);
+      if (data?.customerId) {
+        setCreatedCustomerId(data.customerId);
+        setShowVisitPrompt(true);
+      } else {
+        setTimeout(() => {
+          navigate({ to: "/customers" });
+        }, 0);
+      }
     });
 
   const isPending = updatePending || createPending;
@@ -230,16 +237,16 @@ export default function AddCustomerPage({
       // a. Map the API data to the form's schema
       const formValues: TCustomerFormSchema = {
         companyName: customer.companyName,
-        industry: customer.industryId,
+        industry: customer.industryId || "",
         customerType: customer.customerTypeId,
-        address: customer.streetAddress,
-        city: customer.city,
-        state: customer.state,
-        country: customer.country,
+        address: customer.streetAddress || "",
+        city: customer.city || "",
+        state: customer.state || "",
+        country: customer.country || "",
         zipCode: String(customer.zipCode || ""), // Zod schema expects string
         notes: customer.additionalNotes || "",
-        latitude: customer.latitude,
-        longitude: customer.longitude,
+        latitude: customer.latitude ?? undefined,
+        longitude: customer.longitude ?? undefined,
         contacts:
           customer.customerContacts?.map((contact: any) => {
             const contactId = contact.customerContactId || Date.now(); // Use real ID or generate one
@@ -254,7 +261,7 @@ export default function AddCustomerPage({
               id: contactId, // useFieldArray needs a unique id
               name: contact.customerName,
               email: contact.email,
-              phone: contact.phoneNumber,
+              phone: contact.phoneNumber || "",
               designation: contact.designation || "",
               isPrimary: contact.isPrimary,
               userRole: contact.assignUser?.roleId || "",
@@ -421,6 +428,23 @@ export default function AddCustomerPage({
 
   return (
     <div className="flex-1 space-y-4 p-4 pt-22">
+      <ConfirmDialog
+        open={showVisitPrompt}
+        onOpenChange={setShowVisitPrompt}
+        title="Customer Added Successfully"
+        desc="Would you like to schedule a visit for this customer now?"
+        cancelBtnText="No, Maybe Later"
+        confirmText="Yes, Schedule Now"
+        handleConfirm={() => {
+          navigate({
+            to: "/calendar/schedule-visit",
+            search: { customerId: createdCustomerId },
+          });
+        }}
+        onCancel={() => {
+          navigate({ to: "/customers" });
+        }}
+      />
       <LocationPicker
         open={isMapModalOpen}
         onOpenChange={setIsMapModalOpen}
