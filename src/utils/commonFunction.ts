@@ -348,3 +348,73 @@ export function sanitizePayload<T>(payload: T): T {
 
   return payload;
 }
+
+/**
+ * Device information returned by getDeviceInfo()
+ */
+export interface DeviceInfo {
+  appVersion: string;
+  modelName: string;
+  platform: string;
+  platformVersion: string;
+}
+
+let cachedDeviceInfo: DeviceInfo | null = null;
+
+/**
+ * Get client device information from the browser.
+ * Uses User-Agent Client Hints when available with fallback to legacy APIs.
+ *
+ * Cached after first execution to avoid repeated browser calls.
+ *
+ * @returns {Promise<DeviceInfo>} Resolved device information
+ */
+
+export async function getDeviceInfo(): Promise<DeviceInfo> {
+  if (cachedDeviceInfo) return cachedDeviceInfo;
+
+  const nav: any = navigator;
+  const ua = nav.userAgent;
+
+  let platform = "Unknown";
+  let platformVersion = "";
+  let modelName = "";
+
+  // Detect platform
+  if (/android/i.test(ua)) {
+    platform = "Android";
+    modelName = "Android Device";
+  } else if (/iPhone|iPad|iPod/.test(ua)) {
+    platform = "iOS";
+    modelName = /iPhone/.test(ua) ? "iPhone" : "iPad";
+  } else if (/Macintosh/i.test(ua)) {
+    platform = "macOS";
+  } else if (/Windows/i.test(ua)) {
+    platform = "Windows";
+  } else if (/Linux/i.test(ua)) {
+    platform = "Linux";
+  }
+
+  // Modern API
+  if (nav.userAgentData?.getHighEntropyValues) {
+    try {
+      const hints = await nav.userAgentData.getHighEntropyValues([
+        "platformVersion",
+        "model",
+      ]);
+
+      platform = nav.userAgentData.platform || platform;
+      platformVersion = hints.platformVersion || "";
+      modelName = hints.model || modelName;
+    } catch {}
+  }
+
+  cachedDeviceInfo = {
+    appVersion: import.meta.env.VITE_APP_VERSION,
+    modelName,
+    platform,
+    platformVersion,
+  };
+
+  return cachedDeviceInfo;
+}

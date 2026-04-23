@@ -16,6 +16,8 @@ import { useFcmTokenUpdateUser } from "@/features/UserManagement/services/AllUse
 import WorkDaySession from "@/features/attendance-management/components/attendance/components/WorkDaySession";
 import { usePermissionData } from "@/hooks/use-permission-data";
 import { PermissionGate } from "@/permissions/components/PermissionGate";
+import { useDeviceInfo } from "@/hooks/use-device-info";
+import { sanitizePayload } from "@/utils/commonFunction";
 // import ProcessLeaveBalance from "@/features/leave-management/components/leave-balance/ProcessLeaveBalance";
 
 export function AuthenticatedLayout({
@@ -23,6 +25,7 @@ export function AuthenticatedLayout({
 }: {
   children?: React.ReactNode;
 }) {
+  const deviceInfo = useDeviceInfo();
   const { user, isLoading, isPasswordChanged, updateUser } = useAuthStore();
   const { sidebarOpen } = useAppStore();
   const { mutate: updateUserToken } = useFcmTokenUpdateUser((data) => {
@@ -70,11 +73,14 @@ export function AuthenticatedLayout({
       // Cache the token to prevent repeated API calls
       localStorage.setItem("fcm_token", token);
 
-      updateUserToken({
-        fcmToken: token,
-        isWeb: true,
-        deviceId: deviceId,
-      });
+      updateUserToken(
+        sanitizePayload({
+          fcmToken: token,
+          isWeb: true,
+          deviceId: deviceId,
+          ...deviceInfo,
+        }),
+      );
     }
   }, [token, user]);
 
