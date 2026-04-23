@@ -19,10 +19,13 @@ import { useAdminLogin } from "../services/sign-in-services";
 import { formSchema, TFormSchema } from "./schema";
 import { useRouter } from "@tanstack/react-router";
 import UserDeviceModal from "./user-device-modal";
+import { useDeviceInfo } from "@/hooks/use-device-info";
+import { sanitizePayload } from "@/utils/commonFunction";
 
 type UserAuthFormProps = Readonly<HTMLAttributes<HTMLFormElement>>;
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
+  const deviceInfo = useDeviceInfo();
   const { login } = useAuthStore();
   const [loginData, setLoginData] = useState<any | null>(null);
   const [openDeviceModal, setOpenDeviceModal] = useState(false);
@@ -34,9 +37,11 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
       setLoginData(error?.response?.data?.data);
       setOpenDeviceModal(true);
     }
-  }
-  const { mutate: loginMutate, isPending: isLoading } =
-    useAdminLogin(onSuccess, onFailure);
+  };
+  const { mutate: loginMutate, isPending: isLoading } = useAdminLogin(
+    onSuccess,
+    onFailure,
+  );
   const { navigate } = useRouter();
   const form = useForm<TFormSchema>({
     resolver: zodResolver(formSchema),
@@ -47,11 +52,12 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   });
 
   function onSubmit(data: TFormSchema) {
-    let deviceId = localStorage.getItem("deviceId");
-    const payload = {
+    const deviceId = localStorage.getItem("deviceId");
+    const payload = sanitizePayload({
       ...data,
-      deviceId
-    };
+      ...deviceInfo,
+      deviceId,
+    });
     loginMutate(payload);
   }
 
