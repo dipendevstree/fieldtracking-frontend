@@ -1,5 +1,5 @@
 import { Fragment, useState } from "react";
-import { Marker, Polyline, Circle, InfoWindow } from "@react-google-maps/api"; // ✅ add InfoWindow
+import { Marker, Polyline, Circle, InfoWindow } from "@react-google-maps/api";
 import {
   DEFAULT_COLORS,
   getStartPointMarkerIcon,
@@ -68,7 +68,7 @@ export default function UserPolylineMap({
   visitMarkers = [],
 }: UserPolylineMapProps) {
   const [isHighlighted, setIsHighlighted] = useState(false);
-  const [hoveredVisitId, setHoveredVisitId] = useState<string | null>(null); // ✅ track hovered marker
+  const [hoveredVisitId, setHoveredVisitId] = useState<string | null>(null);
 
   const activeColor = isHighlighted
     ? DEFAULT_COLORS.active
@@ -167,7 +167,7 @@ export default function UserPolylineMap({
         onClick={() => setIsHighlighted(!isHighlighted)}
       />
 
-      {/* ✅ Hides the default Google Maps InfoWindow close button globally */}
+      {/* Hides the default Google Maps InfoWindow close button globally */}
       <style>{`.gm-ui-hover-effect { display: none !important; }`}</style>
     </>
   );
