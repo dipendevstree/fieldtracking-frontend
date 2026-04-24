@@ -2,15 +2,12 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { MapPin, Loader2, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { socket, socketForVisit } from "../../socket/socket";
-import type { VisitMarker } from "./components/UserPolylineMap";
-
 import {
   getWorkDaySession,
   useFetchLiveTrackingData,
   userDetailsById,
   useVisitAnalytics,
 } from "./services/live-tracking-services";
-
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import { FilterConfig } from "@/components/global-filter-section";
 import { getHaversineDistance } from "./data/commonFunction";
@@ -18,6 +15,7 @@ import moment from "moment-timezone";
 import { getFormattedAddress } from "@/utils/commonFunction";
 import { useGetAllVisit } from "../calendar/services/calendar-view.hook";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { VisitMarker } from "./types";
 
 interface UserTrackingTimelineProps {
   userId: any;
