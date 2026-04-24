@@ -204,6 +204,11 @@ const UserTrackingTimeline = ({
           lat: parseFloat(v.latitude),
           lng: parseFloat(v.longitude),
           purpose: v.purpose || "",
+          companyName: v.customer?.companyName,
+          checkInTime: v.visitCheckInTime,
+          checkOutTime: v.visitCheckOutTime,
+          duration: v.duration,
+          address: v.checkoutAddress || v.checkinAddress,
         }));
       setVisitMarkers(markers);
     } else {
