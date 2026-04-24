@@ -1,17 +1,23 @@
 import { Fragment, useState } from "react";
-import { Marker, Polyline, Circle } from "@react-google-maps/api";
+import { Marker, Polyline, Circle, InfoWindow } from "@react-google-maps/api";
 import {
   DEFAULT_COLORS,
   getStartPointMarkerIcon,
   getUserIconMarker,
   isValidLatLng,
 } from "../data/commonFunction";
+import { formatDate } from "date-fns";
 
 export interface VisitMarker {
   visitId: string;
   lat: number;
   lng: number;
   purpose: string;
+  companyName: string;
+  checkInTime: string;
+  checkOutTime: string;
+  duration: number;
+  address: string;
 }
 
 interface UserPolylineMapProps {
@@ -62,6 +68,8 @@ export default function UserPolylineMap({
   visitMarkers = [],
 }: UserPolylineMapProps) {
   const [isHighlighted, setIsHighlighted] = useState(false);
+  const [hoveredVisitId, setHoveredVisitId] = useState<string | null>(null);
+
   const activeColor = isHighlighted
     ? DEFAULT_COLORS.active
     : DEFAULT_COLORS.normal;
@@ -110,19 +118,57 @@ export default function UserPolylineMap({
       {/* 🟣 Visit Markers and Geofence Radius */}
       {visitMarkers.map((visit) => {
         const position = { lat: visit.lat, lng: visit.lng };
+
+        const visitDetails = [
+          { label: "Purpose", value: visit.purpose },
+          {
+            label: "Check In",
+            value: formatDate(visit.checkInTime, "dd-MM-yyyy hh:mm a"),
+          },
+          {
+            label: "Check Out",
+            value: formatDate(visit.checkOutTime, "dd-MM-yyyy hh:mm a"),
+          },
+          { label: "Duration", value: `${visit.duration} hr` },
+          { label: "Address", value: visit.address },
+        ];
+
         return (
           <Fragment key={visit.visitId}>
-            <Circle center={position} radius={200} options={circleOptions} />
-            <Marker position={position} title={`Visit - ${visit.purpose}`} />
+            <Circle center={position} radius={100} options={circleOptions} />
+
+            <Marker
+              position={position}
+              onMouseOver={() => setHoveredVisitId(visit.visitId)}
+              onMouseOut={() => setHoveredVisitId(null)}
+            >
+              {hoveredVisitId === visit.visitId && (
+                <InfoWindow options={{ disableAutoPan: true }}>
+                  <div className="w-52 text-xs space-y-1.5">
+                    <p className="text-sm font-semibold">{visit.companyName}</p>
+                    <hr />
+
+                    {visitDetails.map(({ label, value }) => (
+                      <p key={label}>
+                        <span className="text-muted-foreground">{label} :</span>{" "}
+                        {value}
+                      </p>
+                    ))}
+                  </div>
+                </InfoWindow>
+              )}
+            </Marker>
           </Fragment>
         );
       })}
-
       <Polyline
         path={path}
         options={getPolylineOptions(isHighlighted)}
         onClick={() => setIsHighlighted(!isHighlighted)}
       />
+
+      {/* Hides the default Google Maps InfoWindow close button globally */}
+      <style>{`.gm-ui-hover-effect { display: none !important; }`}</style>
     </>
   );
 }
