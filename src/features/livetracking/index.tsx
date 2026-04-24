@@ -10,7 +10,7 @@ import { Main } from "@/components/layout/main";
 import { useGetAllRolesForDropdown } from "../UserManagement/services/Roles.hook";
 import { useGetAllTerritoriesForDropdown } from "../userterritory/services/user-territory.hook";
 import UserTrackingTimeline from "./user-livetracting-info";
-import UserPolylineMap, { VisitMarker } from "./components/UserPolylineMap";
+import UserPolylineMap from "./components/UserPolylineMap";
 import UserListMap from "./components/UserListMap";
 import {
   useGetUsers,
@@ -21,6 +21,7 @@ import { useSearch } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { socket, socketForVisit } from "@/socket/socket";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { VisitMarker } from "./types";
 
 // Assuming you have a Button component
 const AHMEDABAD_CENTER = { lat: 23.0225, lng: 72.5714 };
@@ -59,9 +60,9 @@ export default function Livetracking() {
     lat: number;
     lng: number;
   } | null>(null);
-  const [path, setPath] = useState<
-    ({ lat: number; lng: number; row?: any })[]
-  >([]);
+  const [path, setPath] = useState<{ lat: number; lng: number; row?: any }[]>(
+    [],
+  );
   const [visitMarkers, setVisitMarkers] = useState<VisitMarker[]>([]);
   const [mapCenter, setMapCenter] = useState<{
     lat: number;
