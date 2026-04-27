@@ -121,7 +121,7 @@ export default function UserPolylineMap({
             activeItem={activeItem}
             onMarkerClick={handleMarkerClick}
             onClose={closeInfoWindow}
-            infoTitle="Idle Record"
+            infoTitle="Idle Details"
             details={[
               { label: "Duration", value: idle.duration },
               { label: "From", value: formatDate(idle.startTime, "hh:mm a") },
@@ -143,8 +143,9 @@ export default function UserPolylineMap({
             activeItem={activeItem}
             onMarkerClick={handleMarkerClick}
             onClose={closeInfoWindow}
-            infoTitle={brk.type}
+            infoTitle={"Break Details"}
             details={[
+              { label: "Type", value: brk.type },
               { label: "From", value: formatDate(brk.startTime, "hh:mm a") },
               {
                 label: "To",
@@ -168,8 +169,9 @@ export default function UserPolylineMap({
           activeItem={activeItem}
           onMarkerClick={handleMarkerClick}
           onClose={closeInfoWindow}
-          infoTitle={visit.companyName}
+          infoTitle={"Visit Details"}
           details={[
+            { label: "Company", value: visit.companyName },
             { label: "Purpose", value: visit.purpose },
             {
               label: "Check-in",
@@ -203,6 +205,12 @@ export default function UserPolylineMap({
             : undefined
         }
       />
+      <style>{`
+        /* Custom styles for InfoWindow */
+        .gm-style-iw-ch {
+          font-weight: bold !important;
+        }
+      `}</style>
     </>
   );
 }
