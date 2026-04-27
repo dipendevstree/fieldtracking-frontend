@@ -178,15 +178,11 @@ export const BREAK_MARKER_ICON = createCircleMarkerIcon(MAP_COLORS.break);
 
 //  Generic Content Component for InfoWindow
 export const InfoWindowContent = ({
-  title,
   details,
 }: {
-  title: string;
   details: { label: string; value: string | number | undefined }[];
 }) => (
   <div className="w-52 text-xs space-y-1.5">
-    <p className="text-sm font-semibold">{title}</p>
-    <hr />
     {details.map((item, idx) => (
       <p key={idx}>
         <span className="text-muted-foreground">{item.label} :</span>{" "}

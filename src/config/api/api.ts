@@ -35,6 +35,7 @@ const API = {
     visitAnalytics: "visit/analytics",
     userTracking: "user-tracking/user",
     userList: "users/list",
+    idleData: "user-tracking/idletime",
   },
   WorkSession: {
     getWorkDaySession: "workDaySession/getSession",
