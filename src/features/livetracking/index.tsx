@@ -10,7 +10,7 @@ import { Main } from "@/components/layout/main";
 import { useGetAllRolesForDropdown } from "../UserManagement/services/Roles.hook";
 import { useGetAllTerritoriesForDropdown } from "../userterritory/services/user-territory.hook";
 import UserTrackingTimeline from "./user-livetracting-info";
-import UserPolylineMap, { VisitMarker } from "./components/UserPolylineMap";
+import UserPolylineMap from "./components/UserPolylineMap";
 import UserListMap from "./components/UserListMap";
 import {
   useGetUsers,
@@ -21,6 +21,7 @@ import { useSearch } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { socket, socketForVisit } from "@/socket/socket";
 import { useAuthStore } from "@/stores/use-auth-store";
+import { IdleMarker, VisitMarker, BreakMarker } from "./types";
 
 // Assuming you have a Button component
 const AHMEDABAD_CENTER = { lat: 23.0225, lng: 72.5714 };
@@ -59,10 +60,12 @@ export default function Livetracking() {
     lat: number;
     lng: number;
   } | null>(null);
-  const [path, setPath] = useState<
-    ({ lat: number; lng: number; row?: any })[]
-  >([]);
+  const [path, setPath] = useState<{ lat: number; lng: number; row?: any }[]>(
+    [],
+  );
   const [visitMarkers, setVisitMarkers] = useState<VisitMarker[]>([]);
+  const [breakMarkers, setBreakMarkers] = useState<BreakMarker[]>([]);
+  const [idleMarkers, setIdleMarkers] = useState<IdleMarker[]>([]);
   const [mapCenter, setMapCenter] = useState<{
     lat: number;
     lng: number;
@@ -172,6 +175,8 @@ export default function Livetracking() {
     setSelectedUserId("");
     setPath([]);
     setVisitMarkers([]);
+    setBreakMarkers([]);
+    setIdleMarkers([]);
     setCurrentPosition(null);
     updateMapCenterFromUserList(enhancedUserList);
     const newParams = new URLSearchParams(window.location.search);
@@ -236,6 +241,8 @@ export default function Livetracking() {
       setSelectedUserId("");
       setPath([]);
       setVisitMarkers([]);
+      setBreakMarkers([]);
+      setIdleMarkers([]);
       setCurrentPosition(null);
     } else {
       // If userId is present in URL, update selectedUserId
@@ -391,6 +398,9 @@ export default function Livetracking() {
         filters={filters}
         onCancelPress={() => {
           setSelectedUserId("");
+          setVisitMarkers([]);
+          setBreakMarkers([]);
+          setIdleMarkers([]);
           setPagination({
             page: DEFAULT_PAGE_NUMBER,
             limit: 15,
@@ -430,6 +440,8 @@ export default function Livetracking() {
                   setCurrentPosition={setCurrentPosition}
                   setMapCenter={setMapCenter}
                   setVisitMarkers={setVisitMarkers}
+                  setBreakMarkers={setBreakMarkers}
+                  setIdleMarkers={setIdleMarkers}
                   onBack={handleBackToList}
                 />
               ) : (
@@ -501,7 +513,7 @@ export default function Livetracking() {
                   key={selectedUserId}
                   mapContainerStyle={containerStyle}
                   center={mapCenter}
-                  zoom={15}
+                  zoom={12}
                   onLoad={(map) => {
                     mapRef.current = map;
                   }}
@@ -515,6 +527,8 @@ export default function Livetracking() {
                       selectedUser={selectedUser || enhancedSingleUser}
                       mapRef={mapRef}
                       visitMarkers={visitMarkers}
+                      breakMarkers={breakMarkers}
+                      idleMarkers={idleMarkers}
                     />
                   ) : (
                     <UserListMap

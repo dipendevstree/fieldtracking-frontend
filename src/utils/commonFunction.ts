@@ -243,6 +243,33 @@ export const formatWorkHours = (hours?: number | string): string => {
 };
 
 /**
+ * Convert minutes into HH:mm format.
+ *
+ * @param {number | string | undefined} minutes - Total minutes.
+ *
+ * Example:
+ *  - 150   => "02:30"
+ *  - 75    => "01:15"
+ *  - "45"  => "00:45"
+ *
+ * @returns {string} Formatted time string in "HH:mm".
+ *
+ * @description
+ * Designed for **duration formatting** (worked time, idle time, break time).
+ * Avoids timezone issues because it does not rely on Date objects.
+ */
+export const formatMinutesToHours = (minutes?: number | string): string => {
+  const value = Number(minutes);
+
+  if (!value) return "00:00";
+
+  const hh = String(Math.floor(value / 60)).padStart(2, "0");
+  const mm = String(value % 60).padStart(2, "0");
+
+  return `${hh}:${mm}`;
+};
+
+/**
  * Safely formats a status string for UI display.
  * Example: "in_progress" → "In Progress"
  */

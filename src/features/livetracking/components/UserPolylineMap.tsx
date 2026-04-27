@@ -1,64 +1,31 @@
-import { Fragment, useState } from "react";
-import { Marker, Polyline, Circle, InfoWindow } from "@react-google-maps/api";
+import { Fragment, useEffect, useState, useCallback, useMemo } from "react";
 import {
+  Marker,
+  Polyline,
+  Circle,
+  InfoWindow,
+  useGoogleMap,
+} from "@react-google-maps/api";
+import { formatDate } from "date-fns";
+import {
+  BREAK_MARKER_ICON,
+  visitOverCircleOptions,
+  DEBUG_MARKER_ICON,
   DEFAULT_COLORS,
   getStartPointMarkerIcon,
   getUserIconMarker,
+  IDLE_MARKER_ICON,
   isValidLatLng,
+  VISIT_MARKER_ICON,
+  getPolylineOptions,
+  InfoWindowContent,
 } from "../data/commonFunction";
-import { formatDate } from "date-fns";
+import { UserPolylineMapProps } from "../types";
 
-export interface VisitMarker {
-  visitId: string;
-  lat: number;
-  lng: number;
-  purpose: string;
-  companyName: string;
-  checkInTime: string;
-  checkOutTime: string;
-  duration: number;
-  address: string;
-}
-
-interface UserPolylineMapProps {
-  path: { lat: number; lng: number; row?: any }[];
-  currentPosition: { lat: number; lng: number } | null;
-  selectedUser: any;
-  mapRef: React.MutableRefObject<google.maps.Map | null>;
-  visitMarkers?: VisitMarker[];
-}
-
-const getPolylineOptions = (isHighlighted: boolean) => ({
-  strokeColor: isHighlighted ? DEFAULT_COLORS.active : DEFAULT_COLORS.normal,
-  strokeOpacity: 1,
-  strokeWeight: isHighlighted ? 6 : 3,
-  geodesic: true,
-  icons: [
-    {
-      icon: {
-        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-        fillColor: isHighlighted
-          ? DEFAULT_COLORS.active
-          : DEFAULT_COLORS.normal,
-        fillOpacity: 1,
-        strokeWeight: 1,
-        strokeColor: "#FFFFFF",
-        scale: 3,
-      },
-      offset: "0",
-      repeat: "100px",
-    },
-  ],
-});
-
-const circleOptions = {
-  fillColor: "#0096FF33",
-  fillOpacity: 0.35,
-  strokeWeight: 1,
-  strokeColor: "#0096FFB3",
-  clickable: false,
-  editable: false,
-  zIndex: 1,
+const MAP_CONFIG = {
+  showDebugPath: false,
+  showIdleMarkers: false,
+  showBreakMarkers: false,
 };
 
 export default function UserPolylineMap({
@@ -66,16 +33,48 @@ export default function UserPolylineMap({
   currentPosition,
   selectedUser,
   visitMarkers = [],
+  idleMarkers = [],
+  breakMarkers = [],
 }: UserPolylineMapProps) {
+  const map = useGoogleMap();
   const [isHighlighted, setIsHighlighted] = useState(false);
-  const [hoveredVisitId, setHoveredVisitId] = useState<string | null>(null);
+  const [activeItem, setActiveItem] = useState<{
+    id: string;
+    type: string;
+  } | null>(null);
 
-  const activeColor = isHighlighted
-    ? DEFAULT_COLORS.active
-    : DEFAULT_COLORS.normal;
+  const isDebugPathEnabled = MAP_CONFIG.showDebugPath;
+  const activeColor =
+    isDebugPathEnabled && isHighlighted
+      ? DEFAULT_COLORS.active
+      : DEFAULT_COLORS.normal;
+
+  // 1. Memoized Options
+  const polylineOptions = useMemo(
+    () => getPolylineOptions(isDebugPathEnabled && isHighlighted),
+    [isDebugPathEnabled, isHighlighted],
+  );
+
+  // 2. Memoized Event Handlers
+  const handleMarkerClick = useCallback(
+    (id: string, type: string, e: google.maps.MapMouseEvent) => {
+      if (e.stop) e.stop();
+      setActiveItem((prev) => (prev?.id === id ? null : { id, type }));
+    },
+    [],
+  );
+
+  const closeInfoWindow = useCallback(() => setActiveItem(null), []);
+
+  useEffect(() => {
+    if (!map) return;
+    const clickListener = map.addListener("click", closeInfoWindow);
+    return () => google.maps.event.removeListener(clickListener);
+  }, [map, closeInfoWindow]);
 
   return (
     <>
+      {/* 🏁 Start Point */}
       {path[0] && (
         <Marker
           position={path[0]}
@@ -83,92 +82,163 @@ export default function UserPolylineMap({
             selectedUser?.fullName || "",
             activeColor,
           )}
-          title={selectedUser?.fullName || ""}
+          zIndex={10}
         />
       )}
 
+      {/* 📍 Live Position */}
       {currentPosition && isValidLatLng(currentPosition) && (
         <Marker
           position={currentPosition}
           icon={getUserIconMarker(activeColor)}
           title="Live Position"
+          zIndex={100} // Always on top
         />
       )}
 
-      {/* 🟢 Path Points Markers (Debug info) - Visible only when highlighted */}
-      {isHighlighted &&
+      {/* Debug Markers (only shown when highlighed) */}
+      {isDebugPathEnabled &&
+        isHighlighted &&
         path.map((point, index) => (
           <Marker
-            key={`point-${index}`}
+            key={`debug-${index}`}
             position={point}
-            title={`ID: ${point.row?._id ?? index}${
-              point.row?.speed ? ` | Speed: ${point.row?.speed}` : ""
-            }${point.row?.date ? ` | Time: ${point.row?.date}` : ""}`}
-            icon={{
-              path: google.maps.SymbolPath.CIRCLE,
-              scale: 4,
-              fillColor: "#3b82f6",
-              fillOpacity: 1,
-              strokeWeight: 1,
-              strokeColor: "#ffffff",
-            }}
+            icon={DEBUG_MARKER_ICON}
+            zIndex={1}
+            title={`ID: ${point.row?._id ?? index}${point.row?.speed ? ` | Spd: ${point.row?.speed}` : ""}`}
           />
         ))}
 
-      {/* 🟣 Visit Markers and Geofence Radius */}
-      {visitMarkers.map((visit) => {
-        const position = { lat: visit.lat, lng: visit.lng };
+      {/* 🟠 Idle Markers */}
+      {MAP_CONFIG.showIdleMarkers &&
+        idleMarkers.map((idle) => (
+          <MapMarkerWithInfo
+            key={idle.id}
+            id={idle.id}
+            type="idle"
+            position={{ lat: idle.lat, lng: idle.lng }}
+            icon={IDLE_MARKER_ICON}
+            activeItem={activeItem}
+            onMarkerClick={handleMarkerClick}
+            onClose={closeInfoWindow}
+            infoTitle="Idle Record"
+            details={[
+              { label: "Duration", value: idle.duration },
+              { label: "From", value: formatDate(idle.startTime, "hh:mm a") },
+              { label: "To", value: formatDate(idle.endTime, "hh:mm a") },
+              { label: "Address", value: idle.address },
+            ]}
+          />
+        ))}
 
-        const visitDetails = [
-          { label: "Purpose", value: visit.purpose },
-          {
-            label: "Check In",
-            value: formatDate(visit.checkInTime, "dd-MM-yyyy hh:mm a"),
-          },
-          {
-            label: "Check Out",
-            value: formatDate(visit.checkOutTime, "dd-MM-yyyy hh:mm a"),
-          },
-          { label: "Duration", value: `${visit.duration} hr` },
-          { label: "Address", value: visit.address },
-        ];
+      {/* 🟡 Break Markers */}
+      {MAP_CONFIG.showBreakMarkers &&
+        breakMarkers.map((brk) => (
+          <MapMarkerWithInfo
+            key={brk.id}
+            id={brk.id}
+            type="break"
+            position={{ lat: brk.lat, lng: brk.lng }}
+            icon={BREAK_MARKER_ICON}
+            activeItem={activeItem}
+            onMarkerClick={handleMarkerClick}
+            onClose={closeInfoWindow}
+            infoTitle={brk.type}
+            details={[
+              { label: "From", value: formatDate(brk.startTime, "hh:mm a") },
+              {
+                label: "To",
+                value: brk.endTime
+                  ? formatDate(brk.endTime, "hh:mm a")
+                  : "Ongoing",
+              },
+              { label: "Address", value: brk.address },
+            ]}
+          />
+        ))}
 
-        return (
-          <Fragment key={visit.visitId}>
-            <Circle center={position} radius={100} options={circleOptions} />
+      {/* 🔵 Visit Markers */}
+      {visitMarkers.map((visit) => (
+        <MapMarkerWithInfo
+          key={visit.visitId}
+          id={visit.visitId}
+          type="visit"
+          position={{ lat: visit.lat, lng: visit.lng }}
+          icon={VISIT_MARKER_ICON}
+          activeItem={activeItem}
+          onMarkerClick={handleMarkerClick}
+          onClose={closeInfoWindow}
+          infoTitle={visit.companyName}
+          details={[
+            { label: "Purpose", value: visit.purpose },
+            {
+              label: "Check-in",
+              value: formatDate(visit.checkInTime, "dd-MM-yyyy hh:mm a"),
+            },
+            {
+              label: "Check-out",
+              value: formatDate(visit.checkOutTime, "dd-MM-yyyy hh:mm a"),
+            },
+            { label: "Duration", value: `${visit.duration} hr` },
+            { label: "Address", value: visit.address },
+          ]}
+        >
+          <Circle
+            center={{ lat: visit.lat, lng: visit.lng }}
+            radius={100}
+            options={visitOverCircleOptions}
+          />
+        </MapMarkerWithInfo>
+      ))}
 
-            <Marker
-              position={position}
-              onMouseOver={() => setHoveredVisitId(visit.visitId)}
-              onMouseOut={() => setHoveredVisitId(null)}
-            >
-              {hoveredVisitId === visit.visitId && (
-                <InfoWindow options={{ disableAutoPan: true }}>
-                  <div className="w-52 text-xs space-y-1.5">
-                    <p className="text-sm font-semibold">{visit.companyName}</p>
-                    <hr />
-
-                    {visitDetails.map(({ label, value }) => (
-                      <p key={label}>
-                        <span className="text-muted-foreground">{label} :</span>{" "}
-                        {value}
-                      </p>
-                    ))}
-                  </div>
-                </InfoWindow>
-              )}
-            </Marker>
-          </Fragment>
-        );
-      })}
       <Polyline
         path={path}
-        options={getPolylineOptions(isHighlighted)}
-        onClick={() => setIsHighlighted(!isHighlighted)}
+        options={polylineOptions}
+        onClick={
+          isDebugPathEnabled
+            ? () => {
+                setIsHighlighted(!isHighlighted);
+                closeInfoWindow();
+              }
+            : undefined
+        }
       />
-
-      {/* Hides the default Google Maps InfoWindow close button globally */}
-      <style>{`.gm-ui-hover-effect { display: none !important; }`}</style>
     </>
+  );
+}
+
+// Internal Helper to keep things DRY
+function MapMarkerWithInfo({
+  id,
+  type,
+  position,
+  icon,
+  activeItem,
+  onMarkerClick,
+  onClose,
+  infoTitle,
+  details,
+  children,
+  zIndex = 5,
+}: any) {
+  return (
+    <Fragment>
+      {children}
+      <Marker
+        position={position}
+        icon={icon}
+        onClick={(e) => onMarkerClick(id, type, e)}
+        zIndex={zIndex}
+      >
+        {activeItem?.id === id && activeItem.type === type && (
+          <InfoWindow
+            onCloseClick={onClose}
+            options={{ headerContent: infoTitle }}
+          >
+            <InfoWindowContent details={details} />
+          </InfoWindow>
+        )}
+      </Marker>
+    </Fragment>
   );
 }

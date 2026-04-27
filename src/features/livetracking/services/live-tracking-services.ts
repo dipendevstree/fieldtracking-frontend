@@ -59,7 +59,7 @@ export const getWorkDaySession = (userId: string, date: string) => {
 export const useVisitAnalytics = (
   userId: string,
   startDate: string,
-  endDate: string
+  endDate: string,
 ) => {
   const enabled = Boolean(userId && startDate && endDate);
 
@@ -86,7 +86,7 @@ export const useVisitAnalytics = (
 export const useFetchLiveTrackingData = (
   userId: string,
   startDate: string,
-  endDate: string
+  endDate: string,
 ) => {
   const enabled = !!userId && !!startDate && !!endDate;
 
@@ -146,6 +146,28 @@ export const useGetUsers = (params: any = {}) => {
     ...query,
     data: query.data,
     listData: query.data?.list ?? [],
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
+export const useGetIdleData = (
+  params: any,
+  options?: { enabled?: boolean },
+) => {
+  const query = useFetchLiveData<any>({
+    url: `${API.liveTracking.idleData}/${params.userId}`,
+    params: {
+      startDate: params.startDate,
+      endDate: params.endDate,
+    },
+    enabled: options?.enabled ?? true,
+  });
+  return {
+    ...query,
+    data: query.data,
+    allVisit: query.data?.list ?? [],
     totalCount: query.data?.totalCount ?? 0,
     isLoading: query.isLoading,
     error: query.error,
