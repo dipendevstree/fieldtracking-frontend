@@ -15,21 +15,23 @@ import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 
 const activityNotifications = [
-  "Notify me when the Sales Rep reaches to the visit location",
+  "Notify me when the Sales Rep goes idle for a long time",
   "Notify me when the Sales Rep's check-in is delayed beyond the scheduled time.",
   "Notify me when the Sales Rep is not able to complete the visit on-time",
   "Notify me when the Sales Rep submits the Expenses",
-  "Notify me when a New Customer or Bulk Customers Upload is added in the system",
   "Notify me when a Visit is rescheduled, cancelled or assigned another Sales Rep",
+  // "Notify me when the Sales Rep reaches to the visit location",
+  // "Notify me when a New Customer or Bulk Customers Upload is added in the system",
 ] as const;
 
 const activityNotificationsApiKeys = [
-  "notifyWhenSalesRepReachesVisitLocation",
+  "notifyWhenSalesRepIsIdle",
   "notifyWhenSalesRepCheckInDelayedBeyondScheduledTime",
   "notifyWhenSalesRepNotAbleToCompleteVisitOnTime",
   "notifyWhenSalesRepSubmitsExpenses",
-  "notifyWhenNewOrBulkCustomersAdded",
   "notifyWhenVisitRescheduledCancelledOrReassigned",
+  // "notifyWhenSalesRepReachesVisitLocation",
+  // "notifyWhenNewOrBulkCustomersAdded",
 ] as const;
 
 const schema = z.object({

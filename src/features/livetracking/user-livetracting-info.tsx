@@ -507,7 +507,7 @@ const UserTrackingTimeline = ({
         location: session.dayStartAddress ?? "Location not provided",
         time: format(new Date(session.startTime), "hh:mm a"),
         rawTime: new Date(session.startTime).getTime(),
-        color: "bg-teal-500",
+        color: "bg-green-500",
       });
 
       // Visits
@@ -664,7 +664,7 @@ const UserTrackingTimeline = ({
       </div>
 
       {/* Main Content Card */}
-      <div className="mb-6 rounded-lg border border-gray-200 bg-white shadow-sm">
+      <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
         {/* User Info */}
         <div className="border-b border-gray-100 p-4">
           <div className="flex items-center gap-3">
