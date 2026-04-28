@@ -35,7 +35,6 @@ const API = {
     visitAnalytics: "visit/analytics",
     userTracking: "user-tracking/user",
     userList: "users/list",
-    idleData: "user-tracking/idletime",
   },
   WorkSession: {
     getWorkDaySession: "workDaySession/getSession",
@@ -43,6 +42,7 @@ const API = {
     endWorkDaySession: "workDaySession/end",
     startBreakSession: "workBreakSession/start",
     endBreakSession: "workBreakSession/end",
+    idleData: "workDaySession/idleTime",
   },
   customerType: {
     list: "customerType/list",
