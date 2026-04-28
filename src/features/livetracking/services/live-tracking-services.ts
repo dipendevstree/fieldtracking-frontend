@@ -156,8 +156,8 @@ export const useGetIdleData = (
   params: any,
   options?: { enabled?: boolean },
 ) => {
-  const query = useFetchLiveData<any>({
-    url: `${API.liveTracking.idleData}/${params.userId}`,
+  const query = useFetchData<any>({
+    url: `${API.WorkSession.idleData}/${params.userId}`,
     params: {
       startDate: params.startDate,
       endDate: params.endDate,
