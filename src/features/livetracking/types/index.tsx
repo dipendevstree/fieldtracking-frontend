@@ -55,3 +55,28 @@ export interface UserPolylineMapProps {
   breakMarkers?: BreakMarker[];
   idleMarkers?: IdleMarker[];
 }
+
+export interface MapMarkerWithInfoProps {
+  id: string;
+  type: string;
+  position: google.maps.LatLngLiteral;
+  icon: any;
+  activeItem: { id: string; type: string } | null;
+  onMarkerClick: (
+    id: string,
+    type: string,
+    e: google.maps.MapMouseEvent,
+  ) => void;
+  onClose: () => void;
+  infoTitle: string;
+  details: { label: string; value: string }[];
+  children?: React.ReactNode;
+  zIndex?: number;
+}
+
+export type PathPoint = { lat: number; lng: number; row?: any };
+
+export interface VisitSegment {
+  label: string;
+  path: PathPoint[];
+}

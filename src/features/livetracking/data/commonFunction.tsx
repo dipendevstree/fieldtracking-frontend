@@ -1,11 +1,12 @@
+import { PathPoint, UserPolylineMapProps, VisitSegment } from "../types";
+
 export const DEFAULT_COLORS = {
-  active: "#818CF8",
   normal: "#00AD34",
   danger: "#FF7979",
 };
 
 export const MAP_COLORS = {
-  debug: "#818CF8",
+  debug: "#FF0000",
   idle: "#F59E0B",
   visit: "#60A5FA",
   break: "#FACC15",
@@ -125,7 +126,7 @@ export function getStartPointMarkerIcon(
 
 // Generate polyline options
 export const getPolylineOptions = (isHighlighted: boolean) => ({
-  strokeColor: isHighlighted ? DEFAULT_COLORS.active : DEFAULT_COLORS.normal,
+  strokeColor: isHighlighted ? MAP_COLORS.visit : DEFAULT_COLORS.normal,
   strokeOpacity: 1,
   strokeWeight: isHighlighted ? 6 : 3,
   geodesic: true,
@@ -133,9 +134,7 @@ export const getPolylineOptions = (isHighlighted: boolean) => ({
     {
       icon: {
         path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-        fillColor: isHighlighted
-          ? DEFAULT_COLORS.active
-          : DEFAULT_COLORS.normal,
+        fillColor: isHighlighted ? MAP_COLORS.visit : DEFAULT_COLORS.normal,
         fillOpacity: 1,
         strokeWeight: 1,
         strokeColor: "#FFFFFF",
@@ -167,7 +166,7 @@ const createCircleMarkerIcon = (
   scale,
   fillColor,
   fillOpacity: 1,
-  strokeWeight: 2,
+  strokeWeight: 1,
   strokeColor,
 });
 
@@ -191,3 +190,50 @@ export const InfoWindowContent = ({
     ))}
   </div>
 );
+
+export function buildVisitSegments(
+  visitMarkers: UserPolylineMapProps["visitMarkers"],
+  path: PathPoint[],
+): VisitSegment[] {
+  if (!visitMarkers?.length) return [];
+
+  const sorted = [...visitMarkers].sort(
+    (a, b) =>
+      new Date(a.checkInTime).getTime() - new Date(b.checkInTime).getTime(),
+  );
+
+  const byTime = (from: number, to: number) =>
+    path.filter((p) => {
+      const t = new Date(p.row?.date).getTime();
+      return t >= from && t <= to;
+    });
+
+  const segments: VisitSegment[] = [];
+  const START = 0;
+  const END = Infinity;
+
+  // Start → Visit 1
+  segments.push({
+    label: `Start → ${sorted[0].companyName ?? "Visit 1"}`,
+    path: byTime(START, new Date(sorted[0].checkInTime).getTime()),
+  });
+
+  // Visit i → Visit i+1
+  for (let i = 0; i < sorted.length - 1; i++) {
+    segments.push({
+      label: `${sorted[i].companyName ?? `Visit ${i + 1}`} → ${sorted[i + 1].companyName ?? `Visit ${i + 2}`}`,
+      path: byTime(
+        new Date(sorted[i].checkOutTime).getTime(),
+        new Date(sorted[i + 1].checkInTime).getTime(),
+      ),
+    });
+  }
+
+  // Last visit → End
+  segments.push({
+    label: `${sorted.at(-1)!.companyName ?? "Last Visit"} → End`,
+    path: byTime(new Date(sorted.at(-1)!.checkOutTime).getTime(), END),
+  });
+
+  return segments;
+}
