@@ -44,7 +44,7 @@ export function SimpleDatePicker({
           className={cn(
             "w-[415px] pl-3 text-left font-normal",
             !date && "text-muted-foreground",
-            className
+            className,
           )}
         >
           {date ? format(new Date(date), "PPP") : <span>Pick a date</span>}
@@ -55,6 +55,7 @@ export function SimpleDatePicker({
         <Calendar
           mode="single"
           selected={parsedDate}
+          defaultMonth={parsedDate}
           onSelect={handleSelect}
           disabled={(date) => {
             // 3. Normalized logic to handle both Past and Future
