@@ -28,17 +28,17 @@ export default function BulkImport() {
   // Define the new CSV headers
   const csvHeaders = [
     { label: "Company Name*", key: "companyName" },
-    { label: "Industry Name*", key: "industryName" },
     { label: "Customer Type Name*", key: "customerTypeName" },
-    { label: "Street Address*", key: "address" },
-    { label: "City*", key: "city" },
-    { label: "State*", key: "state" },
-    { label: "Zip Code*", key: "zipCode" },
-    { label: "Country*", key: "country" },
+    { label: "Industry Name", key: "industryName" },
+    { label: "Street Address", key: "address" },
+    { label: "City", key: "city" },
+    { label: "State", key: "state" },
+    { label: "Zip Code", key: "zipCode" },
+    { label: "Country", key: "country" },
     { label: "Additional Notes", key: "notes" },
     { label: "Primary Contact Name*", key: "primaryContactName" },
     { label: "Primary Contact Email*", key: "primaryContactEmail" },
-    { label: "Primary Contact Phone*", key: "primaryContactPhone" },
+    { label: "Primary Contact Phone", key: "primaryContactPhone" },
     { label: "Primary Contact Designation", key: "primaryContactDesignation" },
     { label: "Primary Assigned Sales Rep Name", key: "primaryAssignedRepName" },
     { label: "Secondary Contact Name", key: "secondaryContactName" },
@@ -84,7 +84,7 @@ export default function BulkImport() {
       setUploadResult(data);
       setSelectedFile(null);
     },
-    (_error) => { }
+    (_error) => {},
   );
 
   const handleFileChange = (file: File) => {
@@ -199,12 +199,20 @@ export default function BulkImport() {
 
           {/* Results (same as your code) */}
           {uploadResult && (
-            <Alert className={`bg-${uploadResult.errors?.length > 0 ? 'red': (uploadResult?.warnings?.length > 0 ? 'yellow' : 'green')}-50 border-${uploadResult.errors?.length > 0 ? 'red': (uploadResult?.warnings?.length > 0 ? 'yellow' : 'green')}-200`}>
-              <FileCheck2 className={`h-4 w-4 text-${uploadResult.errors?.length > 0 ? 'red': (uploadResult?.warnings?.length > 0 ? 'yellow' : 'green')}-600`} />
-              <AlertTitle className={`text-${uploadResult.errors?.length > 0 ? 'red': (uploadResult?.warnings?.length > 0 ? 'yellow' : 'green')}-800`}>
+            <Alert
+              className={`bg-${uploadResult.errors?.length > 0 ? "red" : uploadResult?.warnings?.length > 0 ? "yellow" : "green"}-50 border-${uploadResult.errors?.length > 0 ? "red" : uploadResult?.warnings?.length > 0 ? "yellow" : "green"}-200`}
+            >
+              <FileCheck2
+                className={`h-4 w-4 text-${uploadResult.errors?.length > 0 ? "red" : uploadResult?.warnings?.length > 0 ? "yellow" : "green"}-600`}
+              />
+              <AlertTitle
+                className={`text-${uploadResult.errors?.length > 0 ? "red" : uploadResult?.warnings?.length > 0 ? "yellow" : "green"}-800`}
+              >
                 Upload Processed
               </AlertTitle>
-              <AlertDescription className={`text-${uploadResult.errors?.length > 0 ? 'red': (uploadResult?.warnings?.length > 0 ? 'yellow' : 'green')}-700`}>
+              <AlertDescription
+                className={`text-${uploadResult.errors?.length > 0 ? "red" : uploadResult?.warnings?.length > 0 ? "yellow" : "green"}-700`}
+              >
                 <p>Successfully imported: {uploadResult.successCount}</p>
                 <p>Failed rows: {uploadResult.errorCount}</p>
                 {uploadResult.warnings?.length > 0 && (

@@ -40,23 +40,23 @@ import { useCreateCustomer } from "../services/Customers.hook";
 import type { CreateCustomerPayload } from "../services/Customers.hook";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import LocationPicker from "./LocationPicker";
-import { formatDropDownLabel } from "@/utils/commonFunction";
+import { formatDropDownLabel, sanitizePayload } from "@/utils/commonFunction";
 import { useUnsavedChanges } from "@/hooks/use-unsaved-changes";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 
 // Define Zod schema
 const customerFormSchema = z.object({
   companyName: z.string().min(1, "Company Name is required"),
-  industry: z.string().min(1, "Industry is required"),
+  industry: z.string().optional().or(z.literal("")),
   customerType: z.string().min(1, "Customer Type is required"),
-  address: z.string().min(1, "Street Address is required"),
-  city: z.string().min(1, "City is required"),
-  state: z.string().min(1, "State is required"),
-  zipCode: z.string().min(1, "Zip Code is required"),
-  country: z.string().min(1, "Country is required"),
+  address: z.string().optional().or(z.literal("")),
+  city: z.string().optional().or(z.literal("")),
+  state: z.string().optional().or(z.literal("")),
+  zipCode: z.string().optional().or(z.literal("")),
+  country: z.string().optional().or(z.literal("")),
   notes: z.string().optional(),
-  latitude: z.number().min(1, "Latitude is required"),
-  longitude: z.number().min(1, "Longitude is required"),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
   contacts: z
     .array(
       z.object({
@@ -68,8 +68,12 @@ const customerFormSchema = z.object({
           .min(1, "Email is required"),
         phone: z
           .string()
-          .min(1, "Phone Number is required")
-          .regex(/^\d{10}$/, "Phone number must be exactly 10 digits"),
+          .optional()
+          .or(z.literal(""))
+          .refine(
+            (val) => !val || /^\d{10}$/.test(val),
+            "Phone number must be exactly 10 digits",
+          ),
         designation: z
           .string()
           .regex(/^[a-zA-Z\s]*$/, "Designation must only contain characters")
@@ -225,17 +229,17 @@ export default function AddCustomerPage({
     if (isEditMode && customer) {
       // a. Map the API data to the form's schema
       const formValues: TCustomerFormSchema = {
-        companyName: customer.companyName,
-        industry: customer.industryId,
-        customerType: customer.customerTypeId,
-        address: customer.streetAddress,
-        city: customer.city,
-        state: customer.state,
-        country: customer.country,
+        companyName: customer.companyName || "",
+        industry: customer.industryId || "",
+        customerType: customer.customerTypeId || "",
+        address: customer.streetAddress || "",
+        city: customer.city || "",
+        state: customer.state || "",
+        country: customer.country || "",
         zipCode: String(customer.zipCode || ""), // Zod schema expects string
         notes: customer.additionalNotes || "",
-        latitude: customer.latitude,
-        longitude: customer.longitude,
+        latitude: customer.latitude ?? undefined,
+        longitude: customer.longitude ?? undefined,
         contacts:
           customer.customerContacts?.map((contact: any) => {
             const contactId = contact.customerContactId || Date.now(); // Use real ID or generate one
@@ -248,11 +252,11 @@ export default function AddCustomerPage({
             }
             return {
               id: contactId, // useFieldArray needs a unique id
-              name: contact.customerName,
-              email: contact.email,
-              phone: contact.phoneNumber,
+              name: contact.customerName || "",
+              email: contact.email || "",
+              phone: contact.phoneNumber || "",
               designation: contact.designation || "",
-              isPrimary: contact.isPrimary,
+              isPrimary: !!contact.isPrimary,
               userRole: contact.assignUser?.roleId || "",
               assignedRep: contact.assignUserId || "",
             };
@@ -334,7 +338,7 @@ export default function AddCustomerPage({
       const firstPrimaryContact = primaryContacts[0]; // Use first primary for main phone number
 
       // Prepare API payload
-      const payload: CreateCustomerPayload = {
+      const payload: CreateCustomerPayload = sanitizePayload({
         companyName: data.companyName,
         phoneNumber: firstPrimaryContact.phone,
         industryId: data.industry,
@@ -355,7 +359,7 @@ export default function AddCustomerPage({
           isPrimary: contact.isPrimary,
           assignUserId: contact.assignedRep || null,
         })),
-      };
+      });
 
       // Call the mutation
       if (isEditMode) {
@@ -499,60 +503,7 @@ export default function AddCustomerPage({
                             </p>
                           )}
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="industry">
-                            Industry <span className="text-red-500">*</span>
-                          </Label>
-                          <Controller
-                            name="industry"
-                            control={control}
-                            render={({ field }) => (
-                              <Select
-                                value={field.value || ""}
-                                onValueChange={(val) => {
-                                  if (val) {
-                                    field.onChange(val);
-                                  }
-                                }}
-                              >
-                                <SelectTrigger
-                                  className="w-full max-w-m"
-                                  id="industry"
-                                >
-                                  <SelectValue placeholder="Select Industry" />
-                                </SelectTrigger>
-                                <SelectContent
-                                  id="industry-content"
-                                  className="!w-full"
-                                >
-                                  {industryOptions.length > 0 ? (
-                                    industryOptions.map((option) => (
-                                      <SelectItem
-                                        key={option.value}
-                                        value={String(option.value)}
-                                      >
-                                        {option.label}
-                                      </SelectItem>
-                                    ))
-                                  ) : (
-                                    <div className="px-4 py-2 text-gray-500">
-                                      No industries found
-                                    </div>
-                                  )}
-                                </SelectContent>
-                              </Select>
-                            )}
-                          />
-                          {errors.industry && (
-                            <p
-                              id="industry-error"
-                              className="flex items-center gap-1 text-xs text-red-500"
-                            >
-                              <AlertCircle className="h-3 w-3" />
-                              {errors.industry.message}
-                            </p>
-                          )}
-                        </div>
+
                         <div className="space-y-2">
                           <Label htmlFor="customerType">
                             Customer Type
@@ -615,6 +566,59 @@ export default function AddCustomerPage({
                         </div>
 
                         <div className="space-y-2">
+                          <Label htmlFor="industry">Industry</Label>
+                          <Controller
+                            name="industry"
+                            control={control}
+                            render={({ field }) => (
+                              <Select
+                                value={field.value || ""}
+                                onValueChange={(val) => {
+                                  if (val) {
+                                    field.onChange(val);
+                                  }
+                                }}
+                              >
+                                <SelectTrigger
+                                  className="w-full max-w-m"
+                                  id="industry"
+                                >
+                                  <SelectValue placeholder="Select Industry" />
+                                </SelectTrigger>
+                                <SelectContent
+                                  id="industry-content"
+                                  className="!w-full"
+                                >
+                                  {industryOptions.length > 0 ? (
+                                    industryOptions.map((option) => (
+                                      <SelectItem
+                                        key={option.value}
+                                        value={String(option.value)}
+                                      >
+                                        {option.label}
+                                      </SelectItem>
+                                    ))
+                                  ) : (
+                                    <div className="px-4 py-2 text-gray-500">
+                                      No industries found
+                                    </div>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            )}
+                          />
+                          {errors.industry && (
+                            <p
+                              id="industry-error"
+                              className="flex items-center gap-1 text-xs text-red-500"
+                            >
+                              <AlertCircle className="h-3 w-3" />
+                              {errors.industry.message}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="space-y-2">
                           <Label htmlFor="notes">Additional Notes</Label>
                           <Controller
                             name="notes"
@@ -672,10 +676,7 @@ export default function AddCustomerPage({
                           </RadioGroup>
                         </div>
                         <div className="space-y-2">
-                          <Label>
-                            Find Location
-                            <span className="text-red-500">*</span>
-                          </Label>
+                          <Label>Find Location</Label>
                           {locationInputMode === "search" ? (
                             <Input
                               type="text"
@@ -710,10 +711,7 @@ export default function AddCustomerPage({
                         </div>
 
                         <div className="space-y-2 col-span-2">
-                          <Label>
-                            Street Address
-                            <span className="text-red-500">*</span>
-                          </Label>
+                          <Label>Street Address</Label>
                           <Controller
                             name="address"
                             control={control}
@@ -738,9 +736,7 @@ export default function AddCustomerPage({
                         </div>
 
                         <div className="space-y-2">
-                          <Label htmlFor="city">
-                            City <span className="text-red-500">*</span>
-                          </Label>
+                          <Label htmlFor="city">City</Label>
                           <Controller
                             name="city"
                             control={control}
@@ -766,10 +762,7 @@ export default function AddCustomerPage({
                           )}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="state">
-                            State/Province
-                            <span className="text-red-500">*</span>
-                          </Label>
+                          <Label htmlFor="state">State/Province</Label>
                           <Controller
                             name="state"
                             control={control}
@@ -795,10 +788,7 @@ export default function AddCustomerPage({
                           )}
                         </div>
                         <div className="space-y-2">
-                          <Label htmlFor="zipCode">
-                            ZIP/Postal Code
-                            <span className="text-red-500">*</span>
-                          </Label>
+                          <Label htmlFor="zipCode">ZIP/Postal Code</Label>
                           <Controller
                             name="zipCode"
                             control={control}
@@ -824,9 +814,7 @@ export default function AddCustomerPage({
                           )}
                         </div>
                         <div className="space-y-3">
-                          <Label htmlFor="country">
-                            Country <span className="text-red-500">*</span>
-                          </Label>
+                          <Label htmlFor="country">Country</Label>
                           <Controller
                             name="country"
                             control={control}
@@ -1148,6 +1136,39 @@ export default function AddCustomerPage({
                                   </p>
                                 )}
                               </div>
+
+                              <div className="space-y-2">
+                                <Label htmlFor={`contact-email-${index}`}>
+                                  Email Address
+                                  <span className="text-red-500">*</span>
+                                </Label>
+                                <Controller
+                                  name={`contacts.${index}.email`}
+                                  control={control}
+                                  render={({ field }) => (
+                                    <Input
+                                      {...field}
+                                      id={`contact-email-${index}`}
+                                      type="email"
+                                      placeholder="Enter Email Address"
+                                      aria-describedby={
+                                        errors.contacts?.[index]?.email
+                                          ? `contact-email-${index}-error`
+                                          : undefined
+                                      }
+                                    />
+                                  )}
+                                />
+                                {errors.contacts?.[index]?.email && (
+                                  <p
+                                    id={`contact-email-${index}-error`}
+                                    className="flex items-center gap-1 text-xs text-red-500"
+                                  >
+                                    <AlertCircle className="h-3 w-3" />
+                                    {errors.contacts[index].email.message}
+                                  </p>
+                                )}
+                              </div>
                               <div className="space-y-2">
                                 <Label htmlFor={`contact-designation-${index}`}>
                                   Designation
@@ -1186,41 +1207,8 @@ export default function AddCustomerPage({
                                 )}
                               </div>
                               <div className="space-y-2">
-                                <Label htmlFor={`contact-email-${index}`}>
-                                  Email Address
-                                  <span className="text-red-500">*</span>
-                                </Label>
-                                <Controller
-                                  name={`contacts.${index}.email`}
-                                  control={control}
-                                  render={({ field }) => (
-                                    <Input
-                                      {...field}
-                                      id={`contact-email-${index}`}
-                                      type="email"
-                                      placeholder="Enter Email Address"
-                                      aria-describedby={
-                                        errors.contacts?.[index]?.email
-                                          ? `contact-email-${index}-error`
-                                          : undefined
-                                      }
-                                    />
-                                  )}
-                                />
-                                {errors.contacts?.[index]?.email && (
-                                  <p
-                                    id={`contact-email-${index}-error`}
-                                    className="flex items-center gap-1 text-xs text-red-500"
-                                  >
-                                    <AlertCircle className="h-3 w-3" />
-                                    {errors.contacts[index].email.message}
-                                  </p>
-                                )}
-                              </div>
-                              <div className="space-y-2">
                                 <Label htmlFor={`contact-phone-${index}`}>
                                   Phone Number
-                                  <span className="text-red-500">*</span>
                                 </Label>
 
                                 <Controller

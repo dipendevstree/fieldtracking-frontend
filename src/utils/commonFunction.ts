@@ -243,6 +243,33 @@ export const formatWorkHours = (hours?: number | string): string => {
 };
 
 /**
+ * Convert minutes into HH:mm format.
+ *
+ * @param {number | string | undefined} minutes - Total minutes.
+ *
+ * Example:
+ *  - 150   => "02:30"
+ *  - 75    => "01:15"
+ *  - "45"  => "00:45"
+ *
+ * @returns {string} Formatted time string in "HH:mm".
+ *
+ * @description
+ * Designed for **duration formatting** (worked time, idle time, break time).
+ * Avoids timezone issues because it does not rely on Date objects.
+ */
+export const formatMinutesToHours = (minutes?: number | string): string => {
+  const value = Number(minutes);
+
+  if (!value) return "00:00";
+
+  const hh = String(Math.floor(value / 60)).padStart(2, "0");
+  const mm = String(value % 60).padStart(2, "0");
+
+  return `${hh}:${mm}`;
+};
+
+/**
  * Safely formats a status string for UI display.
  * Example: "in_progress" → "In Progress"
  */
@@ -290,4 +317,131 @@ export function formatDistanceKm(
   }
 
   return `${numericDistance.toFixed(precision)} Km`;
+}
+
+/**
+ * Recursively removes empty values from payload.
+ *
+ * Removes:
+ * - undefined
+ * - null
+ * - ""
+ *
+ * Keeps valid values:
+ * - 0
+ * - false
+ * - Date
+ * - File
+ * - Blob
+ *
+ * Immutable: does NOT mutate original object
+ */
+export function sanitizePayload<T>(payload: T): T {
+  if (Array.isArray(payload)) {
+    return payload
+      .map((item) => sanitizePayload(item))
+      .filter(
+        (item) =>
+          item !== undefined &&
+          item !== null &&
+          item !== "" &&
+          !(
+            typeof item === "object" &&
+            !Array.isArray(item) &&
+            Object.keys(item).length === 0
+          ),
+      ) as unknown as T;
+  }
+
+  if (
+    typeof payload === "object" &&
+    payload !== null &&
+    !(payload instanceof Date) &&
+    !(payload instanceof File) &&
+    !(payload instanceof Blob)
+  ) {
+    const result: Record<string, any> = {};
+
+    Object.entries(payload).forEach(([key, value]) => {
+      const cleaned = sanitizePayload(value);
+
+      if (cleaned !== undefined && cleaned !== null && cleaned !== "") {
+        result[key] = cleaned;
+      }
+    });
+
+    return result as T;
+  }
+
+  return payload;
+}
+
+/**
+ * Device information returned by getDeviceInfo()
+ */
+export interface DeviceInfo {
+  appVersion: string;
+  modelName: string;
+  platform: string;
+  platformVersion: string;
+}
+
+let cachedDeviceInfo: DeviceInfo | null = null;
+
+/**
+ * Get client device information from the browser.
+ * Uses User-Agent Client Hints when available with fallback to legacy APIs.
+ *
+ * Cached after first execution to avoid repeated browser calls.
+ *
+ * @returns {Promise<DeviceInfo>} Resolved device information
+ */
+
+export async function getDeviceInfo(): Promise<DeviceInfo> {
+  if (cachedDeviceInfo) return cachedDeviceInfo;
+
+  const nav: any = navigator;
+  const ua = nav.userAgent;
+
+  let platform = "Unknown";
+  let platformVersion = "";
+  let modelName = "";
+
+  // Detect platform
+  if (/android/i.test(ua)) {
+    platform = "Android";
+    modelName = "Android Device";
+  } else if (/iPhone|iPad|iPod/.test(ua)) {
+    platform = "iOS";
+    modelName = /iPhone/.test(ua) ? "iPhone" : "iPad";
+  } else if (/Macintosh/i.test(ua)) {
+    platform = "macOS";
+  } else if (/Windows/i.test(ua)) {
+    platform = "Windows";
+  } else if (/Linux/i.test(ua)) {
+    platform = "Linux";
+  }
+
+  // Modern API
+  if (nav.userAgentData?.getHighEntropyValues) {
+    try {
+      const hints = await nav.userAgentData.getHighEntropyValues([
+        "platformVersion",
+        "model",
+      ]);
+
+      platform = nav.userAgentData.platform || platform;
+      platformVersion = hints.platformVersion || "";
+      modelName = hints.model || modelName;
+    } catch {}
+  }
+
+  cachedDeviceInfo = {
+    appVersion: import.meta.env.VITE_APP_VERSION,
+    modelName,
+    platform,
+    platformVersion,
+  };
+
+  return cachedDeviceInfo;
 }

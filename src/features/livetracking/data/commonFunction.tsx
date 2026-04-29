@@ -1,9 +1,53 @@
+import { PathPoint, UserPolylineMapProps, VisitSegment } from "../types";
+
 export const DEFAULT_COLORS = {
-  active: "#007BFF",
   normal: "#00AD34",
   danger: "#FF7979",
 };
 
+export const MAP_COLORS = {
+  debug: "#FF0000",
+  idle: "#F59E0B",
+  visit: "#60A5FA",
+  break: "#FACC15",
+};
+
+/**
+ * Calculates the great-circle distance between two points on the Earth using the Haversine formula.
+ * @param lat1 Latitude of the first point.
+ * @param lon1 Longitude of the first point.
+ * @param lat2 Latitude of the second point.
+ * @param lon2 Longitude of the second point.
+ * @returns The distance between the two points in kilometers.
+ */
+export function getHaversineDistance(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
+): number {
+  if (isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)) {
+    return 0;
+  }
+
+  const R = 6371; // Radius of the Earth in kilometers
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) *
+      Math.cos(lat2 * (Math.PI / 180)) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c; // Distance in km
+
+  return distance;
+}
+
+// Generate ping marker icon
 export function getPingMarkerIcon(name: string, color = DEFAULT_COLORS.danger) {
   const initials = name
     .trim()
@@ -72,16 +116,7 @@ export function getUserIconMarker(color = DEFAULT_COLORS.normal) {
   };
 }
 
-// Trail dot icon
-export const getSmallDotIcon = () => ({
-  path: window.google?.maps?.SymbolPath?.CIRCLE || 0,
-  scale: 5,
-  fillColor: "#0000FF",
-  fillOpacity: 1,
-  strokeWeight: 1,
-  strokeColor: "#fff",
-});
-
+// Generate start point marker icon
 export function getStartPointMarkerIcon(
   name: string,
   color = DEFAULT_COLORS.normal,
@@ -89,37 +124,116 @@ export function getStartPointMarkerIcon(
   return getPingMarkerIcon(name, color);
 }
 
-/**
- * Calculates the great-circle distance between two points on the Earth using the Haversine formula.
- * @param lat1 Latitude of the first point.
- * @param lon1 Longitude of the first point.
- * @param lat2 Latitude of the second point.
- * @param lon2 Longitude of the second point.
- * @returns The distance between the two points in kilometers.
- */
-export function getHaversineDistance(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number,
-): number {
-  if (isNaN(lat1) || isNaN(lon1) || isNaN(lat2) || isNaN(lon2)) {
-    return 0;
+// Generate polyline options
+export const getPolylineOptions = (isHighlighted: boolean) => ({
+  strokeColor: isHighlighted ? MAP_COLORS.visit : DEFAULT_COLORS.normal,
+  strokeOpacity: 1,
+  strokeWeight: isHighlighted ? 6 : 3,
+  geodesic: true,
+  icons: [
+    {
+      icon: {
+        path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+        fillColor: isHighlighted ? MAP_COLORS.visit : DEFAULT_COLORS.normal,
+        fillOpacity: 1,
+        strokeWeight: 1,
+        strokeColor: "#FFFFFF",
+        scale: 3,
+      },
+      offset: "0",
+      repeat: "100px",
+    },
+  ],
+});
+
+export const visitOverCircleOptions = {
+  fillColor: "#0096FF33",
+  fillOpacity: 0.35,
+  strokeWeight: 1,
+  strokeColor: "#0096FFB3",
+  clickable: false,
+  editable: false,
+  zIndex: 1,
+};
+
+// Generate end point marker icon
+const createCircleMarkerIcon = (
+  fillColor: string,
+  scale = 7,
+  strokeColor = "#FFFFFF",
+) => ({
+  path: google.maps.SymbolPath.CIRCLE,
+  scale,
+  fillColor,
+  fillOpacity: 1,
+  strokeWeight: 1,
+  strokeColor,
+});
+
+export const DEBUG_MARKER_ICON = createCircleMarkerIcon(MAP_COLORS.debug, 4);
+export const IDLE_MARKER_ICON = createCircleMarkerIcon(MAP_COLORS.idle);
+export const VISIT_MARKER_ICON = createCircleMarkerIcon(MAP_COLORS.visit);
+export const BREAK_MARKER_ICON = createCircleMarkerIcon(MAP_COLORS.break);
+
+//  Generic Content Component for InfoWindow
+export const InfoWindowContent = ({
+  details,
+}: {
+  details: { label: string; value: string | number | undefined }[];
+}) => (
+  <div className="w-52 text-xs space-y-1.5">
+    {details.map((item, idx) => (
+      <p key={idx}>
+        <span className="text-muted-foreground">{item.label} :</span>{" "}
+        {item.value || "N/A"}
+      </p>
+    ))}
+  </div>
+);
+
+export function buildVisitSegments(
+  visitMarkers: UserPolylineMapProps["visitMarkers"],
+  path: PathPoint[],
+): VisitSegment[] {
+  if (!visitMarkers?.length) return [];
+
+  const sorted = [...visitMarkers].sort(
+    (a, b) =>
+      new Date(a.checkInTime).getTime() - new Date(b.checkInTime).getTime(),
+  );
+
+  const byTime = (from: number, to: number) =>
+    path.filter((p) => {
+      const t = new Date(p.row?.date).getTime();
+      return t >= from && t <= to;
+    });
+
+  const segments: VisitSegment[] = [];
+  const START = 0;
+  const END = Infinity;
+
+  // Start → Visit 1
+  segments.push({
+    label: `Start → ${sorted[0].companyName ?? "Visit 1"}`,
+    path: byTime(START, new Date(sorted[0].checkInTime).getTime()),
+  });
+
+  // Visit i → Visit i+1
+  for (let i = 0; i < sorted.length - 1; i++) {
+    segments.push({
+      label: `${sorted[i].companyName ?? `Visit ${i + 1}`} → ${sorted[i + 1].companyName ?? `Visit ${i + 2}`}`,
+      path: byTime(
+        new Date(sorted[i].checkOutTime).getTime(),
+        new Date(sorted[i + 1].checkInTime).getTime(),
+      ),
+    });
   }
 
-  const R = 6371; // Radius of the Earth in kilometers
-  const dLat = (lat2 - lat1) * (Math.PI / 180);
-  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  // Last visit → End
+  segments.push({
+    label: `${sorted.at(-1)!.companyName ?? "Last Visit"} → End`,
+    path: byTime(new Date(sorted.at(-1)!.checkOutTime).getTime(), END),
+  });
 
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * (Math.PI / 180)) *
-      Math.cos(lat2 * (Math.PI / 180)) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  const distance = R * c; // Distance in km
-
-  return distance;
+  return segments;
 }

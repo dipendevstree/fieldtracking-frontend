@@ -2,33 +2,29 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { MapPin, Loader2, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { socket, socketForVisit } from "../../socket/socket";
-import type { VisitMarker } from "./components/UserPolylineMap";
-
 import {
   getWorkDaySession,
   useFetchLiveTrackingData,
+  useGetIdleData,
   userDetailsById,
   useVisitAnalytics,
 } from "./services/live-tracking-services";
-
 import GlobalFilterSection from "@/components/global-table-filter-section";
 import { FilterConfig } from "@/components/global-filter-section";
 import { getHaversineDistance } from "./data/commonFunction";
 import moment from "moment-timezone";
-import { getFormattedAddress } from "@/utils/commonFunction";
+import {
+  formatMinutesToHours,
+  getFormattedAddress,
+} from "@/utils/commonFunction";
 import { useGetAllVisit } from "../calendar/services/calendar-view.hook";
 import { useAuthStore } from "@/stores/use-auth-store";
-
-interface UserTrackingTimelineProps {
-  userId: any;
-  setPath: React.Dispatch<React.SetStateAction<{ lat: number; lng: number }[]>>;
-  setCurrentPosition: React.Dispatch<
-    React.SetStateAction<{ lat: number; lng: number } | null>
-  >;
-  setMapCenter: (center: { lat: number; lng: number }) => void;
-  setVisitMarkers: React.Dispatch<React.SetStateAction<VisitMarker[]>>;
-  onBack?: () => void;
-}
+import {
+  IdleMarker,
+  VisitMarker,
+  BreakMarker,
+  UserTrackingTimelineProps,
+} from "./types";
 
 const UserTrackingTimeline = ({
   userId,
@@ -36,6 +32,8 @@ const UserTrackingTimeline = ({
   setCurrentPosition,
   setMapCenter,
   setVisitMarkers,
+  setBreakMarkers,
+  setIdleMarkers,
   onBack,
 }: UserTrackingTimelineProps) => {
   const [selectedDate, setSelectedDate] = useState(
@@ -52,11 +50,18 @@ const UserTrackingTimeline = ({
     isLoading: isUserLoading,
     refetch: refetchUserDetails,
   } = userDetailsById(userId ?? "");
+
   const { data: visits, isFetched: isVisitsFetched } = useGetAllVisit({
     startDate: selectedDate,
     endDate: selectedDate,
     status: "completed",
     salesRepresentativeUserId: userId ?? "",
+  });
+
+  const { data: idleData, isFetched: isIdleFetched } = useGetIdleData({
+    userId: userId ?? "",
+    startDate: selectedDate,
+    endDate: selectedDate,
   });
 
   const { user: userAuth } = useAuthStore();
@@ -102,8 +107,10 @@ const UserTrackingTimeline = ({
       onChange: handleDateChange,
       placeholder: "Select date",
       value: selectedDate,
+      disableFutureDates: true,
     },
   ];
+
   useEffect(() => {
     if (!trackingData || trackingData.length === 0) {
       setNearestAddress("No location info available");
@@ -130,6 +137,7 @@ const UserTrackingTimeline = ({
         const path = [...trackingData].reverse().map((item: any) => ({
           lat: parseFloat(item.lat),
           lng: parseFloat(item.long),
+          row: item,
         }));
         setPath(path);
         setCurrentPosition(path[path.length - 1]);
@@ -201,12 +209,73 @@ const UserTrackingTimeline = ({
           lat: parseFloat(v.latitude),
           lng: parseFloat(v.longitude),
           purpose: v.purpose || "",
+          companyName: v.customer?.companyName,
+          checkInTime: v.visitCheckInTime,
+          checkOutTime: v.visitCheckOutTime,
+          duration: v.duration,
+          address: v.checkoutAddress || v.checkinAddress,
         }));
       setVisitMarkers(markers);
     } else {
       setVisitMarkers([]);
     }
   }, [liveVisits, setVisitMarkers]);
+
+  // Push idle locations up to parent for map markers
+  useEffect(() => {
+    if (isIdleFetched && idleData && idleData.length > 0) {
+      const markers: IdleMarker[] = idleData.map((idle: any, idx: number) => ({
+        id: `idle_${idx}`,
+        lat: parseFloat(idle.lat),
+        lng: parseFloat(idle.long),
+        startTime: idle.startTime,
+        endTime: idle.endTime,
+        duration: `${formatMinutesToHours(idle.durationMin)} hrs`,
+        address: idle.idleAtFullAddress || "Address not available",
+      }));
+      setIdleMarkers(markers);
+    } else {
+      setIdleMarkers([]);
+    }
+  }, [idleData, isIdleFetched, setIdleMarkers]);
+
+  // Push break locations up to parent for map markers
+  useEffect(() => {
+    if (liveUserSession?.sessions && liveUserSession.sessions.length > 0) {
+      const breakMarkers: BreakMarker[] = [];
+      let breakIndex = 0;
+
+      liveUserSession.sessions.forEach((session: any) => {
+        if (session.breaks && session.breaks.length > 0) {
+          session.breaks.forEach((brk: any) => {
+            const startDate = new Date(brk.breakStartTime);
+            const endDate = brk.breakEndTime
+              ? new Date(brk.breakEndTime)
+              : null;
+            const duration = endDate
+              ? `${Math.round((endDate.getTime() - startDate.getTime()) / 60000)} mins`
+              : "Ongoing";
+
+            breakMarkers.push({
+              id: `break_${breakIndex}`,
+              lat: parseFloat(brk.breakStartLat || "0"),
+              lng: parseFloat(brk.breakStartLong || "0"),
+              startTime: brk.breakStartTime,
+              endTime: brk.breakEndTime || "",
+              duration: duration,
+              type: brk.breakType || "Break",
+              address: brk.breakStartAddress || "Address not available",
+            });
+            breakIndex++;
+          });
+        }
+      });
+
+      setBreakMarkers(breakMarkers);
+    } else {
+      setBreakMarkers([]);
+    }
+  }, [liveUserSession, setBreakMarkers]);
 
   // MODIFIED: Socket effect now efficiently updates the distance.
   useEffect(() => {
@@ -231,6 +300,7 @@ const UserTrackingTimeline = ({
         const newPoint = {
           lat: parseFloat(event.lat),
           lng: parseFloat(event.long),
+          row: event,
         };
         // This updater function ensures we always have the latest path and distance
         setPath((prevPath) => {
@@ -429,7 +499,7 @@ const UserTrackingTimeline = ({
         location: session.dayStartAddress ?? "Location not provided",
         time: format(new Date(session.startTime), "hh:mm a"),
         rawTime: new Date(session.startTime).getTime(),
-        color: "bg-teal-500",
+        color: "bg-green-500",
       });
 
       // Visits
@@ -450,6 +520,31 @@ const UserTrackingTimeline = ({
               time: format(visitTime, "hh:mm a"),
               rawTime: visitTime.getTime(),
               color: "bg-blue-400",
+            });
+          }
+        });
+      }
+
+      // Idle Records
+      if (idleData && idleData.length > 0) {
+        idleData.forEach((idle: any, idx: number) => {
+          const startTime = new Date(idle.startTime);
+          const endTime = new Date(idle.endTime);
+          const sessionStart = new Date(session.startTime);
+          const sessionEnd = session.endTime
+            ? new Date(session.endTime)
+            : new Date();
+
+          if (startTime >= sessionStart && startTime <= sessionEnd) {
+            items.push({
+              id: `${session.workDaySessionId}_idle_${idx}`,
+              type: "idle",
+              title: "Idle Record",
+              description: `Duration: ${formatMinutesToHours(idle.durationMin)} hrs`,
+              location: idle.idleAtFullAddress ?? "Address not available",
+              time: `${format(startTime, "hh:mm a")} - ${format(endTime, "hh:mm a")}`,
+              rawTime: startTime.getTime(),
+              color: "bg-orange-400",
             });
           }
         });
@@ -505,7 +600,7 @@ const UserTrackingTimeline = ({
   const timelineData = useMemo(
     () =>
       formatTimelineData((liveUserSession?.sessions ?? []).slice().reverse()),
-    [liveUserSession?.sessions, liveVisits],
+    [liveUserSession?.sessions, liveVisits, idleData],
   );
 
   // Loading state UI
@@ -561,7 +656,7 @@ const UserTrackingTimeline = ({
       </div>
 
       {/* Main Content Card */}
-      <div className="mb-6 rounded-lg border border-gray-200 bg-white shadow-sm">
+      <div className="rounded-lg border border-gray-200 bg-white shadow-sm">
         {/* User Info */}
         <div className="border-b border-gray-100 p-4">
           <div className="flex items-center gap-3">
