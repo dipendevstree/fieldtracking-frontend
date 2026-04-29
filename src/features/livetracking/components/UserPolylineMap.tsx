@@ -19,6 +19,7 @@ import {
   getPolylineOptions,
   InfoWindowContent,
   buildVisitSegments,
+  DEBUG_MARKER_ICON,
 } from "../data/commonFunction";
 import { MapMarkerWithInfoProps, UserPolylineMapProps } from "../types";
 
@@ -47,6 +48,8 @@ export default function UserPolylineMap({
     null,
   );
 
+  const [showPathDebugPoints, setShowDebugPathPoints] = useState(false);
+
   const polylineOptions = useMemo(() => getPolylineOptions(false), []);
 
   const handleMarkerClick = useCallback(
@@ -73,17 +76,83 @@ export default function UserPolylineMap({
     [visitMarkers, path],
   );
 
-  const activeColor = DEFAULT_COLORS.normal;
-
   return (
     <>
+      {/* Toggle Button for Path Points (For Debugging) */}
+      {path.length > 0 && (
+        <div
+          style={{
+            position: "absolute",
+            top: 10,
+            right: 60,
+            zIndex: 1000,
+            background: "white",
+            padding: "8px 10px",
+            boxShadow: "0 2px 6px rgba(0,0,0,0.3)",
+            borderRadius: 2,
+          }}
+        >
+          <label
+            style={{
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            <input
+              type="checkbox"
+              checked={showPathDebugPoints}
+              onChange={(e) => setShowDebugPathPoints(e.target.checked)}
+            />
+            <span>Debug Path</span>
+          </label>
+        </div>
+      )}
+
+      {/* Debug Path Points */}
+      {showPathDebugPoints &&
+        path.map((point, index) => {
+          if (!isValidLatLng(point)) return null;
+
+          return (
+            <MapMarkerWithInfo
+              key={`path-point-${index}`}
+              id={`path-${index}`}
+              type="path"
+              position={point}
+              icon={DEBUG_MARKER_ICON}
+              activeItem={activeItem}
+              onMarkerClick={handleMarkerClick}
+              onClose={closeAll}
+              zIndex={1}
+              infoTitle={`Path Point details`}
+              details={[
+                { label: "ID", value: point?.row?._id },
+                {
+                  label: "Workday Session Id",
+                  value: point?.row?.workDaySessionId,
+                },
+                { label: "Latitude", value: String(point?.lat) },
+                { label: "Longitude", value: String(point?.lng) },
+                { label: "Date", value: point?.row?.date },
+                {
+                  label: "type",
+                  value: point?.row?.locationRawData?.activity.type,
+                },
+                { label: "Speed", value: point?.row?.speed },
+              ]}
+            />
+          );
+        })}
+
       {/* Start Point */}
       {path[0] && (
         <Marker
           position={path[0]}
           icon={getStartPointMarkerIcon(
             selectedUser?.fullName ?? "",
-            activeColor,
+            DEFAULT_COLORS.normal,
           )}
           zIndex={10}
         />
@@ -93,7 +162,7 @@ export default function UserPolylineMap({
       {currentPosition && isValidLatLng(currentPosition) && (
         <Marker
           position={currentPosition}
-          icon={getUserIconMarker(activeColor)}
+          icon={getUserIconMarker(DEFAULT_COLORS.normal)}
           title="Live Position"
           zIndex={100}
         />

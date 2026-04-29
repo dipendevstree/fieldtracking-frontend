@@ -2,12 +2,11 @@ import { PathPoint, UserPolylineMapProps, VisitSegment } from "../types";
 
 export const DEFAULT_COLORS = {
   normal: "#00AD34",
-  active: "#818CF8",
   danger: "#FF7979",
 };
 
 export const MAP_COLORS = {
-  debug: "#818CF8",
+  debug: "#FF0000",
   idle: "#F59E0B",
   visit: "#60A5FA",
   break: "#FACC15",
@@ -167,7 +166,7 @@ const createCircleMarkerIcon = (
   scale,
   fillColor,
   fillOpacity: 1,
-  strokeWeight: 2,
+  strokeWeight: 1,
   strokeColor,
 });
 
