@@ -19,22 +19,12 @@ import {
 } from "@/utils/commonFunction";
 import { useGetAllVisit } from "../calendar/services/calendar-view.hook";
 import { useAuthStore } from "@/stores/use-auth-store";
-import { IdleMarker, VisitMarker, BreakMarker } from "./types";
-
-interface UserTrackingTimelineProps {
-  userId: any;
-  setPath: React.Dispatch<
-    React.SetStateAction<{ lat: number; lng: number; row?: any }[]>
-  >;
-  setCurrentPosition: React.Dispatch<
-    React.SetStateAction<{ lat: number; lng: number } | null>
-  >;
-  setMapCenter: (center: { lat: number; lng: number }) => void;
-  setVisitMarkers: React.Dispatch<React.SetStateAction<VisitMarker[]>>;
-  setBreakMarkers: React.Dispatch<React.SetStateAction<BreakMarker[]>>;
-  setIdleMarkers: React.Dispatch<React.SetStateAction<IdleMarker[]>>;
-  onBack?: () => void;
-}
+import {
+  IdleMarker,
+  VisitMarker,
+  BreakMarker,
+  UserTrackingTimelineProps,
+} from "./types";
 
 const UserTrackingTimeline = ({
   userId,
@@ -117,8 +107,10 @@ const UserTrackingTimeline = ({
       onChange: handleDateChange,
       placeholder: "Select date",
       value: selectedDate,
+      disableFutureDates: true,
     },
   ];
+
   useEffect(() => {
     if (!trackingData || trackingData.length === 0) {
       setNearestAddress("No location info available");
