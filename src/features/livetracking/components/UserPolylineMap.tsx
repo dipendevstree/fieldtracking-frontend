@@ -19,7 +19,7 @@ import {
   getPolylineOptions,
   InfoWindowContent,
   buildVisitSegments,
-  // DEBUG_MARKER_ICON,
+  DEBUG_MARKER_ICON,
 } from "../data/commonFunction";
 import { MapMarkerWithInfoProps, UserPolylineMapProps } from "../types";
 
@@ -48,7 +48,7 @@ export default function UserPolylineMap({
     null,
   );
 
-  // const [showPathDebugPoints, setShowDebugPathPoints] = useState(false);
+  const [showPathDebugPoints, setShowDebugPathPoints] = useState(false);
 
   const polylineOptions = useMemo(() => getPolylineOptions(false), []);
 
@@ -79,7 +79,7 @@ export default function UserPolylineMap({
   return (
     <>
       {/* Toggle Button for Path Points (For Debugging) */}
-      {/* {path.length > 0 && (
+      {path.length > 0 && (
         <div
           style={{
             position: "absolute",
@@ -108,10 +108,10 @@ export default function UserPolylineMap({
             <span>Debug Path</span>
           </label>
         </div>
-      )} */}
+      )}
 
       {/* Debug Path Points */}
-      {/* {showPathDebugPoints &&
+      {showPathDebugPoints &&
         path.map((point, index) => {
           if (!isValidLatLng(point)) return null;
 
@@ -144,7 +144,7 @@ export default function UserPolylineMap({
               ]}
             />
           );
-        })} */}
+        })}
 
       {/* Start Point */}
       {path[0] && (
