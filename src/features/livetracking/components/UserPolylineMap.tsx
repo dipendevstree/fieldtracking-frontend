@@ -10,7 +10,6 @@ import { formatDate } from "date-fns";
 import {
   BREAK_MARKER_ICON,
   visitOverCircleOptions,
-  DEBUG_MARKER_ICON,
   DEFAULT_COLORS,
   getStartPointMarkerIcon,
   getUserIconMarker,
@@ -19,14 +18,15 @@ import {
   VISIT_MARKER_ICON,
   getPolylineOptions,
   InfoWindowContent,
+  buildVisitSegments,
 } from "../data/commonFunction";
-import { UserPolylineMapProps } from "../types";
+import { MapMarkerWithInfoProps, UserPolylineMapProps } from "../types";
 
+// markers hide and show config
 const MAP_CONFIG = {
-  showDebugPath: false,
   showIdleMarkers: false,
   showBreakMarkers: false,
-};
+} as const;
 
 export default function UserPolylineMap({
   path,
@@ -37,79 +37,69 @@ export default function UserPolylineMap({
   breakMarkers = [],
 }: UserPolylineMapProps) {
   const map = useGoogleMap();
-  const [isHighlighted, setIsHighlighted] = useState(false);
+
   const [activeItem, setActiveItem] = useState<{
     id: string;
     type: string;
   } | null>(null);
 
-  const isDebugPathEnabled = MAP_CONFIG.showDebugPath;
-  const activeColor =
-    isDebugPathEnabled && isHighlighted
-      ? DEFAULT_COLORS.active
-      : DEFAULT_COLORS.normal;
-
-  // 1. Memoized Options
-  const polylineOptions = useMemo(
-    () => getPolylineOptions(isDebugPathEnabled && isHighlighted),
-    [isDebugPathEnabled, isHighlighted],
+  const [activeSegmentIndex, setActiveSegmentIndex] = useState<number | null>(
+    null,
   );
 
-  // 2. Memoized Event Handlers
+  const polylineOptions = useMemo(() => getPolylineOptions(false), []);
+
   const handleMarkerClick = useCallback(
     (id: string, type: string, e: google.maps.MapMouseEvent) => {
-      if (e.stop) e.stop();
+      e.stop?.();
       setActiveItem((prev) => (prev?.id === id ? null : { id, type }));
     },
     [],
   );
 
-  const closeInfoWindow = useCallback(() => setActiveItem(null), []);
+  const closeAll = useCallback(() => {
+    setActiveItem(null);
+    setActiveSegmentIndex(null);
+  }, []);
 
   useEffect(() => {
     if (!map) return;
-    const clickListener = map.addListener("click", closeInfoWindow);
-    return () => google.maps.event.removeListener(clickListener);
-  }, [map, closeInfoWindow]);
+    const listener = map.addListener("click", closeAll);
+    return () => google.maps.event.removeListener(listener);
+  }, [map, closeAll]);
+
+  const visitSegments = useMemo(
+    () => buildVisitSegments(visitMarkers, path),
+    [visitMarkers, path],
+  );
+
+  const activeColor = DEFAULT_COLORS.normal;
 
   return (
     <>
-      {/* 🏁 Start Point */}
+      {/* Start Point */}
       {path[0] && (
         <Marker
           position={path[0]}
           icon={getStartPointMarkerIcon(
-            selectedUser?.fullName || "",
+            selectedUser?.fullName ?? "",
             activeColor,
           )}
           zIndex={10}
         />
       )}
 
-      {/* 📍 Live Position */}
+      {/* Live Position */}
       {currentPosition && isValidLatLng(currentPosition) && (
         <Marker
           position={currentPosition}
           icon={getUserIconMarker(activeColor)}
           title="Live Position"
-          zIndex={100} // Always on top
+          zIndex={100}
         />
       )}
 
-      {/* Debug Markers (only shown when highlighed) */}
-      {isDebugPathEnabled &&
-        isHighlighted &&
-        path.map((point, index) => (
-          <Marker
-            key={`debug-${index}`}
-            position={point}
-            icon={DEBUG_MARKER_ICON}
-            zIndex={1}
-            title={`ID: ${point.row?._id ?? index}${point.row?.speed ? ` | Spd: ${point.row?.speed}` : ""}`}
-          />
-        ))}
-
-      {/* 🟠 Idle Markers */}
+      {/* Idle Markers */}
       {MAP_CONFIG.showIdleMarkers &&
         idleMarkers.map((idle) => (
           <MapMarkerWithInfo
@@ -120,7 +110,7 @@ export default function UserPolylineMap({
             icon={IDLE_MARKER_ICON}
             activeItem={activeItem}
             onMarkerClick={handleMarkerClick}
-            onClose={closeInfoWindow}
+            onClose={closeAll}
             infoTitle="Idle Details"
             details={[
               { label: "Duration", value: idle.duration },
@@ -131,7 +121,7 @@ export default function UserPolylineMap({
           />
         ))}
 
-      {/* 🟡 Break Markers */}
+      {/* Break Markers */}
       {MAP_CONFIG.showBreakMarkers &&
         breakMarkers.map((brk) => (
           <MapMarkerWithInfo
@@ -142,8 +132,8 @@ export default function UserPolylineMap({
             icon={BREAK_MARKER_ICON}
             activeItem={activeItem}
             onMarkerClick={handleMarkerClick}
-            onClose={closeInfoWindow}
-            infoTitle={"Break Details"}
+            onClose={closeAll}
+            infoTitle="Break Details"
             details={[
               { label: "Type", value: brk.type },
               { label: "From", value: formatDate(brk.startTime, "hh:mm a") },
@@ -158,7 +148,7 @@ export default function UserPolylineMap({
           />
         ))}
 
-      {/* 🔵 Visit Markers */}
+      {/* Visit Markers */}
       {visitMarkers.map((visit) => (
         <MapMarkerWithInfo
           key={visit.visitId}
@@ -168,8 +158,8 @@ export default function UserPolylineMap({
           icon={VISIT_MARKER_ICON}
           activeItem={activeItem}
           onMarkerClick={handleMarkerClick}
-          onClose={closeInfoWindow}
-          infoTitle={"Visit Details"}
+          onClose={closeAll}
+          infoTitle="Visit Details"
           details={[
             { label: "Company", value: visit.companyName },
             { label: "Purpose", value: visit.purpose },
@@ -193,29 +183,37 @@ export default function UserPolylineMap({
         </MapMarkerWithInfo>
       ))}
 
-      <Polyline
-        path={path}
-        options={polylineOptions}
-        onClick={
-          isDebugPathEnabled
-            ? () => {
-                setIsHighlighted(!isHighlighted);
-                closeInfoWindow();
-              }
-            : undefined
-        }
-      />
+      {/* Base Polyline — full path, always visible */}
+      <Polyline path={path} options={polylineOptions} />
+
+      {/* Visit Segments — invisible until clicked, one active at a time */}
+      {visitSegments.map((segment, index) => {
+        if (segment.path.length < 2) return null;
+        const isActive = activeSegmentIndex === index;
+
+        return (
+          <Polyline
+            key={`segment-${index}`}
+            path={segment.path}
+            options={getPolylineOptions(isActive)}
+            onClick={(e) => {
+              e.stop?.();
+              setActiveSegmentIndex((prev) => (prev === index ? null : index));
+            }}
+          />
+        );
+      })}
+
       <style>{`
-        /* Custom styles for InfoWindow */
-        .gm-style-iw-ch {
-          font-weight: bold !important;
-        }
+         /* Custom header styles for InfoWindow */
+        .gm-style-iw-ch { font-weight: bold !important; }
       `}</style>
     </>
   );
 }
 
-// Internal Helper to keep things DRY
+// ─── MapMarkerWithInfo ────────────────────────────────────────────────────────
+
 function MapMarkerWithInfo({
   id,
   type,
@@ -228,17 +226,19 @@ function MapMarkerWithInfo({
   details,
   children,
   zIndex = 5,
-}: any) {
+}: MapMarkerWithInfoProps) {
+  const isOpen = activeItem?.id === id && activeItem.type === type;
+
   return (
     <Fragment>
       {children}
       <Marker
         position={position}
         icon={icon}
-        onClick={(e) => onMarkerClick(id, type, e)}
         zIndex={zIndex}
+        onClick={(e) => onMarkerClick(id, type, e)}
       >
-        {activeItem?.id === id && activeItem.type === type && (
+        {isOpen && (
           <InfoWindow
             onCloseClick={onClose}
             options={{ headerContent: infoTitle }}
