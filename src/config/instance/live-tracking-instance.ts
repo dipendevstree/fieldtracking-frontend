@@ -7,8 +7,9 @@ import axios, {
 import { useAuthStore } from "@/stores/use-auth-store";
 import { StorageEnum } from "@/types";
 import { setItem } from "@/utils/storage";
+import { ENV } from "../env";
 
-export const LIVE_BASE_URL = import.meta.env.VITE_LIVE_TRACKING_API_URL;
+export const LIVE_BASE_URL = ENV.LIVE_TRACKING_API_URL;
 
 const liveTrackingInstance = axios.create({
   baseURL: LIVE_BASE_URL,
@@ -30,7 +31,7 @@ liveTrackingInstance.interceptors.request.use(
     config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
-  (error: AxiosError) => Promise.reject(error)
+  (error: AxiosError) => Promise.reject(error),
 );
 
 liveTrackingInstance.interceptors.response.use(
@@ -50,7 +51,7 @@ liveTrackingInstance.interceptors.response.use(
       window.localStorage.clear();
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 class LiveInstance {
