@@ -16,6 +16,7 @@ import "./index.css";
 // Generated Routes
 import { routeTree } from "./routeTree.gen";
 import { ViewTypeProvider } from "./context/view-type-context";
+import { ENV } from "./config/env";
 
 // Timestamps to track when toast was last shown (prevents duplicates within 1 second)
 let last401ToastTime = 0;
@@ -115,7 +116,7 @@ if (!rootElement.innerHTML) {
         <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
           <FontProvider>
             <LoadScript
-              googleMapsApiKey={import.meta.env.VITE_GOOGLE_MAP_API_KEY}
+              googleMapsApiKey={ENV.GOOGLE_MAP_API_KEY}
               libraries={["places"]}
               loadingElement={<div></div>}
             >

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { useRef, useState, useCallback, useEffect } from "react";
 import { X } from "lucide-react";
 import type { Libraries } from "@react-google-maps/api";
+import { ENV } from "@/config/env";
 
 const containerStyle = {
   width: "100%",
@@ -61,7 +62,7 @@ export default function LocationPicker({
   const inputRef = useRef<HTMLInputElement | null>(null);
 
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAP_API_KEY,
+    googleMapsApiKey: ENV.GOOGLE_MAP_API_KEY,
     libraries,
   });
 
