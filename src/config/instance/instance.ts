@@ -7,8 +7,9 @@ import axios, {
 import { StorageEnum } from "@/types";
 import { useAuthStore } from "@/stores/use-auth-store";
 import { setItem } from "@/utils/storage";
+import { ENV } from "../env";
 
-export const BASE_URL = import.meta.env.VITE_API_URL;
+export const BASE_URL = ENV.API_URL;
 // export const BASE_URL = 'http://localhost:4001/api/v1'
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
@@ -47,7 +48,7 @@ axiosInstance.interceptors.request.use(
     }
     return config;
   },
-  (error: AxiosError) => Promise.reject(error)
+  (error: AxiosError) => Promise.reject(error),
 );
 
 axiosInstance.interceptors.response.use(
@@ -83,7 +84,7 @@ axiosInstance.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 class Instance {

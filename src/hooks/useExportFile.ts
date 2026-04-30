@@ -1,3 +1,4 @@
+import { ENV } from "@/config/env";
 import { useState, useCallback } from "react";
 
 type ExportType = "csv" | "xlsx";
@@ -51,10 +52,10 @@ export const useExportFile = (options?: UseExportFileOptions) => {
           Object.entries(queryParams).map(([key, value]) => [
             key,
             String(value),
-          ])
+          ]),
         ).toString();
 
-        const baseUrl = options?.baseUrl || import.meta.env.VITE_API_URL;
+        const baseUrl = options?.baseUrl || ENV.API_URL;
         const response = await fetch(`${baseUrl}${url}?${query}`, {
           method: "GET",
           headers: {
@@ -77,7 +78,7 @@ export const useExportFile = (options?: UseExportFileOptions) => {
         setIsLoading(false);
       }
     },
-    [options?.baseUrl]
+    [options?.baseUrl],
   );
 
   return { exportFile, isLoading, error };

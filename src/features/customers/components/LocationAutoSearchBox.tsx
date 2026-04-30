@@ -2,6 +2,7 @@ import { useRef, useState, useEffect } from "react";
 import { useJsApiLoader, Autocomplete } from "@react-google-maps/api";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { ENV } from "@/config/env";
 
 const libraries: "places"[] = ["places"];
 
@@ -17,7 +18,7 @@ export const LocationAutoSearchBox = ({
   onSelectLocation,
 }: LocationSearchBoxProps) => {
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAP_API_KEY,
+    googleMapsApiKey: ENV.GOOGLE_MAP_API_KEY,
     libraries,
   });
 
