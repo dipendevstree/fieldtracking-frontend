@@ -1,22 +1,11 @@
 import { ColumnDef } from "@tanstack/react-table";
 import { CustomDataTableColumnHeader } from "@/components/shared/custom-table-header-column";
 import { ShiftRowActions } from "./table-action-button";
-import { format } from "date-fns";
-import { formatDropDownLabel } from "@/utils/commonFunction";
-
-// Helper to format time string from "HH:mm" to 12-hour format with AM/PM
-const formatTimeTo12Hour = (timeString: string) => {
-  if (!timeString) return "-";
-  try {
-    // Create a date object with today's date and the given time
-    const [hours, minutes] = timeString.split(":");
-    const date = new Date();
-    date.setHours(parseInt(hours), parseInt(minutes));
-    return format(date, "hh:mm a");
-  } catch (error) {
-    return timeString;
-  }
-};
+import {
+  formatDropDownLabel,
+  formatTimeTo12Hour,
+} from "@/utils/commonFunction";
+import { getShiftThresholdExpiryTime } from "@/features/attendance-management/utils/shift-time";
 
 export const getShiftColumns = (totalCount: number): ColumnDef<any>[] => [
   {
@@ -84,6 +73,37 @@ export const getShiftColumns = (totalCount: number): ColumnDef<any>[] => [
     cell: ({ row }) => {
       return <div className="text-sm">{row.original.breakMinutes} min</div>;
     },
+    enableHiding: false,
+    enableSorting: false,
+  },
+  {
+    accessorKey: "thresholdMinutes",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader column={column} title="Threshold" />
+    ),
+    cell: ({ row }) => {
+      const value = row.original.thresholdMinutes;
+      return <div className="text-sm">{Number(value ?? 0)} min</div>;
+    },
+    enableHiding: false,
+    enableSorting: false,
+  },
+  {
+    id: "thresholdExpiryTime",
+    header: ({ column }) => (
+      <CustomDataTableColumnHeader
+        column={column}
+        title="Threshold Expiry Time"
+      />
+    ),
+    cell: ({ row }) => (
+      <div className="text-sm">
+        {getShiftThresholdExpiryTime(
+          row.original.endTime,
+          row.original.thresholdMinutes,
+        )}
+      </div>
+    ),
     enableHiding: false,
     enableSorting: false,
   },

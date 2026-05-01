@@ -19,6 +19,9 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { TimePicker } from "@/components/ui/TimePicker";
+import { Info } from "lucide-react";
+import { formatTimeTo12Hour } from "@/utils/commonFunction";
+import { getShiftThresholdExpiryTime } from "@/features/attendance-management/utils/shift-time";
 
 interface Props<T> {
   form: any;
@@ -38,6 +41,14 @@ export function ShiftActionForm<T>({
   onOpenChange,
   currentRow,
 }: Props<T>) {
+  const endTime = form.watch("endTime");
+  const thresholdMinutes = Number(form.watch("thresholdMinutes") || 0);
+  const formattedEndTime = formatTimeTo12Hour(endTime);
+  const formattedExpiryTime = getShiftThresholdExpiryTime(
+    endTime,
+    thresholdMinutes,
+  );
+
   return (
     <Dialog open={!!open} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -102,7 +113,7 @@ export function ShiftActionForm<T>({
               />
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-4">
               <FormField
                 control={form.control as any}
                 name="fullDayHours"
@@ -152,6 +163,35 @@ export function ShiftActionForm<T>({
                   </FormItem>
                 )}
               />
+              <FormField
+                control={form.control as any}
+                name="thresholdMinutes"
+                render={({ field }: any) => (
+                  <FormItem>
+                    <FormLabel>Threshold Time (Minutes) *</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="60"
+                        min={1}
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+              <p className="flex items-center gap-2">
+                <Info className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>
+                  {formattedEndTime !== "-" && formattedExpiryTime !== "-"
+                    ? `Shift ends at ${formattedEndTime}. If the required action isn’t completed by the threshold expiry time (${formattedExpiryTime}), the day will be automatically marked as Off.`
+                    : "Select Shift End Time and Threshold Time to preview when the day will be automatically marked as Off."}
+                </span>
+              </p>
             </div>
 
             <FormField

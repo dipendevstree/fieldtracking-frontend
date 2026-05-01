@@ -12,7 +12,10 @@ import {
   useUpdateShift,
   useDeleteShift,
 } from "@/features/attendance-management/services/shift.action.hook";
-import { ShiftSchema } from "@/features/attendance-management/data/schema";
+import {
+  SHIFT_THRESHOLD_DEFAULT_MINUTES,
+  ShiftSchema,
+} from "@/features/attendance-management/data/schema";
 import ShiftActionForm from "./shift-action-form";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";
@@ -49,6 +52,7 @@ export function ShiftActionModal() {
       name: "",
       startTime: "",
       endTime: "",
+      thresholdMinutes: SHIFT_THRESHOLD_DEFAULT_MINUTES,
       breakMinutes: 0,
       fullDayHours: 0,
       halfDayHours: 0,
@@ -63,6 +67,7 @@ export function ShiftActionModal() {
         name: "",
         startTime: "",
         endTime: "",
+        thresholdMinutes: SHIFT_THRESHOLD_DEFAULT_MINUTES,
         breakMinutes: 0,
         fullDayHours: 0,
         halfDayHours: 0,
@@ -70,7 +75,11 @@ export function ShiftActionModal() {
       });
       setCurrentRow(null);
     } else if (open === "edit" && currentRow) {
-      form.reset(currentRow);
+      form.reset({
+        ...currentRow,
+        thresholdMinutes:
+          currentRow?.thresholdMinutes ?? SHIFT_THRESHOLD_DEFAULT_MINUTES,
+      });
     }
   }, [open, currentRow]);
 
@@ -118,7 +127,7 @@ export function ShiftActionModal() {
   useDirtyTracker(form.formState.isDirty);
 
   const { showExitPrompt, confirmExit, cancelExit } = useUnsavedChanges(
-    form.formState.isDirty
+    form.formState.isDirty,
   );
 
   const isWarningOpen = showLocalWarning || showExitPrompt;
