@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import { isValid, parse } from "date-fns";
 
 export function jsonToFormData(
   json: Record<string, any>,
@@ -172,6 +173,28 @@ export function formatName(value: string): string {
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(" ")
   );
+}
+
+/**
+ * Convert 24-hour time into "hh:mm AM/PM".
+ *
+ * Accepted input formats:
+ * - "HH:mm"
+ * - "HH:mm:ss"
+ *
+ * Returns "-" for empty or invalid values.
+ */
+export function formatTimeTo12Hour(timeString?: string | null): string {
+  if (!timeString) return "-";
+
+  const parsedWithSeconds = parse(timeString, "HH:mm:ss", new Date());
+  const parsedWithoutSeconds = parse(timeString, "HH:mm", new Date());
+  const normalizedTime = isValid(parsedWithSeconds)
+    ? parsedWithSeconds
+    : parsedWithoutSeconds;
+  if (!isValid(normalizedTime)) return "-";
+
+  return format(normalizedTime, "hh:mm a");
 }
 
 /**
