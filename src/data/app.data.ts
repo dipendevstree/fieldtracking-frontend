@@ -20,6 +20,9 @@ export const ALL_PAGE_META_DATA = {
 export const DEFAULT_PAGE_SIZE = 10;
 export const DEFAULT_PAGE_SIZES = [10, 20, 30, 40, 50, 100];
 export const DEFAULT_PAGE_NUMBER = 1;
+export const SHIFT_THRESHOLD_TIME_IN_MIN_DEFAULT = 30;
+export const SHIFT_THRESHOLD_TIME_IN_MIN_MAX = 300;
+export const SHIFT_THRESHOLD_TIME_IN_MIN_OPTIONS = [15, 30, 45, 60] as const;
 
 export enum Priority {
   LOW = "Low",

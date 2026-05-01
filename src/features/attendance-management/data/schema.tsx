@@ -1,8 +1,9 @@
-import { ATTENDANCE_RULE_FREQUENCY } from "@/data/app.data";
+import {
+  ATTENDANCE_RULE_FREQUENCY,
+  SHIFT_THRESHOLD_TIME_IN_MIN_DEFAULT,
+  SHIFT_THRESHOLD_TIME_IN_MIN_MAX,
+} from "@/data/app.data";
 import { z } from "zod";
-
-export const SHIFT_THRESHOLD_TIME_IN_MIN_DEFAULT = 60;
-export const SHIFT_THRESHOLD_TIME_IN_MIN_MAX = 300;
 
 export const AttendanceCorrectionSchema = z.object({
   attendanceId: z.string().min(1, "Attendance ID is required"),

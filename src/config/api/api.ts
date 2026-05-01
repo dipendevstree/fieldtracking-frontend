@@ -43,6 +43,7 @@ const API = {
     startBreakSession: "workBreakSession/start",
     endBreakSession: "workBreakSession/end",
     idleData: "workDaySession/idleTime",
+    threshold: "threshold",
   },
   customerType: {
     list: "customerType/list",

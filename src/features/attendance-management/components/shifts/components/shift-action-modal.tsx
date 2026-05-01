@@ -13,9 +13,9 @@ import {
   useDeleteShift,
 } from "@/features/attendance-management/services/shift.action.hook";
 import {
-  SHIFT_THRESHOLD_TIME_IN_MIN_DEFAULT,
   ShiftSchema,
 } from "@/features/attendance-management/data/schema";
+import { SHIFT_THRESHOLD_TIME_IN_MIN_DEFAULT } from "@/data/app.data";
 import ShiftActionForm from "./shift-action-form";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useDirtyTracker } from "@/features/settings/store/use-unsaved-changes-store";

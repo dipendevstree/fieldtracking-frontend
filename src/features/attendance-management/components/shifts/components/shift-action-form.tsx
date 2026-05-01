@@ -22,6 +22,7 @@ import { TimePicker } from "@/components/ui/TimePicker";
 import { Info } from "lucide-react";
 import { formatTimeTo12Hour } from "@/utils/commonFunction";
 import { getShiftThresholdExpiryTime } from "@/features/attendance-management/utils/shift-time";
+import { SHIFT_THRESHOLD_TIME_IN_MIN_DEFAULT } from "@/data/app.data";
 
 interface Props<T> {
   form: any;
@@ -172,7 +173,7 @@ export function ShiftActionForm<T>({
                     <FormControl>
                       <Input
                         type="number"
-                        placeholder="60"
+                        placeholder={String(SHIFT_THRESHOLD_TIME_IN_MIN_DEFAULT)}
                         min={1}
                         {...field}
                       />
