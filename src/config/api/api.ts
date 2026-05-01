@@ -277,6 +277,7 @@ const API = {
     stats: "leaveType/stats",
   },
   shifts: {
+    byId: "shifts",
     list: "shifts",
     create: "shifts",
     update: "shifts",

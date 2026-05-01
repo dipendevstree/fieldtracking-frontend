@@ -159,6 +159,7 @@ export interface LoginUser {
   superAdminCreatedBy?: string | null;
   territoryId?: string | null;
   shift?: Shift | null;
+  shiftId?: string | null;
   readonly reportingTo?: readonly LoginUser[];
   territory?: Territory | null;
   isPasswordChanged?: boolean;

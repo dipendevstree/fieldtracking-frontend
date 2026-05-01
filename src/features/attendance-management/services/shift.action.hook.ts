@@ -43,9 +43,23 @@ export const useDeleteShift = (id: string, onSuccess?: () => void) => {
   });
 };
 
+export const useGetShiftById = (shiftId?: string | null) => {
+  const query = useFetchData<any>({
+    url: shiftId ? `${API.shifts.byId}/${shiftId}` : "",
+    enabled: !!shiftId,
+  });
+  return {
+    ...query,
+    Shift: query.data ?? {},
+    totalCount: query.data?.totalCount ?? 0,
+    isLoading: query.isLoading,
+    error: query.error,
+  };
+};
+
 export const useGetAllShifts = (
   params?: IListParams,
-  options?: { enabled?: boolean }
+  options?: { enabled?: boolean },
 ) => {
   const query = useFetchData<any>({
     url: SHIFT_QUERY,
