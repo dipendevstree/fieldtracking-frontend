@@ -183,17 +183,6 @@ export function ShiftActionForm<T>({
               />
             </div>
 
-            <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
-              <p className="flex items-center gap-2">
-                <Info className="mt-0.5 h-4 w-4 shrink-0" />
-                <span>
-                  {formattedEndTime !== "-" && formattedExpiryTime !== "-"
-                    ? `Shift ends at ${formattedEndTime}. If the required action isn’t completed by the threshold expiry time (${formattedExpiryTime}), the day will be automatically marked as Off.`
-                    : "Select Shift End Time and Threshold Time to preview when the day will be automatically marked as Off."}
-                </span>
-              </p>
-            </div>
-
             <FormField
               control={form.control as any}
               name="isDefault"
@@ -219,6 +208,17 @@ export function ShiftActionForm<T>({
                 </FormItem>
               )}
             />
+
+            <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+              <p className="flex items-center gap-2">
+                <Info className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>
+                  {formattedEndTime !== "-" && formattedExpiryTime !== "-"
+                    ? `Shift ends at ${formattedEndTime}. If the required action isn’t completed by the threshold expiry time (${formattedExpiryTime}), the day will be automatically marked as Off.`
+                    : "Select Shift End Time and Threshold Time to preview when the day will be automatically marked as Off."}
+                </span>
+              </p>
+            </div>
 
             <DialogFooter>
               <DialogClose asChild>
