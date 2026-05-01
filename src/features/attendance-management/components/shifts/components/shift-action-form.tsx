@@ -42,11 +42,11 @@ export function ShiftActionForm<T>({
   currentRow,
 }: Props<T>) {
   const endTime = form.watch("endTime");
-  const thresholdMinutes = Number(form.watch("thresholdMinutes") || 0);
+  const thresholdTimeInMin = Number(form.watch("thresholdTimeInMin") || 0);
   const formattedEndTime = formatTimeTo12Hour(endTime);
   const formattedExpiryTime = getShiftThresholdExpiryTime(
     endTime,
-    thresholdMinutes,
+    thresholdTimeInMin,
   );
 
   return (
@@ -165,7 +165,7 @@ export function ShiftActionForm<T>({
               />
               <FormField
                 control={form.control as any}
-                name="thresholdMinutes"
+                name="thresholdTimeInMin"
                 render={({ field }: any) => (
                   <FormItem>
                     <FormLabel>Threshold Time (Minutes) *</FormLabel>

@@ -1,8 +1,8 @@
 import { ATTENDANCE_RULE_FREQUENCY } from "@/data/app.data";
 import { z } from "zod";
 
-export const SHIFT_THRESHOLD_DEFAULT_MINUTES = 60;
-export const SHIFT_THRESHOLD_MAX_MINUTES = 300;
+export const SHIFT_THRESHOLD_TIME_IN_MIN_DEFAULT = 60;
+export const SHIFT_THRESHOLD_TIME_IN_MIN_MAX = 300;
 
 export const AttendanceCorrectionSchema = z.object({
   attendanceId: z.string().min(1, "Attendance ID is required"),
@@ -84,14 +84,14 @@ export const ShiftSchema = z.object({
   name: z.string().min(1, "Shift name is required"),
   startTime: z.string().min(1, "Start time is required"),
   endTime: z.string().min(1, "End time is required"),
-  thresholdMinutes: z.coerce
+  thresholdTimeInMin: z.coerce
     .number()
     .positive("Threshold time must be greater than 0")
     .max(
-      SHIFT_THRESHOLD_MAX_MINUTES,
-      `Threshold time cannot exceed ${SHIFT_THRESHOLD_MAX_MINUTES} minutes`,
+      SHIFT_THRESHOLD_TIME_IN_MIN_MAX,
+      `Threshold time cannot exceed ${SHIFT_THRESHOLD_TIME_IN_MIN_MAX} minutes`,
     )
-    .default(SHIFT_THRESHOLD_DEFAULT_MINUTES),
+    .default(SHIFT_THRESHOLD_TIME_IN_MIN_DEFAULT),
   breakMinutes: z.coerce.number().min(0, "Break minutes cannot be negative"),
   fullDayHours: z.coerce.number().min(0, "Full day hours cannot be negative"),
   halfDayHours: z.coerce.number().min(0, "Half day hours cannot be negative"),

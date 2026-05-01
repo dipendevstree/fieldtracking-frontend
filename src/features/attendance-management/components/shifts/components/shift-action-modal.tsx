@@ -13,7 +13,7 @@ import {
   useDeleteShift,
 } from "@/features/attendance-management/services/shift.action.hook";
 import {
-  SHIFT_THRESHOLD_DEFAULT_MINUTES,
+  SHIFT_THRESHOLD_TIME_IN_MIN_DEFAULT,
   ShiftSchema,
 } from "@/features/attendance-management/data/schema";
 import ShiftActionForm from "./shift-action-form";
@@ -52,7 +52,7 @@ export function ShiftActionModal() {
       name: "",
       startTime: "",
       endTime: "",
-      thresholdMinutes: SHIFT_THRESHOLD_DEFAULT_MINUTES,
+      thresholdTimeInMin: SHIFT_THRESHOLD_TIME_IN_MIN_DEFAULT,
       breakMinutes: 0,
       fullDayHours: 0,
       halfDayHours: 0,
@@ -67,7 +67,7 @@ export function ShiftActionModal() {
         name: "",
         startTime: "",
         endTime: "",
-        thresholdMinutes: SHIFT_THRESHOLD_DEFAULT_MINUTES,
+        thresholdTimeInMin: SHIFT_THRESHOLD_TIME_IN_MIN_DEFAULT,
         breakMinutes: 0,
         fullDayHours: 0,
         halfDayHours: 0,
@@ -77,8 +77,8 @@ export function ShiftActionModal() {
     } else if (open === "edit" && currentRow) {
       form.reset({
         ...currentRow,
-        thresholdMinutes:
-          currentRow?.thresholdMinutes ?? SHIFT_THRESHOLD_DEFAULT_MINUTES,
+        thresholdTimeInMin:
+          currentRow?.thresholdTimeInMin ?? SHIFT_THRESHOLD_TIME_IN_MIN_DEFAULT,
       });
     }
   }, [open, currentRow]);

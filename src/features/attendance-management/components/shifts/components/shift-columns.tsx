@@ -77,12 +77,12 @@ export const getShiftColumns = (totalCount: number): ColumnDef<any>[] => [
     enableSorting: false,
   },
   {
-    accessorKey: "thresholdMinutes",
+    accessorKey: "thresholdTimeInMin",
     header: ({ column }) => (
       <CustomDataTableColumnHeader column={column} title="Threshold" />
     ),
     cell: ({ row }) => {
-      const value = row.original.thresholdMinutes;
+      const value = row.original.thresholdTimeInMin;
       return <div className="text-sm">{Number(value ?? 0)} min</div>;
     },
     enableHiding: false,
@@ -100,7 +100,7 @@ export const getShiftColumns = (totalCount: number): ColumnDef<any>[] => [
       <div className="text-sm">
         {getShiftThresholdExpiryTime(
           row.original.endTime,
-          row.original.thresholdMinutes,
+          row.original.thresholdTimeInMin,
         )}
       </div>
     ),

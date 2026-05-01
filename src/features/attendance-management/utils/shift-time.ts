@@ -7,16 +7,16 @@ import { addMinutes, format, isValid, parse } from "date-fns";
  * - "HH:mm"
  * - "HH:mm:ss"
  *
- * If thresholdMinutes is missing, default shift threshold is used.
+ * If thresholdTimeInMin is missing, default shift threshold is used.
  * Returns "-" when values are invalid.
  */
 export const getShiftThresholdExpiryTime = (
   endTime?: string | null,
-  thresholdMinutes?: number | null,
+  thresholdTimeInMin?: number | null,
 ): string => {
   if (!endTime) return "-";
 
-  const threshold = Number(thresholdMinutes ?? 0);
+  const threshold = Number(thresholdTimeInMin ?? 0);
   if (!threshold || threshold <= 0) {
     return "-";
   }
